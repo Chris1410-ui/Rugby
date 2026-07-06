@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel, RUGBY_POS } from "../../lib/positions.js";
-import { buildAlerts, todayISO, statusOfLog, SEVC } from "../../lib/metrics.js";
+import { buildAlerts, SEVC } from "../../lib/metrics.js";
+import { rosterCSV, downloadCSV } from "../../lib/csv.js";
+import { todayISO } from "../../lib/metrics.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell } from "../../lib/icons.jsx";
-import CreateSession from "./CreateSession.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download } from "../../lib/icons.jsx";
 import Alertes from "./Alertes.jsx";
+import Programmes from "./Programmes.jsx";
+import Bibliotheque from "./Bibliotheque.jsx";
 
 const ACCENT = C.coral;
 
@@ -16,7 +19,7 @@ const ACCENT = C.coral;
    onglets lisent l'effectif enrichi. */
 export default function StaffApp({ profile }) {
   const [tab, setTab] = useState("effectif");
-  const { players, roster, sessions, logs, checkins, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, checkins, loading } = useTeamData(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
 
@@ -24,7 +27,8 @@ export default function StaffApp({ profile }) {
     ["effectif", "Effectif", Users],
     ["aujourdhui", "Aujourd'hui", Sun],
     ["alertes", "Alertes", Bell, unread],
-    ["seances", "Séances", Dumbbell],
+    ["programmes", "Programmes", Dumbbell],
+    ["exos", "Exos", BookOpen],
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -32,7 +36,8 @@ export default function StaffApp({ profile }) {
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} loading={loading} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} />}
         {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} />}
-        {tab === "seances" && <Seances teamId={profile.team_id} roster={roster} players={players} sessions={sessions} logs={logs} />}
+        {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
+        {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
       </main>
       <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
     </div>
@@ -47,6 +52,11 @@ function Effectif({ teamId, players, loading }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Users size={18} color={ACCENT} />
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Effectif · {players.length}</div>
+        {players.length > 0 && (
+          <button onClick={() => downloadCSV(`effectif_${todayISO()}.csv`, rosterCSV(players))} title="Exporter en CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+            <Download size={16} />
+          </button>
+        )}
         <button onClick={() => setAdding(true)} style={{ background: ACCENT, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
           <Plus size={15} /> Ajouter
         </button>
@@ -159,53 +169,3 @@ function Aujourdhui({ players, sessions, logs, checkins }) {
   );
 }
 
-/* ── Séances : liste + compliance + création ── */
-function Seances({ teamId, roster, players, sessions, logs }) {
-  const [creating, setCreating] = useState(false);
-  const today = todayISO();
-  const sorted = [...sessions].sort((a, b) => b.date.localeCompare(a.date));
-  return (
-    <section>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <Dumbbell size={18} color={ACCENT} />
-        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Séances · {sessions.length}</div>
-        <button onClick={() => setCreating(true)} style={{ background: ACCENT, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={15} /> Créer
-        </button>
-      </div>
-      {sessions.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.45)", fontSize: 12, lineHeight: 1.6 })}>
-          Aucune séance. Crée-en une pour l'assigner à l'équipe — les joueurs pourront la logger set-par-set.
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {sorted.map((s) => {
-            const assigned = s.assignedIds.length;
-            const done = s.assignedIds.filter((pid) => statusOfLog(logs, s.id, pid) === "done").length;
-            const missed = s.assignedIds.filter((pid) => statusOfLog(logs, s.id, pid) === "missed").length;
-            const pct = assigned ? Math.round((done / assigned) * 100) : 0;
-            return (
-              <div key={s.id} style={sc({ padding: "12px 13px" })}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <Tag c={C.coral}>{s.code}</Tag>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>{s.date}{s.date <= today ? "" : " · à venir"} · {s.exercises.length} exercices</div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: pct >= 70 ? C.green : pct >= 40 ? C.amb : C.coral }}>{done}/{assigned}</div>
-                    <div style={{ fontSize: 8, color: "rgba(255,255,255,0.35)" }}>VALIDÉES{missed ? ` · ${missed} ✗` : ""}</div>
-                  </div>
-                </div>
-                <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: 5, width: `${pct}%`, background: pct >= 70 ? C.green : pct >= 40 ? C.amb : C.coral, borderRadius: 3 }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {creating && <CreateSession teamId={teamId} roster={roster} onClose={() => setCreating(false)} />}
-    </section>
-  );
-}

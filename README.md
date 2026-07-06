@@ -20,7 +20,7 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 | 4 | `daily_checkins` + `session_logs` | ✅ bilan quotidien + logging set-par-set (Realtime) |
 | 5 | `lib/metrics.js` branché sur tous les dashboards | ✅ `useTeamData` → `enrichPlayers` (source unique, aucun recalcul écran) |
 | 6 | `messages` + Realtime + alertes + reco IA (Edge Function) | ✅ messagerie temps réel, récap hebdo, alertes, recommandations Claude serveur |
-| 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ⏳ (séances : base en place) |
+| 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ✅ programmes (matérialisent les séances), routines, bibliothèque, import PDF, export CSV |
 | 8 | Storage (PDF/vidéos), recommandations Claude (Edge Function) | ✅ Edge Function reco · ⏳ Storage |
 
 ---
@@ -119,13 +119,18 @@ src/
     sessions.js     séances (read + création staff), résolution des assignés
     logs.js         logs de séance (upsert par session_id,player_id)
     messages.js     messagerie (fil, envoi, accusé de réception) + Realtime
+    programs.js     programmes → matérialisation de séances datées + Realtime
+    routines.js     modèles de séances réutilisables
+    exercises.js    bibliothèque (catalogue global + perso)
     recommendations.js  invoque l'Edge Function `recommendations`
     useTeamData.js  AGRÉGATION → enrichPlayers (source de vérité unique côté client)
+  lib/  … + csv.js (export CSV), pdf.js (import PDF, pdf.js dynamique), exlib.js
   screens/
     AppShell.jsx        coquille authentifiée (header + routage rôle)
     shared/Thread.jsx   fil de discussion (modal, temps réel)
     player/             Bilan, Seances, SessionPlayCard, Messages, PlayerApp
-    staff/              StaffApp (effectif, Aujourd'hui, Alertes, Séances), Alertes, CreateSession
+    staff/              StaffApp (Effectif+CSV, Aujourd'hui, Alertes, Programmes, Exos),
+                        Alertes, Programmes (builder + PDF), Bibliotheque
   App.jsx           routage session ↔ login
   main.jsx
 

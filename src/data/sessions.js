@@ -15,6 +15,7 @@ export function resolveAssignedIds(assigned, roster) {
 export function dbToSession(row, roster) {
   return {
     id: row.id,
+    programId: row.program_id,
     date: row.date,
     code: row.code || "RS",
     titre: row.titre || "Séance",
