@@ -30,3 +30,12 @@ export const AlertTriangle = (p) => (<I {...p}><path d="M10.3 3.9 1.8 18a2 2 0 0
 export const Loader = (p) => (<I {...p}><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" /><line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" /><line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" /><line x1="4.93" y1="19.07" x2="7.76" y2="16.24" /><line x1="16.24" y1="7.76" x2="19.07" y2="4.93" /></I>);
 export const Trophy = (p) => (<I {...p}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" /></I>);
 export const Activity = (p) => (<I {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></I>);
+export const CheckCircle = (p) => (<I {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></I>);
+export const Send = (p) => (<I {...p}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></I>);
+export const Clock = (p) => (<I {...p}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></I>);
+export const TrendingUp = (p) => (<I {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></I>);
+export const Sun = (p) => (<I {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></I>);
+export const Dumbbell = (p) => (<I {...p}><path d="M6 7v10" /><path d="M18 7v10" /><path d="M3 9v6" /><path d="M21 9v6" /><line x1="6" y1="12" x2="18" y2="12" /></I>);
+export const Flame = (p) => (<I {...p}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.5-4.3 1-6-.5 2.5 1 4.3 2.5 5.5C17 9.5 18 11 18 13a6 6 0 0 1-12 0c0-1.3.5-2.5 1-3.5.2 1.6 1 2.7 1.5 5z" /></I>);
+export const Droplet = (p) => (<I {...p}><path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z" /></I>);
+export const AlertOctagon = (p) => (<I {...p}><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></I>);

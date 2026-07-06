@@ -16,9 +16,9 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 |---|----------------------|------|
 | 1 | `SUPABASE_SCHEMA.sql` (tables, RLS, Realtime) | ✅ appliqué |
 | 2 | Auth + `profiles` (rôles) + création de profil joueur | ✅ fait |
-| 3 | `players` (liste, CRUD, création joueur) | ✅ base (effectif temps réel + ajout staff) |
-| 4 | `daily_checkins` + `session_logs` | ⏳ à venir |
-| 5 | `lib/metrics.js` branché sur tous les dashboards | ⏳ moteur porté, écrans à venir |
+| 3 | `players` (liste, CRUD, création joueur) | ✅ effectif temps réel + ajout staff |
+| 4 | `daily_checkins` + `session_logs` | ✅ bilan quotidien + logging set-par-set (Realtime) |
+| 5 | `lib/metrics.js` branché sur tous les dashboards | ✅ `useTeamData` → `enrichPlayers` (source unique, aucun recalcul écran) |
 | 6 | `messages` + Realtime + alertes (Edge Function) | ⏳ |
 | 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ⏳ |
 | 8 | Storage (PDF/vidéos), recommandations Claude (Edge Function) | ⏳ |
@@ -96,10 +96,18 @@ src/
   auth/
     useAuth.jsx     contexte session + profil
     LoginScreen.jsx écran connexion / inscription (rôle → équipe → nom → email/mdp)
+    hevy.js         historique par exercice (perf préc., records, 1RM Epley)
+    ui.jsx          atomes UI (Ring, Section, KPI, Tag, Dot, RestTimer, BottomNav…)
   data/
-    players.js      hook effectif temps réel (Realtime) + ajout staff, mapper DB→métier
+    players.js      effectif temps réel (Realtime) + ajout staff, mapper DB→métier
+    checkins.js     bilans (upsert par player_id,date) + map pour enrichPlayers
+    sessions.js     séances (read + création staff), résolution des assignés
+    logs.js         logs de séance (upsert par session_id,player_id)
+    useTeamData.js  AGRÉGATION → enrichPlayers (source de vérité unique côté client)
   screens/
-    AppShell.jsx    coquille authentifiée (header, effectif staff, espace joueur)
+    AppShell.jsx        coquille authentifiée (header + routage rôle)
+    player/             Bilan, Seances, SessionPlayCard (logging set-par-set), PlayerApp
+    staff/              StaffApp (effectif, Aujourd'hui+alertes, séances), CreateSession
   App.jsx           routage session ↔ login
   main.jsx
 ```

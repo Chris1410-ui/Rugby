@@ -63,3 +63,13 @@ export const ROLES = [
 
 export const STAFF_ROLES = ["preparateur", "medical", "coach"];
 export const isStaffRole = (r) => STAFF_ROLES.includes(r);
+
+// Codes de séance (couleur de pastille)
+export const CODES = {
+  RS: C.coral,   // Renforcement / force
+  CDD: C.blue,   // Conditioning demi-distance
+  CSB: C.teal,   // Conditioning spécifique
+  CASB: C.green,
+  AC: C.viol,    // Accélérations
+  BLI: C.gray,   // Blessé / individualisé
+};
