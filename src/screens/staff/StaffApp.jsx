@@ -3,10 +3,12 @@ import { C, sc } from "../../lib/tokens.js";
 import { grpLabel, RUGBY_POS } from "../../lib/positions.js";
 import { buildAlerts, todayISO, statusOfLog, SEVC } from "../../lib/metrics.js";
 import { useTeamData } from "../../data/useTeamData.js";
+import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell } from "../../lib/icons.jsx";
 import CreateSession from "./CreateSession.jsx";
+import Alertes from "./Alertes.jsx";
 
 const ACCENT = C.coral;
 
@@ -14,17 +16,22 @@ const ACCENT = C.coral;
    onglets lisent l'effectif enrichi. */
 export default function StaffApp({ profile }) {
   const [tab, setTab] = useState("effectif");
-  const { players, roster, sessions, logs, loading } = useTeamData(profile.team_id);
+  const { players, roster, sessions, logs, checkins, loading } = useTeamData(profile.team_id);
+  const { threads } = useTeamMessages(players.map((p) => p.id));
+  const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
+
   const nav = [
     ["effectif", "Effectif", Users],
     ["aujourdhui", "Aujourd'hui", Sun],
+    ["alertes", "Alertes", Bell, unread],
     ["seances", "Séances", Dumbbell],
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <main style={{ flex: 1, padding: 18 }}>
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} loading={loading} />}
-        {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} />}
+        {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} />}
+        {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} />}
         {tab === "seances" && <Seances teamId={profile.team_id} roster={roster} players={players} sessions={sessions} logs={logs} />}
       </main>
       <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
@@ -112,12 +119,13 @@ function AddPlayerModal({ teamId, onClose }) {
   );
 }
 
-/* ── Aujourd'hui : synthèse readiness/bien-être + alertes auto (depuis l'effectif enrichi) ── */
-function Aujourdhui({ players, sessions, logs }) {
+/* ── Aujourd'hui : synthèse readiness/bien-être + aperçu alertes (effectif enrichi) ── */
+function Aujourdhui({ players, sessions, logs, checkins }) {
   if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>Aucune donnée. Ajoute des joueurs et attends les premiers bilans.</div>;
   const avg = (k) => Math.round(players.reduce((a, p) => a + (p[k] || 0), 0) / players.length);
   const live = players.filter((p) => p._live).length;
-  const alerts = buildAlerts(players, sessions, logs, Object.fromEntries(players.map((p) => [p.id, p._live ? { wb: { energy: p.energy, fatigue: p.fatigue, soreness: p.soreness, mood: p.mood, stress: p.stress, sleep: p.wb?.sleep }, sleepH: p.sleep } : null])));
+  const alerts = buildAlerts(players, sessions, logs, checkins);
+  const top = alerts.slice(0, 4);
   return (
     <section>
       <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>Aujourd'hui · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}</div>
@@ -128,13 +136,14 @@ function Aujourdhui({ players, sessions, logs }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <AlertOctagon size={16} color={C.coral} />
-        <div style={{ fontSize: 13, fontWeight: 800 }}>Alertes automatiques · {alerts.length}</div>
+        <div style={{ fontSize: 13, fontWeight: 800, flex: 1 }}>Alertes · {alerts.length}</div>
+        {alerts.length > top.length && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>→ onglet Alertes</span>}
       </div>
       {alerts.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>Aucune alerte. 👌</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-          {alerts.map((a, i) => (
+          {top.map((a, i) => (
             <div key={i} style={sc({ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}` })}>
               <span style={{ fontSize: 16 }}>{a.icon}</span>
               <div style={{ flex: 1, minWidth: 0 }}>

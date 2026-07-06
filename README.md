@@ -19,9 +19,9 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 | 3 | `players` (liste, CRUD, création joueur) | ✅ effectif temps réel + ajout staff |
 | 4 | `daily_checkins` + `session_logs` | ✅ bilan quotidien + logging set-par-set (Realtime) |
 | 5 | `lib/metrics.js` branché sur tous les dashboards | ✅ `useTeamData` → `enrichPlayers` (source unique, aucun recalcul écran) |
-| 6 | `messages` + Realtime + alertes (Edge Function) | ⏳ |
-| 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ⏳ |
-| 8 | Storage (PDF/vidéos), recommandations Claude (Edge Function) | ⏳ |
+| 6 | `messages` + Realtime + alertes + reco IA (Edge Function) | ✅ messagerie temps réel, récap hebdo, alertes, recommandations Claude serveur |
+| 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ⏳ (séances : base en place) |
+| 8 | Storage (PDF/vidéos), recommandations Claude (Edge Function) | ✅ Edge Function reco · ⏳ Storage |
 
 ---
 
@@ -80,6 +80,21 @@ Vérifications effectuées : trigger attaché, création profil+joueur liée, is
 
 ---
 
+## Recommandations IA (Edge Function)
+
+La fonction `recommendations` génère des conseils de charge/prévention par joueur.
+**L'appel à Claude et la clé API restent côté serveur** (jamais exposés au navigateur,
+cf. handoff §10). Le client l'invoque via `supabase.functions.invoke('recommendations')`.
+
+Configuration (secrets de la fonction, non commités) :
+
+```bash
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-... ANTHROPIC_MODEL=<model-id>
+```
+
+Sans ces secrets, la fonction renvoie une **recommandation de repli déterministe**
+dérivée des indicateurs — la feature reste fonctionnelle sans clé.
+
 ## Architecture du code
 
 ```
@@ -103,13 +118,21 @@ src/
     checkins.js     bilans (upsert par player_id,date) + map pour enrichPlayers
     sessions.js     séances (read + création staff), résolution des assignés
     logs.js         logs de séance (upsert par session_id,player_id)
+    messages.js     messagerie (fil, envoi, accusé de réception) + Realtime
+    recommendations.js  invoque l'Edge Function `recommendations`
     useTeamData.js  AGRÉGATION → enrichPlayers (source de vérité unique côté client)
   screens/
     AppShell.jsx        coquille authentifiée (header + routage rôle)
-    player/             Bilan, Seances, SessionPlayCard (logging set-par-set), PlayerApp
-    staff/              StaffApp (effectif, Aujourd'hui+alertes, séances), CreateSession
+    shared/Thread.jsx   fil de discussion (modal, temps réel)
+    player/             Bilan, Seances, SessionPlayCard, Messages, PlayerApp
+    staff/              StaffApp (effectif, Aujourd'hui, Alertes, Séances), Alertes, CreateSession
   App.jsx           routage session ↔ login
   main.jsx
+
+supabase/
+  functions/recommendations/  Edge Function : appel Claude côté serveur
+                              (clé API jamais exposée ; repli déterministe si non configurée)
+  migrations/                 schéma + RLS + trigger auth
 ```
 
 **Règle d'or conservée** : aucune duplication de formule. Tous les écrans liront le

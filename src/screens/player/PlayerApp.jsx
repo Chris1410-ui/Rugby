@@ -2,10 +2,12 @@ import { useState } from "react";
 import { C } from "../../lib/tokens.js";
 import { sc } from "../../lib/tokens.js";
 import { useTeamData } from "../../data/useTeamData.js";
+import { useThread } from "../../data/messages.js";
 import { BottomNav } from "../../lib/ui.jsx";
-import { Sun, Dumbbell } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Seances from "./Seances.jsx";
+import Messages from "./Messages.jsx";
 
 const ACCENT = C.green;
 
@@ -16,6 +18,8 @@ export default function PlayerApp({ profile }) {
   const [tab, setTab] = useState("bilan");
   const { players, sessions, logs, loading } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
+  const { msgs } = useThread(me?.id);
+  const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
 
   if (loading && !me) {
     return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Chargement…</div>;
@@ -33,6 +37,7 @@ export default function PlayerApp({ profile }) {
   const nav = [
     ["bilan", "Mon bilan", Sun],
     ["seances", "Mes séances", Dumbbell],
+    ["messages", "Messages", MessageSquare, unread],
   ];
 
   return (
@@ -40,6 +45,7 @@ export default function PlayerApp({ profile }) {
       <main style={{ flex: 1, padding: 18 }}>
         {tab === "bilan" && <Bilan me={me} accent={ACCENT} />}
         {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} accent={ACCENT} />}
+        {tab === "messages" && <Messages me={me} accent={ACCENT} />}
       </main>
       <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
     </div>
