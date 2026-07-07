@@ -4,11 +4,13 @@ import { grpLabel } from "../../lib/positions.js";
 import { fmtShort, todayISO, isoDate, statusOfLog } from "../../lib/metrics.js";
 import { WD, wdLabel, newExo } from "../../lib/exlib.js";
 import { Section, Tag } from "../../lib/ui.jsx";
-import { Plus, X, Send, FileText, ClipboardList } from "../../lib/icons.jsx";
+import { Plus, X, Send, FileText, ClipboardList, Paperclip } from "../../lib/icons.jsx";
 import { usePrograms, createProgram, deleteProgram } from "../../data/programs.js";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { useExercises } from "../../data/exercises.js";
 import { parsePDFtoTemplates } from "../../lib/pdf.js";
+import { programFolder, uploadFile } from "../../data/storage.js";
+import ProgramFiles from "./ProgramFiles.jsx";
 
 const accent = C.coral;
 const dateSt = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" };
@@ -40,12 +42,14 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [recGroup, setRecGroup] = useState(players[0]?.grp);
   const [recIds, setRecIds] = useState([]);
   const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", titre: "Séance force", exercises: [newExo()] }]);
+  const [pdfFile, setPdfFile] = useState(null); // PDF source à archiver dans Storage
+  const [filesOf, setFilesOf] = useState(null); // programme dont on ouvre les fichiers
 
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
 
   const reset = () => {
     setTitle(""); setStart(todayISO()); setEnd(isoDate(new Date(Date.now() + 13 * 864e5)));
-    setRecMode("all"); setRecIds([]); setNote("");
+    setRecMode("all"); setRecIds([]); setNote(""); setPdfFile(null);
     setTemplates([{ weekday: 1, code: "RS", titre: "Séance force", exercises: [newExo()] }]);
   };
   const startNew = () => { reset(); setView("new"); };
@@ -73,6 +77,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const onPDF = async (file) => {
     if (!file) return;
     setBusy(true); setNote("");
+    setPdfFile(file); // conservé pour archivage dans Storage à l'envoi
     try {
       const tpls = await parsePDFtoTemplates(file);
       setTemplates(tpls.map((t) => ({ ...t, exercises: t.exercises.map((e) => ({ ...e, id: e.id || newExo().id })) })));
@@ -93,7 +98,12 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     if (!cleanT.length) return;
     setBusy(true);
     try {
-      await createProgram(teamId, { title, start, end, assigned, templates: cleanT, source: note.includes("PDF") ? "pdf" : "manuel" });
+      const { program } = await createProgram(teamId, { title, start, end, assigned, templates: cleanT, source: pdfFile ? "pdf" : "manuel" });
+      // Archive le PDF source dans le bucket privé (non bloquant)
+      if (pdfFile) {
+        try { await uploadFile(programFolder(teamId, program.id), pdfFile); }
+        catch (upErr) { console.error("[upload pdf]", upErr.message); }
+      }
       setView("list"); reset();
     } catch (e) { setNote("Échec de l'envoi : " + e.message); }
     setBusy(false);
@@ -151,7 +161,10 @@ export default function Programmes({ teamId, players, sessions, logs }) {
                     {pr.templates.map((t, i) => <Tag key={i} c={CODES[t.code] || accent}>{wdLabel(Number(t.weekday))} · {t.titre}</Tag>)}
                   </div>
                 </div>
-                <button onClick={() => deleteProgram(pr.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", padding: 4 }}><X size={16} /></button>
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={() => setFilesOf(pr)} title="Fichiers (PDF / vidéos)" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}><Paperclip size={14} /></button>
+                  <button onClick={() => deleteProgram(pr.id)} title="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", padding: 4 }}><X size={16} /></button>
+                </div>
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border2}`, display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
@@ -162,6 +175,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
             </div>
           );
         })}
+        {filesOf && <ProgramFiles teamId={teamId} program={filesOf} onClose={() => setFilesOf(null)} />}
       </div>
     );
   }

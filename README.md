@@ -21,7 +21,7 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 | 5 | `lib/metrics.js` branché sur tous les dashboards | ✅ `useTeamData` → `enrichPlayers` (source unique, aucun recalcul écran) |
 | 6 | `messages` + Realtime + alertes + reco IA (Edge Function) | ✅ messagerie temps réel, récap hebdo, alertes, recommandations Claude serveur |
 | 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ✅ programmes (matérialisent les séances), routines, bibliothèque, import PDF, export CSV |
-| 8 | Storage (PDF/vidéos), recommandations Claude (Edge Function) | ✅ Edge Function reco · ⏳ Storage |
+| 8 | Storage (PDF/vidéos) + recommandations Claude (Edge Function) | ✅ bucket privé aligné équipe (URLs signées) · Edge Function reco |
 
 ---
 
@@ -95,6 +95,23 @@ supabase secrets set ANTHROPIC_API_KEY=sk-ant-... ANTHROPIC_MODEL=<model-id>
 Sans ces secrets, la fonction renvoie une **recommandation de repli déterministe**
 dérivée des indicateurs — la feature reste fonctionnelle sans clé.
 
+## Stockage (bucket privé + URLs signées)
+
+Bucket **privé** `team-files` (aucune URL publique). Convention de chemin, dont le
+1er segment (= `team_id`) porte la RLS :
+
+```
+<team_id>/programs/<program_id>/<fichier>   PDF de programmes
+<team_id>/videos/<clé>/<fichier>            vidéos d'analyse
+```
+
+Politiques `storage.objects` : **lecture** par les membres de l'équipe,
+**écriture** réservée au staff (via `public.my_team()` / `public.is_staff()`).
+Tout accès en lecture passe par une **URL signée** à durée limitée
+(`createSignedUrl`, 1 h) — jamais d'URL publique. Le PDF importé pour créer un
+programme y est archivé automatiquement ; le staff peut aussi joindre des vidéos
+(écran Programmes → bouton *Fichiers*).
+
 ## Architecture du code
 
 ```
@@ -122,6 +139,7 @@ src/
     programs.js     programmes → matérialisation de séances datées + Realtime
     routines.js     modèles de séances réutilisables
     exercises.js    bibliothèque (catalogue global + perso)
+    storage.js      bucket privé `team-files` (upload staff, URLs signées)
     recommendations.js  invoque l'Edge Function `recommendations`
     useTeamData.js  AGRÉGATION → enrichPlayers (source de vérité unique côté client)
   lib/  … + csv.js (export CSV), pdf.js (import PDF, pdf.js dynamique), exlib.js
