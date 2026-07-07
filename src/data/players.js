@@ -87,3 +87,9 @@ export async function addPlayer(teamId, { name, pos, grp, num }) {
   if (error) throw error;
   return dbToPlayer(data);
 }
+
+/* Mise à jour d'un joueur (staff). `patch` en colonnes DB (snake_case). */
+export async function updatePlayer(id, patch) {
+  const { error } = await supabase.from("players").update(patch).eq("id", id);
+  if (error) throw error;
+}

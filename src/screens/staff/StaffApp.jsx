@@ -8,10 +8,14 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity } from "../../lib/icons.jsx";
 import Alertes from "./Alertes.jsx";
 import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
+import Classement from "../shared/Classement.jsx";
+import Calendrier from "../shared/Calendrier.jsx";
+import Veille from "../shared/Veille.jsx";
+import Fiche from "../shared/Fiche.jsx";
 
 const ACCENT = C.coral;
 
@@ -29,6 +33,9 @@ export default function StaffApp({ profile }) {
     ["alertes", "Alertes", Bell, unread],
     ["programmes", "Programmes", Dumbbell],
     ["exos", "Exos", BookOpen],
+    ["classement", "Classement", Trophy],
+    ["calendrier", "Calendrier", Calendar],
+    ["veille", "Veille", Activity],
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -38,6 +45,9 @@ export default function StaffApp({ profile }) {
         {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
+        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} accent={ACCENT} />}
+        {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
+        {tab === "veille" && <Veille accent={ACCENT} />}
       </main>
       <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
     </div>
@@ -47,6 +57,7 @@ export default function StaffApp({ profile }) {
 /* ── Effectif enrichi ── */
 function Effectif({ teamId, players, loading }) {
   const [adding, setAdding] = useState(false);
+  const [fiche, setFiche] = useState(null);
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -70,7 +81,7 @@ function Effectif({ teamId, players, loading }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {players.map((p) => (
-            <div key={p.id} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px" })}>
+            <div key={p.id} onClick={() => setFiche(p)} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer" })}>
               <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)", width: 30, textAlign: "center" }}>{p.num ?? "—"}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
@@ -88,6 +99,7 @@ function Effectif({ teamId, players, loading }) {
         </div>
       )}
       {adding && <AddPlayerModal teamId={teamId} onClose={() => setAdding(false)} />}
+      {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit onClose={() => setFiche(null)} />}
     </section>
   );
 }

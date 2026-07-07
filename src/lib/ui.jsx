@@ -94,18 +94,22 @@ export const RestTimer = ({ seconds, onDone, accent }) => {
   );
 };
 
-/* Barre de navigation basse (mobile-first) */
-export const BottomNav = ({ items, active, onSelect, accent }) => (
-  <nav style={{ position: "sticky", bottom: 0, zIndex: 20, background: `${C.navy}f5`, backdropFilter: "blur(10px)", borderTop: `1px solid ${C.border2}`, display: "flex", padding: "6px 4px 8px" }}>
-    {items.map(([key, label, Icon, badge]) => {
-      const on = active === key;
-      return (
-        <button key={key} onClick={() => onSelect(key)} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 2px", color: on ? accent : "rgba(255,255,255,0.45)", position: "relative" }}>
-          <Icon size={20} color={on ? accent : "rgba(255,255,255,0.45)"} />
-          <span style={{ fontSize: 9.5, fontWeight: on ? 800 : 600 }}>{label}</span>
-          {badge > 0 && <span style={{ position: "absolute", top: 2, right: "50%", marginRight: -18, background: C.coral, color: "#fff", fontSize: 8, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 13, textAlign: "center" }}>{badge}</span>}
-        </button>
-      );
-    })}
-  </nav>
-);
+/* Barre de navigation basse (mobile-first). Défilement horizontal au-delà de 5
+   onglets pour rester lisible sur mobile. */
+export const BottomNav = ({ items, active, onSelect, accent }) => {
+  const scroll = items.length > 5;
+  return (
+    <nav style={{ position: "sticky", bottom: 0, zIndex: 20, background: `${C.navy}f5`, backdropFilter: "blur(10px)", borderTop: `1px solid ${C.border2}`, display: "flex", padding: "6px 4px 8px", overflowX: scroll ? "auto" : "visible" }}>
+      {items.map(([key, label, Icon, badge]) => {
+        const on = active === key;
+        return (
+          <button key={key} onClick={() => onSelect(key)} style={{ flex: scroll ? "0 0 auto" : 1, minWidth: scroll ? 62 : "auto", background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 6px", color: on ? accent : "rgba(255,255,255,0.45)", position: "relative" }}>
+            <Icon size={20} color={on ? accent : "rgba(255,255,255,0.45)"} />
+            <span style={{ fontSize: 9.5, fontWeight: on ? 800 : 600, whiteSpace: "nowrap" }}>{label}</span>
+            {badge > 0 && <span style={{ position: "absolute", top: 2, right: "50%", marginRight: -18, background: C.coral, color: "#fff", fontSize: 8, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 13, textAlign: "center" }}>{badge}</span>}
+          </button>
+        );
+      })}
+    </nav>
+  );
+};

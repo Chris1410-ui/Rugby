@@ -22,6 +22,7 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 | 6 | `messages` + Realtime + alertes + reco IA (Edge Function) | ✅ messagerie temps réel, récap hebdo, alertes, recommandations Claude serveur |
 | 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ✅ programmes (matérialisent les séances), routines, bibliothèque, import PDF, export CSV |
 | 8 | Storage (PDF/vidéos) + recommandations Claude (Edge Function) | ✅ bucket privé aligné équipe (URLs signées) · Edge Function reco |
+| + | Écrans secondaires : classement, calendrier, fiche, comparaison, veille | ✅ tous branchés sur `enrichPlayers` (aucun recalcul écran) |
 
 ---
 
@@ -145,10 +146,11 @@ src/
   lib/  … + csv.js (export CSV), pdf.js (import PDF, pdf.js dynamique), exlib.js
   screens/
     AppShell.jsx        coquille authentifiée (header + routage rôle)
-    shared/Thread.jsx   fil de discussion (modal, temps réel)
-    player/             Bilan, Seances, SessionPlayCard, Messages, PlayerApp
-    staff/              StaffApp (Effectif+CSV, Aujourd'hui, Alertes, Programmes, Exos),
-                        Alertes, Programmes (builder + PDF), Bibliotheque
+    shared/             Thread, Classement (gamification), Calendrier (jours loggés),
+                        Fiche (détaillée, éditable staff), Veille (bibliographie)
+    player/             Bilan, Seances, SessionPlayCard, Messages, Comparaison, PlayerApp
+    staff/              StaffApp (Effectif+CSV+fiche, Aujourd'hui, Alertes, Programmes,
+                        Exos, Classement, Calendrier, Veille), Programmes, Bibliotheque
   App.jsx           routage session ↔ login
   main.jsx
 
