@@ -60,7 +60,8 @@ Le projet cible est hébergé en **UE (Francfort)** conformément à l'exigence 
 
 ## Base de données
 
-Le schéma (`SUPABASE_SCHEMA.sql`) est appliqué via deux migrations Supabase :
+Le schéma (`SUPABASE_SCHEMA.sql`) est appliqué via des migrations Supabase versionnées
+(`supabase/migrations/`) :
 
 1. `init_rugby_schema` — enums, 10 tables (`teams`, `profiles`, `players`, `exercises`,
    `programs`, `sessions`, `session_logs`, `daily_checkins`, `messages`, `routines`),
@@ -70,6 +71,12 @@ Le schéma (`SUPABASE_SCHEMA.sql`) est appliqué via deux migrations Supabase :
    `on_auth_user_created` qui, à l'inscription, crée le `profile` (rôle, équipe) et,
    pour un joueur qui s'inscrit, la ligne `players` auto-liée (`is_custom=true`,
    `owner_uid`), le tout côté serveur (`SECURITY DEFINER`).
+3. `programs_extend_and_seed_exercises` — colonnes programmes + catalogue d'exercices.
+4. `storage_team_files_private_bucket` — bucket privé `team-files` + policies équipe.
+5. `players_team_read_for_leaderboard` — lecture du roster par l'équipe (classement,
+   comparaison) tout en gardant bilans/logs cloisonnés par joueur.
+6. `weekly_alerts_cron` — `pg_cron` + `pg_net` planifient `weekly-alerts` (lundi 07:00
+   UTC), clé `service_role` lue depuis Vault (cf. « Alertes hebdomadaires »).
 
 Vérifications effectuées : trigger attaché, création profil+joueur liée, isolation RLS
 (staff voit toute l'équipe, joueur ne voit que lui-même).
@@ -109,6 +116,36 @@ supabase secrets set ANTHROPIC_API_KEY=sk-ant-... ANTHROPIC_MODEL=<model-id>
 
 Sans ces secrets, la fonction renvoie une **recommandation de repli déterministe**
 dérivée des indicateurs — la feature reste fonctionnelle sans clé.
+
+## Alertes hebdomadaires (Edge Function planifiée)
+
+La fonction `weekly-alerts` recalcule les alertes de charge / bien-être / compliance
+et **poste un récap dans le fil de chaque joueur concerné** (table `messages`,
+`dir='staff'`, auteur « Système »). Le moteur d'alertes y est **porté à l'identique
+de `src/lib/metrics.js`** (mêmes formules `playerLoad` / `buildAlerts`) — aucune
+divergence avec l'app.
+
+Elle tourne côté serveur avec la clé `service_role` (contourne la RLS pour balayer
+toutes les équipes) et **exige le rôle `service_role`** dans le JWT (bloque anon /
+authenticated). Planification par **`pg_cron` + `pg_net`** (migration
+`0006_weekly_alerts_cron.sql`) : **chaque lundi 07:00 UTC**.
+
+```
+cron (lundi 07:00 UTC) ──net.http_post──▶ /functions/v1/weekly-alerts
+                          Authorization: Bearer <service_role_key depuis Vault>
+```
+
+La clé n'est **jamais en clair dans le dépôt** : le cron la lit depuis **Vault** au
+moment de l'appel. À faire **une seule fois** (Dashboard → SQL Editor, ou psql) avec
+la clé `service_role` du projet (Settings → API) :
+
+```sql
+select vault.create_secret('<SERVICE_ROLE_KEY>', 'service_role_key');
+```
+
+Tant que ce secret n'existe pas, le cron s'exécute mais l'appel renvoie 401 (aucun
+message posté). Vérifs : `select * from cron.job` (job actif) et
+`select * from cron.job_run_details order by start_time desc` (historique des runs).
 
 ## Stockage (bucket privé + URLs signées)
 
@@ -172,7 +209,9 @@ src/
 supabase/
   functions/recommendations/  Edge Function : appel Claude côté serveur
                               (clé API jamais exposée ; repli déterministe si non configurée)
-  migrations/                 schéma + RLS + trigger auth
+  functions/weekly-alerts/    Edge Function planifiée (cron lundi) : récap hebdo des
+                              alertes → messages (moteur porté de lib/metrics.js)
+  migrations/                 schéma + RLS + trigger auth + cron alertes
 ```
 
 **Règle d'or conservée** : aucune duplication de formule. Tous les écrans liront le
