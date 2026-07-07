@@ -1,0 +1,86 @@
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase.js";
+import { todayISO } from "../lib/metrics.js";
+
+/* Bilans du matin (daily_checkins). Remplace les clés `daily` / `dailyHist`
+   du prototype. Écriture idempotente par (player_id, date) → upsert. */
+
+// Ligne DB → forme attendue par enrichPlayers : {wb, sleepH, saved, ...}
+function dbToCheckin(row) {
+  return {
+    date: row.date,
+    wb: row.wb,
+    sleepH: row.sleep_h != null ? Number(row.sleep_h) : null,
+    hydra: row.hydra != null ? Number(row.hydra) : null,
+    fc: row.fc,
+    hrv: row.hrv,
+    poids: row.poids != null ? Number(row.poids) : null,
+    saved: true,
+  };
+}
+
+export async function saveCheckin(playerId, payload, date = todayISO()) {
+  const { wb, sleepH, hydra, fc, hrv, poids } = payload;
+  const { error } = await supabase
+    .from("daily_checkins")
+    .upsert(
+      { player_id: playerId, date, wb, sleep_h: sleepH, hydra, fc, hrv, poids },
+      { onConflict: "player_id,date" }
+    );
+  if (error) throw error;
+}
+
+// Bilan du jour du joueur connecté (pour préremplir / afficher « enregistré »)
+export function useMyCheckin(playerId, date = todayISO()) {
+  const [checkin, setCheckin] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!playerId) { setLoading(false); return; }
+    const { data } = await supabase
+      .from("daily_checkins")
+      .select("*")
+      .eq("player_id", playerId)
+      .eq("date", date)
+      .maybeSingle();
+    setCheckin(data ? dbToCheckin(data) : null);
+    setLoading(false);
+  }, [playerId, date]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { checkin, loading, refresh: fetch };
+}
+
+/* Dernier bilan par joueur de l'équipe → map { [playerId]: {wb, sleepH, saved} }
+   pour alimenter enrichPlayers. RLS : staff = équipe ; joueur = les siens. */
+export function useTeamCheckins(playerIds) {
+  const key = (playerIds || []).join(",");
+  const [byPlayer, setByPlayer] = useState({});
+
+  const fetch = useCallback(async () => {
+    if (!playerIds || playerIds.length === 0) { setByPlayer({}); return; }
+    const { data, error } = await supabase
+      .from("daily_checkins")
+      .select("*")
+      .in("player_id", playerIds)
+      .order("date", { ascending: false });
+    if (error) { console.error("[checkins]", error.message); return; }
+    const latest = {};
+    (data ?? []).forEach((row) => {
+      if (!latest[row.player_id]) latest[row.player_id] = dbToCheckin(row); // 1re = plus récente
+    });
+    setByPlayer(latest);
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    fetch();
+    if (!playerIds || playerIds.length === 0) return;
+    const channel = supabase
+      .channel(`checkins:${key}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "daily_checkins" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [key, fetch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { checkins: byPlayer, refresh: fetch };
+}
