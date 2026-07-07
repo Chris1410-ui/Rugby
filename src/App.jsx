@@ -1,11 +1,15 @@
 import { AuthProvider, useAuth } from "./auth/useAuth.jsx";
 import LoginScreen from "./auth/LoginScreen.jsx";
+import ResetPassword from "./auth/ResetPassword.jsx";
 import AppShell from "./screens/AppShell.jsx";
 import { hasSupabaseConfig } from "./lib/supabase.js";
 import { C, FONT } from "./lib/tokens.js";
 
 function Gate() {
-  const { session, loading } = useAuth();
+  const { session, loading, recovery } = useAuth();
+
+  // Lien « mot de passe oublié » suivi → écran de réinitialisation prioritaire
+  if (recovery) return <ResetPassword />;
 
   if (loading) {
     return (

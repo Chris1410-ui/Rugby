@@ -80,7 +80,11 @@ Vérifications effectuées : trigger attaché, création profil+joueur liée, is
   par Supabase Auth (bcrypt serveur).
 - Inscription : `supabase.auth.signUp` avec métadonnées `{role, team_id, full_name, …}`
   → le trigger crée profil (+ joueur). Connexion : `signInWithPassword`.
-  Mot de passe oublié : `resetPasswordForEmail`.
+- **Mot de passe oublié — de bout en bout** : `resetPasswordForEmail(email, {redirectTo})`
+  envoie un lien ; au retour, l'événement `PASSWORD_RECOVERY` affiche l'écran
+  `ResetPassword` (nouveau mot de passe + jauge de robustesse → `updateUser`).
+  ⚠️ Ajoute l'URL de l'app (dev + prod) dans *Authentication → URL Configuration →
+  Redirect URLs* du dashboard Supabase, sinon le lien de retour est refusé.
 - Critères de robustesse du prototype conservés (jauge de force) à titre indicatif.
 
 > **Confirmation d'email.** Par défaut Supabase demande une confirmation par email.
