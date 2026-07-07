@@ -160,7 +160,8 @@ src/
                         Fiche (détaillée, éditable staff), Veille (bibliographie)
     player/             Bilan, Seances, SessionPlayCard, Messages, Comparaison, PlayerApp
     staff/              StaffApp (Effectif+CSV+fiche, Aujourd'hui, Alertes, Programmes,
-                        Exos, Classement, Calendrier, Veille), Programmes, Bibliotheque
+                        Exos, Classement, Calendrier, Vidéo, Veille), Programmes,
+                        Bibliotheque, AnalyseVideo (bibliothèque vidéo, URLs signées)
   App.jsx           routage session ↔ login
   main.jsx
 

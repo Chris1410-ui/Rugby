@@ -18,6 +18,8 @@ export function sanitize(name) {
 
 export const programFolder = (teamId, programId) => `${teamId}/programs/${programId}`;
 export const videoFolder = (teamId, key) => `${teamId}/videos/${key}`;
+// Bibliothèque vidéo d'analyse de l'équipe (dossier plat)
+export const teamVideosFolder = (teamId) => `${teamId}/videos`;
 
 // Upload (staff). Un préfixe temporel évite les collisions de noms.
 export async function uploadFile(folder, file) {
