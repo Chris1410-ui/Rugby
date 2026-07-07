@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, sc } from "../../lib/tokens.js";
+import { C } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { MessageSquare } from "../../lib/icons.jsx";
 import { useThread } from "../../data/messages.js";

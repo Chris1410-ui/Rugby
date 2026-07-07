@@ -1,5 +1,5 @@
 import { useAuth } from "../auth/useAuth.jsx";
-import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
+import { C, FONT, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { LogOut } from "../lib/icons.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";

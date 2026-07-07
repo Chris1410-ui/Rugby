@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { computePoints, divOf, nextDiv, fmtShort } from "../../lib/metrics.js";
+import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
 import { KPI } from "../../lib/ui.jsx";
 import { Trophy, X } from "../../lib/icons.jsx";
 

@@ -1,4 +1,4 @@
-import { C, CODES, sc } from "../../lib/tokens.js";
+import { C, CODES } from "../../lib/tokens.js";
 import { isoDate, parseISO, todayISO, statusOfLog } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { ChevronRight } from "../../lib/icons.jsx";

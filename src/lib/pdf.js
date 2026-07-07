@@ -44,12 +44,12 @@ export async function parsePDFtoTemplates(file) {
     if (m) {
       exo.sets = parseInt(m[1], 10) || 3;
       exo.reps = m[2].replace(/–/g, "-");
-      exo.name = line.slice(0, m.index).replace(/^[\-•·\d.)\s]+/, "").trim() || line;
+      exo.name = line.slice(0, m.index).replace(/^[-•·\d.)\s]+/, "").trim() || line;
       const after = line.slice(m.index + m[0].length).trim();
       const cm = after.match(/(\d+\s*%|\d+\s*kg|PDC|\d+kg)/i);
       if (cm) exo.charge = cm[0];
     } else {
-      exo.name = line.replace(/^[\-•·\d.)\s]+/, "").trim();
+      exo.name = line.replace(/^[-•·\d.)\s]+/, "").trim();
     }
     if (exo.name.length > 1) {
       cur = cur || templates[templates.length - 1] || { weekday: 1, code: "RS", titre: "Séance importée", exercises: [] };

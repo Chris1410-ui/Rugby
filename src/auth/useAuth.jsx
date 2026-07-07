@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- provider + hook cohabitent volontairement */
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase.js";
 
