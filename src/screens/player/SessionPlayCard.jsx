@@ -63,7 +63,6 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const summarize = (peSets) => {
     const ws = peSets.filter((x) => x.type !== "warmup" && x.done);
     const top = ws.reduce((m, x) => Math.max(m, +x.w || 0), 0);
-    const reps = ws.reduce((a, x) => a + (+x.reps || 0), 0);
     return { charge: top || "", reps: ws.length ? `${ws.length}×` : "", rpe: "" };
   };
 

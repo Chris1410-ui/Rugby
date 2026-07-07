@@ -32,7 +32,17 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 npm install
 cp .env.example .env      # puis renseigner les valeurs (voir ci-dessous)
 npm run dev               # http://localhost:5173
+npm test                  # tests unitaires (Vitest)
+npm run lint              # ESLint
 ```
+
+### Tests & qualité
+
+- **Vitest** — tests unitaires du cœur métier (`src/lib/metrics.test.js` :
+  zones ACWR, `wbToWellness`, `computeReadiness`, déterminisme de `playerLoad`,
+  cohérence de `enrichPlayers`, `computePoints`) + utilitaires (`password`,
+  `resolveAssignedIds`/`dbToSession`). 23 tests.
+- **ESLint** (flat config, plugins react-hooks/react-refresh) — 0 avertissement.
 
 ### Variables d'environnement (`.env`)
 

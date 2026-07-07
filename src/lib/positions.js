@@ -24,4 +24,4 @@ export const RUGBY_POS = [
   ["ARRIÈRE", "arrieres"],
 ];
 
-export const posListFor = (sport) => RUGBY_POS; // football viendra avec le module masqué
+export const posListFor = () => RUGBY_POS; // football viendra avec le module masqué
