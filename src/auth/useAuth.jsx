@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true); // chargement session initial
   const [profileLoading, setProfileLoading] = useState(false);
+  const [recovery, setRecovery] = useState(false); // lien « mot de passe oublié » suivi
 
   // Récupère le profil métier lié au compte auth
   const loadProfile = useCallback(async (uid) => {
@@ -43,7 +44,9 @@ export function AuthProvider({ children }) {
       if (data.session?.user) loadProfile(data.session.user.id);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
+      // Clic sur le lien de réinitialisation → écran « nouveau mot de passe »
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
       setSession(next ?? null);
       if (next?.user) loadProfile(next.user.id);
       else setProfile(null);
@@ -64,12 +67,16 @@ export function AuthProvider({ children }) {
     if (session?.user) return loadProfile(session.user.id);
   }, [session, loadProfile]);
 
+  const endRecovery = useCallback(() => setRecovery(false), []);
+
   const value = {
     session,
     user: session?.user ?? null,
     profile,
     loading,
     profileLoading,
+    recovery,
+    endRecovery,
     signOut,
     refreshProfile,
   };
