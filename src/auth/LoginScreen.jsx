@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabase.js";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { RUGBY_POS, grpLabel } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
+import { POLICY_VERSION } from "../lib/policy.js";
+import PrivacyPolicy from "../screens/shared/PrivacyPolicy.jsx";
 import { ChevronRight, Eye, EyeOff, Loader, Shield } from "../lib/icons.jsx";
 
 const wrap = {
@@ -43,6 +45,12 @@ export default function LoginScreen() {
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
+  // RGPD — consentement à l'inscription
+  const [guardianName, setGuardianName] = useState("");
+  const [guardianEmail, setGuardianEmail] = useState("");
+  const [consent, setConsent] = useState(false); // consentement parental (joueur)
+  const [policyOk, setPolicyOk] = useState(false); // politique lue/acceptée
+  const [showPolicy, setShowPolicy] = useState(false);
 
   const roleObj = role ? ROLES.find((r) => r.id === role) : null;
   const st = pwdStrength(pwd);
@@ -57,6 +65,7 @@ export default function LoginScreen() {
     reset();
     setRole(r);
     setFullName(""); setEmail(""); setNPos(0); setNNum("");
+    setGuardianName(""); setGuardianEmail(""); setConsent(false); setPolicyOk(false);
     setTeam(TEAMS.rugby[0].id);
     setStep("details");
   };
@@ -68,6 +77,12 @@ export default function LoginScreen() {
     if (!/^\S+@\S+\.\S+$/.test(email)) return setErr("Adresse email invalide.");
     if (!st.valid) return setErr("Mot de passe trop faible (10+, majuscule, minuscule, chiffre, spécial).");
     if (pwd !== pwd2) return setErr("Les mots de passe ne correspondent pas.");
+    if (!policyOk) return setErr("Merci de prendre connaissance de la politique de confidentialité.");
+    if (role === "joueur") {
+      if (!guardianName.trim()) return setErr("Indique le nom du représentant légal.");
+      if (!/^\S+@\S+\.\S+$/.test(guardianEmail)) return setErr("Email du représentant légal invalide.");
+      if (!consent) return setErr("Le consentement parental est requis (joueur mineur).");
+    }
 
     setBusy(true);
     const [pos, grp] = RUGBY_POS[nPos];
@@ -75,6 +90,7 @@ export default function LoginScreen() {
       role,
       team_id: team,
       full_name: fullName.trim(),
+      policy_version: POLICY_VERSION,
     };
     if (role === "joueur") {
       Object.assign(meta, {
@@ -82,6 +98,9 @@ export default function LoginScreen() {
         pos,
         grp,
         num: nNum ? String(parseInt(nNum, 10)) : "",
+        guardian_name: guardianName.trim(),
+        guardian_email: guardianEmail.trim(),
+        consent: true,
       });
     }
     const { data, error } = await supabase.auth.signUp({
@@ -193,6 +212,7 @@ export default function LoginScreen() {
     return (
       <div style={wrap}>
         {styleTag}
+        {showPolicy && <PrivacyPolicy onClose={() => setShowPolicy(false)} />}
         <div style={{ width: "100%", maxWidth: 380 }}>
           <button onClick={() => setStep("role")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", marginBottom: 16 }}>
             ← Retour
@@ -249,6 +269,28 @@ export default function LoginScreen() {
             </div>
           )}
           <input type={showPwd ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setErr(""); }} placeholder="Confirmer le mot de passe" autoComplete="new-password" style={input(pwd2 && pwd !== pwd2)} />
+
+          {/* ── RGPD : consentement parental (joueur mineur) ── */}
+          {role === "joueur" && (
+            <div style={{ marginTop: 6, marginBottom: 4, border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, background: "rgba(255,255,255,0.03)" }}>
+              <div style={{ fontSize: 10, color: C.amb, letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
+                REPRÉSENTANT LÉGAL (JOUEUR MINEUR)
+              </div>
+              <input value={guardianName} onChange={(e) => { setGuardianName(e.target.value); setErr(""); }} placeholder="Nom du parent / tuteur" style={input(false)} />
+              <input type="email" value={guardianEmail} onChange={(e) => { setGuardianEmail(e.target.value); setErr(""); }} placeholder="Email du parent / tuteur" autoComplete="off" style={input(false)} />
+              <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, cursor: "pointer" }}>
+                <input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); setErr(""); }} style={{ marginTop: 2, width: 16, height: 16, accentColor: C.green, flexShrink: 0 }} />
+                <span>En tant que représentant légal, je consens au traitement des données (dont données de santé) de ce joueur mineur pour le suivi de sa performance.</span>
+              </label>
+            </div>
+          )}
+
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, cursor: "pointer", margin: "8px 0 4px" }}>
+            <input type="checkbox" checked={policyOk} onChange={(e) => { setPolicyOk(e.target.checked); setErr(""); }} style={{ marginTop: 2, width: 16, height: 16, accentColor: C.green, flexShrink: 0 }} />
+            <span>J'ai pris connaissance de la{" "}
+              <button type="button" onClick={() => setShowPolicy(true)} style={{ background: "none", border: "none", color: C.viol, fontWeight: 700, cursor: "pointer", padding: 0, textDecoration: "underline", fontSize: 11.5 }}>politique de confidentialité</button>.
+            </span>
+          </label>
 
           <Feedback />
           <button

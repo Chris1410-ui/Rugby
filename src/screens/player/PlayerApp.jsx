@@ -4,7 +4,7 @@ import { sc } from "../../lib/tokens.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
 import { BottomNav } from "../../lib/ui.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Seances from "./Seances.jsx";
 import Messages from "./Messages.jsx";
@@ -12,6 +12,7 @@ import Comparaison from "./Comparaison.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Fiche from "../shared/Fiche.jsx";
+import Confidentialite from "../shared/Confidentialite.jsx";
 
 const ACCENT = C.green;
 
@@ -46,6 +47,7 @@ export default function PlayerApp({ profile }) {
     ["calendrier", "Calendrier", Calendar],
     ["fiche", "Ma fiche", Shield],
     ["comparaison", "Comparaison", Activity],
+    ["donnees", "Mes données", Lock],
   ];
 
   return (
@@ -58,6 +60,7 @@ export default function PlayerApp({ profile }) {
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} />}
         {tab === "fiche" && <Fiche player={me} canEdit={false} />}
         {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}
+        {tab === "donnees" && <Confidentialite player={me} self />}
       </main>
       <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
     </div>

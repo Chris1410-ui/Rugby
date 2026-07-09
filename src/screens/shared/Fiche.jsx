@@ -5,6 +5,7 @@ import { acwrZ } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI } from "../../lib/ui.jsx";
 import { CheckCircle, X } from "../../lib/icons.jsx";
 import { updatePlayer } from "../../data/players.js";
+import Confidentialite from "./Confidentialite.jsx";
 
 const num = (v) => (v == null || v === "" ? null : Number(v));
 const fmt = (v, unit = "") => (v == null ? "—" : `${v}${unit}`);
@@ -112,6 +113,9 @@ export default function Fiche({ player, canEdit = false, onClose }) {
           </div>
         )}
       </Section>
+
+      {/* RGPD — le staff gère le consentement / export / effacement du joueur */}
+      {canEdit && <Confidentialite player={player} onErased={onClose} />}
     </div>
   );
 

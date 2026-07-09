@@ -23,6 +23,8 @@ en suivant l'ordre recommandé. **Étape 1–2 livrées** : schéma Supabase + A
 | 7 | `programs`/`sessions`/`routines`/`exercises`, import PDF, export CSV | ✅ programmes (matérialisent les séances), routines, bibliothèque, import PDF, export CSV |
 | 8 | Storage (PDF/vidéos) + recommandations Claude (Edge Function) | ✅ bucket privé aligné équipe (URLs signées) · Edge Function reco |
 | + | Écrans secondaires : classement, calendrier, fiche, comparaison, veille | ✅ tous branchés sur `enrichPlayers` (aucun recalcul écran) |
+| + | Alertes hebdomadaires planifiées (`pg_cron` + Edge Function) | ✅ récap hebdo posté dans les fils (moteur porté de `metrics.js`) |
+| + | RGPD : consentement parental, politique, export & effacement | ✅ consentement à l'inscription · export JSON · droit à l'effacement (Edge Function) |
 
 ---
 
@@ -77,9 +79,13 @@ Le schéma (`SUPABASE_SCHEMA.sql`) est appliqué via des migrations Supabase ver
    comparaison) tout en gardant bilans/logs cloisonnés par joueur.
 6. `weekly_alerts_cron` — `pg_cron` + `pg_net` planifient `weekly-alerts` (lundi 07:00
    UTC), clé `service_role` lue depuis Vault (cf. « Alertes hebdomadaires »).
+7. `gdpr_consent` — table `consents` (consentement parental d'un mineur : responsable
+   légal, version de politique, horodatage) + RLS (joueur/staff) ; le trigger
+   d'inscription archive le consentement (cf. « RGPD »).
 
 Vérifications effectuées : trigger attaché, création profil+joueur liée, isolation RLS
-(staff voit toute l'équipe, joueur ne voit que lui-même).
+(staff voit toute l'équipe, joueur ne voit que lui-même), cascade d'effacement
+(supprimer un joueur efface bilans, logs, messages et consentement).
 
 ### Auth — remplace le SHA-256 du prototype
 
@@ -147,6 +153,39 @@ Tant que ce secret n'existe pas, le cron s'exécute mais l'appel renvoie 401 (au
 message posté). Vérifs : `select * from cron.job` (job actif) et
 `select * from cron.job_run_details order by start_time desc` (historique des runs).
 
+## RGPD (données de santé de mineurs)
+
+L'effectif est composé de **joueurs mineurs (U18)** : leurs données incluent des
+**données de santé**. La plateforme met en œuvre les obligations RGPD correspondantes.
+
+**Consentement parental** — à l'inscription d'un joueur, le formulaire recueille
+l'identité du **représentant légal** (nom + email) et un **consentement explicite** au
+traitement, plus l'acceptation de la **politique de confidentialité**. Le trigger
+d'inscription archive le tout dans la table `consents` (avec la **version de politique**
+`POLICY_VERSION` et l'horodatage), côté serveur. Le staff peut consulter/renouveler ce
+consentement depuis la fiche joueur.
+
+**Politique de confidentialité** — `src/lib/policy.js` (contenu + version) rendue par
+`PrivacyPolicy.jsx`, accessible à l'inscription **et** dans l'app (écran « Mes données »).
+Le responsable de traitement et le contact DPO y sont à compléter avant production.
+
+**Portabilité (export)** — chaque joueur exporte **ses** données en **JSON**
+(bilans, séances, messages, consentement) ; le staff peut exporter celles d'un joueur de
+son équipe. L'export lit via la **RLS** (aucun secret) — un joueur n'obtient que ses
+données.
+
+**Droit à l'effacement** — Edge Function **`gdpr-erase`** (service_role). Elle relit le
+profil de l'appelant côté serveur et n'autorise que : le **joueur sur ses propres
+données**, ou le **staff sur un joueur de son équipe**. Elle supprime la ligne `players`
+(**cascade** sur `daily_checkins`, `session_logs`, `messages`, `consents`), le `profile`
+lié et, le cas échéant, le **compte Auth** du joueur. Côté UI, une **confirmation par
+saisie** (« SUPPRIMER ») évite les suppressions accidentelles.
+
+```
+joueur / staff ──functions.invoke('gdpr-erase', { player_id })──▶ Edge Function
+   (autorisation relue depuis `profiles`) ──▶ delete players → cascade + delete auth user
+```
+
 ## Stockage (bucket privé + URLs signées)
 
 Bucket **privé** `team-files` (aucune URL publique). Convention de chemin, dont le
@@ -176,6 +215,7 @@ src/
     tokens.js       design tokens (palette, sports, équipes, rôles)
     positions.js    postes / groupes (grp aligné sur l'enum SQL)
     password.js     robustesse mot de passe (indicatif)
+    policy.js       politique de confidentialité (contenu + POLICY_VERSION)
     icons.jsx       icônes SVG inline (style Lucide)
   auth/
     useAuth.jsx     contexte session + profil
@@ -193,13 +233,16 @@ src/
     exercises.js    bibliothèque (catalogue global + perso)
     storage.js      bucket privé `team-files` (upload staff, URLs signées)
     recommendations.js  invoque l'Edge Function `recommendations`
+    gdpr.js         RGPD : export JSON (via RLS) + effacement (Edge Function) + consentement
     useTeamData.js  AGRÉGATION → enrichPlayers (source de vérité unique côté client)
   lib/  … + csv.js (export CSV), pdf.js (import PDF, pdf.js dynamique), exlib.js
   screens/
     AppShell.jsx        coquille authentifiée (header + routage rôle)
     shared/             Thread, Classement (gamification), Calendrier (jours loggés),
-                        Fiche (détaillée, éditable staff), Veille (bibliographie)
+                        Fiche (détaillée, éditable staff + bloc RGPD), Veille,
+                        PrivacyPolicy (politique), Confidentialite (export / effacement)
     player/             Bilan, Seances, SessionPlayCard, Messages, Comparaison, PlayerApp
+                        (+ onglet « Mes données »)
     staff/              StaffApp (Effectif+CSV+fiche, Aujourd'hui, Alertes, Programmes,
                         Exos, Classement, Calendrier, Vidéo, Veille), Programmes,
                         Bibliotheque, AnalyseVideo (bibliothèque vidéo, URLs signées)
@@ -211,7 +254,9 @@ supabase/
                               (clé API jamais exposée ; repli déterministe si non configurée)
   functions/weekly-alerts/    Edge Function planifiée (cron lundi) : récap hebdo des
                               alertes → messages (moteur porté de lib/metrics.js)
-  migrations/                 schéma + RLS + trigger auth + cron alertes
+  functions/gdpr-erase/       Edge Function : droit à l'effacement (autorisation self/staff
+                              relue serveur ; cascade données + compte Auth)
+  migrations/                 schéma + RLS + trigger auth + cron alertes + consentement RGPD
 ```
 
 **Règle d'or conservée** : aucune duplication de formule. Tous les écrans liront le
