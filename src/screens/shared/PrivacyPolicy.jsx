@@ -25,8 +25,9 @@ export default function PrivacyPolicy({ onClose }) {
           <div style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.65)" }}>{s.body}</div>
         </div>
       ))}
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", borderTop: `1px solid ${C.border2}`, paddingTop: 10, marginTop: 4 }}>
-        Responsable de traitement : {CONTROLLER.name} — {CONTROLLER.contact}
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", borderTop: `1px solid ${C.border2}`, paddingTop: 10, marginTop: 4, lineHeight: 1.5 }}>
+        Responsable de traitement : {CONTROLLER.name}
+        {CONTROLLER.address ? `, ${CONTROLLER.address}` : ""} — {CONTROLLER.contact}
       </div>
     </div>
   );
