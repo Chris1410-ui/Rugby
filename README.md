@@ -167,7 +167,9 @@ consentement depuis la fiche joueur.
 
 **Politique de confidentialité** — `src/lib/policy.js` (contenu + version) rendue par
 `PrivacyPolicy.jsx`, accessible à l'inscription **et** dans l'app (écran « Mes données »).
-Le responsable de traitement et le contact DPO y sont à compléter avant production.
+Responsable de traitement : **Performance Rugby ASBL** (Waterloo, BE) ; réclamations
+possibles auprès de l'**APD** (Belgique). Le sous-traitant hébergeur (**Supabase**, UE —
+Francfort) est mentionné dans la politique.
 
 **Portabilité (export)** — chaque joueur exporte **ses** données en **JSON**
 (bilans, séances, messages, consentement) ; le staff peut exporter celles d'un joueur de

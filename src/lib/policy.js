@@ -9,20 +9,22 @@
    consentement du représentant légal requis (RGPD art. 8 & 9).
    ════════════════════════════════════════════════════════════════ */
 
-export const POLICY_VERSION = "2026-01";
+export const POLICY_VERSION = "2026-02";
 
-// Responsable de traitement — à adapter avant mise en production réelle.
+// Responsable de traitement.
 export const CONTROLLER = {
-  name: "Fédération / club (responsable de traitement)",
-  contact: "dpo@club.example",
+  name: "Performance Rugby ASBL",
+  address: "Avenue des Merles 78, 1410 Waterloo, Belgique",
+  contact: "chris.delfosse@hotmail.com",
 };
 
 export const POLICY = {
   version: POLICY_VERSION,
-  updated: "Janvier 2026",
+  updated: "Juillet 2026",
   intro:
-    "Cette plateforme suit la performance et la santé de joueurs de rugby mineurs (U18). " +
-    "Les données sont hébergées dans l'Union européenne (Francfort) et traitées conformément au RGPD.",
+    "La plateforme « Rugby Performance » (éditée par Performance Rugby ASBL) suit la performance " +
+    "et la santé de joueurs de rugby mineurs (U18). Les données sont hébergées dans l'Union " +
+    "européenne (Francfort) et traitées conformément au RGPD.",
   sections: [
     {
       title: "Données collectées",
@@ -49,6 +51,7 @@ export const POLICY = {
       body:
         "Seuls le joueur (ses propres données) et le staff de son équipe (préparateur, médical, " +
         "coach) y accèdent. Le cloisonnement est appliqué au niveau de la base (Row Level Security). " +
+        "L'hébergement est assuré par notre sous-traitant Supabase (Union européenne — Francfort). " +
         "Aucune revente ni transfert hors UE.",
     },
     {
@@ -62,7 +65,9 @@ export const POLICY = {
       body:
         "Accès, rectification, portabilité (export de vos données) et effacement. L'export et la " +
         "suppression sont disponibles directement dans l'application (écran « Mes données »). " +
-        "Le retrait du consentement entraîne l'effacement des données du joueur.",
+        "Le retrait du consentement entraîne l'effacement des données du joueur. Vous pouvez " +
+        "introduire une réclamation auprès de l'Autorité de protection des données (APD, Belgique — " +
+        "www.autoriteprotectiondonnees.be).",
     },
   ],
 };
