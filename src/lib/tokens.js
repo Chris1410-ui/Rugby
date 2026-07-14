@@ -47,7 +47,10 @@ export const SPORTS = {
 };
 
 export const TEAMS = {
-  rugby: [{ id: "r_u18", label: "Belgique U18", short: "U18", comp: "Championnat Régions U18" }],
+  rugby: [
+    { id: "r_u18", label: "Belgique U18", short: "U18", comp: "Championnat Régions U18" },
+    { id: "r_namur", label: "Namur", short: "NAM", comp: "Championnat Régions U18" },
+  ],
   foot: [
     { id: "f_u19", label: "Diables Rouges U19", short: "U19", comp: "Élite Jeunes U19" },
     { id: "f_pro", label: "Académie Pro", short: "Acad.", comp: "Réserve Pro League" },
