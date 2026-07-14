@@ -56,18 +56,20 @@ const cleanExos = (exos) =>
     .filter((e) => (e.name || "").trim())
     .map((e) => ({ id: e.id || uid(), name: e.name.trim(), sets: e.sets ?? 3, reps: e.reps ?? "8", charge: e.charge ?? "", rest: e.rest ?? 90 }));
 
-// Génère les dates du programme × modèles (par jour de semaine)
-function materialize(programId, teamId, { start, end, templates, assigned }) {
+/* Développe les modèles (par jour de semaine) sur la plage de dates → lignes
+   `sessions` (sans `program_id`, ajouté après insertion du programme).
+   Fonction PURE (testable) : une séance par occurrence du jour dans [start,end]. */
+export function expandTemplates({ teamId, start, end, templates, assigned }) {
   const s = parseISO(start), e = parseISO(end);
   const out = [];
-  templates.forEach((tpl) => {
+  if (!(s <= e)) return out; // plage invalide → aucune séance
+  (templates || []).forEach((tpl) => {
     const exos = cleanExos(tpl.exercises);
-    if (!exos.length) return;
+    if (!exos.length) return; // séance sans exercice nommé → ignorée
     let cur = new Date(s);
     while (cur <= e) {
       if (cur.getDay() === Number(tpl.weekday)) {
         out.push({
-          program_id: programId,
           team_id: teamId,
           date: isoDate(cur),
           code: tpl.code || "RS",
@@ -84,6 +86,16 @@ function materialize(programId, teamId, { start, end, templates, assigned }) {
 }
 
 export async function createProgram(teamId, { title, start, end, assigned, templates, source }) {
+  // Matérialise D'ABORD : si aucune séance ne serait générée (dates ne couvrant
+  // aucun jour choisi, ou aucun exercice nommé), on échoue AVANT d'insérer le
+  // programme — pas de programme orphelin vide.
+  const draft = expandTemplates({ teamId, start, end, templates, assigned });
+  if (!draft.length) {
+    const err = new Error("no-sessions");
+    err.code = "no-sessions";
+    throw err;
+  }
+
   const { data: prog, error } = await supabase
     .from("programs")
     .insert({ team_id: teamId, title: title.trim(), start_date: start, end_date: end, templates, assigned, source: source || "manuel" })
@@ -91,10 +103,12 @@ export async function createProgram(teamId, { title, start, end, assigned, templ
     .single();
   if (error) throw error;
 
-  const sessions = materialize(prog.id, teamId, { start, end, templates, assigned });
-  if (sessions.length) {
-    const { error: sErr } = await supabase.from("sessions").insert(sessions);
-    if (sErr) throw sErr;
+  const sessions = draft.map((row) => ({ ...row, program_id: prog.id }));
+  const { error: sErr } = await supabase.from("sessions").insert(sessions);
+  if (sErr) {
+    // On retire le programme pour ne pas laisser d'entrée sans séances
+    await supabase.from("programs").delete().eq("id", prog.id);
+    throw sErr;
   }
   return { program: dbToProgram(prog), count: sessions.length };
 }

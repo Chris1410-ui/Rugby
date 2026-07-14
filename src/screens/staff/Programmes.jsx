@@ -68,8 +68,10 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     setNote(`Modèle « ${r.name} » chargé — ajuste dates et destinataires puis envoie.`);
   };
   const doSaveRoutine = async () => {
+    setNote("");
+    if (!title.trim()) return setNote("Donne un nom au modèle (champ Titre).");
     const cleanT = templates.map((t) => ({ weekday: Number(t.weekday), code: t.code, titre: t.titre, exercises: t.exercises.filter((e) => e.name.trim()) })).filter((t) => t.exercises.length);
-    if (!title.trim() || !cleanT.length) return;
+    if (!cleanT.length) return setNote("Ajoute au moins un exercice (avec un nom) avant d'enregistrer le modèle.");
     try { await saveRoutine(teamId, { name: title, templates: cleanT }); setNote("Enregistré comme modèle réutilisable ✓"); }
     catch (e) { setNote("Échec de l'enregistrement du modèle : " + e.message); }
   };
@@ -92,20 +94,34 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   };
 
   const send = async () => {
-    if (!title.trim() || !templates.length || busy) return;
+    if (busy) return;
+    setNote("");
+    // Validations explicites (fini l'échec silencieux du bouton)
+    if (!title.trim()) return setNote("Donne un titre au programme.");
+    if (!start || !end || start > end) return setNote("Vérifie les dates : la fin doit être après le début.");
+    if (recMode === "players" && recIds.length === 0) return setNote("Sélectionne au moins un joueur destinataire.");
+    if (recMode === "group" && !recGroup) return setNote("Choisis une ligne destinataire.");
     const assigned = recMode === "all" ? { mode: "all" } : recMode === "group" ? { mode: "group", group: recGroup } : { mode: "players", ids: recIds };
-    const cleanT = templates.map((t) => ({ weekday: Number(t.weekday), code: t.code, titre: t.titre, exercises: t.exercises.filter((e) => e.name.trim()) })).filter((t) => t.exercises.length);
-    if (!cleanT.length) return;
+    const cleanT = templates
+      .map((t) => ({ weekday: Number(t.weekday), code: t.code, titre: t.titre, exercises: t.exercises.filter((e) => e.name.trim()) }))
+      .filter((t) => t.exercises.length);
+    if (!cleanT.length) return setNote("Ajoute au moins un exercice (avec un nom) à une séance avant d'envoyer.");
+
     setBusy(true);
     try {
-      const { program } = await createProgram(teamId, { title, start, end, assigned, templates: cleanT, source: pdfFile ? "pdf" : "manuel" });
+      const { program, count } = await createProgram(teamId, { title, start, end, assigned, templates: cleanT, source: pdfFile ? "pdf" : "manuel" });
       // Archive le PDF source dans le bucket privé (non bloquant)
       if (pdfFile) {
         try { await uploadFile(programFolder(teamId, program.id), pdfFile); }
         catch (upErr) { console.error("[upload pdf]", upErr.message); }
       }
       setView("list"); reset();
-    } catch (e) { setNote("Échec de l'envoi : " + e.message); }
+      setNote(`Programme envoyé ✓ — ${count} séance${count > 1 ? "s" : ""} créée${count > 1 ? "s" : ""}.`);
+    } catch (e) {
+      if (e.code === "no-sessions" || e.message === "no-sessions")
+        setNote("Aucune séance générée : les dates ne couvrent aucun des jours choisis pour les séances. Élargis la période ou change le jour d'une séance.");
+      else setNote("Échec de l'envoi : " + e.message);
+    }
     setBusy(false);
   };
 
@@ -122,6 +138,10 @@ export default function Programmes({ teamId, players, sessions, logs }) {
             <input type="file" accept="application/pdf" style={{ display: "none" }} onChange={(e) => onPDF(e.target.files[0])} />
           </label>
         </div>
+
+        {note && (
+          <div style={sc({ marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", background: note.startsWith("Programme envoyé") ? `${C.green}1a` : `${C.amb}1a`, borderColor: note.startsWith("Programme envoyé") ? `${C.green}66` : `${C.amb}66` })}>{note}</div>
+        )}
 
         {programs.length === 0 && (
           <div style={sc({ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.45)", fontSize: 12, lineHeight: 1.6, marginBottom: 12 })}>
