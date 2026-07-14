@@ -3,6 +3,7 @@ import { C, FONT, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { LogOut } from "../lib/icons.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
+import OwnerApp from "./OwnerApp.jsx";
 
 const teamLabel = (id) => TEAMS.rugby.find((t) => t.id === id)?.label || id;
 const roleObjOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
@@ -25,6 +26,9 @@ export default function AppShell() {
       </Centered>
     );
   }
+
+  // Owner (Head of Performance) : espace multi-clubs dédié
+  if (profile.role === "owner") return <OwnerApp profile={profile} user={user} signOut={signOut} />;
 
   const roleObj = roleObjOf(profile.role);
   const staff = isStaffRole(profile.role);
