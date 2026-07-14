@@ -5,6 +5,7 @@ import { RUGBY_POS, grpLabel } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
 import { POLICY_VERSION } from "../lib/policy.js";
 import PrivacyPolicy from "../screens/shared/PrivacyPolicy.jsx";
+import TotemPicker from "../screens/shared/TotemPicker.jsx";
 import { ChevronRight, Eye, EyeOff, Loader, Shield } from "../lib/icons.jsx";
 
 const wrap = {
@@ -73,7 +74,7 @@ export default function LoginScreen() {
   // ── INSCRIPTION ──
   const doSignUp = async () => {
     reset();
-    if (!fullName.trim()) return setErr("Indique ton nom.");
+    if (!fullName.trim()) return setErr(role === "joueur" ? "Choisis un totem." : "Indique ton nom.");
     if (!/^\S+@\S+\.\S+$/.test(email)) return setErr("Adresse email invalide.");
     if (!st.valid) return setErr("Mot de passe trop faible (10+, majuscule, minuscule, chiffre, spécial).");
     if (pwd !== pwd2) return setErr("Les mots de passe ne correspondent pas.");
@@ -231,8 +232,12 @@ export default function LoginScreen() {
             ))}
           </select>
 
-          <div style={label}>{role === "joueur" ? "TON NOM" : "NOM (staff)"}</div>
-          <input value={fullName} onChange={(e) => { setFullName(e.target.value); setErr(""); }} placeholder="Prénom Nom" style={input(false)} />
+          <div style={label}>{role === "joueur" ? "TON TOTEM (pseudo affiché)" : "NOM (staff)"}</div>
+          {role === "joueur" ? (
+            <TotemPicker value={fullName} onChange={(v) => { setFullName(v); setErr(""); }} accent={roleObj.c} />
+          ) : (
+            <input value={fullName} onChange={(e) => { setFullName(e.target.value); setErr(""); }} placeholder="Prénom Nom" style={input(false)} />
+          )}
 
           {role === "joueur" && (
             <>

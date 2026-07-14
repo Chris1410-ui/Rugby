@@ -18,6 +18,7 @@ import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
 import Fiche from "../shared/Fiche.jsx";
+import TotemPicker from "../shared/TotemPicker.jsx";
 
 const ACCENT = C.coral;
 
@@ -118,7 +119,7 @@ function AddPlayerModal({ teamId, onClose }) {
   const [err, setErr] = useState("");
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10 };
   const save = async () => {
-    if (!name.trim()) return setErr("Nom requis.");
+    if (!name.trim()) return setErr("Choisis un totem pour le joueur.");
     setBusy(true); setErr("");
     const [pos, grp] = RUGBY_POS[posIdx];
     try {
@@ -129,11 +130,12 @@ function AddPlayerModal({ teamId, onClose }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: C.panel, borderRadius: "18px 18px 0 0", padding: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Ajouter un joueur</div>
           <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
         </div>
-        <input value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} placeholder="Prénom Nom" autoFocus style={inp} />
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Le joueur est identifié par un <b>totem</b> (pseudo), affiché partout.</div>
+        <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} />
         <div style={{ display: "flex", gap: 8 }}>
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
             {RUGBY_POS.map(([p, g], i) => <option key={i} value={i}>{p} · {grpLabel(g)}</option>)}
