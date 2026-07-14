@@ -8,8 +8,9 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare } from "../../lib/icons.jsx";
 import Alertes from "./Alertes.jsx";
+import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import AnalyseVideo from "./AnalyseVideo.jsx";
@@ -31,7 +32,8 @@ export default function StaffApp({ profile }) {
   const nav = [
     ["effectif", "Effectif", Users],
     ["aujourdhui", "Aujourd'hui", Sun],
-    ["alertes", "Alertes", Bell, unread],
+    ["alertes", "Alertes", Bell],
+    ["messages", "Messages", MessageSquare, unread],
     ["programmes", "Programmes", Dumbbell],
     ["exos", "Exos", BookOpen],
     ["classement", "Classement", Trophy],
@@ -45,6 +47,7 @@ export default function StaffApp({ profile }) {
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} loading={loading} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} />}
         {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} />}
+        {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} accent={ACCENT} />}

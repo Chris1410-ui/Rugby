@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { buildAlerts, SEVC, playerLoad, isoDate, todayISO, statusOfLog } from "../../lib/metrics.js";
 import { KPI, Tag } from "../../lib/ui.jsx";
-import { MessageSquare, ChevronRight, X, Sparkles } from "../../lib/icons.jsx";
-import { useTeamMessages } from "../../data/messages.js";
+import { MessageSquare, X, Sparkles } from "../../lib/icons.jsx";
 import { getRecommendation } from "../../data/recommendations.js";
-import Thread from "../shared/Thread.jsx";
+import Conversation from "../shared/Conversation.jsx";
 
 const accent = C.coral;
 
@@ -15,9 +14,6 @@ export default function Alertes({ players, sessions, logs, checkins }) {
   const [thread, setThread] = useState(null); // player pour la messagerie
   const [reco, setReco] = useState(null); // player pour la reco IA
   const [catf, setCatf] = useState("all");
-
-  const playerIds = players.map((p) => p.id);
-  const { threads } = useTeamMessages(playerIds);
 
   const alerts = buildAlerts(players, sessions, logs, checkins);
   const cats = ["all", ...new Set(alerts.map((a) => a.cat))];
@@ -30,7 +26,6 @@ export default function Alertes({ players, sessions, logs, checkins }) {
   const compliance = totalAssign ? Math.round((totalDone / totalAssign) * 100) : 0;
   const overload = players.filter((p) => (p._load || playerLoad(p, sessions, logs)).acwr > 1.5).length;
   const wbFilled = players.filter((p) => p._live).length;
-  const unreadTotal = Object.values(threads).reduce((a, t) => a + t.unread, 0);
 
   const byId = (pid) => players.find((p) => p.id === pid);
 
@@ -84,30 +79,7 @@ export default function Alertes({ players, sessions, logs, checkins }) {
         </div>
       )}
 
-      {/* messagerie */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <MessageSquare size={16} color={accent} />
-        <div style={{ fontSize: 13, fontWeight: 800, flex: 1 }}>Messagerie</div>
-        {unreadTotal > 0 && <span style={{ background: C.coral, color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 10, padding: "2px 8px" }}>{unreadTotal}</span>}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 8 }}>
-        {players.map((p) => {
-          const t = threads[p.id] || { count: 0, unread: 0 };
-          return (
-            <div key={p.id} onClick={() => setThread(p)} style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${t.unread ? C.coral : C.border2}`, borderRadius: 10, padding: "9px 11px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 14, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{p.num ?? "—"}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
-                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{t.count ? t.count + " msg" : "—"}</div>
-              </div>
-              {t.unread > 0 && <span style={{ background: C.coral, color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 9, padding: "1px 6px", flexShrink: 0 }}>{t.unread}</span>}
-              <ChevronRight size={14} color="rgba(255,255,255,0.3)" />
-            </div>
-          );
-        })}
-      </div>
-
-      {thread && <Thread playerId={thread.id} name={thread.name} who="staff" accent={accent} onClose={() => setThread(null)} />}
+      {thread && <Conversation playerId={thread.id} title={thread.name} who="staff" accent={accent} onClose={() => setThread(null)} />}
       {reco && <RecoModal player={reco} onClose={() => setReco(null)} />}
     </section>
   );

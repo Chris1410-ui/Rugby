@@ -82,10 +82,12 @@ export function useTeamMessages(playerIds) {
     if (error) { console.error("[team messages]", error.message); return; }
     const m = {};
     (data ?? []).forEach((r) => {
-      const e = (m[r.player_id] = m[r.player_id] || { count: 0, unread: 0, last: null });
+      const e = (m[r.player_id] = m[r.player_id] || { count: 0, unread: 0, last: null, lastTs: null, lastDir: null });
       e.count++;
       if (r.dir === "joueur" && !r.read) e.unread++;
-      e.last = r.text;
+      e.last = r.text; // ordonné ascendant → dernier itéré = plus récent
+      e.lastTs = r.created_at;
+      e.lastDir = r.dir;
     });
     setByPlayer(m);
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
