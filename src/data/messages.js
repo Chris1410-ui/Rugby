@@ -5,6 +5,16 @@ import { supabase } from "../lib/supabase.js";
    du prototype. `dir` = qui a écrit ('staff' | 'joueur'). `read` = accusé de
    réception. RLS : staff = fils de son équipe ; joueur = son fil. */
 
+/* supabase-js dédoublonne les canaux Realtime par "topic" : `channel(nom)`
+   renvoie le canal EXISTANT si un canal de même nom est déjà abonné, et
+   appeler `.on('postgres_changes', …)` dessus après `subscribe()` LÈVE
+   ("cannot add postgres_changes callbacks … after subscribe()").
+   Or le parent (badge de non-lus) ET l'écran s'abonnent au même joueur →
+   même topic → exception dans l'effet → écran blanc. On rend donc chaque nom
+   de canal UNIQUE par abonnement (le filtre reste porté par `.on`). */
+let _chanSeq = 0;
+export const uniqueTopic = (base) => `${base}#${(_chanSeq = (_chanSeq + 1) % 1e9)}`;
+
 function dbToMsg(r) {
   return { id: r.id, dir: r.dir, author: r.author, text: r.text, read: r.read, ts: r.created_at };
 }
@@ -47,7 +57,7 @@ export function useThread(playerId) {
     fetch();
     if (!playerId) return;
     const channel = supabase
-      .channel(`messages:${playerId}`)
+      .channel(uniqueTopic(`messages:${playerId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `player_id=eq.${playerId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -84,7 +94,7 @@ export function useTeamMessages(playerIds) {
     fetch();
     if (!playerIds || playerIds.length === 0) return;
     const channel = supabase
-      .channel(`team-messages:${key}`)
+      .channel(uniqueTopic(`team-messages:${key}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
