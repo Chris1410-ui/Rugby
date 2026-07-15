@@ -5,15 +5,10 @@ import { acwrZ } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI } from "../../lib/ui.jsx";
 import { CheckCircle, X } from "../../lib/icons.jsx";
 import { updatePlayer } from "../../data/players.js";
+import TestsEvolution from "./TestsEvolution.jsx";
 import Confidentialite from "./Confidentialite.jsx";
 
 const num = (v) => (v == null || v === "" ? null : Number(v));
-// Numérique tolérant à la virgule décimale (ex. « 54,2 »).
-const numFR = (v) => {
-  if (v == null || v === "") return null;
-  const n = Number(String(v).replace(",", "."));
-  return Number.isNaN(n) ? null : n;
-};
 const fmt = (v, unit = "") => (v == null ? "—" : `${v}${unit}`);
 
 /* Fiche joueur détaillée. Lit l'effectif enrichi (aucun recalcul). Éditable par
@@ -33,12 +28,6 @@ export default function Fiche({ player, canEdit = false, onClose }) {
       cmj_d: player.cmjD ?? "",
       ischios_g: player.ischiosG ?? "",
       ischios_d: player.ischiosD ?? "",
-      bronco: player.bronco ?? "",
-      yoyo: player.yoyo ?? "",
-      squat_5rm: player.squat5rm ?? "",
-      cmj_overall: player.cmjOverall ?? "",
-      bench_5rm: player.bench5rm ?? "",
-      hang_clean_2rm: player.hangClean2rm ?? "",
       pp_notes: player.ppNotes ?? "",
     });
   }, [player.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -61,12 +50,6 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         ischios_g: num(d.ischios_g),
         ischios_d: num(d.ischios_d),
         asym,
-        bronco: (d.bronco ?? "").trim() || null,
-        yoyo: num(d.yoyo),
-        squat_5rm: (d.squat_5rm ?? "").trim() || null,
-        cmj_overall: numFR(d.cmj_overall),
-        bench_5rm: numFR(d.bench_5rm),
-        hang_clean_2rm: numFR(d.hang_clean_2rm),
         pp_notes: (d.pp_notes ?? "").trim() || null,
       });
       setEdit(false); // Realtime rafraîchit l'effectif
@@ -121,12 +104,6 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         <Row label="CMJ droit (cm)" k="cmj_d" value={player.cmjD} />
         <Row label="Ischios G (N)" k="ischios_g" value={player.ischiosG} />
         <Row label="Ischios D (N)" k="ischios_d" value={player.ischiosD} />
-        <Row label="Bronco (temps)" k="bronco" value={player.bronco} text placeholder="5'15" />
-        <Row label="Yo-Yo IR (m)" k="yoyo" unit=" m" value={player.yoyo} placeholder="1720" />
-        <Row label="Squat 5RM (kg)" k="squat_5rm" value={player.squat5rm} text placeholder="3x170" />
-        <Row label="CMJ / Overall Jump (cm)" k="cmj_overall" value={player.cmjOverall} placeholder="54,2" />
-        <Row label="Bench 5RM (kg)" k="bench_5rm" value={player.bench5rm} placeholder="112.5" />
-        <Row label="Hang Clean 2RM (kg)" k="hang_clean_2rm" value={player.hangClean2rm} placeholder="90" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0" }}>
           <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Asymétrie ischios</span>
           <Tag c={asym == null ? C.gray : asym >= 10 ? C.coral : asym >= 6 ? C.amb : C.green}>{asym == null ? "—" : `${asym}%`}</Tag>
@@ -149,6 +126,9 @@ export default function Fiche({ player, canEdit = false, onClose }) {
           </div>
         )}
       </Section>
+
+      {/* Tests historisés par campagne (évolution + mini-graphe) */}
+      <TestsEvolution player={player} canEdit={canEdit} />
 
       {/* RGPD — le staff gère le consentement / export / effacement du joueur */}
       {canEdit && <Confidentialite player={player} onErased={onClose} />}
