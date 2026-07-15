@@ -19,6 +19,7 @@ import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
 import Fiche from "../shared/Fiche.jsx";
 import TotemPicker from "../shared/TotemPicker.jsx";
+import TestsBatch from "./TestsBatch.jsx";
 
 const ACCENT = C.coral;
 
@@ -65,11 +66,17 @@ export default function StaffApp({ profile }) {
 function Effectif({ teamId, players, loading }) {
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
+  const [batch, setBatch] = useState(false);
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Users size={18} color={ACCENT} />
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Effectif · {players.length}</div>
+        {players.length > 0 && (
+          <button onClick={() => setBatch(true)} title="Saisie groupée des tests" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+            <Activity size={16} />
+          </button>
+        )}
         {players.length > 0 && (
           <button onClick={() => downloadCSV(`effectif_${todayISO()}.csv`, rosterCSV(players))} title="Exporter en CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <Download size={16} />
@@ -106,6 +113,7 @@ function Effectif({ teamId, players, loading }) {
         </div>
       )}
       {adding && <AddPlayerModal teamId={teamId} onClose={() => setAdding(false)} />}
+      {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
       {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit onClose={() => setFiche(null)} />}
     </section>
   );
