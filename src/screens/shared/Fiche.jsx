@@ -27,6 +27,8 @@ export default function Fiche({ player, canEdit = false, onClose }) {
       cmj_d: player.cmjD ?? "",
       ischios_g: player.ischiosG ?? "",
       ischios_d: player.ischiosD ?? "",
+      bronco: player.bronco ?? "",
+      yoyo: player.yoyo ?? "",
     });
   }, [player.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -48,6 +50,8 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         ischios_g: num(d.ischios_g),
         ischios_d: num(d.ischios_d),
         asym,
+        bronco: (d.bronco ?? "").trim() || null,
+        yoyo: num(d.yoyo),
       });
       setEdit(false); // Realtime rafraîchit l'effectif
     } catch (e) { setErr(e.message || "Échec de l'enregistrement."); }
@@ -55,11 +59,11 @@ export default function Fiche({ player, canEdit = false, onClose }) {
   };
 
   const inp = { width: 78, background: "rgba(255,255,255,0.1)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 6px", color: "#fff", fontSize: 13, fontWeight: 700, outline: "none", textAlign: "right" };
-  const Row = ({ label, k, unit = "", value }) => (
+  const Row = ({ label, k, unit = "", value, text = false, placeholder }) => (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${C.border2}` }}>
       <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{label}</span>
       {edit ? (
-        <input value={d[k] ?? ""} onChange={(e) => setD((p) => ({ ...p, [k]: e.target.value }))} inputMode="decimal" style={inp} />
+        <input value={d[k] ?? ""} onChange={(e) => setD((p) => ({ ...p, [k]: e.target.value }))} inputMode={text ? "text" : "decimal"} placeholder={placeholder} style={inp} />
       ) : (
         <span style={{ fontSize: 14, fontWeight: 800 }}>{fmt(value, unit)}</span>
       )}
@@ -101,6 +105,8 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         <Row label="CMJ droit (cm)" k="cmj_d" value={player.cmjD} />
         <Row label="Ischios G (N)" k="ischios_g" value={player.ischiosG} />
         <Row label="Ischios D (N)" k="ischios_d" value={player.ischiosD} />
+        <Row label="Bronco (mm:ss)" k="bronco" value={player.bronco} text placeholder="4:45" />
+        <Row label="Yo-Yo IR (m)" k="yoyo" unit=" m" value={player.yoyo} placeholder="1720" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0" }}>
           <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Asymétrie ischios</span>
           <Tag c={asym == null ? C.gray : asym >= 10 ? C.coral : asym >= 6 ? C.amb : C.green}>{asym == null ? "—" : `${asym}%`}</Tag>
