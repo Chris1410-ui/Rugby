@@ -175,8 +175,8 @@ export default function Classement({ players, sessions, logs, activities = {}, c
       })()}
 
       {sel && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "flex-end" }} onClick={() => setSel(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: "18px 18px 0 0", padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={() => setSel(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 24 }}>{sel.div.e}</span><div><div style={{ fontSize: 16, fontWeight: 800 }}>{sel.p.name}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>#{sel.rank} · Division {sel.div.l} · {sel.pts} pts</div></div></div>
               <X size={20} color="rgba(255,255,255,0.5)" onClick={() => setSel(null)} style={{ cursor: "pointer" }} />

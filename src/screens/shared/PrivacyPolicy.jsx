@@ -34,8 +34,8 @@ export default function PrivacyPolicy({ onClose }) {
 
   if (!onClose) return body;
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 400, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 620, background: C.navy, borderRadius: "18px 18px 0 0", padding: 20, maxHeight: "90vh", overflowY: "auto", fontFamily: "inherit", color: "#fff" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 400, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 620, background: C.navy, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto", fontFamily: "inherit", color: "#fff" }}>
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
           <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
         </div>

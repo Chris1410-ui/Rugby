@@ -50,8 +50,8 @@ export default function ProgramFiles({ teamId, program, onClose }) {
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: "18px 18px 0 0", padding: 20, maxHeight: "82vh", overflowY: "auto" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "82vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Fichiers · {program.title}</div>
           <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
