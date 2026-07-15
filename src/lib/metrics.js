@@ -202,9 +202,17 @@ export const nextDiv = (p) => {
   return i > 0 ? DIVS[i - 1] : null;
 };
 
-export function computePoints(player, sessions, logs) {
-  const r = rng(seasonSeed(player.id) + 7);
-  let pts = rib(r, 35, 140);
+// Activités déclarables sur l'écran Aujourd'hui (#6) — +10 pts par thématique.
+export const ACTIVITIES = [
+  { key: "salle", label: "Salle", emoji: "🏋️" },
+  { key: "course", label: "Course", emoji: "🏃" },
+  { key: "natation", label: "Natation", emoji: "🏊" },
+];
+const ACTIVITY_LABEL = Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label]));
+
+// `dailyActivities` : historique d'activités déclarées du joueur → [{ date, activities:[keys] }].
+export function computePoints(player, sessions, logs, dailyActivities = []) {
+  let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
     streak = 0,
@@ -224,7 +232,9 @@ export function computePoints(player, sessions, logs) {
     .sort((a, b) => a.date.localeCompare(b.date));
   mine.forEach((s) => {
     const lg = logs?.[s.id]?.[player.id];
-    const past = s.date <= today;
+    // Grace « séance du jour » : une séance datée aujourd'hui encore en attente
+    // n'est PAS pénalisée (la journée n'est pas finie / elle peut être reportée).
+    const overdue = s.date < today;
     const inWk = s.date >= wkAgo && s.date <= today;
     if (lg && lg.status === "done") {
       doneCount++;
@@ -241,12 +251,20 @@ export function computePoints(player, sessions, logs) {
       streak = 0;
       add(-15, "Séance manquée", s.date, inWk);
       if (missedRun >= 2) add(-10, "Manquées consécutives", s.date, inWk);
-    } else if (past) {
+    } else if (lg && lg.status === "postponed") {
+      // Séance remise/reportée : ni gain ni pénalité, ne casse pas la série.
+      add(0, "Séance reportée", s.date, inWk);
+    } else if (overdue) {
       missedCount++;
       missedRun++;
       streak = 0;
       add(-15, "Séance non validée", s.date, inWk);
     }
+  });
+  // Activité du jour déclarée (salle / course / natation) : +10 par thématique.
+  (dailyActivities || []).forEach((d) => {
+    const inWk = d.date >= wkAgo && d.date <= today;
+    (d.activities || []).forEach((a) => add(10, `Activité : ${ACTIVITY_LABEL[a] || a}`, d.date, inWk));
   });
   if (streak >= 5) add(15, "Série de 5 séances 🔥", today, true);
   else if (streak >= 3) add(5, "Série de 3 séances", today, true);

@@ -32,7 +32,7 @@ export const Pill = ({ v }) => {
 };
 
 export const Dot = ({ s }) => {
-  const m = { done: { c: C.green, t: "✓" }, missed: { c: C.coral, t: "✗" }, pending: { c: "rgba(255,255,255,0.15)", t: "◦" } };
+  const m = { done: { c: C.green, t: "✓" }, missed: { c: C.coral, t: "✗" }, postponed: { c: C.gray, t: "⤴" }, pending: { c: "rgba(255,255,255,0.15)", t: "◦" } };
   const i = m[s] || m.pending;
   return <span style={{ display: "inline-flex", width: 22, height: 22, borderRadius: 11, background: i.c, alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{i.t}</span>;
 };

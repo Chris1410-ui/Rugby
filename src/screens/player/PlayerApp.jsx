@@ -21,7 +21,7 @@ const ACCENT = C.green;
    au joueur lui-même. */
 export default function PlayerApp({ profile }) {
   const [tab, setTab] = useState("bilan");
-  const { players, sessions, logs, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, activities, loading } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
@@ -56,7 +56,7 @@ export default function PlayerApp({ profile }) {
         {tab === "bilan" && <Bilan me={me} accent={ACCENT} />}
         {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "messages" && <Messages me={me} accent={ACCENT} />}
-        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} me={me} accent={ACCENT} />}
+        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} me={me} accent={ACCENT} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} />}
         {tab === "fiche" && <Fiche player={me} canEdit={false} />}
         {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}

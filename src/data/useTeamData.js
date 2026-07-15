@@ -14,7 +14,7 @@ export function useTeamData(teamId) {
   const { logs } = useTeamLogs(teamId);
 
   const playerIds = useMemo(() => roster.map((p) => p.id), [roster]);
-  const { checkins } = useTeamCheckins(playerIds);
+  const { checkins, activities } = useTeamCheckins(playerIds);
 
   const players = useMemo(
     () => enrichPlayers(roster, sessions, logs, checkins),
@@ -27,6 +27,7 @@ export function useTeamData(teamId) {
     sessions,
     logs,
     checkins,
+    activities, // historique d'activités déclarées par joueur (points #6)
     loading: rosterLoading || sessionsLoading,
   };
 }

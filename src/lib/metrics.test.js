@@ -119,4 +119,39 @@ describe("computePoints — gamification", () => {
     const r = computePoints(p, sessions, {});
     expect(r.missedCount).toBe(1);
   });
+
+  it("base = 100 fixe (déterministe, plus de base aléatoire par seed)", () => {
+    // Deux joueurs d'ids différents, même ACWR, sans séance ni activité → même total.
+    const a = computePoints(basePlayer({ id: "aaa", acwr: 1.0 }), [], {});
+    const b = computePoints(basePlayer({ id: "zzz", acwr: 1.0 }), [], {});
+    expect(a.pts).toBe(b.pts);
+    // 100 base + 8 (ACWR en cible) = 108
+    expect(a.pts).toBe(108);
+  });
+
+  it("séance du jour encore en attente : pas de pénalité (grace)", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const sessions = [{ id: "s1", date: todayISO(), assignedIds: [p.id] }];
+    const r = computePoints(p, sessions, {});
+    expect(r.missedCount).toBe(0);
+    expect(r.pts).toBe(108); // inchangé vs aucune séance
+  });
+
+  it("séance reportée : ni gain ni pénalité, ne casse pas la série", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const sessions = [{ id: "s1", date: "2020-01-01", assignedIds: [p.id] }];
+    const logs = { s1: { [p.id]: { status: "postponed" } } };
+    const r = computePoints(p, sessions, logs);
+    expect(r.missedCount).toBe(0);
+    expect(r.pts).toBe(108); // aucune pénalité
+    expect(r.ev.some((e) => e.label === "Séance reportée")).toBe(true);
+  });
+
+  it("activité déclarée : +10 par thématique", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const acts = [{ date: todayISO(), activities: ["salle", "course"] }];
+    const r = computePoints(p, [], {}, acts);
+    expect(r.pts).toBe(108 + 20); // 2 thématiques × 10
+    expect(r.ev.some((e) => e.label === "Activité : Salle")).toBe(true);
+  });
 });
