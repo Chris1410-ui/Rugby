@@ -27,6 +27,8 @@ export function dbToPlayer(row) {
     ischiosG: row.ischios_g ?? 300,
     ischiosD: row.ischios_d ?? 300,
     asym: row.asym ?? 0,
+    bronco: row.bronco ?? null,
+    yoyo: row.yoyo != null ? Number(row.yoyo) : null,
     isCustom: row.is_custom,
     createdAt: row.created_at,
   };
