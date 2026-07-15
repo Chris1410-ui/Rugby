@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
-import { grpLabel, RUGBY_POS } from "../../lib/positions.js";
+import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
 import { buildAlerts, SEVC } from "../../lib/metrics.js";
 import { rosterCSV, downloadCSV } from "../../lib/csv.js";
 import { todayISO } from "../../lib/metrics.js";
@@ -129,7 +129,7 @@ function AddPlayerModal({ teamId, onClose }) {
   const save = async () => {
     if (!name.trim()) return setErr("Choisis un totem pour le joueur.");
     setBusy(true); setErr("");
-    const [pos, grp] = RUGBY_POS[posIdx];
+    const { name: pos, grp } = RUGBY_POS[posIdx];
     try {
       await addPlayer(teamId, { name, pos, grp, num: num ? parseInt(num, 10) : null });
       onClose();
@@ -146,7 +146,11 @@ function AddPlayerModal({ teamId, onClose }) {
         <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} />
         <div style={{ display: "flex", gap: 8 }}>
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
-            {RUGBY_POS.map(([p, g], i) => <option key={i} value={i}>{p} · {grpLabel(g)}</option>)}
+            {POS_GROUPS.map((grp) => (
+              <optgroup key={grp.grp} label={grp.label}>
+                {grp.items.map((p) => <option key={p.i} value={p.i}>{p.num} — {p.name}</option>)}
+              </optgroup>
+            ))}
           </select>
           <input value={num} onChange={(e) => setNum(e.target.value.replace(/\D/g, ""))} placeholder="N°" inputMode="numeric" style={{ ...inp, flex: 1, textAlign: "center" }} />
         </div>
