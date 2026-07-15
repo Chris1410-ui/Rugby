@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { C, CODES } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, RestTimer, LineChart } from "../../lib/ui.jsx";
@@ -39,9 +39,28 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const [fb, setFb] = useState(log?.feedback || "");
   const st = log?.status || "pending";
 
-  const setSet = (eid, i, patch) => setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.map((x, j) => (j === i ? { ...x, ...patch } : x)) } }));
-  const addSet = (eid) => setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; });
-  const delSet = (eid, i) => setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.filter((_, j) => j !== i) } }));
+  // Persistance (#4) : le log peut arriver APRÈS le montage (fetch async), ou
+  // être mis à jour par le Realtime. `useState(init)` ne se rejoue jamais → sans
+  // ceci, une séance déjà terminée s'afficherait vide tant que le log n'était
+  // pas chargé au 1er rendu. On resynchronise depuis la version PERSISTÉE quand
+  // sa signature change, MAIS seulement si l'utilisateur n'a pas de saisie non
+  // enregistrée en cours (`dirty`) — les données non enregistrées peuvent
+  // disparaître, les données enregistrées sont toujours reflétées.
+  const [dirty, setDirty] = useState(false);
+  const savedSig = log ? `${log.status}|${log.rpe ?? ""}|${JSON.stringify(log.perExercise || {})}` : "";
+  const lastSig = useRef(savedSig);
+  useEffect(() => {
+    if (savedSig === lastSig.current) return;
+    lastSig.current = savedSig;
+    if (dirty) return; // ne jamais écraser une saisie en cours non enregistrée
+    setEx(init());
+    setRpe(log?.rpe || null);
+    setFb(log?.feedback || "");
+  }, [savedSig]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setSet = (eid, i, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.map((x, j) => (j === i ? { ...x, ...patch } : x)) } })); };
+  const addSet = (eid) => { setDirty(true); setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; }); };
+  const delSet = (eid, i) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.filter((_, j) => j !== i) } })); };
 
   const toggleSet = (e, i) => {
     const cur = ex[e.id].sets[i];
@@ -73,6 +92,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, ...summarize(sets) }; });
     try {
       await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb });
+      setDirty(false); // enregistré → la resync depuis la base est de nouveau autorisée
       setOpen(false); setRest(null);
       onSaved && onSaved();
     } catch (e) {
@@ -158,10 +178,10 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "12px 0 8px" }}>RPE global de la séance (1–10)</div>
           <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-              <div key={n} onClick={() => setRpe(n)} style={{ flex: 1, height: 32, borderRadius: 6, background: rpe === n ? (n <= 3 ? C.green : n <= 6 ? C.amb : C.coral) : "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, cursor: "pointer", border: rpe === n ? "2px solid rgba(255,255,255,0.4)" : "2px solid transparent" }}>{n}</div>
+              <div key={n} onClick={() => { setDirty(true); setRpe(n); }} style={{ flex: 1, height: 32, borderRadius: 6, background: rpe === n ? (n <= 3 ? C.green : n <= 6 ? C.amb : C.coral) : "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, cursor: "pointer", border: rpe === n ? "2px solid rgba(255,255,255,0.4)" : "2px solid transparent" }}>{n}</div>
             ))}
           </div>
-          <textarea value={fb} onChange={(e) => setFb(e.target.value)} placeholder="Commentaire (douleur, ressenti…)" style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", resize: "none", height: 50, marginBottom: 10 }} />
+          <textarea value={fb} onChange={(e) => { setDirty(true); setFb(e.target.value); }} placeholder="Commentaire (douleur, ressenti…)" style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", resize: "none", height: 50, marginBottom: 10 }} />
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => valider("done")} disabled={busy} style={{ flex: 1, background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1 }}>
               <CheckCircle size={13} />{st === "done" ? "Mettre à jour" : "Terminer la séance"}
