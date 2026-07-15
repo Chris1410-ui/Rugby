@@ -64,7 +64,7 @@ export default function ResetPassword() {
         </div>
         <div style={{ position: "relative" }}>
           <input type={show ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setErr(""); }} placeholder="Nouveau mot de passe" autoComplete="new-password" autoFocus style={input(false)} />
-          <button onClick={() => setShow((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)" }}>
+          <button onClick={() => setShow((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>
             {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>

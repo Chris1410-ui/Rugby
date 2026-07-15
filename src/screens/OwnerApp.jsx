@@ -55,7 +55,7 @@ export default function OwnerApp({ profile, user, signOut }) {
         </header>
 
         {loading ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Chargement des clubs…</div>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement des clubs…</div>
         ) : team ? (
           <StaffApp key={team} profile={{ ...profile, team_id: team }} />
         ) : (

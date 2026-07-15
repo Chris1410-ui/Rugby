@@ -80,9 +80,9 @@ function Effectif({ teamId, players, loading }) {
         </button>
       </div>
       {loading && !players.length ? (
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Chargement…</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Chargement…</div>
       ) : players.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>
+        <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
           Aucun joueur. Ajoute le premier membre — il apparaîtra en direct sur tous les appareils du staff.
         </div>
       ) : (
@@ -94,11 +94,11 @@ function Effectif({ teamId, players, loading }) {
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
                   {p.name}{p._live && <span title="Bilan du jour encodé" style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
                 </div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>{p.pos} · {grpLabel(p.grp)}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{p.pos} · {grpLabel(p.grp)}</div>
               </div>
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
-                <div style={{ fontSize: 8, color: "rgba(255,255,255,0.35)" }}>READY</div>
+                <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>READY</div>
               </div>
               <Pill v={p.acwr} />
             </div>
@@ -134,7 +134,7 @@ function AddPlayerModal({ teamId, onClose }) {
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Ajouter un joueur</div>
           <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
         </div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Le joueur est identifié par un <b>totem</b> (pseudo), affiché partout.</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12 }}>Le joueur est identifié par un <b>totem</b> (pseudo), affiché partout.</div>
         <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} />
         <div style={{ display: "flex", gap: 8 }}>
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
@@ -151,7 +151,7 @@ function AddPlayerModal({ teamId, onClose }) {
 
 /* ── Aujourd'hui : synthèse readiness/bien-être + aperçu alertes (effectif enrichi) ── */
 function Aujourdhui({ players, sessions, logs, checkins }) {
-  if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>Aucune donnée. Ajoute des joueurs et attends les premiers bilans.</div>;
+  if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>Aucune donnée. Ajoute des joueurs et attends les premiers bilans.</div>;
   const avg = (k) => Math.round(players.reduce((a, p) => a + (p[k] || 0), 0) / players.length);
   const live = players.filter((p) => p._live).length;
   const alerts = buildAlerts(players, sessions, logs, checkins);
@@ -167,10 +167,10 @@ function Aujourdhui({ players, sessions, logs, checkins }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <AlertOctagon size={16} color={C.coral} />
         <div style={{ fontSize: 13, fontWeight: 800, flex: 1 }}>Alertes · {alerts.length}</div>
-        {alerts.length > top.length && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>→ onglet Alertes</span>}
+        {alerts.length > top.length && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>→ onglet Alertes</span>}
       </div>
       {alerts.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>Aucune alerte. 👌</div>
+        <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>Aucune alerte. 👌</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {top.map((a, i) => (

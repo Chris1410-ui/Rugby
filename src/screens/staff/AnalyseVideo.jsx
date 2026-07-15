@@ -79,9 +79,9 @@ export default function AnalyseVideo({ teamId }) {
 
       <Section title={`BIBLIOTHÈQUE · ${files.length}`}>
         {loading ? (
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", padding: 12 }}>Chargement…</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: 12 }}>Chargement…</div>
         ) : files.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.45)", fontSize: 12 }}>Aucune vidéo. Téléverse un match ou une séquence à analyser.</div>
+          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Aucune vidéo. Téléverse un match ou une séquence à analyser.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {files.map((f) => (
@@ -91,9 +91,9 @@ export default function AnalyseVideo({ teamId }) {
                 </button>
                 <div onClick={() => play(f)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name.replace(/^\d{8}_/, "")}</div>
-                  <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{mb(f.size)}</div>
+                  <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{mb(f.size)}</div>
                 </div>
-                <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", padding: 4 }}><X size={15} /></button>
+                <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}><X size={15} /></button>
               </div>
             ))}
           </div>

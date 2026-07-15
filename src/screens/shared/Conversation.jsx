@@ -52,7 +52,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{who === "staff" ? "Conversation avec le joueur" : "Conversation avec le staff"}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{who === "staff" ? "Conversation avec le joueur" : "Conversation avec le staff"}</div>
         </div>
         {onClose && <X size={20} color="rgba(255,255,255,0.5)" onClick={onClose} style={{ cursor: "pointer" }} />}
       </div>
@@ -60,7 +60,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
       {/* fil */}
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, marginBottom: 12, minHeight: 160 }}>
         {msgs.length === 0 ? (
-          <div style={{ margin: "auto", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 12, lineHeight: 1.6, padding: "24px 12px" }}>
+          <div style={{ margin: "auto", textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6, padding: "24px 12px" }}>
             <div style={{ fontSize: 30, marginBottom: 8, opacity: 0.8 }}>💬</div>
             {who === "staff" ? "Aucun message. Écris le premier message à ce joueur." : "Aucun message. Écris au staff — ils te répondront ici."}
           </div>
@@ -70,7 +70,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
             return (
               <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%" }}>
                 <div style={{ background: mine ? accent : "rgba(255,255,255,0.08)", color: "#fff", borderRadius: mine ? "13px 13px 3px 13px" : "13px 13px 13px 3px", padding: "9px 12px", fontSize: 13, lineHeight: 1.45, wordBreak: "break-word" }}>{m.text}</div>
-                <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.35)", marginTop: 3, textAlign: mine ? "right" : "left" }}>
+                <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.56)", marginTop: 3, textAlign: mine ? "right" : "left" }}>
                   {fmt(m.ts)}{mine && (m.read ? " · Lu" : " · Envoyé")}
                 </div>
               </div>

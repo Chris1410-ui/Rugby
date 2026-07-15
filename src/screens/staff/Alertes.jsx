@@ -58,7 +58,7 @@ export default function Alertes({ players, sessions, logs, checkins }) {
         </div>
       )}
       {shown.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.45)", fontSize: 12, marginBottom: 12 })}>Aucune alerte. Tous les indicateurs sont dans le vert. ✅</div>
+        <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12, marginBottom: 12 })}>Aucune alerte. Tous les indicateurs sont dans le vert. ✅</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
           {shown.map((a, i) => (

@@ -39,7 +39,7 @@ export default function AppShell() {
         <header style={{ position: "sticky", top: 0, zIndex: 30, background: `${C.navy}f2`, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border2}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 900, color: C.coral, letterSpacing: 0.5 }}>PERFORMANCE</div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>{teamLabel(profile.team_id)}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{teamLabel(profile.team_id)}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 12, fontWeight: 700 }}>{profile.full_name || user?.email}</div>

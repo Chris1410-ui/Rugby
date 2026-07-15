@@ -11,7 +11,7 @@ export default function Veille({ accent = C.coral }) {
         {VEILLE_THEMES.map((th, i) => (
           <div key={i} style={{ padding: "10px 0", borderBottom: `1px solid ${C.border2}` }}>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{th.t}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>{th.d}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>{th.d}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {th.refs.map((rid) => {
                 const r = getRef(rid);
@@ -33,7 +33,7 @@ export default function Veille({ accent = C.coral }) {
             <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.4 }}>{r.t}</div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>{r.a} · {r.j}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 3 }}>{r.a} · {r.j}</div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 800, color: accent }}>{r.y}</span>

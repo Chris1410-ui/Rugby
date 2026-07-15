@@ -12,7 +12,7 @@ export default function Seances({ me, sessions, logs, accent }) {
 
   if (!mine.length) {
     return (
-      <div style={sc({ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.45)", fontSize: 13, lineHeight: 1.6 })}>
+      <div style={sc({ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.6 })}>
         Aucune séance assignée pour le moment.<br />Ton préparateur t'enverra ton programme ici.
       </div>
     );
@@ -22,7 +22,7 @@ export default function Seances({ me, sessions, logs, accent }) {
     <div>
       {upcoming.length > 0 && (
         <>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>À FAIRE · {upcoming.length}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>À FAIRE · {upcoming.length}</div>
           {upcoming.map((s) => (
             <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} />
           ))}
@@ -30,7 +30,7 @@ export default function Seances({ me, sessions, logs, accent }) {
       )}
       {pastOnes.length > 0 && (
         <>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: 1, fontWeight: 700, margin: "16px 0 10px" }}>HISTORIQUE</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, margin: "16px 0 10px" }}>HISTORIQUE</div>
           {pastOnes.map((s) => (
             <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} />
           ))}

@@ -71,11 +71,11 @@ export default function Bilan({ me, accent }) {
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 12 }}>
         <Ring val={readiness} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label="readiness" size={78} sw={6} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", letterSpacing: 1, fontWeight: 700 }}>
+          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
             AUJOURD'HUI · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
           </div>
           <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{me.name}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{me.pos}</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{me.pos}</div>
         </div>
       </div>
 
@@ -102,11 +102,11 @@ export default function Bilan({ me, accent }) {
       <Section title="SOMMEIL & HYDRATATION">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 5 }}>Sommeil (heures)</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Sommeil (heures)</div>
             <input type="number" step="0.5" value={d.sleepH ?? ""} onChange={(e) => set({ sleepH: parseFloat(e.target.value) || 0 })} style={numInp(C.viol)} />
           </div>
           <div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 5 }}>Hydratation (L)</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Hydratation (L)</div>
             <input type="number" step="0.1" value={d.hydra ?? ""} onChange={(e) => set({ hydra: parseFloat(e.target.value) || 0 })} style={numInp(C.teal)} />
           </div>
         </div>
@@ -116,10 +116,10 @@ export default function Bilan({ me, accent }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
           {[["FC repos", "fc", "bpm", C.coral], ["HRV", "hrv", "ms", C.green], ["Poids matin", "poids", "kg", C.blue]].map(([l, k, u, c]) => (
             <div key={k}>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 5 }}>{l}</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>{l}</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
                 <input type="number" value={d[k] ?? ""} onChange={(e) => set({ [k]: e.target.value === "" ? null : parseFloat(e.target.value) })} style={numInp(c)} />
-                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{u}</span>
+                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)" }}>{u}</span>
               </div>
             </div>
           ))}

@@ -7,7 +7,7 @@ import { Clock } from "./icons.jsx";
 export const Section = ({ title, right, children, style }) => (
   <div style={sc({ marginBottom: 12, ...style })}>
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.45)", letterSpacing: 1.5 }}>{title}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5 }}>{title}</div>
       {right}
     </div>
     {children}
@@ -16,9 +16,9 @@ export const Section = ({ title, right, children, style }) => (
 
 export const KPI = ({ label, value, sub, color }) => (
   <div style={sc({ padding: 12 })}>
-    <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: 1, marginBottom: 5 }}>{label}</div>
+    <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 1, marginBottom: 5 }}>{label}</div>
     <div style={{ fontSize: 26, fontWeight: 800, color: color || "#fff", lineHeight: 1 }}>{value}</div>
-    {sub && <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>{sub}</div>}
+    {sub && <div style={{ fontSize: 9, color: "rgba(255,255,255,0.56)", marginTop: 4 }}>{sub}</div>}
   </div>
 );
 
@@ -103,8 +103,8 @@ export const BottomNav = ({ items, active, onSelect, accent }) => {
       {items.map(([key, label, Icon, badge]) => {
         const on = active === key;
         return (
-          <button key={key} onClick={() => onSelect(key)} style={{ flex: scroll ? "0 0 auto" : 1, minWidth: scroll ? 62 : "auto", background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 6px", color: on ? accent : "rgba(255,255,255,0.45)", position: "relative" }}>
-            <Icon size={20} color={on ? accent : "rgba(255,255,255,0.45)"} />
+          <button key={key} onClick={() => onSelect(key)} style={{ flex: scroll ? "0 0 auto" : 1, minWidth: scroll ? 62 : "auto", background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 6px", color: on ? accent : "rgba(255,255,255,0.62)", position: "relative" }}>
+            <Icon size={20} color={on ? accent : "rgba(255,255,255,0.62)"} />
             <span style={{ fontSize: 9.5, fontWeight: on ? 800 : 600, whiteSpace: "nowrap" }}>{label}</span>
             {badge > 0 && <span style={{ position: "absolute", top: 2, right: "50%", marginRight: -18, background: C.coral, color: "#fff", fontSize: 8, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 13, textAlign: "center" }}>{badge}</span>}
           </button>

@@ -27,7 +27,7 @@ export default function PlayerApp({ profile }) {
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
 
   if (loading && !me) {
-    return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Chargement…</div>;
+    return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement…</div>;
   }
   if (!me) {
     return (
