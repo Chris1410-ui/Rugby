@@ -95,8 +95,8 @@ function RecoModal({ player, onClose }) {
     return () => { active = false; };
   }, [player]);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: "18px 18px 0 0", padding: 20, maxHeight: "80vh", overflowY: "auto" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "80vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
           <Sparkles size={18} color={C.viol} />
           <div style={{ flex: 1, marginLeft: 8, fontSize: 15, fontWeight: 800 }}>Recommandation · {player.name}</div>

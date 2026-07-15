@@ -85,8 +85,8 @@ export default function TestsBatch({ teamId, players, onClose }) {
   const nameCol = { position: "sticky", left: 0, zIndex: 1, background: C.panel, textAlign: "left", padding: "6px 10px 6px 0" };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 320, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 820, background: C.panel, borderRadius: "18px 18px 0 0", padding: 18, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 320, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 820, background: C.panel, borderRadius: 18, padding: 18, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Saisie groupée des tests</div>
           <X size={20} color="rgba(255,255,255,0.6)" style={{ cursor: "pointer" }} onClick={onClose} />

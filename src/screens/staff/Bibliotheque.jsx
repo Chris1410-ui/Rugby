@@ -74,8 +74,8 @@ export default function Bibliotheque({ teamId }) {
       {list.length === 0 && <div style={{ textAlign: "center", padding: "34px 18px", color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Aucun exercice. Modifie ta recherche ou crée un exercice personnalisé.</div>}
 
       {sel && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "flex-end" }} onClick={() => setSel(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: "18px 18px 0 0", padding: 22, maxHeight: "70vh", overflowY: "auto" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={() => setSel(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 22, maxHeight: "70vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <div><div style={{ fontSize: 18, fontWeight: 800 }}>{sel.name}</div><div style={{ fontSize: 11, color: EXCATC[sel.cat] || accent, fontWeight: 700, marginTop: 2 }}>{sel.cat} · {sel.q}</div></div>
               <X size={20} color="rgba(255,255,255,0.5)" onClick={() => setSel(null)} style={{ cursor: "pointer" }} />
