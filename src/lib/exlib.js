@@ -25,6 +25,7 @@ export const newExo = () => ({
   reps: "8",
   charge: "",
   rest: 90,
+  video: "",
 });
 
 // clé normalisée d'un exercice (pour retrouver les cues)

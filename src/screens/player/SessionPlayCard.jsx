@@ -2,7 +2,8 @@ import { useState } from "react";
 import { C, CODES } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, RestTimer, LineChart } from "../../lib/ui.jsx";
-import { CheckCircle, Trophy, TrendingUp, X } from "../../lib/icons.jsx";
+import { CheckCircle, Trophy, TrendingUp, X, Video, ExternalLink } from "../../lib/icons.jsx";
+import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
   e1RM, SET_TYPES, nextSetType, parseSetsN,
   lastExercisePerf, exerciseRecords, exerciseHistory,
@@ -126,11 +127,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                     <TrendingUp size={13} />
                   </button>
                 </div>
-                <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.4)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <span>Cible {e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</span>
                   <span>Préc. : {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
                   {rec.top > 0 && <span style={{ color: C.amb }}>🏆 {rec.top}kg · 1RM {rec.oneRM}</span>}
                 </div>
+                <ExerciseVideo url={e.video} accent={accent} />
                 {ex[e.id].sets.map((x, i) => {
                   const stype = SET_TYPES[x.type] || SET_TYPES.normal;
                   const ph = prev?.sets?.[i];
@@ -170,6 +172,47 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
       )}
 
       {graphEx && <ExoProgressModal pid={me.id} exName={graphEx} sessions={sessions} logs={logs} accent={accent} onClose={() => setGraphEx(null)} />}
+    </div>
+  );
+}
+
+/* Vidéo de démonstration d'un exercice (#1). Lecteur YouTube intégré à la
+   demande (iframe) ; sinon lien cliquable brut (autre hébergeur). Rien à
+   afficher si l'exercice n'a pas de lien exploitable. */
+function ExerciseVideo({ url, accent }) {
+  const [open, setOpen] = useState(false);
+  const embed = youtubeEmbed(url);
+  const href = safeVideoUrl(url);
+  if (!href) return null;
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        {embed ? (
+          <button onClick={() => setOpen((o) => !o)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 7, padding: "5px 10px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+            <Video size={13} /> {open ? "Masquer la vidéo" : "Voir la démo"}
+          </button>
+        ) : (
+          <a href={href} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 7, padding: "5px 10px", color: accent, fontSize: 11, fontWeight: 700, textDecoration: "none" }}>
+            <ExternalLink size={13} /> Voir la vidéo
+          </a>
+        )}
+        {embed && (
+          <a href={href} target="_blank" rel="noopener noreferrer" title="Ouvrir sur YouTube" style={{ display: "inline-flex", alignItems: "center", color: "rgba(255,255,255,0.5)" }}>
+            <ExternalLink size={13} />
+          </a>
+        )}
+      </div>
+      {open && embed && (
+        <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%", marginTop: 8, borderRadius: 10, overflow: "hidden", background: "#000" }}>
+          <iframe
+            src={embed}
+            title="Démonstration de l'exercice"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -54,7 +54,7 @@ const uid = () => (globalThis.crypto?.randomUUID?.() || `e${Math.random().toStri
 const cleanExos = (exos) =>
   (exos || [])
     .filter((e) => (e.name || "").trim())
-    .map((e) => ({ id: e.id || uid(), name: e.name.trim(), sets: e.sets ?? 3, reps: e.reps ?? "8", charge: e.charge ?? "", rest: e.rest ?? 90 }));
+    .map((e) => ({ id: e.id || uid(), name: e.name.trim(), sets: e.sets ?? 3, reps: e.reps ?? "8", charge: e.charge ?? "", rest: e.rest ?? 90, video: (e.video || "").trim() }));
 
 /* Développe les modèles (par jour de semaine) sur la plage de dates → lignes
    `sessions` (sans `program_id`, ajouté après insertion du programme).

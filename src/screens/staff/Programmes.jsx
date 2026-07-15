@@ -4,7 +4,8 @@ import { grpLabel } from "../../lib/positions.js";
 import { fmtShort, todayISO, isoDate, statusOfLog } from "../../lib/metrics.js";
 import { WD, wdLabel, newExo } from "../../lib/exlib.js";
 import { Section, Tag } from "../../lib/ui.jsx";
-import { Plus, X, Send, FileText, ClipboardList, Paperclip } from "../../lib/icons.jsx";
+import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video } from "../../lib/icons.jsx";
+import { hasVideo } from "../../lib/youtube.js";
 import { usePrograms, createProgram, deleteProgram } from "../../data/programs.js";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { useExercises } from "../../data/exercises.js";
@@ -16,16 +17,27 @@ const accent = C.coral;
 const dateSt = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" };
 const miniSt = { background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none" };
 
-const ExoRow = ({ exo, onChange, onDel, cues }) => (
-  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${C.border2}` }}>
-    <input value={exo.name} onChange={(e) => onChange({ name: e.target.value })} list="exlib-list" placeholder="Exercice" title={cues || ""} style={{ flex: "1 1 150px", minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, outline: "none" }} />
-    <input value={exo.sets} onChange={(e) => onChange({ sets: e.target.value })} placeholder="séries" style={{ width: 48, ...miniSt, textAlign: "center" }} />
-    <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 11 }}>×</span>
-    <input value={exo.reps} onChange={(e) => onChange({ reps: e.target.value })} placeholder="reps" style={{ width: 54, ...miniSt, textAlign: "center" }} />
-    <input value={exo.charge} onChange={(e) => onChange({ charge: e.target.value })} placeholder="charge" style={{ width: 80, ...miniSt }} />
-    <button onClick={onDel} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex", padding: 4 }}><X size={14} /></button>
-  </div>
-);
+const ExoRow = ({ exo, onChange, onDel, cues }) => {
+  const vid = (exo.video || "").trim();
+  const vidOk = hasVideo(vid);
+  return (
+    <div style={{ padding: "7px 0", borderBottom: `1px solid ${C.border2}` }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+        <input value={exo.name} onChange={(e) => onChange({ name: e.target.value })} list="exlib-list" placeholder="Exercice" title={cues || ""} style={{ flex: "1 1 150px", minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, outline: "none" }} />
+        <input value={exo.sets} onChange={(e) => onChange({ sets: e.target.value })} placeholder="séries" style={{ width: 48, ...miniSt, textAlign: "center" }} />
+        <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 11 }}>×</span>
+        <input value={exo.reps} onChange={(e) => onChange({ reps: e.target.value })} placeholder="reps" style={{ width: 54, ...miniSt, textAlign: "center" }} />
+        <input value={exo.charge} onChange={(e) => onChange({ charge: e.target.value })} placeholder="charge" style={{ width: 80, ...miniSt }} />
+        <button onClick={onDel} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex", padding: 4 }}><X size={14} /></button>
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
+        <Video size={13} color={vid ? (vidOk ? C.viol : C.amb) : "rgba(255,255,255,0.35)"} />
+        <input value={exo.video || ""} onChange={(e) => onChange({ video: e.target.value })} placeholder="Lien vidéo YouTube (optionnel)" style={{ flex: 1, minWidth: 0, background: "rgba(255,255,255,0.05)", border: `1px solid ${vid && !vidOk ? `${C.amb}88` : C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11, outline: "none" }} />
+      </div>
+      {vid && !vidOk && <div style={{ fontSize: 10, color: C.amb, marginTop: 3, marginLeft: 19 }}>Lien non reconnu — colle une URL YouTube ou un lien http(s).</div>}
+    </div>
+  );
+};
 
 export default function Programmes({ teamId, players, sessions, logs }) {
   const { programs } = usePrograms(teamId);
