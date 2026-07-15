@@ -35,6 +35,7 @@ export function dbToPlayer(row) {
     hangClean2rm: row.hang_clean_2rm != null ? Number(row.hang_clean_2rm) : null,
     ppNotes: row.pp_notes ?? null,
     isCustom: row.is_custom,
+    isDemo: row.is_demo ?? false,
     createdAt: row.created_at,
   };
 }

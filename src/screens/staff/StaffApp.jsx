@@ -7,6 +7,7 @@ import { todayISO } from "../../lib/metrics.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
+import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
 import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare } from "../../lib/icons.jsx";
 import Alertes from "./Alertes.jsx";
@@ -67,6 +68,23 @@ function Effectif({ teamId, players, loading }) {
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
   const [batch, setBatch] = useState(false);
+  const [demoBusy, setDemoBusy] = useState(false);
+  const [demoNote, setDemoNote] = useState("");
+  const demoCount = players.filter((p) => p.isDemo).length;
+
+  const genDemo = async () => {
+    setDemoBusy(true); setDemoNote("");
+    try { const r = await generateDemoPlayers(teamId); setDemoNote(`${r.players} joueurs de démo générés ✓`); }
+    catch (e) { setDemoNote("Échec de la génération : " + (e.message || "")); }
+    setDemoBusy(false);
+  };
+  const delDemo = async () => {
+    setDemoBusy(true); setDemoNote("");
+    try { await deleteDemoPlayers(teamId); setDemoNote("Joueurs de démo supprimés ✓"); }
+    catch (e) { setDemoNote("Échec de la suppression : " + (e.message || "")); }
+    setDemoBusy(false);
+  };
+
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -86,6 +104,16 @@ function Effectif({ teamId, players, loading }) {
           <Plus size={15} /> Ajouter
         </button>
       </div>
+
+      {/* Mode démo : joueurs fictifs complets pour démonstration */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        {demoCount === 0 ? (
+          <button onClick={genDemo} disabled={demoBusy} style={{ background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 9, padding: "8px 12px", color: C.viol, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🎭 {demoBusy ? "Génération…" : "Générer des joueurs de démo"}</button>
+        ) : (
+          <button onClick={delDemo} disabled={demoBusy} style={{ background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 9, padding: "8px 12px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🗑 {demoBusy ? "Suppression…" : `Supprimer les joueurs de démo (${demoCount})`}</button>
+        )}
+        {demoNote && <span style={{ fontSize: 11, color: demoNote.includes("Échec") ? C.coral : C.green }}>{demoNote}</span>}
+      </div>
       {loading && !players.length ? (
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Chargement…</div>
       ) : players.length === 0 ? (
@@ -100,6 +128,7 @@ function Effectif({ teamId, players, loading }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
                   {p.name}{p._live && <span title="Bilan du jour encodé" style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
+                  {p.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>DÉMO</span>}
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{p.pos} · {grpLabel(p.grp)}</div>
               </div>
