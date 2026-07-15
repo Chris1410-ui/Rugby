@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
-import { RUGBY_POS, grpLabel } from "../lib/positions.js";
+import { RUGBY_POS, POS_GROUPS } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
 import { POLICY_VERSION } from "../lib/policy.js";
 import PrivacyPolicy from "../screens/shared/PrivacyPolicy.jsx";
@@ -86,7 +86,7 @@ export default function LoginScreen() {
     }
 
     setBusy(true);
-    const [pos, grp] = RUGBY_POS[nPos];
+    const { name: pos, grp } = RUGBY_POS[nPos];
     const meta = {
       role,
       team_id: team,
@@ -244,8 +244,10 @@ export default function LoginScreen() {
               <div style={label}>POSTE</div>
               <div style={{ display: "flex", gap: 8 }}>
                 <select value={nPos} onChange={(e) => setNPos(Number(e.target.value))} style={{ ...input(false), flex: 2 }}>
-                  {RUGBY_POS.map(([p, g], i) => (
-                    <option key={i} value={i}>{p} · {grpLabel(g)}</option>
+                  {POS_GROUPS.map((grp) => (
+                    <optgroup key={grp.grp} label={grp.label}>
+                      {grp.items.map((p) => <option key={p.i} value={p.i}>{p.num} — {p.name}</option>)}
+                    </optgroup>
                   ))}
                 </select>
                 <input value={nNum} onChange={(e) => setNNum(e.target.value.replace(/\D/g, ""))} placeholder="N°" inputMode="numeric" style={{ ...input(false), flex: 1, textAlign: "center" }} />
