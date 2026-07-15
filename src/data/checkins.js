@@ -16,8 +16,38 @@ function dbToCheckin(row) {
     hrv: row.hrv,
     poids: row.poids != null ? Number(row.poids) : null,
     activities: row.activities || [],
+    createdAt: row.created_at || null,
     saved: true,
   };
+}
+
+/* Historique récent des bilans d'UN joueur (vue préparateur détaillée +
+   évolution). RLS : staff = son équipe (daily_staff_read) ; joueur = les siens.
+   Lecture seule, aucune dérivation d'indicateur ici. */
+export function usePlayerCheckins(playerId, days = 21) {
+  const [checkins, setCheckins] = useState([]); // du + récent au + ancien
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    if (!playerId) { setCheckins([]); setLoading(false); return; }
+    setLoading(true);
+    supabase
+      .from("daily_checkins")
+      .select("*")
+      .eq("player_id", playerId)
+      .order("date", { ascending: false })
+      .limit(days)
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error("[player checkins]", error.message);
+        setCheckins((data ?? []).map(dbToCheckin));
+        setLoading(false);
+      });
+    return () => { active = false; };
+  }, [playerId, days]);
+
+  return { checkins, loading };
 }
 
 export async function saveCheckin(playerId, payload, date = todayISO()) {

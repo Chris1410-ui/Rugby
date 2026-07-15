@@ -19,6 +19,7 @@ import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
 import Fiche from "../shared/Fiche.jsx";
+import PlayerReport from "../shared/PlayerReport.jsx";
 import TotemPicker from "../shared/TotemPicker.jsx";
 import TestsBatch from "./TestsBatch.jsx";
 
@@ -47,9 +48,9 @@ export default function StaffApp({ profile }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <main style={{ flex: 1, padding: 18 }}>
-        {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} loading={loading} />}
-        {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} />}
-        {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} />}
+        {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} />}
+        {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
+        {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
@@ -64,9 +65,10 @@ export default function StaffApp({ profile }) {
 }
 
 /* ── Effectif enrichi ── */
-function Effectif({ teamId, players, loading }) {
+function Effectif({ teamId, players, sessions, logs, activities = {}, loading }) {
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
+  const [report, setReport] = useState(null); // joueur pour le récap détaillé
   const [batch, setBatch] = useState(false);
   const [demoBusy, setDemoBusy] = useState(false);
   const [demoNote, setDemoNote] = useState("");
@@ -136,6 +138,9 @@ function Effectif({ teamId, players, loading }) {
                 <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
                 <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>READY</div>
               </div>
+              <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title="Récap détaillé" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
+                <Activity size={15} />
+              </button>
               <Pill v={p.acwr} />
             </div>
           ))}
@@ -143,6 +148,7 @@ function Effectif({ teamId, players, loading }) {
       )}
       {adding && <AddPlayerModal teamId={teamId} onClose={() => setAdding(false)} />}
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
+      {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
       {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit onClose={() => setFiche(null)} />}
     </section>
   );
@@ -191,12 +197,14 @@ function AddPlayerModal({ teamId, onClose }) {
 }
 
 /* ── Aujourd'hui : synthèse readiness/bien-être + aperçu alertes (effectif enrichi) ── */
-function Aujourdhui({ players, sessions, logs, checkins }) {
+function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
+  const [report, setReport] = useState(null); // { player, reason }
   if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>Aucune donnée. Ajoute des joueurs et attends les premiers bilans.</div>;
   const avg = (k) => Math.round(players.reduce((a, p) => a + (p[k] || 0), 0) / players.length);
   const live = players.filter((p) => p._live).length;
   const alerts = buildAlerts(players, sessions, logs, checkins);
   const top = alerts.slice(0, 4);
+  const byId = (pid) => players.find((p) => p.id === pid);
   return (
     <section>
       <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>Aujourd'hui · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}</div>
@@ -215,7 +223,7 @@ function Aujourdhui({ players, sessions, logs, checkins }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {top.map((a, i) => (
-            <div key={i} style={sc({ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}` })}>
+            <div key={i} onClick={() => setReport({ player: byId(a.pid), reason: { txt: a.txt, cat: a.cat, icon: a.icon, color: SEVC[a.sev] } })} style={sc({ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}`, cursor: "pointer" })}>
               <span style={{ fontSize: 16 }}>{a.icon}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700 }}>{a.name}</div>
@@ -226,6 +234,7 @@ function Aujourdhui({ players, sessions, logs, checkins }) {
           ))}
         </div>
       )}
+      {report?.player && <PlayerReport player={report.player} sessions={sessions} logs={logs} activities={activities[report.player.id] || []} reason={report.reason} onClose={() => setReport(null)} />}
     </section>
   );
 }
