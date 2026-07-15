@@ -5,14 +5,16 @@ import { KPI, Tag } from "../../lib/ui.jsx";
 import { MessageSquare, X, Sparkles } from "../../lib/icons.jsx";
 import { getRecommendation } from "../../data/recommendations.js";
 import Conversation from "../shared/Conversation.jsx";
+import PlayerReport from "../shared/PlayerReport.jsx";
 
 const accent = C.coral;
 
 /* Vue staff : alertes auto + récap hebdo + messagerie + reco IA.
    Tout est dérivé de l'effectif enrichi (aucun recalcul divergent). */
-export default function Alertes({ players, sessions, logs, checkins }) {
+export default function Alertes({ players, sessions, logs, checkins, activities = {} }) {
   const [thread, setThread] = useState(null); // player pour la messagerie
   const [reco, setReco] = useState(null); // player pour la reco IA
+  const [report, setReport] = useState(null); // { player, reason } — récap détaillé
   const [catf, setCatf] = useState("all");
 
   const alerts = buildAlerts(players, sessions, logs, checkins);
@@ -62,16 +64,16 @@ export default function Alertes({ players, sessions, logs, checkins }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
           {shown.map((a, i) => (
-            <div key={i} style={sc({ display: "flex", alignItems: "center", gap: 11, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}` })}>
+            <div key={i} onClick={() => setReport({ player: byId(a.pid), reason: { txt: a.txt, cat: a.cat, icon: a.icon, color: SEVC[a.sev] } })} style={sc({ display: "flex", alignItems: "center", gap: 11, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}`, cursor: "pointer" })}>
               <div style={{ width: 30, height: 30, borderRadius: 15, background: SEVC[a.sev] + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{a.icon}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>{a.name}</div>
                 <div style={{ fontSize: 11, color: SEVC[a.sev] }}>{a.txt}</div>
               </div>
-              <button onClick={() => setReco(byId(a.pid))} title="Recommandation IA" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
+              <button onClick={(e) => { e.stopPropagation(); setReco(byId(a.pid)); }} title="Recommandation IA" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
                 <Sparkles size={15} />
               </button>
-              <button onClick={() => setThread(byId(a.pid))} title="Message" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}>
+              <button onClick={(e) => { e.stopPropagation(); setThread(byId(a.pid)); }} title="Message" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}>
                 <MessageSquare size={15} />
               </button>
             </div>
@@ -81,6 +83,7 @@ export default function Alertes({ players, sessions, logs, checkins }) {
 
       {thread && <Conversation playerId={thread.id} title={thread.name} who="staff" accent={accent} onClose={() => setThread(null)} />}
       {reco && <RecoModal player={reco} onClose={() => setReco(null)} />}
+      {report?.player && <PlayerReport player={report.player} sessions={sessions} logs={logs} activities={activities[report.player.id] || []} reason={report.reason} onClose={() => setReport(null)} />}
     </section>
   );
 }
