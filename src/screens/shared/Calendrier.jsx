@@ -34,14 +34,14 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
       <Section
         title={now.toLocaleDateString("fr-BE", { month: "long", year: "numeric" }).toUpperCase()}
         right={
-          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "flex", gap: 10 }}>
+          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", display: "flex", gap: 10 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.green }} />fait</span>
             <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.amb }} />prévu</span>
           </span>
         }
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
-          {["L", "M", "M", "J", "V", "S", "D"].map((w, i) => <div key={"h" + i} style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.35)", fontWeight: 700, paddingBottom: 2 }}>{w}</div>)}
+          {["L", "M", "M", "J", "V", "S", "D"].map((w, i) => <div key={"h" + i} style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.56)", fontWeight: 700, paddingBottom: 2 }}>{w}</div>)}
           {cells.map((d, i) => {
             if (!d) return <div key={"e" + i} />;
             const iso = isoDate(new Date(y, mo, d));
@@ -58,18 +58,18 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
       </Section>
 
       <Section title={isJoueur ? "MES SÉANCES" : "AGENDA · SÉANCES"}>
-        {agenda.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", padding: "6px 0" }}>Aucune séance planifiée.</div>}
+        {agenda.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: "6px 0" }}>Aucune séance planifiée.</div>}
         {agenda.map((s) => {
           const d = parseISO(s.date);
           const st = isJoueur ? statusOfLog(logs, s.id, meId) : null;
           const done = s.assignedIds.filter((id) => statusOfLog(logs, s.id, id) === "done").length;
           return (
             <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.border2}` }}>
-              <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{d.toLocaleDateString("fr-BE", { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
+              <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{d.toLocaleDateString("fr-BE", { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
               <div style={{ width: 3, height: 30, borderRadius: 2, background: CODES[s.code] || accent }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent}>{s.code}</Tag><span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{s.exercises.length} exercices</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{s.exercises.length} exercices</div>
               </div>
               {isJoueur ? (
                 st === "done" ? <Tag c={C.green}>Fait</Tag> : st === "missed" ? <Tag c={C.coral}>Manqué</Tag> : s.date <= today ? <Tag c={C.amb}>À valider</Tag> : <Tag c={accent}>À venir</Tag>

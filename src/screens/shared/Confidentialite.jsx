@@ -64,7 +64,7 @@ export default function Confidentialite({ player, self = false, onErased }) {
         <Lock size={22} color={C.green} />
         <div>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{self ? "Mes données" : `Données de ${player.name}`}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
             Accès, export et effacement — conformément au RGPD.
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function Confidentialite({ player, self = false, onErased }) {
       {/* Consentement */}
       <Section title="CONSENTEMENT PARENTAL">
         {loadingC ? (
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Chargement…</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Chargement…</div>
         ) : consent ? (
           <div>
             <div style={line}><span style={{ color: "rgba(255,255,255,0.6)" }}>Statut</span>

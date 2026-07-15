@@ -7,7 +7,7 @@ import { Trophy, X } from "../../lib/icons.jsx";
 
 const Move = ({ m }) =>
   m === 0 ? (
-    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>—</span>
+    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.56)" }}>—</span>
   ) : m > 0 ? (
     <span style={{ fontSize: 11, fontWeight: 800, color: C.green }}>▲{m}</span>
   ) : (
@@ -66,11 +66,11 @@ export default function Classement({ players, sessions, logs, me, accent = C.cor
               <span style={{ fontSize: 26 }}>{cur.e}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: cur.c }}>Division {cur.l}</div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>{nx ? `Encore ${hi - mine.pts} pts → ${nx.l}` : "Division maximale atteinte"}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{nx ? `Encore ${hi - mine.pts} pts → ${nx.l}` : "Division maximale atteinte"}</div>
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: mine.weekDelta >= 0 ? C.green : C.coral }}>{mine.weekDelta >= 0 ? "+" : ""}{mine.weekDelta} pts</div>
-                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>cette semaine</div>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>cette semaine</div>
               </div>
             </div>
             <div style={{ height: 7, background: "rgba(255,255,255,0.08)", borderRadius: 4, overflow: "hidden" }}>
@@ -114,7 +114,7 @@ export default function Classement({ players, sessions, logs, me, accent = C.cor
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "flex-end" }} onClick={() => setSel(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: "18px 18px 0 0", padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 24 }}>{sel.div.e}</span><div><div style={{ fontSize: 16, fontWeight: 800 }}>{sel.p.name}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>#{sel.rank} · Division {sel.div.l} · {sel.pts} pts</div></div></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 24 }}>{sel.div.e}</span><div><div style={{ fontSize: 16, fontWeight: 800 }}>{sel.p.name}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>#{sel.rank} · Division {sel.div.l} · {sel.pts} pts</div></div></div>
               <X size={20} color="rgba(255,255,255,0.5)" onClick={() => setSel(null)} style={{ cursor: "pointer" }} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
@@ -122,12 +122,12 @@ export default function Classement({ players, sessions, logs, me, accent = C.cor
               <KPI label="SÉRIE" value={sel.streak} sub="séances" color={accent} />
               <KPI label="SÉANCES OK" value={sel.doneCount} sub={`${sel.missedCount} manquées`} />
             </div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1, marginBottom: 8 }}>JOURNAL DES POINTS</div>
-            {sel.ev.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Aucun mouvement récent.</div>}
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>JOURNAL DES POINTS</div>
+            {sel.ev.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Aucun mouvement récent.</div>}
             {sel.ev.map((e, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 7, height: 7, borderRadius: 4, background: e.v >= 0 ? C.green : C.coral }} /><span style={{ fontSize: 12 }}>{e.label}</span></div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{fmtShort(e.date)}</span><span style={{ fontSize: 13, fontWeight: 800, color: e.v >= 0 ? C.green : C.coral }}>{e.v >= 0 ? "+" : ""}{e.v}</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)" }}>{fmtShort(e.date)}</span><span style={{ fontSize: 13, fontWeight: 800, color: e.v >= 0 ? C.green : C.coral }}>{e.v >= 0 ? "+" : ""}{e.v}</span></div>
               </div>
             ))}
           </div>

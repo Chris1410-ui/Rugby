@@ -11,7 +11,7 @@ export default function PrivacyPolicy({ onClose }) {
         <Shield size={20} color={C.green} />
         <div>
           <div style={{ fontSize: 16, fontWeight: 800 }}>Politique de confidentialité</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>
             Version {POLICY.version} · {POLICY.updated} · hébergement UE (RGPD)
           </div>
         </div>
@@ -25,7 +25,7 @@ export default function PrivacyPolicy({ onClose }) {
           <div style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.65)" }}>{s.body}</div>
         </div>
       ))}
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", borderTop: `1px solid ${C.border2}`, paddingTop: 10, marginTop: 4, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", borderTop: `1px solid ${C.border2}`, paddingTop: 10, marginTop: 4, lineHeight: 1.5 }}>
         Responsable de traitement : {CONTROLLER.name}
         {CONTROLLER.address ? `, ${CONTROLLER.address}` : ""} — {CONTROLLER.contact}
       </div>

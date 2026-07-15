@@ -25,7 +25,7 @@ const ExoRow = ({ exo, onChange, onDel, cues }) => {
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
         <input value={exo.name} onChange={(e) => onChange({ name: e.target.value })} list="exlib-list" placeholder="Exercice" title={cues || ""} style={{ flex: "1 1 150px", minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, outline: "none" }} />
         <input value={exo.sets} onChange={(e) => onChange({ sets: e.target.value })} placeholder="séries" style={{ width: 48, ...miniSt, textAlign: "center" }} />
-        <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 11 }}>×</span>
+        <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>×</span>
         <input value={exo.reps} onChange={(e) => onChange({ reps: e.target.value })} placeholder="reps" style={{ width: 54, ...miniSt, textAlign: "center" }} />
         <input value={exo.charge} onChange={(e) => onChange({ charge: e.target.value })} placeholder="charge" style={{ width: 80, ...miniSt }} />
         <button onClick={onDel} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex", padding: 4 }}><X size={14} /></button>
@@ -156,22 +156,22 @@ export default function Programmes({ teamId, players, sessions, logs }) {
         )}
 
         {programs.length === 0 && (
-          <div style={sc({ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.45)", fontSize: 12, lineHeight: 1.6, marginBottom: 12 })}>
+          <div style={sc({ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6, marginBottom: 12 })}>
             Aucun programme. Crée-en un ou importe un PDF — les séances sont matérialisées et apparaissent chez les joueurs.
           </div>
         )}
 
         {routines.length > 0 && (
-          <Section title="MODÈLES DE ROUTINES" right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{routines.length}</span>}>
+          <Section title="MODÈLES DE ROUTINES" right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{routines.length}</span>}>
             {routines.map((r) => (
               <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, background: `${C.viol}22`, display: "flex", alignItems: "center", justifyContent: "center" }}><ClipboardList size={15} color={C.viol} /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{r.name}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{r.templates.length} séance(s) · {r.templates.reduce((a, t) => a + t.exercises.length, 0)} exercices</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{r.templates.length} séance(s) · {r.templates.reduce((a, t) => a + t.exercises.length, 0)} exercices</div>
                 </div>
                 <button onClick={() => applyRoutine(r)} style={{ background: accent, border: "none", borderRadius: 7, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Utiliser</button>
-                <button onClick={() => deleteRoutine(r.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", padding: 4 }}><X size={15} /></button>
+                <button onClick={() => deleteRoutine(r.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={15} /></button>
               </div>
             ))}
           </Section>
@@ -188,14 +188,14 @@ export default function Programmes({ teamId, players, sessions, logs }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 14, fontWeight: 800 }}>{pr.title}</span>{pr.source === "pdf" && <Tag c={C.viol}>PDF</Tag>}
                   </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{fmtShort(pr.start)} → {fmtShort(pr.end)} · {mine.length} séance(s)</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{fmtShort(pr.start)} → {fmtShort(pr.end)} · {mine.length} séance(s)</div>
                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 8 }}>
                     {pr.templates.map((t, i) => <Tag key={i} c={CODES[t.code] || accent}>{wdLabel(Number(t.weekday))} · {t.titre}</Tag>)}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <button onClick={() => setFilesOf(pr)} title="Fichiers (PDF / vidéos)" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}><Paperclip size={14} /></button>
-                  <button onClick={() => deleteProgram(pr.id)} title="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", padding: 4 }}><X size={16} /></button>
+                  <button onClick={() => deleteProgram(pr.id)} title="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={16} /></button>
                 </div>
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border2}`, display: "flex", alignItems: "center", gap: 10 }}>
@@ -215,14 +215,14 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   // ── BUILDER ──
   return (
     <div>
-      <button onClick={() => setView("list")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", fontSize: 12, cursor: "pointer", marginBottom: 12 }}>← Programmes</button>
+      <button onClick={() => setView("list")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", marginBottom: 12 }}>← Programmes</button>
       {note && <div style={sc({ background: `${C.amb}1a`, borderColor: `${C.amb}55`, marginBottom: 12, fontSize: 11, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 })}>{note}</div>}
 
       <Section title="PROGRAMME">
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre (ex. Bloc 0 — Préparation générale)" style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px", color: "#fff", fontSize: 14, fontWeight: 600, outline: "none", marginBottom: 10 }} />
         <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 5 }}>Début</div><input type="date" value={start} onChange={(e) => setStart(e.target.value)} style={dateSt} /></div>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 5 }}>Fin</div><input type="date" value={end} onChange={(e) => setEnd(e.target.value)} style={dateSt} /></div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Début</div><input type="date" value={start} onChange={(e) => setStart(e.target.value)} style={dateSt} /></div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Fin</div><input type="date" value={end} onChange={(e) => setEnd(e.target.value)} style={dateSt} /></div>
         </div>
       </Section>
 
@@ -252,7 +252,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
             <select value={tpl.weekday} onChange={(e) => setTpl(ti, { weekday: Number(e.target.value) })} style={miniSt}>{WD.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
             <select value={tpl.code} onChange={(e) => setTpl(ti, { code: e.target.value })} style={miniSt}>{Object.keys(CODES).map((c) => <option key={c}>{c}</option>)}</select>
             <input value={tpl.titre} onChange={(e) => setTpl(ti, { titre: e.target.value })} placeholder="Titre séance" style={{ flex: 1, minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none" }} />
-            {templates.length > 1 && <button onClick={() => delTpl(ti)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", padding: 4 }}><X size={15} /></button>}
+            {templates.length > 1 && <button onClick={() => delTpl(ti)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={15} /></button>}
           </div>
           {tpl.exercises.map((exo, ei) => (
             <ExoRow key={exo.id} exo={exo} cues={find(exo.name)?.cues} onChange={(patch) => setExo(ti, ei, patch)} onDel={() => delExo(ti, ei)} />

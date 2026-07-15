@@ -95,7 +95,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             <Tag c={CODES[s.code] || accent}>{s.code}</Tag>
             <span style={{ fontSize: 12, fontWeight: 600 }}>{s.titre}</span>
           </div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{s.exercises.length} exercices · {totSets} séries</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{s.exercises.length} exercices · {totSets} séries</div>
         </div>
         {st === "done" && rpe && <span style={{ fontSize: 14, fontWeight: 800, color: C.green }}>RPE {rpe}</span>}
         {st === "pending" && past && <Tag c={C.amb}>À valider</Tag>}
@@ -112,7 +112,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           )}
           {rest && <RestTimer key={rest.k} seconds={rest.sec} accent={accent} onDone={() => setRest(null)} />}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: 1 }}>SÉRIES — COCHE POUR VALIDER</span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 1 }}>SÉRIES — COCHE POUR VALIDER</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: doneSets === totSets && totSets ? C.green : "rgba(255,255,255,0.5)" }}>{doneSets}/{totSets}</span>
           </div>
 
@@ -123,7 +123,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
               <div key={e.id} style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
                   <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</span>
-                  <button onClick={() => setGraphEx(e.name)} title="Progression" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: 3, fontSize: 10 }}>
+                  <button onClick={() => setGraphEx(e.name)} title="Progression" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 3, fontSize: 10 }}>
                     <TrendingUp size={13} />
                   </button>
                 </div>
@@ -149,13 +149,13 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                 })}
                 <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
                   <button onClick={() => addSet(e.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 10px", color: "rgba(255,255,255,0.6)", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>+ série</button>
-                  {ex[e.id].sets.length > 1 && <button onClick={() => delSet(e.id, ex[e.id].sets.length - 1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 10, cursor: "pointer" }}>− retirer</button>}
+                  {ex[e.id].sets.length > 1 && <button onClick={() => delSet(e.id, ex[e.id].sets.length - 1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", fontSize: 10, cursor: "pointer" }}>− retirer</button>}
                 </div>
               </div>
             );
           })}
 
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", margin: "12px 0 8px" }}>RPE global de la séance (1–10)</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "12px 0 8px" }}>RPE global de la séance (1–10)</div>
           <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
               <div key={n} onClick={() => setRpe(n)} style={{ flex: 1, height: 32, borderRadius: 6, background: rpe === n ? (n <= 3 ? C.green : n <= 6 ? C.amb : C.coral) : "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, cursor: "pointer", border: rpe === n ? "2px solid rgba(255,255,255,0.4)" : "2px solid transparent" }}>{n}</div>
@@ -225,19 +225,19 @@ function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, background: C.panel, borderRadius: "18px 18px 0 0", padding: 20, maxHeight: "80vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div><div style={{ fontSize: 15, fontWeight: 800 }}>{exName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>Progression · 1RM estimé</div></div>
+          <div><div style={{ fontSize: 15, fontWeight: 800 }}>{exName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Progression · 1RM estimé</div></div>
           <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
         </div>
         {pts.length >= 2 ? (
           <>
             <LineChart pts={pts} color={accent} height={130} />
             <div style={{ display: "flex", justifyContent: "space-around", marginTop: 14 }}>
-              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: C.amb }}>{rec.top}<span style={{ fontSize: 11 }}>kg</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>RECORD CHARGE</div></div>
-              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: accent }}>{rec.oneRM}<span style={{ fontSize: 11 }}>kg</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>1RM ESTIMÉ</div></div>
+              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: C.amb }}>{rec.top}<span style={{ fontSize: 11 }}>kg</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>RECORD CHARGE</div></div>
+              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: accent }}>{rec.oneRM}<span style={{ fontSize: 11 }}>kg</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>1RM ESTIMÉ</div></div>
             </div>
           </>
         ) : (
-          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.45)", fontSize: 12 }}>Pas encore assez d'historique pour tracer une progression. Valide au moins deux séances avec cet exercice.</div>
+          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Pas encore assez d'historique pour tracer une progression. Valide au moins deux séances avec cet exercice.</div>
         )}
       </div>
     </div>

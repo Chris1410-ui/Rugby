@@ -67,11 +67,11 @@ export default function Bibliotheque({ teamId }) {
         {list.map((e) => (
           <div key={e.id} onClick={() => setSel(e)} style={sc({ padding: 12, cursor: "pointer", borderLeft: `3px solid ${EXCATC[e.cat] || accent}` })}>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{e.name}{e.custom && <span style={{ fontSize: 8, color: accent, marginLeft: 5 }}>● perso</span>}</div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>{e.q}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{e.q}</div>
           </div>
         ))}
       </div>
-      {list.length === 0 && <div style={{ textAlign: "center", padding: "34px 18px", color: "rgba(255,255,255,0.45)", fontSize: 12 }}>Aucun exercice. Modifie ta recherche ou crée un exercice personnalisé.</div>}
+      {list.length === 0 && <div style={{ textAlign: "center", padding: "34px 18px", color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Aucun exercice. Modifie ta recherche ou crée un exercice personnalisé.</div>}
 
       {sel && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "flex-end" }} onClick={() => setSel(null)}>
@@ -80,7 +80,7 @@ export default function Bibliotheque({ teamId }) {
               <div><div style={{ fontSize: 18, fontWeight: 800 }}>{sel.name}</div><div style={{ fontSize: 11, color: EXCATC[sel.cat] || accent, fontWeight: 700, marginTop: 2 }}>{sel.cat} · {sel.q}</div></div>
               <X size={20} color="rgba(255,255,255,0.5)" onClick={() => setSel(null)} style={{ cursor: "pointer" }} />
             </div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1, marginBottom: 6 }}>REPÈRES D'EXÉCUTION</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 6 }}>REPÈRES D'EXÉCUTION</div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>{sel.cues}</div>
           </div>
         </div>

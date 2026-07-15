@@ -61,7 +61,7 @@ export default function StaffMessages({ players }) {
       )}
 
       {players.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>
+        <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
           Aucun joueur dans l'effectif. Ajoute des joueurs pour leur écrire.
         </div>
       ) : (
@@ -72,14 +72,14 @@ export default function StaffMessages({ players }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
-                  <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>{grpLabel(p.grp)}</span>
+                  <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)", flexShrink: 0 }}>{grpLabel(p.grp)}</span>
                 </div>
-                <div style={{ fontSize: 11, color: t.unread ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.45)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: t.unread ? 600 : 400 }}>
+                <div style={{ fontSize: 11, color: t.unread ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: t.unread ? 600 : 400 }}>
                   {t.last ? (t.lastDir === "staff" ? "Vous : " : "") + t.last : "Démarrer la conversation"}
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{fmt(t.lastTs)}</span>
+                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)" }}>{fmt(t.lastTs)}</span>
                 {t.unread > 0
                   ? <span style={{ background: C.coral, color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 9, padding: "1px 6px", minWidth: 16, textAlign: "center" }}>{t.unread}</span>
                   : <ChevronRight size={15} color="rgba(255,255,255,0.25)" />}

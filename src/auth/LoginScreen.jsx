@@ -30,7 +30,7 @@ const input = (err) => ({
   outline: "none",
   marginBottom: 10,
 });
-const label = { fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: 1, marginBottom: 6, fontWeight: 700 };
+const label = { fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 6, fontWeight: 700 };
 
 export default function LoginScreen() {
   const [step, setStep] = useState("role"); // role | details | signin
@@ -155,11 +155,11 @@ export default function LoginScreen() {
 
   const Header = () => (
     <div style={{ textAlign: "center", marginBottom: 18 }}>
-      <div style={{ fontSize: 13, letterSpacing: 4, color: "rgba(255,255,255,0.45)", fontWeight: 700 }}>
+      <div style={{ fontSize: 13, letterSpacing: 4, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>
         PLATEFORME D'ANALYSE
       </div>
       <div style={{ fontSize: 30, fontWeight: 900, color: C.coral, letterSpacing: 1 }}>PERFORMANCE</div>
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>Rugby — Belgique U18 · 2026</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Rugby — Belgique U18 · 2026</div>
     </div>
   );
 
@@ -176,7 +176,7 @@ export default function LoginScreen() {
       <div style={wrap}>
         {styleTag}
         <Header />
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 12, letterSpacing: 2 }}>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 12, letterSpacing: 2 }}>
           CHOISIR UNE VUE
         </div>
         {ROLES.map((r) => (
@@ -192,7 +192,7 @@ export default function LoginScreen() {
               <span style={{ fontSize: 24 }}>{r.e}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 800 }}>{r.l}</div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{r.s}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{r.s}</div>
               </div>
               <ChevronRight size={16} color="rgba(255,255,255,0.25)" />
             </div>
@@ -215,13 +215,13 @@ export default function LoginScreen() {
         {styleTag}
         {showPolicy && <PrivacyPolicy onClose={() => setShowPolicy(false)} />}
         <div style={{ width: "100%", maxWidth: 380 }}>
-          <button onClick={() => setStep("role")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", marginBottom: 16 }}>
+          <button onClick={() => setStep("role")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", marginBottom: 16 }}>
             ← Retour
           </button>
           <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4, color: roleObj.c }}>
             {roleObj.e} {roleObj.l}
           </div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 16 }}>
             Création de compte · {isStaffRole(role) ? "accès staff de l'équipe" : "ton espace joueur"}
           </div>
 
@@ -259,7 +259,7 @@ export default function LoginScreen() {
           <div style={label}>MOT DE PASSE</div>
           <div style={{ position: "relative" }}>
             <input type={showPwd ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setErr(""); }} placeholder="Mot de passe" autoComplete="new-password" style={input(false)} />
-            <button onClick={() => setShowPwd((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)" }}>
+            <button onClick={() => setShowPwd((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>
               {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
@@ -328,7 +328,7 @@ export default function LoginScreen() {
         <div style={label}>MOT DE PASSE</div>
         <div style={{ position: "relative" }}>
           <input type={showPwd ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setErr(""); }} placeholder="Mot de passe" autoComplete="current-password" onKeyDown={(e) => e.key === "Enter" && doSignIn()} style={input(false)} />
-          <button onClick={() => setShowPwd((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)" }}>
+          <button onClick={() => setShowPwd((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>
             {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>

@@ -74,7 +74,7 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)" }}>{edit ? <input value={d.num ?? ""} onChange={(e) => setD((p) => ({ ...p, num: e.target.value }))} style={{ ...inp, width: 44, textAlign: "center" }} /> : (player.num ?? "—")}</span>
-            <div><div style={{ fontSize: 17, fontWeight: 800 }}>{player.name}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{player.pos} · {grpLabel(player.grp)}</div></div>
+            <div><div style={{ fontSize: 17, fontWeight: 800 }}>{player.name}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{player.pos} · {grpLabel(player.grp)}</div></div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <Pill v={player.acwr} /><Tag c={acwrZ(player.acwr).c}>{acwrZ(player.acwr).l}</Tag>

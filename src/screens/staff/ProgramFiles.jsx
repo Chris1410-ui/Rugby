@@ -56,7 +56,7 @@ export default function ProgramFiles({ teamId, program, onClose }) {
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Fichiers · {program.title}</div>
           <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
         </div>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>Bucket privé · accès par lien signé (1 h)</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 14 }}>Bucket privé · accès par lien signé (1 h)</div>
 
         <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 10, padding: 12, color: accent, fontWeight: 700, fontSize: 13, cursor: "pointer", marginBottom: 14 }}>
           <Upload size={15} />{busy ? "Envoi…" : "Ajouter un PDF ou une vidéo"}
@@ -66,9 +66,9 @@ export default function ProgramFiles({ teamId, program, onClose }) {
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 10 }}>{err}</div>}
 
         {loading ? (
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", padding: 16, textAlign: "center" }}>Chargement…</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: 16, textAlign: "center" }}>Chargement…</div>
         ) : files.length === 0 ? (
-          <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.45)", fontSize: 12 })}>
+          <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
             Aucun fichier. Ajoute le PDF du programme ou une vidéo d'analyse.
           </div>
         ) : (
@@ -80,12 +80,12 @@ export default function ProgramFiles({ teamId, program, onClose }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name.replace(/^\d{8}_/, "")}</div>
-                  <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{kb(f.size)}</div>
+                  <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{kb(f.size)}</div>
                 </div>
                 <button onClick={() => open(f.path)} title="Ouvrir (lien signé)" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
                   <ExternalLink size={14} />
                 </button>
-                <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", padding: 4 }}>
+                <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}>
                   <X size={15} />
                 </button>
               </div>
