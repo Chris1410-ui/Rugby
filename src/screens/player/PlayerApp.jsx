@@ -4,11 +4,12 @@ import { sc } from "../../lib/tokens.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
 import { BottomNav } from "../../lib/ui.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Seances from "./Seances.jsx";
 import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
+import Crew from "./Crew.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Fiche from "../shared/Fiche.jsx";
@@ -21,7 +22,7 @@ const ACCENT = C.green;
    au joueur lui-même. */
 export default function PlayerApp({ profile }) {
   const [tab, setTab] = useState("bilan");
-  const { players, sessions, logs, activities, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, activities, crews, loading } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
@@ -43,6 +44,7 @@ export default function PlayerApp({ profile }) {
     ["bilan", "Mon bilan", Sun],
     ["seances", "Mes séances", Dumbbell],
     ["messages", "Messages", MessageSquare, unread],
+    ["equipe", "Mon équipe", Users],
     ["classement", "Classement", Trophy],
     ["calendrier", "Calendrier", Calendar],
     ["fiche", "Ma fiche", Shield],
@@ -56,7 +58,8 @@ export default function PlayerApp({ profile }) {
         {tab === "bilan" && <Bilan me={me} accent={ACCENT} />}
         {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "messages" && <Messages me={me} accent={ACCENT} />}
-        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} me={me} accent={ACCENT} />}
+        {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
+        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} me={me} accent={ACCENT} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} />}
         {tab === "fiche" && <Fiche player={me} canEdit={false} />}
         {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}

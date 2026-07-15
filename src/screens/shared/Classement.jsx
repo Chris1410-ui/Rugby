@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
+import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { KPI } from "../../lib/ui.jsx";
 import { Trophy, X } from "../../lib/icons.jsx";
 
@@ -16,7 +17,7 @@ const Move = ({ m }) =>
 
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
-export default function Classement({ players, sessions, logs, activities = {}, me, accent = C.coral }) {
+export default function Classement({ players, sessions, logs, activities = {}, crews = [], me, accent = C.coral }) {
   const isJoueur = !!me;
   const groups = [...new Set(players.map((p) => p.grp))];
   const [scope, setScope] = useState("all");
@@ -33,26 +34,36 @@ export default function Classement({ players, sessions, logs, activities = {}, m
     return cur;
   }, [players, sessions, logs, activities]);
 
-  // Classement par équipe (#6). Agrégat = somme des points des membres. En
-  // attendant les crews (équipes formées par les joueurs), on regroupe par
-  // ligne (avants / arrières) — la logique d'agrégat est réutilisable telle
-  // quelle une fois les crews en place.
+  // Classement par équipe. Agrégat = somme des points des membres actifs.
+  // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
+  // l'absence de crew, repli sur un regroupement par ligne (avants/arrières).
+  const ptsById = useMemo(() => Object.fromEntries(data.map((d) => [d.p.id, d.pts])), [data]);
+  const hasCrews = crews.length > 0;
   const teams = useMemo(() => {
+    if (hasCrews) {
+      const rows = crews.map((c) => {
+        const active = c.members.filter((m) => m.status === "active");
+        const pts = active.reduce((a, m) => a + (ptsById[m.playerId] || 0), 0);
+        return { key: c.id, label: c.name, banner: c.banner, pts, count: active.length };
+      });
+      return rows.sort((a, b) => b.pts - a.pts).map((t, i) => ({ ...t, rank: i + 1 }));
+    }
     const by = {};
     data.forEach((d) => {
       const k = d.p.grp || "—";
-      (by[k] = by[k] || { key: k, label: grpLabel(k) || "Sans ligne", pts: 0, count: 0, weekDelta: 0 });
+      (by[k] = by[k] || { key: k, label: grpLabel(k) || "Sans ligne", pts: 0, count: 0 });
       by[k].pts += d.pts;
-      by[k].weekDelta += d.weekDelta;
       by[k].count += 1;
     });
     return Object.values(by).sort((a, b) => b.pts - a.pts).map((t, i) => ({ ...t, rank: i + 1 }));
-  }, [data]);
+  }, [hasCrews, crews, data, ptsById]);
 
   const pool = scope === "all" ? data : data.filter((d) => d.p.grp === scope);
   const ranked = pool.map((d, i) => ({ ...d, scopeRank: i + 1 }));
   const mine = isJoueur ? data.find((d) => d.p.id === me.id) : null;
-  const myTeamKey = isJoueur ? me.grp : null;
+  // Mon équipe = mon crew actif si j'en ai un, sinon ma ligne.
+  const myCrew = isJoueur ? crews.find((c) => c.members.some((m) => m.playerId === me.id && m.status === "active")) : null;
+  const myTeamKey = isJoueur ? (hasCrews ? myCrew?.id : me.grp) : null;
   const scopeBtns = isJoueur
     ? [["all", "Toute l'équipe"], [me.grp, "Ma ligne · " + grpLabel(me.grp)]]
     : [["all", "Équipe"], ...groups.map((g) => [g, grpLabel(g)])];
@@ -116,15 +127,21 @@ export default function Classement({ players, sessions, logs, activities = {}, m
             return (
               <div key={t.key} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 8, padding: "11px 10px", marginBottom: 6, borderRadius: 9, background: top ? "linear-gradient(90deg,rgba(39,232,214,0.9),rgba(39,232,214,0.5))" : meT ? NEON.rowB : NEON.row, border: meT && !top ? `1px solid ${accent}` : "1px solid transparent" }}>
                 <div style={{ fontSize: t.rank <= 3 ? 15 : 13, fontWeight: 900, fontStyle: "italic", textAlign: "center", color: top ? "#0c2b2b" : "rgba(255,255,255,0.65)" }}>{top ? "#1" : t.rank + "ᵉ"}</div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meT ? "⭐ " + t.label : t.label}</div>
-                  <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)" }}>{t.count} joueur{t.count > 1 ? "s" : ""} · moy. {t.count ? Math.round(t.pts / t.count) : 0} pts</div>
+                <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: 9 }}>
+                  {t.banner && <div style={{ width: 30, height: 30, borderRadius: 9, background: bannerGradient(t.banner), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0, boxShadow: "inset 0 0 12px rgba(0,0,0,0.25)" }}>{bannerOf(t.banner).emoji}</div>}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meT ? "⭐ " + t.label : t.label}</div>
+                    <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)" }}>{t.count} joueur{t.count > 1 ? "s" : ""} · moy. {t.count ? Math.round(t.pts / t.count) : 0} pts</div>
+                  </div>
                 </div>
                 <div style={{ minWidth: 60, textAlign: "right", fontSize: 19, fontWeight: 900, fontStyle: "italic", color: top ? "#0c2b2b" : NEON.yellow }}>{t.pts}<span style={{ fontSize: 9, fontWeight: 700 }}> PTS</span></div>
               </div>
             );
           })}
-          <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", textAlign: "center", padding: "6px 8px 2px", lineHeight: 1.5 }}>Regroupé par ligne. Bientôt : vos propres équipes (crews) formées entre joueurs.</div>
+          {teams.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", textAlign: "center", padding: 18 }}>Aucune équipe pour le moment.</div>}
+          <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", textAlign: "center", padding: "6px 8px 2px", lineHeight: 1.5 }}>
+            {hasCrews ? "Score d'équipe = somme des points des membres." : "Regroupé par ligne — créez vos équipes (crews) dans l'onglet « Mon équipe »."}
+          </div>
         </div>
       )}
 

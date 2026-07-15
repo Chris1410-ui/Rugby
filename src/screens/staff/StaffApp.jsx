@@ -26,7 +26,7 @@ const ACCENT = C.coral;
    onglets lisent l'effectif enrichi. */
 export default function StaffApp({ profile }) {
   const [tab, setTab] = useState("effectif");
-  const { players, sessions, logs, checkins, activities, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, checkins, activities, crews, loading } = useTeamData(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
 
@@ -51,7 +51,7 @@ export default function StaffApp({ profile }) {
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
-        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} accent={ACCENT} />}
+        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} accent={ACCENT} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
