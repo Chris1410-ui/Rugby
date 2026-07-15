@@ -83,3 +83,17 @@ export async function saveResult(campaignId, playerId, teamId, metrics) {
     );
   if (error) throw error;
 }
+
+// Saisie groupée : upsert des mesures de plusieurs joueurs pour une campagne.
+// `rows` = [{ playerId, metrics }]. Une seule requête.
+export async function saveResultsBulk(campaignId, teamId, rows) {
+  if (!rows || rows.length === 0) return;
+  const ts = new Date().toISOString();
+  const payload = rows.map(({ playerId, metrics }) => ({
+    campaign_id: campaignId, player_id: playerId, team_id: teamId, ...metrics, updated_at: ts,
+  }));
+  const { error } = await supabase
+    .from("test_results")
+    .upsert(payload, { onConflict: "campaign_id,player_id" });
+  if (error) throw error;
+}
