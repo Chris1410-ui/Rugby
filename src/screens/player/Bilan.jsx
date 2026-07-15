@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { C } from "../../lib/tokens.js";
-import { wbToWellness, computeReadiness, acwrZ } from "../../lib/metrics.js";
+import { wbToWellness, computeReadiness, acwrZ, ACTIVITIES } from "../../lib/metrics.js";
 import { Ring, Section } from "../../lib/ui.jsx";
 import { CheckCircle, Send } from "../../lib/icons.jsx";
 import { useMyCheckin, saveCheckin } from "../../data/checkins.js";
@@ -21,6 +21,7 @@ const defaults = (me) => ({
   fc: null,
   hrv: null,
   poids: null,
+  activities: [],
 });
 
 export default function Bilan({ me, accent }) {
@@ -40,6 +41,7 @@ export default function Bilan({ me, accent }) {
         fc: checkin.fc ?? null,
         hrv: checkin.hrv ?? null,
         poids: checkin.poids ?? null,
+        activities: checkin.activities ?? [],
       });
       setSaved(true);
     }
@@ -47,6 +49,13 @@ export default function Bilan({ me, accent }) {
 
   const set = (patch) => { setD((p) => ({ ...p, ...patch })); setSaved(false); };
   const setWb = (k, v) => { setD((p) => ({ ...p, wb: { ...p.wb, [k]: v } })); setSaved(false); };
+  const toggleActivity = (key) => {
+    setD((p) => {
+      const has = (p.activities || []).includes(key);
+      return { ...p, activities: has ? p.activities.filter((a) => a !== key) : [...(p.activities || []), key] };
+    });
+    setSaved(false);
+  };
 
   const wbScore = wbToWellness(d.wb, d.sleepH) || 0;
   const readiness = computeReadiness(wbScore, me.risque, d.sleepH);
@@ -123,6 +132,24 @@ export default function Bilan({ me, accent }) {
               </div>
             </div>
           ))}
+        </div>
+      </Section>
+
+      <Section title="ACTIVITÉ DU JOUR" right={<span style={{ fontSize: 9, color: C.green, fontWeight: 700 }}>+10 pts / thématique</span>}>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 10, lineHeight: 1.5 }}>
+          Déclare ce que tu as fait aujourd'hui — chaque thématique déclarée te rapporte 10 points au classement.
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {ACTIVITIES.map((a) => {
+            const on = (d.activities || []).includes(a.key);
+            return (
+              <button key={a.key} onClick={() => toggleActivity(a.key)} style={{ flex: "1 1 90px", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "12px 8px", borderRadius: 12, cursor: "pointer", background: on ? `${C.green}22` : "rgba(255,255,255,0.05)", border: `1.5px solid ${on ? C.green : C.border}`, color: "#fff" }}>
+                <span style={{ fontSize: 24 }}>{a.emoji}</span>
+                <span style={{ fontSize: 12, fontWeight: 700 }}>{a.label}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: on ? C.green : "rgba(255,255,255,0.5)" }}>{on ? "✓ +10 pts" : "déclarer"}</span>
+              </button>
+            );
+          })}
         </div>
       </Section>
 

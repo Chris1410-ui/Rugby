@@ -106,7 +106,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const totSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.length, 0);
 
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${st === "done" ? C.green : st === "missed" ? C.coral : accent}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${st === "done" ? C.green : st === "missed" ? C.coral : st === "postponed" ? C.gray : accent}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
       <div onClick={() => setOpen((o) => !o)} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
         <Dot s={st} />
         <div style={{ flex: 1 }}>
@@ -120,6 +120,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
         {st === "done" && rpe && <span style={{ fontSize: 14, fontWeight: 800, color: C.green }}>RPE {rpe}</span>}
         {st === "pending" && past && <Tag c={C.amb}>À valider</Tag>}
         {st === "pending" && !past && <Tag c={accent}>À venir</Tag>}
+        {st === "postponed" && <Tag c={C.gray}>Reportée</Tag>}
       </div>
 
       {open && (
@@ -182,11 +183,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             ))}
           </div>
           <textarea value={fb} onChange={(e) => { setDirty(true); setFb(e.target.value); }} placeholder="Commentaire (douleur, ressenti…)" style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", resize: "none", height: 50, marginBottom: 10 }} />
+          <button onClick={() => valider("done")} disabled={busy} style={{ width: "100%", background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1, marginBottom: 8 }}>
+            <CheckCircle size={13} />{st === "done" ? "Mettre à jour" : "Terminer la séance"}
+          </button>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => valider("done")} disabled={busy} style={{ flex: 1, background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1 }}>
-              <CheckCircle size={13} />{st === "done" ? "Mettre à jour" : "Terminer la séance"}
-            </button>
             <button onClick={() => valider("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Séance manquée</button>
+            <button onClick={() => valider("postponed")} disabled={busy} title="Reporter / remettre la séance (sans pénalité)" style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Reporter</button>
           </div>
         </div>
       )}

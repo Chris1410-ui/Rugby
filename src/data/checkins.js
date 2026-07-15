@@ -15,16 +15,17 @@ function dbToCheckin(row) {
     fc: row.fc,
     hrv: row.hrv,
     poids: row.poids != null ? Number(row.poids) : null,
+    activities: row.activities || [],
     saved: true,
   };
 }
 
 export async function saveCheckin(playerId, payload, date = todayISO()) {
-  const { wb, sleepH, hydra, fc, hrv, poids } = payload;
+  const { wb, sleepH, hydra, fc, hrv, poids, activities } = payload;
   const { error } = await supabase
     .from("daily_checkins")
     .upsert(
-      { player_id: playerId, date, wb, sleep_h: sleepH, hydra, fc, hrv, poids },
+      { player_id: playerId, date, wb, sleep_h: sleepH, hydra, fc, hrv, poids, activities: activities || [] },
       { onConflict: "player_id,date" }
     );
   if (error) throw error;
@@ -56,9 +57,12 @@ export function useMyCheckin(playerId, date = todayISO()) {
 export function useTeamCheckins(playerIds) {
   const key = (playerIds || []).join(",");
   const [byPlayer, setByPlayer] = useState({});
+  // Historique d'activités déclarées par joueur → { [pid]: [{date, activities}] }
+  // (alimente le classement : +10 pts par thématique, cf. computePoints).
+  const [activities, setActivities] = useState({});
 
   const fetch = useCallback(async () => {
-    if (!playerIds || playerIds.length === 0) { setByPlayer({}); return; }
+    if (!playerIds || playerIds.length === 0) { setByPlayer({}); setActivities({}); return; }
     const { data, error } = await supabase
       .from("daily_checkins")
       .select("*")
@@ -66,10 +70,15 @@ export function useTeamCheckins(playerIds) {
       .order("date", { ascending: false });
     if (error) { console.error("[checkins]", error.message); return; }
     const latest = {};
+    const act = {};
     (data ?? []).forEach((row) => {
       if (!latest[row.player_id]) latest[row.player_id] = dbToCheckin(row); // 1re = plus récente
+      if (Array.isArray(row.activities) && row.activities.length) {
+        (act[row.player_id] = act[row.player_id] || []).push({ date: row.date, activities: row.activities });
+      }
     });
     setByPlayer(latest);
+    setActivities(act);
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -82,5 +91,5 @@ export function useTeamCheckins(playerIds) {
     return () => { supabase.removeChannel(channel); };
   }, [key, fetch]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { checkins: byPlayer, refresh: fetch };
+  return { checkins: byPlayer, activities, refresh: fetch };
 }
