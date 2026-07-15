@@ -29,6 +29,11 @@ export function dbToPlayer(row) {
     asym: row.asym ?? 0,
     bronco: row.bronco ?? null,
     yoyo: row.yoyo != null ? Number(row.yoyo) : null,
+    squat5rm: row.squat_5rm ?? null,
+    cmjOverall: row.cmj_overall != null ? Number(row.cmj_overall) : null,
+    bench5rm: row.bench_5rm != null ? Number(row.bench_5rm) : null,
+    hangClean2rm: row.hang_clean_2rm != null ? Number(row.hang_clean_2rm) : null,
+    ppNotes: row.pp_notes ?? null,
     isCustom: row.is_custom,
     createdAt: row.created_at,
   };
