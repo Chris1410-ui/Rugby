@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { fmtShort } from "../../lib/metrics.js";
-import { Section, Tag } from "../../lib/ui.jsx";
-import { Download, X } from "../../lib/icons.jsx";
+import { Section, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Download } from "../../lib/icons.jsx";
 import { downloadCSV } from "../../lib/csv.js";
 import { formatAnswer, questionnaireCSV } from "../../lib/questionnaires.js";
 
@@ -98,6 +98,7 @@ const btn = (active) => ({ padding: "6px 11px", borderRadius: 8, border: "none",
 /* Détail complet des réponses d'un joueur (modal). Réutilisable depuis la fiche. */
 export function PlayerAnswers({ questionnaire, player, assignment, onClose }) {
   const a = assignment;
+  useModalClose(onClose);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 320, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 620, background: C.navy, borderRadius: 18, padding: 20, maxHeight: "88vh", overflowY: "auto" }}>
@@ -106,7 +107,7 @@ export function PlayerAnswers({ questionnaire, player, assignment, onClose }) {
             <div style={{ fontSize: 16, fontWeight: 800 }}>{player.name}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{questionnaire.nom}{a?.filledAt ? ` · rempli le ${fmtShort(a.filledAt)}` : ""}</div>
           </div>
-          <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
         {!a || a.statut !== "rempli" ? (
           <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>Pas encore rempli.</div>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { buildAlerts, SEVC, playerLoad, isoDate, todayISO, statusOfLog, fmtShort } from "../../lib/metrics.js";
-import { KPI, Tag } from "../../lib/ui.jsx";
-import { MessageSquare, X, Sparkles, CheckCircle } from "../../lib/icons.jsx";
+import { KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { MessageSquare, Sparkles, CheckCircle } from "../../lib/icons.jsx";
 import { getRecommendation } from "../../data/recommendations.js";
 import { useAlertStatus, markTreated, reopenAlert } from "../../data/alerts.js";
 import Conversation from "../shared/Conversation.jsx";
@@ -130,6 +130,7 @@ export default function Alertes({ teamId, players, sessions, logs, checkins, act
 
 function RecoModal({ player, onClose }) {
   const [state, setState] = useState({ loading: true });
+  useModalClose(onClose);
   useEffect(() => {
     let active = true;
     getRecommendation(player)
@@ -143,7 +144,7 @@ function RecoModal({ player, onClose }) {
         <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
           <Sparkles size={18} color={C.viol} />
           <div style={{ flex: 1, marginLeft: 8, fontSize: 15, fontWeight: 800 }}>Recommandation · {player.name}</div>
-          <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
         {state.loading ? (
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", padding: "20px 0", textAlign: "center" }}>Analyse en cours…</div>

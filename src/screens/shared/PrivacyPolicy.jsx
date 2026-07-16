@@ -1,10 +1,12 @@
 import { C } from "../../lib/tokens.js";
 import { POLICY, CONTROLLER } from "../../lib/policy.js";
-import { Shield, X } from "../../lib/icons.jsx";
+import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Shield } from "../../lib/icons.jsx";
 
 /* Politique de confidentialité. Rendu inline, ou en modal si `onClose` fourni
    (lien depuis l'inscription, la connexion ou l'écran « Mes données »). */
 export default function PrivacyPolicy({ onClose }) {
+  useModalClose(onClose);
   const body = (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -37,7 +39,7 @@ export default function PrivacyPolicy({ onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 400, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 620, background: C.navy, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto", fontFamily: "inherit", color: "#fff" }}>
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
-          <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
         {body}
         <button onClick={onClose} style={{ width: "100%", marginTop: 14, background: C.green, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>

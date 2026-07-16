@@ -2,8 +2,8 @@ import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES } from "../../lib/metrics.js";
-import { Ring, Section, KPI, Tag } from "../../lib/ui.jsx";
-import { X, MessageSquare, Shield } from "../../lib/icons.jsx";
+import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins } from "../../data/checkins.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
@@ -41,6 +41,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   const [thread, setThread] = useState(false);
   const [aNote, setANote] = useState("");
   const [openSess, setOpenSess] = useState(null); // séance dépliée (détail prescrit vs réalisé)
+  useModalClose(onClose);
   const canAct = !!reason?.key; // ouvert depuis une alerte → actions kiné/traiter
   const { checkins } = usePlayerCheckins(player.id);
   const cur = checkins[0] || null;      // bilan le plus récent
@@ -68,7 +69,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 340, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, background: C.navy, borderRadius: 18, padding: 18, maxHeight: "92vh", overflowY: "auto" }}>
         {/* En-tête */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, position: "sticky", top: 0, zIndex: 5, background: C.navy, paddingBottom: 8 }}>
           <Ring val={player.readiness} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label="ready" size={58} sw={5} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>{player.name}{player.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>DÉMO</span>}</div>
@@ -78,7 +79,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
             <div style={{ fontSize: 20, fontWeight: 900, fontStyle: "italic", color: pts.div.c }}>{pts.pts}</div>
             <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{pts.div.e} {pts.div.l}</div>
           </div>
-          <X size={20} color="rgba(255,255,255,0.6)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
 
         {/* Raison de l'alerte (si ouvert depuis une alerte) */}

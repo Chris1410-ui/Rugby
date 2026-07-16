@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { X, Upload, FileText, Video, ExternalLink } from "../../lib/icons.jsx";
 import { programFolder, uploadFile, listFolder, signedUrl, removeFile } from "../../data/storage.js";
 
@@ -10,6 +11,7 @@ const isVideo = (name) => /\.(mp4|mov|webm|m4v|avi)$/i.test(name);
 /* Pièces jointes d'un programme (PDF, vidéos d'analyse) stockées dans le bucket
    privé `team-files`. Ouverture via URL signée (jamais d'URL publique). */
 export default function ProgramFiles({ teamId, program, onClose }) {
+  useModalClose(onClose);
   const folder = programFolder(teamId, program.id);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ export default function ProgramFiles({ teamId, program, onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "82vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Fichiers · {program.title}</div>
-          <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 14 }}>Bucket privé · accès par lien signé (1 h)</div>
 

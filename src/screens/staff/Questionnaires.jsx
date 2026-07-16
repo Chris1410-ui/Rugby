@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { Section, Tag } from "../../lib/ui.jsx";
+import { Section, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { ClipboardList, Plus, X, Trash2, Send } from "../../lib/icons.jsx";
 import { QUESTION_BANK, QCATS, QTYPES, bankById, newQid } from "../../lib/questionnaires.js";
 import { resolveAssignedIds } from "../../data/sessions.js";
@@ -155,6 +155,7 @@ function CustomQuestion({ onAdd, onCancel }) {
 }
 
 function SendModal({ questionnaire, teamId, players, onClose }) {
+  useModalClose(onClose);
   const [mode, setMode] = useState("all");
   const [group, setGroup] = useState("");
   const [ids, setIds] = useState([]);
@@ -179,7 +180,7 @@ function SendModal({ questionnaire, teamId, players, onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: C.panel, borderRadius: 18, padding: 20 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Envoyer « {questionnaire.nom} »</div>
-          <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, marginBottom: 6 }}>DESTINATAIRES</div>
         <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>

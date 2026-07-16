@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { C } from "../../lib/tokens.js";
-import { MessageSquare, Send, ChevronLeft, X } from "../../lib/icons.jsx";
+import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { MessageSquare, Send, ChevronLeft } from "../../lib/icons.jsx";
 import { useThread, sendMessage, markRead } from "../../data/messages.js";
 import { usePreview } from "../../lib/preview.js";
 
@@ -14,6 +15,7 @@ import { usePreview } from "../../lib/preview.js";
 export default function Conversation({ playerId, title, who, accent = C.coral, selfName, onBack, onClose }) {
   const preview = usePreview(); // aperçu owner/staff → lecture seule
   const { msgs } = useThread(playerId);
+  useModalClose(onClose);
   const [txt, setTxt] = useState("");
   const [busy, setBusy] = useState(false);
   const endRef = useRef(null);
@@ -57,7 +59,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
           <div style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{who === "staff" ? "Conversation avec le joueur" : "Conversation avec le staff"}</div>
         </div>
-        {onClose && <X size={20} color="rgba(255,255,255,0.5)" onClick={onClose} style={{ cursor: "pointer" }} />}
+        {onClose && <CloseX onClose={onClose} />}
       </div>
 
       {/* fil */}

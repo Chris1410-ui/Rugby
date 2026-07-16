@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { acwrZ } from "../../lib/metrics.js";
-import { Ring, Section, Pill, Tag, KPI } from "../../lib/ui.jsx";
-import { CheckCircle, X } from "../../lib/icons.jsx";
+import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { CheckCircle } from "../../lib/icons.jsx";
 import { updatePlayer } from "../../data/players.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
@@ -52,6 +52,7 @@ export default function Fiche({ player, canEdit = false, onClose }) {
   const [adv, setAdv] = useState(false);
   const { campaigns, results } = useTestCampaigns(player.team);
   const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
+  useModalClose(onClose);
 
   useEffect(() => {
     setD({
@@ -198,7 +199,7 @@ export default function Fiche({ player, canEdit = false, onClose }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 620, background: C.navy, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}><X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} /></div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4, position: "sticky", top: 0, zIndex: 5 }}><CloseX onClose={onClose} /></div>
         {body}
       </div>
     </div>

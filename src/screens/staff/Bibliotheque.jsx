@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { EXCATS, EXCATC } from "../../lib/exlib.js";
-import { Plus, X, Search } from "../../lib/icons.jsx";
+import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Plus, Search } from "../../lib/icons.jsx";
 import { useExercises, addCustomExercise } from "../../data/exercises.js";
 
 const accent = C.coral;
@@ -73,18 +74,24 @@ export default function Bibliotheque({ teamId }) {
       </div>
       {list.length === 0 && <div style={{ textAlign: "center", padding: "34px 18px", color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Aucun exercice. Modifie ta recherche ou crée un exercice personnalisé.</div>}
 
-      {sel && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={() => setSel(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 22, maxHeight: "70vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-              <div><div style={{ fontSize: 18, fontWeight: 800 }}>{sel.name}</div><div style={{ fontSize: 11, color: EXCATC[sel.cat] || accent, fontWeight: 700, marginTop: 2 }}>{sel.cat} · {sel.q}</div></div>
-              <X size={20} color="rgba(255,255,255,0.5)" onClick={() => setSel(null)} style={{ cursor: "pointer" }} />
-            </div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 6 }}>REPÈRES D'EXÉCUTION</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>{sel.cues}</div>
-          </div>
-        </div>
-      )}
+      {sel && <ExoDetail sel={sel} onClose={() => setSel(null)} />}
     </section>
+  );
+}
+
+/* Détail d'un exercice (repères d'exécution) — modal. */
+function ExoDetail({ sel, onClose }) {
+  useModalClose(onClose);
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 22, maxHeight: "70vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+          <div><div style={{ fontSize: 18, fontWeight: 800 }}>{sel.name}</div><div style={{ fontSize: 11, color: EXCATC[sel.cat] || accent, fontWeight: 700, marginTop: 2 }}>{sel.cat} · {sel.q}</div></div>
+          <CloseX onClose={onClose} />
+        </div>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 6 }}>REPÈRES D'EXÉCUTION</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>{sel.cues}</div>
+      </div>
+    </div>
   );
 }

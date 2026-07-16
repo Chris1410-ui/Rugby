@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { C } from "../../lib/tokens.js";
+import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Plus, X, CheckCircle } from "../../lib/icons.jsx";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
 import { useTestCampaigns, createCampaign, saveResultsBulk, TEST_METRICS } from "../../data/tests.js";
@@ -15,6 +16,7 @@ const accent = C.coral;
 /* Saisie groupée des tests physiques : une campagne × tout l'effectif dans une
    grille éditable (staff). Un seul enregistrement (bulk upsert). */
 export default function TestsBatch({ teamId, players, camp = null, session = null, onClose }) {
+  useModalClose(onClose);
   const { campaigns: allCampaigns, results } = useTestCampaigns(teamId);
   // En contexte camp : ne montrer/gérer que les campagnes rattachées à ce camp.
   const campaigns = camp ? allCampaigns.filter((c) => c.campId === camp.id) : allCampaigns;
@@ -91,7 +93,7 @@ export default function TestsBatch({ teamId, players, camp = null, session = nul
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 820, background: C.panel, borderRadius: 18, padding: 18, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{camp ? `Résultats — ${camp.nom}` : "Saisie groupée des tests"}</div>
-          <X size={20} color="rgba(255,255,255,0.6)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
 
         {/* Sélecteur / création de campagne */}
