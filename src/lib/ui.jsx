@@ -1,8 +1,87 @@
 /* Atomes UI portés du prototype (SVG maison, styles inline). */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { C, sc } from "./tokens.js";
 import { acwrZ } from "./metrics.js";
 import { Clock, Grid, X } from "./icons.jsx";
+
+/* ── Fermeture des modaux / bottom sheets (comportement global cohérent) ──
+   - CloseX : bouton croix avec cible tactile ≥ 44×44 px (padding cliquable
+     autour du glyphe), z-index propre → jamais recouvert par le contenu.
+   - useModalClose : ferme au bouton/gesture RETOUR (history) et à Échap.
+   - useSwipeDown : poignée de bottom sheet → glisser vers le bas pour fermer.
+   - Backdrop : clic/tap sur le fond sombre ferme (via <Overlay/>). */
+export const CloseX = ({ onClose, style }) => (
+  <button
+    type="button"
+    aria-label="Fermer"
+    onClick={(e) => { e.stopPropagation(); onClose(); }}
+    style={{ position: "relative", zIndex: 2, width: 44, height: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 12, color: "rgba(255,255,255,0.85)", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...style }}
+  >
+    <X size={20} />
+  </button>
+);
+
+export function useModalClose(onClose) {
+  const ref = useRef(onClose);
+  ref.current = onClose;
+  useEffect(() => {
+    if (!ref.current) return undefined; // rendu inline (pas de modal) → no-op
+    const onKey = (e) => { if (e.key === "Escape") ref.current?.(); };
+    let viaPop = false;
+    try { window.history.pushState({ modal: true }, ""); } catch { /* noop */ }
+    const onPop = () => { viaPop = true; ref.current?.(); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("popstate", onPop);
+      if (!viaPop) { try { window.history.back(); } catch { /* noop */ } }
+    };
+  }, []);
+}
+
+export function useSwipeDown(onClose, threshold = 60) {
+  const start = useRef(null);
+  return {
+    onTouchStart: (e) => { start.current = e.touches[0]?.clientY ?? null; },
+    onTouchEnd: (e) => {
+      if (start.current == null) return;
+      const dy = (e.changedTouches[0]?.clientY ?? start.current) - start.current;
+      start.current = null;
+      if (dy > threshold) onClose();
+    },
+  };
+}
+
+// Poignée visuelle d'un bottom sheet (zone de swipe).
+export const SheetHandle = ({ onClose }) => {
+  const sw = useSwipeDown(onClose);
+  return (
+    <div {...sw} style={{ display: "flex", justifyContent: "center", padding: "6px 0 10px", cursor: "grab", touchAction: "none" }}>
+      <div style={{ width: 40, height: 4, borderRadius: 3, background: "rgba(255,255,255,0.25)" }} />
+    </div>
+  );
+};
+
+/* Overlay standard : fond sombre (tap = fermeture) + conteneur centré ou bottom
+   sheet. Gère RETOUR/Échap. `sheet` → feuille du bas avec poignée + swipe. */
+export const Overlay = ({ onClose, children, sheet = false, maxWidth = 760, z = 300, contentStyle }) => {
+  useModalClose(onClose);
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: z, display: "flex", alignItems: sheet ? "flex-end" : "center", justifyContent: "center", padding: sheet ? 0 : "16px 12px" }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: "100%", maxWidth: sheet ? "100%" : maxWidth, background: C.navy, borderRadius: sheet ? "18px 18px 0 0" : 18, maxHeight: sheet ? "85vh" : "90vh", overflowY: "auto", ...contentStyle }}
+      >
+        {sheet && <SheetHandle onClose={onClose} />}
+        {children}
+      </div>
+    </div>
+  );
+};
 
 export const Section = ({ title, right, children, style }) => (
   <div style={sc({ marginBottom: 12, ...style })}>
@@ -154,12 +233,15 @@ export const MobileNav = ({ items, primary, active, onSelect, accent }) => {
 };
 
 /* Hub en grille (feuille du bas) : toutes les sections en tuiles. */
-export const NavHub = ({ items, active, accent, onSelect, onClose }) => (
+export const NavHub = ({ items, active, accent, onSelect, onClose }) => {
+  useModalClose(onClose);
+  return (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 60, display: "flex", alignItems: "flex-end" }}>
-    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", background: C.navy, borderTop: `1px solid ${C.border2}`, borderRadius: "18px 18px 0 0", padding: "14px 14px 22px", maxHeight: "80vh", overflowY: "auto" }}>
+    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", background: C.navy, borderTop: `1px solid ${C.border2}`, borderRadius: "18px 18px 0 0", padding: "4px 14px 22px", maxHeight: "80vh", overflowY: "auto" }}>
+      <SheetHandle onClose={onClose} />
       <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
         <div style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>Menu</div>
-        <X size={20} color="rgba(255,255,255,0.55)" style={{ cursor: "pointer" }} onClick={onClose} />
+        <CloseX onClose={onClose} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
         {items.map(([key, label, Icon, badge]) => {
@@ -175,4 +257,5 @@ export const NavHub = ({ items, active, accent, onSelect, onClose }) => (
       </div>
     </div>
   </div>
-);
+  );
+};

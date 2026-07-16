@@ -8,9 +8,9 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
-import { BottomNav, MobileNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
+import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag, ClipboardList, FileText } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag, ClipboardList, FileText } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -215,6 +215,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
 }
 
 function AddPlayerModal({ teamId, onClose }) {
+  useModalClose(onClose);
   const [name, setName] = useState("");
   const [posIdx, setPosIdx] = useState(0);
   const [num, setNum] = useState("");
@@ -235,7 +236,7 @@ function AddPlayerModal({ teamId, onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: C.panel, borderRadius: 18, padding: 20 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Ajouter un joueur</div>
-          <X size={20} color="rgba(255,255,255,0.5)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12 }}>Le joueur est identifié par un <b>totem</b> (pseudo), affiché partout.</div>
         <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} />

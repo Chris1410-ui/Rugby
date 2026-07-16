@@ -1,5 +1,6 @@
 import { C } from "../../lib/tokens.js";
-import { X, Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Shield } from "../../lib/icons.jsx";
+import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Shield } from "../../lib/icons.jsx";
 
 /* Centre de notifications (joueur). Liste datée, non-lus en surbrillance,
    clic → écran concerné + marqué lu, « tout lu ». Rendu en modal. */
@@ -17,6 +18,7 @@ const fmtWhen = (iso) => {
 };
 
 export default function NotificationCenter({ notifs, onNavigate, onClose, accent = C.green }) {
+  useModalClose(onClose);
   const { list, unread, markRead, markAllRead } = notifs;
 
   const open = (n) => {
@@ -32,7 +34,7 @@ export default function NotificationCenter({ notifs, onNavigate, onClose, accent
           <Bell size={18} color={accent} />
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Notifications{unread > 0 ? ` · ${unread}` : ""}</div>
           {unread > 0 && <button onClick={markAllRead} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 10px", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Tout lu</button>}
-          <X size={20} color="rgba(255,255,255,0.55)" style={{ cursor: "pointer" }} onClick={onClose} />
+          <CloseX onClose={onClose} />
         </div>
 
         <div style={{ flex: 1, overflowY: "auto" }}>
