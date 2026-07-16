@@ -9,10 +9,11 @@ import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag, ClipboardList } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag, ClipboardList, FileText } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
+import Questionnaires from "./Questionnaires.jsx";
 import { useTeamCamps } from "../../data/camps.js";
 import Alertes from "./Alertes.jsx";
 import StaffMessages from "./StaffMessages.jsx";
@@ -54,6 +55,7 @@ export default function StaffApp({ profile }) {
     ["programmes", "Programmes", Dumbbell],
     ["camps", "Camps", Flag],
     ["taches", "Tâches", ClipboardList],
+    ["questionnaires", "Quest.", FileText],
     ["exos", "Exos", BookOpen],
     ["classement", "Classement", Trophy],
     ["historique", "Historique", TrendingUp],
@@ -71,6 +73,7 @@ export default function StaffApp({ profile }) {
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} />}
+        {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}

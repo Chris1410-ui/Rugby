@@ -6,10 +6,34 @@ import { Ring, Section, Pill, Tag, KPI } from "../../lib/ui.jsx";
 import { CheckCircle, X } from "../../lib/icons.jsx";
 import { updatePlayer } from "../../data/players.js";
 import { useTestCampaigns } from "../../data/tests.js";
+import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import TestsEvolution from "./TestsEvolution.jsx";
 import Top14Panel from "./Top14Panel.jsx";
+import { PlayerAnswers } from "../staff/QuestionnaireResponses.jsx";
 import Confidentialite from "./Confidentialite.jsx";
+
+/* Réponses aux questionnaires du joueur (vue staff, lien croisé depuis la fiche).
+   Données santé : staff du club uniquement (RLS). */
+function FicheQuestionnaires({ player }) {
+  const { list } = useMyQuestionnaires(player.id);
+  const [sel, setSel] = useState(null);
+  if (!list.length) return null;
+  return (
+    <Section title={`QUESTIONNAIRES · ${list.length}`}>
+      {list.map((a) => (
+        <div key={a.questionnaire.id} onClick={() => setSel(a)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: `1px solid ${C.border2}`, cursor: "pointer" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700 }}>{a.questionnaire.nom}</div>
+            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{a.questionnaire.questions.length} question(s)</div>
+          </div>
+          {a.statut === "rempli" ? <Tag c={C.green}>rempli</Tag> : <Tag c={C.amb}>en attente</Tag>}
+        </div>
+      ))}
+      {sel && <PlayerAnswers questionnaire={sel.questionnaire} player={player} assignment={sel} onClose={() => setSel(null)} />}
+    </Section>
+  );
+}
 
 // Étiquette de charge hebdo (UA).
 const chargeLabel = (v) => (v == null ? { l: "—", c: C.gray } : v < 1500 ? { l: "Faible", c: C.amb } : v <= 2400 ? { l: "Normale", c: C.green } : { l: "Élevée", c: C.coral });
@@ -161,6 +185,9 @@ export default function Fiche({ player, canEdit = false, onClose }) {
 
       {/* Comparaison aux normes Top 14 du poste */}
       <Top14Panel t14={t14} />
+
+      {/* Réponses aux questionnaires (staff — données santé, lien croisé) */}
+      {canEdit && <FicheQuestionnaires player={player} />}
 
       {/* RGPD — le staff gère le consentement / export / effacement du joueur */}
       {canEdit && <Confidentialite player={player} onErased={onClose} />}
