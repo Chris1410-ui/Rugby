@@ -138,6 +138,7 @@ export default function Bilan({ me, accent }) {
         </div>
       </Section>
 
+      <span id="activite-jour" />
       <Section title="ACTIVITÉ DU JOUR" right={<span style={{ fontSize: 9, color: C.green, fontWeight: 700 }}>+10 pts / thématique</span>}>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 10, lineHeight: 1.5 }}>
           Déclare ce que tu as fait aujourd'hui — chaque thématique déclarée te rapporte 10 points au classement.

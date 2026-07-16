@@ -8,7 +8,8 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
-import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
+import { BottomNav, MobileNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
+import { useIsMobile } from "../../lib/useIsMobile.js";
 import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag, ClipboardList, FileText } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
@@ -33,8 +34,12 @@ const ACCENT = C.coral;
 
 /* Espace staff. Une seule dérivation (useTeamData → enrichPlayers) ; tous les
    onglets lisent l'effectif enrichi. */
-export default function StaffApp({ profile }) {
-  const [tab, setTab] = useState("effectif");
+export default function StaffApp({ profile, tab: tabProp, onTab }) {
+  const [tabState, setTabState] = useState("effectif");
+  const tab = tabProp ?? tabState;               // piloté par AppShell (mobile) ou interne
+  const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
+  const go = (t, intent = null) => { (onTab || setTabState)(t); setNewIntent(intent); };
+  const mobile = useIsMobile();
   const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
   const { players, sessions, logs, checkins, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const { camps } = useTeamCamps(profile.team_id);
@@ -48,9 +53,9 @@ export default function StaffApp({ profile }) {
   }
 
   const nav = [
-    ["effectif", "Effectif", Users],
+    ["effectif", "Joueurs", Users],
     ["aujourdhui", "Aujourd'hui", Sun],
-    ["alertes", "Alertes", Bell],
+    ["alertes", "Suivi", Bell],
     ["messages", "Messages", MessageSquare, unread],
     ["programmes", "Programmes", Dumbbell],
     ["camps", "Camps", Flag],
@@ -72,8 +77,8 @@ export default function StaffApp({ profile }) {
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
-        {tab === "taches" && <Taches teamId={profile.team_id} players={players} />}
-        {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} />}
+        {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
+        {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
@@ -81,8 +86,38 @@ export default function StaffApp({ profile }) {
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
       </main>
-      <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
+      {mobile && tab === "aujourdhui" && <StaffFab go={go} />}
+      {mobile
+        ? <MobileNav items={nav} primary={["aujourdhui", "effectif", "alertes", "messages"]} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />
+        : <BottomNav items={nav} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />}
     </div>
+  );
+}
+
+/* FAB « ＋ » contextuel (écran Aujourd'hui) : création rapide. Séance / Joueur
+   naviguent vers l'écran ; Tâche / Questionnaire ouvrent directement le formulaire. */
+function StaffFab({ go }) {
+  const [open, setOpen] = useState(false);
+  const item = (label, onClick) => (
+    <button onClick={() => { onClick(); setOpen(false); }} style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 22, padding: "9px 14px", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(0,0,0,0.4)" }}>{label}</button>
+  );
+  return (
+    <>
+      {open && <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 24 }} />}
+      <div style={{ position: "fixed", right: 16, bottom: 76, zIndex: 25, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+        {open && (
+          <>
+            {item("＋ Séance", () => go("programmes"))}
+            {item("＋ Tâche", () => go("taches", "taches"))}
+            {item("＋ Questionnaire", () => go("questionnaires", "questionnaires"))}
+            {item("＋ Joueur", () => go("effectif"))}
+          </>
+        )}
+        <button onClick={() => setOpen((v) => !v)} title="Créer" style={{ background: ACCENT, border: "none", borderRadius: 28, width: 52, height: 52, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(0,0,0,0.45)", transform: open ? "rotate(45deg)" : "none", transition: "transform .15s" }}>
+          <Plus size={24} />
+        </button>
+      </div>
+    </>
   );
 }
 

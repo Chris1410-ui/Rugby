@@ -5,8 +5,9 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
-import { BottomNav } from "../../lib/ui.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText } from "../../lib/icons.jsx";
+import { BottomNav, MobileNav } from "../../lib/ui.jsx";
+import { useIsMobile } from "../../lib/useIsMobile.js";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Plus } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Taches from "./Taches.jsx";
 import Questionnaires from "./Questionnaires.jsx";
@@ -34,6 +35,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
   const nb = (route) => notifs?.byRoute?.[route] || 0; // pastilles non-lus par onglet
+  const mobile = useIsMobile();
 
   if (loading && !me) {
     return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement…</div>;
@@ -49,7 +51,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   }
 
   const nav = [
-    ["bilan", "Mon bilan", Sun],
+    ["bilan", "Aujourd'hui", Sun],
     ["seances", "Mes séances", Dumbbell, nb("seances")],
     ["taches", "Tâches", ClipboardList, nb("taches")],
     ["questionnaires", "Quest.", FileText, nb("questionnaires")],
@@ -78,7 +80,19 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}
           {tab === "donnees" && <Confidentialite player={me} self />}
         </main>
-        <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />
+        {/* FAB « Déclarer une activité » sur Aujourd'hui (mobile, hors aperçu) */}
+        {mobile && tab === "bilan" && !preview && (
+          <button
+            onClick={() => document.getElementById("activite-jour")?.scrollIntoView({ behavior: "smooth", block: "center" })}
+            title="Déclarer une activité"
+            style={{ position: "fixed", right: 16, bottom: 76, zIndex: 25, background: ACCENT, border: "none", borderRadius: 24, padding: "12px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(0,0,0,0.4)" }}
+          >
+            <Plus size={16} /> Activité
+          </button>
+        )}
+        {mobile
+          ? <MobileNav items={nav} primary={["bilan", "seances", "classement", "messages"]} active={tab} onSelect={setTab} accent={ACCENT} />
+          : <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />}
       </div>
     </PreviewContext.Provider>
   );
