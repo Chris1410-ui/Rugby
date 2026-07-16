@@ -20,6 +20,24 @@ export const TEST_METRICS = [
   { key: "bodyweight", label: "Poids de corps", type: "num", unit: " kg", better: "up" },
 ];
 
+// MAS saisi en m/s → km/h (×3,6) pour players.mas — une seule vérité MAS.
+// Renvoie null si la valeur n'est pas un nombre positif exploitable.
+export const masToKmh = (ms) => {
+  const n = Number(ms);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 3.6 * 10) / 10 : null;
+};
+
+// Recopie la MAS des résultats (m/s) vers players.mas (km/h). Appelé après
+// chaque saisie de tests : la dernière mesure fait foi. Écrit sous l'identité
+// staff/owner (RLS players_staff) ; sans MAS valide, ne touche à rien.
+async function syncMasToPlayers(rows) {
+  const updates = (rows || [])
+    .map(({ playerId, metrics }) => ({ playerId, kmh: masToKmh(metrics?.mas) }))
+    .filter((u) => u.playerId && u.kmh != null);
+  if (!updates.length) return;
+  await Promise.all(updates.map((u) => supabase.from("players").update({ mas: u.kmh }).eq("id", u.playerId)));
+}
+
 const dbCampaign = (r) => ({ id: r.id, teamId: r.team_id, name: r.name, date: r.date, campId: r.camp_id || null });
 const dbResult = (r) => ({
   id: r.id, campaignId: r.campaign_id, playerId: r.player_id,
@@ -91,6 +109,7 @@ export async function saveResult(campaignId, playerId, teamId, metrics) {
       { onConflict: "campaign_id,player_id" }
     );
   if (error) throw error;
+  await syncMasToPlayers([{ playerId, metrics }]);
 }
 
 // Saisie groupée : upsert des mesures de plusieurs joueurs pour une campagne.
@@ -105,4 +124,5 @@ export async function saveResultsBulk(campaignId, teamId, rows) {
     .from("test_results")
     .upsert(payload, { onConflict: "campaign_id,player_id" });
   if (error) throw error;
+  await syncMasToPlayers(rows);
 }
