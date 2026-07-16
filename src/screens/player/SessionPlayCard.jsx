@@ -6,7 +6,7 @@ import { CheckCircle, Trophy, TrendingUp, X, Video, ExternalLink } from "../../l
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
   e1RM, SET_TYPES, nextSetType, parseSetsN,
-  lastExercisePerf, exerciseRecords, exerciseHistory,
+  lastExercisePerf, exerciseRecords, exerciseHistory, prescribedVsRealized,
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
 import { usePreview } from "../../lib/preview.js";
@@ -27,11 +27,11 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     const b = {};
     s.exercises.forEach((e) => {
       const saved = log?.perExercise?.[e.id];
-      if (saved?.sets) b[e.id] = { sets: saved.sets.map((x) => ({ ...x })) };
+      if (saved?.sets) b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" };
       else {
         const n = parseSetsN(e.sets);
         const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
-        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })) };
+        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
       }
     });
     return b;
@@ -63,6 +63,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const setSet = (eid, i, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.map((x, j) => (j === i ? { ...x, ...patch } : x)) } })); };
   const addSet = (eid) => { setDirty(true); setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; }); };
   const delSet = (eid, i) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.filter((_, j) => j !== i) } })); };
+  const setExNote = (eid, note) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], note } })); };
 
   const toggleSet = (e, i) => {
     const cur = ex[e.id].sets[i];
@@ -92,7 +93,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
     setBusy(true);
     const pe = {};
-    s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, ...summarize(sets) }; });
+    s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, note: (ex[e.id].note || "").trim(), ...summarize(sets) }; });
     try {
       await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb });
       setDirty(false); // enregistré → la resync depuis la base est de nouveau autorisée
@@ -143,6 +144,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           {s.exercises.map((e) => {
             const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
+            const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
+            const ecart = cmp.diff
+              ? [cmp.setsDiff ? `${cmp.doneSets}/${cmp.prescSets} séries` : null,
+                 cmp.chargeDiff ? `${cmp.realTop} kg au lieu de ${cmp.prescCharge} kg` : null]
+                .filter(Boolean).join(" · ")
+              : "";
             return (
               <div key={e.id} style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
@@ -152,10 +159,15 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   </button>
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span>Cible {e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>Prescrit {e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</span>
                   <span>Préc. : {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
                   {rec.top > 0 && <span style={{ color: C.amb }}>🏆 {rec.top}kg · 1RM {rec.oneRM}</span>}
                 </div>
+                {ecart && (
+                  <div style={{ fontSize: 10, color: C.amb, marginBottom: 6, display: "flex", alignItems: "center", gap: 5, fontWeight: 700 }}>
+                    <span>≠ Écart :</span><span style={{ fontWeight: 600 }}>{ecart}</span>
+                  </div>
+                )}
                 <ExerciseVideo url={e.video} accent={accent} />
                 {ex[e.id].sets.map((x, i) => {
                   const stype = SET_TYPES[x.type] || SET_TYPES.normal;
@@ -175,6 +187,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   <button onClick={() => addSet(e.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 10px", color: "rgba(255,255,255,0.6)", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>+ série</button>
                   {ex[e.id].sets.length > 1 && <button onClick={() => delSet(e.id, ex[e.id].sets.length - 1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", fontSize: 10, cursor: "pointer" }}>− retirer</button>}
                 </div>
+                <textarea
+                  value={ex[e.id].note || ""}
+                  onChange={(ev) => setExNote(e.id, ev.target.value)}
+                  placeholder={ecart ? "Pourquoi cet écart ? (ex. douleur épaule)" : "Remarque sur l'exercice (optionnel)"}
+                  style={{ width: "100%", marginTop: 6, background: "rgba(255,255,255,0.05)", border: `1px solid ${ecart ? `${C.amb}55` : C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34 }}
+                />
               </div>
             );
           })}

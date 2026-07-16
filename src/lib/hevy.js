@@ -64,3 +64,31 @@ export const parseSetsN = (v) => {
   const n = parseInt(v, 10);
   return isNaN(n) ? 3 : Math.max(1, Math.min(10, n));
 };
+
+// Charge prescrite « 120 », « 120 kg », « 120,5 » → nombre (null si non chiffrée)
+export const parseChargeKg = (v) => {
+  const n = parseFloat(String(v ?? "").replace(",", ".").replace(/[^\d.]/g, ""));
+  return isNaN(n) ? null : n;
+};
+
+/* Comparatif PRESCRIT (séance) vs RÉALISÉ (log). `ex` = exercice de la séance
+   (sets/reps/charge prescrits), `pe` = perExercise[eid] du log (séries réalisées).
+   Purement informatif — ne modifie aucune formule de charge (sRPE). Renvoie les
+   nombres bruts + un booléen `diff` (écart à signaler) ; `hasRealized` distingue
+   « rien fait encore » de « fait à l'identique ». */
+export function prescribedVsRealized(ex, pe) {
+  const prescSets = parseSetsN(ex?.sets);
+  const prescCharge = parseChargeKg(ex?.charge);
+  const ws = workingSets(pe);
+  const doneSets = ws.length;
+  const realTop = setTop(pe);
+  const hasRealized = doneSets > 0 || realTop > 0;
+  const setsDiff = hasRealized && doneSets !== prescSets;
+  const chargeDiff = prescCharge != null && realTop > 0 && realTop !== prescCharge;
+  return {
+    prescSets, prescReps: ex?.reps ?? "", prescCharge,
+    doneSets, realTop, hasRealized,
+    setsDiff, chargeDiff,
+    diff: hasRealized && (setsDiff || chargeDiff),
+  };
+}
