@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
-import { todayISO } from "../lib/metrics.js";
+import { todayISO, isoDate } from "../lib/metrics.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Bilans du matin (daily_checkins). Remplace les clés `daily` / `dailyHist`
    du prototype. Écriture idempotente par (player_id, date) → upsert. */
@@ -19,6 +20,38 @@ function dbToCheckin(row) {
     createdAt: row.created_at || null,
     saved: true,
   };
+}
+
+/* Historique des bilans de TOUTE l'équipe sur une fenêtre (écran analytique).
+   Renvoie des lignes brutes { playerId, date, wb, sleepH, activities }. Lecture
+   seule (RLS daily_staff_read = équipe). Aucune dérivation ici. */
+export function useTeamCheckinHistory(playerIds, days = 30) {
+  const key = (playerIds || []).join(",");
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!playerIds || playerIds.length === 0) { setRows([]); setLoading(false); return; }
+    const from = isoDate(new Date(Date.now() - days * 864e5));
+    const { data, error } = await supabase
+      .from("daily_checkins").select("player_id, date, wb, sleep_h, activities")
+      .in("player_id", playerIds).gte("date", from).order("date", { ascending: true });
+    if (error) { console.error("[checkin history]", error.message); setLoading(false); return; }
+    setRows((data ?? []).map((r) => ({ playerId: r.player_id, date: r.date, wb: r.wb, sleepH: r.sleep_h != null ? Number(r.sleep_h) : null, activities: r.activities || [] })));
+    setLoading(false);
+  }, [key, days]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    fetch();
+    if (!playerIds || playerIds.length === 0) return;
+    const ch = supabase
+      .channel(uniqueTopic(`ckhist:${key}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "daily_checkins" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [key, days, fetch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { rows, loading };
 }
 
 /* Historique récent des bilans d'UN joueur (vue préparateur détaillée +
