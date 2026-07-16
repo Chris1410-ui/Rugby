@@ -3,6 +3,7 @@ import { C } from "../../lib/tokens.js";
 import { sc } from "../../lib/tokens.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
+import { useLocalToday } from "../../lib/useLocalToday.js";
 import { BottomNav } from "../../lib/ui.jsx";
 import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
@@ -22,6 +23,7 @@ const ACCENT = C.green;
    au joueur lui-même. */
 export default function PlayerApp({ profile }) {
   const [tab, setTab] = useState("bilan");
+  const today = useLocalToday(); // reset du bilan du jour à minuit local
   const { players, sessions, logs, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
@@ -55,7 +57,7 @@ export default function PlayerApp({ profile }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <main style={{ flex: 1, padding: 18 }}>
-        {tab === "bilan" && <Bilan me={me} accent={ACCENT} />}
+        {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
         {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "messages" && <Messages me={me} accent={ACCENT} />}
         {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}

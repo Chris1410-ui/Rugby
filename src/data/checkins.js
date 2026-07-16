@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { todayISO, isoDate } from "../lib/metrics.js";
 import { uniqueTopic } from "./messages.js";
+import { useLocalToday } from "../lib/useLocalToday.js";
 
 /* Bilans du matin (daily_checkins). Remplace les clés `daily` / `dailyHist`
    du prototype. Écriture idempotente par (player_id, date) → upsert. */
@@ -119,6 +120,7 @@ export function useMyCheckin(playerId, date = todayISO()) {
    pour alimenter enrichPlayers. RLS : staff = équipe ; joueur = les siens. */
 export function useTeamCheckins(playerIds) {
   const key = (playerIds || []).join(",");
+  const today = useLocalToday(); // bascule à minuit heure locale → re-filtre
   const [byPlayer, setByPlayer] = useState({});
   // Historique d'activités déclarées par joueur → { [pid]: [{date, activities}] }
   // (alimente le classement : +10 pts par thématique, cf. computePoints).
@@ -133,10 +135,10 @@ export function useTeamCheckins(playerIds) {
       .order("date", { ascending: false });
     if (error) { console.error("[checkins]", error.message); return; }
     // Reset 24h : la vue « du jour » (readiness / bien-être / _live) ne retient
-    // QUE le bilan daté d'aujourd'hui. Les jours précédents restent en base
-    // (historique) mais ne comptent plus comme bilan du jour → réencodage
-    // attendu chaque jour. L'historique d'activités reste complet (points).
-    const today = todayISO();
+    // QUE le bilan daté d'AUJOURD'HUI (date locale de l'appareil). Les jours
+    // précédents restent en base (historique) mais ne comptent plus comme bilan
+    // du jour → réencodage attendu chaque jour. Bascule auto à minuit local
+    // (useLocalToday). L'historique d'activités reste complet (points).
     const latest = {};
     const act = {};
     (data ?? []).forEach((row) => {
@@ -147,7 +149,7 @@ export function useTeamCheckins(playerIds) {
     });
     setByPlayer(latest);
     setActivities(act);
-  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [key, today]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetch();

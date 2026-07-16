@@ -100,11 +100,12 @@ export default function Fiche({ player, canEdit = false, onClose }) {
       {(() => {
         const ch = chargeLabel(player.charge7j);
         const z = acwrZ(player.acwr);
+        const live = player._live; // bilan du jour encodé ?
         return (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-            <KPI label="READINESS" value={player.readiness} sub="/100" color={triC(player.readiness, 71, 51)} />
-            <KPI label="BIEN-ÊTRE" value={`${player.wellness}/50`} color={triC(player.wellness, 35, 25)} />
-            <KPI label="SOMMEIL" value={player.sleep} sub="h · dernier bilan" color={triC(player.sleep, 7.5, 6.5)} />
+            <KPI label="READINESS" value={live ? player.readiness : "—"} sub={live ? "/100" : "pas encore encodé"} color={live ? triC(player.readiness, 71, 51) : C.gray} />
+            <KPI label="BIEN-ÊTRE" value={live ? `${player.wellness}/50` : "—"} sub={live ? "" : "pas encore encodé"} color={live ? triC(player.wellness, 35, 25) : C.gray} />
+            <KPI label="SOMMEIL" value={live ? player.sleep : "—"} sub={live ? "h · dernier bilan" : "pas encore encodé"} color={live ? triC(player.sleep, 7.5, 6.5) : C.gray} />
             <KPI label="CHARGE 7J" value={player.charge7j} sub={`UA · ${ch.l}`} color={ch.c} />
             <KPI label="ACWR" value={player.acwr.toFixed(2)} sub={z.l} color={z.c} />
             <KPI label="DISPONIBILITÉ" value={`${player.dispo}%`} color={triC(player.dispo, 85, 70)} />
