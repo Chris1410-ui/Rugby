@@ -33,6 +33,7 @@ import Fiche from "../shared/Fiche.jsx";
 import PlayerReport from "../shared/PlayerReport.jsx";
 import TotemPicker from "../shared/TotemPicker.jsx";
 import TestsBatch from "./TestsBatch.jsx";
+import ImportPlayers from "./ImportPlayers.jsx";
 import Historique from "./Historique.jsx";
 
 const ACCENT = C.coral;
@@ -140,6 +141,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
   const [fiche, setFiche] = useState(null);
   const [report, setReport] = useState(null); // joueur pour le récap détaillé
   const [batch, setBatch] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [demoBusy, setDemoBusy] = useState(false);
   const [demoNote, setDemoNote] = useState("");
   const demoCount = players.filter((p) => p.isDemo).length;
@@ -172,6 +174,9 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
             <Download size={16} />
           </button>
         )}
+        <button onClick={() => setImporting(true)} title="Importer depuis Excel / CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+          <Upload size={16} />
+        </button>
         <button onClick={() => setAdding(true)} style={{ background: ACCENT, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
           <Plus size={15} /> Ajouter
         </button>
@@ -242,6 +247,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
         </div>
       )}
       {adding && <AddPlayerModal teamId={teamId} players={players} onClose={() => setAdding(false)} />}
+      {importing && <ImportPlayers teamId={teamId} players={players} onClose={() => setImporting(false)} />}
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
       {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
       {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit onClose={() => setFiche(null)} />}
