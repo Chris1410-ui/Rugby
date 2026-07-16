@@ -11,12 +11,28 @@ import { supabase } from "../lib/supabase.js";
 
 const AuthCtx = createContext(null);
 
+/* Capture une éventuelle erreur de lien (mot de passe oublié / confirmation)
+   présente dans l'URL au TOUT premier chargement — avant que supabase-js ne
+   nettoie le hash. Ex. lien expiré : #error=access_denied&error_code=otp_expired */
+function readUrlAuthError() {
+  if (typeof window === "undefined") return "";
+  const raw = window.location.hash?.startsWith("#") ? window.location.hash.slice(1) : "";
+  const q = new URLSearchParams(raw);
+  const code = q.get("error_code") || q.get("error");
+  if (!code) return "";
+  if (/expired/i.test(code)) return "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.";
+  const desc = q.get("error_description");
+  return desc ? desc.replace(/\+/g, " ") : "Lien invalide ou déjà utilisé. Redemande un email ci-dessous.";
+}
+const INITIAL_LINK_ERROR = readUrlAuthError();
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true); // chargement session initial
   const [profileLoading, setProfileLoading] = useState(false);
   const [recovery, setRecovery] = useState(false); // lien « mot de passe oublié » suivi
+  const [linkError, setLinkError] = useState(INITIAL_LINK_ERROR); // lien expiré / invalide
 
   // Récupère le profil métier lié au compte auth
   const loadProfile = useCallback(async (uid) => {
@@ -68,6 +84,7 @@ export function AuthProvider({ children }) {
   }, [session, loadProfile]);
 
   const endRecovery = useCallback(() => setRecovery(false), []);
+  const clearLinkError = useCallback(() => setLinkError(""), []);
 
   const value = {
     session,
@@ -77,6 +94,8 @@ export function AuthProvider({ children }) {
     profileLoading,
     recovery,
     endRecovery,
+    linkError,
+    clearLinkError,
     signOut,
     refreshProfile,
   };

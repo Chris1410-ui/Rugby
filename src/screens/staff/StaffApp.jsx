@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
+import { isTotemTaken } from "../../lib/totems.js";
 import { buildAlerts, SEVC } from "../../lib/metrics.js";
 import { rosterCSV, downloadCSV } from "../../lib/csv.js";
 import { todayISO } from "../../lib/metrics.js";
@@ -217,7 +218,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
           ))}
         </div>
       )}
-      {adding && <AddPlayerModal teamId={teamId} onClose={() => setAdding(false)} />}
+      {adding && <AddPlayerModal teamId={teamId} players={players} onClose={() => setAdding(false)} />}
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
       {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
       {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit onClose={() => setFiche(null)} />}
@@ -225,7 +226,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
   );
 }
 
-function AddPlayerModal({ teamId, onClose }) {
+function AddPlayerModal({ teamId, players = [], onClose }) {
   useModalClose(onClose);
   const [name, setName] = useState("");
   const [posIdx, setPosIdx] = useState(0);
@@ -235,12 +236,18 @@ function AddPlayerModal({ teamId, onClose }) {
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10 };
   const save = async () => {
     if (!name.trim()) return setErr("Choisis un totem pour le joueur.");
+    // Totem unique par club : refuse un doublon (l'index DB reste le garde-fou).
+    if (isTotemTaken(players.map((p) => p.name), name)) return setErr("Ce totem est déjà pris dans l'effectif. Choisis-en un autre (bouton 🎲).");
     setBusy(true); setErr("");
     const { name: pos, grp } = RUGBY_POS[posIdx];
     try {
       await addPlayer(teamId, { name, pos, grp, num: num ? parseInt(num, 10) : null });
       onClose();
-    } catch (e) { setErr(e.message || "Échec de l'ajout."); setBusy(false); }
+    } catch (e) {
+      const dup = e?.code === "23505" || /players_team_name_uq|duplicate key/i.test(e?.message || "");
+      setErr(dup ? "Ce totem est déjà pris dans l'effectif. Choisis-en un autre." : (e.message || "Échec de l'ajout."));
+      setBusy(false);
+    }
   };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
