@@ -5,7 +5,8 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamTasks, useMyTaskCompletions } from "../../data/tasks.js";
-import { playerSessionTodo, playerTaskTodo, questionnaireTodo } from "../../lib/badges.js";
+import { useMyDay } from "../../data/checkins.js";
+import { playerSessionTodo, playerTaskTodo, questionnaireTodo, bilanTodo } from "../../lib/badges.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
@@ -33,7 +34,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
   const setTab = onTab || setTabState;
   const today = useLocalToday(); // reset du bilan du jour à minuit local
-  const { players, sessions, logs, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, activities, bilans, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
@@ -41,9 +42,11 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const { list: myQ } = useMyQuestionnaires(me?.id);
   const { tasks } = useTeamTasks(profile.team_id, players);
   const { statutByTask } = useMyTaskCompletions(me?.id);
+  const { day } = useMyDay(me?.id, today);
   const bSeances = playerSessionTodo(sessions, logs, me?.id, today);
   const bTaches = playerTaskTodo(tasks, statutByTask, me?.id);
   const bQuest = questionnaireTodo(myQ);
+  const bBilan = bilanTodo(day);
   const mobile = useIsMobile();
 
   if (loading && !me) {
@@ -60,7 +63,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   }
 
   const nav = [
-    ["bilan", "Aujourd'hui", Sun],
+    ["bilan", "Aujourd'hui", Sun, bBilan],
     ["seances", "Mes séances", Dumbbell, bSeances],
     ["taches", "Tâches", ClipboardList, bTaches],
     ["questionnaires", "Quest.", FileText, bQuest],
@@ -83,7 +86,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
-          {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}
+          {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}
           {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} />}
           {tab === "fiche" && <Fiche player={me} canEdit={false} />}
           {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}

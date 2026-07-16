@@ -28,6 +28,9 @@ export const playerTaskTodo = (tasks = [], statutByTask = {}, myId) =>
 export const questionnaireTodo = (list = []) =>
   list.filter((a) => a.statut !== "rempli").length;
 
+// Bilans du jour encore à compléter (matin / soir) : nombre manquant (0, 1 ou 2).
+export const bilanTodo = (day = {}) => (day?.matin ? 0 : 1) + (day?.soir ? 0 : 1);
+
 /* ── Côté staff ── */
 
 // Tâches « faites » par un joueur en attente de confirmation du coach.

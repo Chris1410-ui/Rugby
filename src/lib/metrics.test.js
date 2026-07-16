@@ -166,6 +166,16 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 4); // 2 tâches × 2
     expect(r.ev.some((e) => e.label === "Tâche : Amener ses crampons")).toBe(true);
   });
+  it("bilans complétés : +10 par bilan (matin/soir), sans double comptage activité", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const acts = [{ date: todayISO(), activities: ["salle"] }]; // +10 activité
+    const bilans = [
+      { date: todayISO(), label: "Bilan du matin complété" }, // +10
+      { date: todayISO(), label: "Bilan du soir complété" },  // +10
+    ];
+    const r = computePoints(p, [], {}, acts, [], [], [], bilans);
+    expect(r.pts).toBe(108 + 10 + 20); // activité (10) + matin (10) + soir (10)
+  });
   it("bonus top 2 réactivité : +15 par event", () => {
     const p = basePlayer({ acwr: 1.0 });
     const r = computePoints(p, [], {}, [], [], [], [{ label: "⚡ Top 2 réactivité (tâche)", date: todayISO() }]);

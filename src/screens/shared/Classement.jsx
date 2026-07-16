@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
+import { bilanEventsOf } from "../../data/checkins.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
@@ -20,7 +21,7 @@ const Move = ({ m }) =>
 
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
-export default function Classement({ players, sessions, logs, activities = {}, crews = [], me, accent = C.coral }) {
+export default function Classement({ players, sessions, logs, activities = {}, bilans = {}, crews = [], me, accent = C.coral }) {
   const isJoueur = !!me;
   const groups = [...new Set(players.map((p) => p.grp))];
   const [scope, setScope] = useState("all");
@@ -39,7 +40,8 @@ export default function Classement({ players, sessions, logs, activities = {}, c
       const events = top14ByPlayer[p.id] || [];
       const taskEvents = (taskPtsByPlayer[p.id] || []).map((t) => ({ label: t.titre, date: t.date }));
       const reactEvents = reactByPlayer[p.id] || [];
-      return { p, top14: events.length, top14Tests: events, ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents, reactEvents) };
+      const bilanEvents = bilanEventsOf(bilans[p.id]);
+      return { p, top14: events.length, top14Tests: events, ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents, reactEvents, bilanEvents) };
     });
     const cur = [...all].sort((a, b) => b.pts - a.pts);
     const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
@@ -47,7 +49,7 @@ export default function Classement({ players, sessions, logs, activities = {}, c
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.rank = i + 1; d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, logs, activities, top14ByPlayer, taskPtsByPlayer, reactByPlayer]);
+  }, [players, sessions, logs, activities, bilans, top14ByPlayer, taskPtsByPlayer, reactByPlayer]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
