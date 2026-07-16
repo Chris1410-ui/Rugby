@@ -28,7 +28,7 @@ export default function Classement({ players, sessions, logs, activities = {}, c
   const data = useMemo(() => {
     const all = players.map((p) => {
       const t14 = top14Player(p.pos, datedResultsFor(testCampaigns, testResults, p.id));
-      return { p, top14: t14.count, ...computePoints(p, sessions, logs, activities[p.id], t14.events) };
+      return { p, top14: t14.count, top14Tests: t14.events, ...computePoints(p, sessions, logs, activities[p.id], t14.events) };
     });
     const cur = [...all].sort((a, b) => b.pts - a.pts);
     const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
@@ -112,7 +112,7 @@ export default function Classement({ players, sessions, logs, activities = {}, c
               <div style={{ minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + d.p.name : d.p.name}</span>
-                  {d.top14 > 0 && <span title={`${d.top14} test(s) au niveau Top 14`} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.2, color: "#0c2b2b", background: C.amb, borderRadius: 5, padding: "1px 5px" }}>🏆14{d.top14 > 1 ? `×${d.top14}` : ""}</span>}
+                  {d.top14 > 0 && <span title={`${d.top14} test(s) au niveau Top 14 — clic pour le détail`} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}
                 </div>
                 <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {d.div.l}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
               </div>
@@ -193,6 +193,16 @@ export default function Classement({ players, sessions, logs, activities = {}, c
               <KPI label="SÉRIE" value={sel.streak} sub="séances" color={accent} />
               <KPI label="SÉANCES OK" value={sel.doneCount} sub={`${sel.missedCount} manquées`} />
             </div>
+            {sel.top14Tests?.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.amb, letterSpacing: 1, marginBottom: 8 }}>🏆 TESTS AU NIVEAU TOP 14 · {sel.top14Tests.length}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {sel.top14Tests.map((e) => (
+                    <span key={e.key} style={{ fontSize: 10.5, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 6, padding: "3px 9px" }}>{e.label}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>JOURNAL DES POINTS</div>
             {sel.ev.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Aucun mouvement récent.</div>}
             {sel.ev.map((e, i) => (
