@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { C, sc } from "./tokens.js";
 import { acwrZ } from "./metrics.js";
-import { Clock } from "./icons.jsx";
+import { Clock, Grid, X } from "./icons.jsx";
 
 export const Section = ({ title, right, children, style }) => (
   <div style={sc({ marginBottom: 12, ...style })}>
@@ -113,3 +113,66 @@ export const BottomNav = ({ items, active, onSelect, accent }) => {
     </nav>
   );
 };
+
+const navBtn = (on, accent) => ({ flex: 1, minWidth: 0, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 4px", color: on ? accent : "rgba(255,255,255,0.62)", position: "relative" });
+const dot = (v) => (v > 0 ? <span style={{ position: "absolute", top: 2, right: "50%", marginRight: -16, background: C.coral, color: "#fff", fontSize: 8, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 13, textAlign: "center" }}>{v > 9 ? "9+" : v}</span> : null);
+
+/* Navigation mobile : barre du bas fixe de N onglets « principaux » + bouton
+   « Plus » ouvrant un hub en grille listant TOUTES les sections (icône + label
+   + pastille de non-lus). `items` = liste complète [key,label,Icon,badge] ;
+   `primary` = clés affichées dans la barre. */
+export const MobileNav = ({ items, primary, active, onSelect, accent }) => {
+  const [hub, setHub] = useState(false);
+  const byKey = Object.fromEntries(items.map((it) => [it[0], it]));
+  const primItems = primary.map((k) => byKey[k]).filter(Boolean);
+  const primSet = new Set(primary);
+  const hiddenBadge = items.reduce((a, it) => a + (primSet.has(it[0]) ? 0 : (it[3] || 0)), 0);
+  const activeHidden = !primSet.has(active);
+
+  return (
+    <>
+      <nav style={{ position: "sticky", bottom: 0, zIndex: 20, background: `${C.navy}f5`, backdropFilter: "blur(10px)", borderTop: `1px solid ${C.border2}`, display: "flex", padding: "6px 4px 8px" }}>
+        {primItems.map(([key, label, Icon, badge]) => {
+          const on = active === key;
+          return (
+            <button key={key} onClick={() => onSelect(key)} style={navBtn(on, accent)}>
+              <Icon size={21} color={on ? accent : "rgba(255,255,255,0.62)"} />
+              <span style={{ fontSize: 9.5, fontWeight: on ? 800 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>{label}</span>
+              {dot(badge)}
+            </button>
+          );
+        })}
+        <button onClick={() => setHub(true)} style={navBtn(hub || activeHidden, accent)}>
+          <Grid size={21} color={hub || activeHidden ? accent : "rgba(255,255,255,0.62)"} />
+          <span style={{ fontSize: 9.5, fontWeight: hub || activeHidden ? 800 : 600 }}>Plus</span>
+          {dot(hiddenBadge)}
+        </button>
+      </nav>
+      {hub && <NavHub items={items} active={active} accent={accent} onSelect={(k) => { onSelect(k); setHub(false); }} onClose={() => setHub(false)} />}
+    </>
+  );
+};
+
+/* Hub en grille (feuille du bas) : toutes les sections en tuiles. */
+export const NavHub = ({ items, active, accent, onSelect, onClose }) => (
+  <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 60, display: "flex", alignItems: "flex-end" }}>
+    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", background: C.navy, borderTop: `1px solid ${C.border2}`, borderRadius: "18px 18px 0 0", padding: "14px 14px 22px", maxHeight: "80vh", overflowY: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>Menu</div>
+        <X size={20} color="rgba(255,255,255,0.55)" style={{ cursor: "pointer" }} onClick={onClose} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        {items.map(([key, label, Icon, badge]) => {
+          const on = active === key;
+          return (
+            <button key={key} onClick={() => onSelect(key)} style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, padding: "16px 6px", borderRadius: 14, cursor: "pointer", background: on ? `${accent}22` : "rgba(255,255,255,0.05)", border: `1px solid ${on ? accent : C.border}`, color: "#fff" }}>
+              <Icon size={22} color={on ? accent : "rgba(255,255,255,0.8)"} />
+              <span style={{ fontSize: 11, fontWeight: 700, textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+              {badge > 0 && <span style={{ position: "absolute", top: 7, right: 7, background: C.coral, color: "#fff", fontSize: 8.5, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 14, textAlign: "center" }}>{badge > 9 ? "9+" : badge}</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+);

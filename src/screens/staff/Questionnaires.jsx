@@ -12,10 +12,10 @@ const accent = C.coral;
 
 /* Onglet « Questionnaires » (staff/owner) : composer des modèles réutilisables,
    les envoyer, suivre qui a rempli, consulter les réponses. */
-export default function Questionnaires({ teamId, players = [] }) {
+export default function Questionnaires({ teamId, players = [], openNew = false }) {
   const { questionnaires } = useTeamQuestionnaires(teamId);
   const { byQuestionnaire } = useTeamAssignments(teamId);
-  const [edit, setEdit] = useState(null);   // 'new' | questionnaire
+  const [edit, setEdit] = useState(openNew ? "new" : null);   // 'new' | questionnaire (FAB → éditeur ouvert)
   const [send, setSend] = useState(null);   // questionnaire à envoyer
   const [responses, setResponses] = useState(null); // questionnaire dont on voit les réponses
 

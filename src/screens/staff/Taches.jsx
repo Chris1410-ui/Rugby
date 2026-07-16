@@ -11,10 +11,10 @@ const modeLabel = (a) => a?.mode === "group" ? `Ligne · ${grpLabel(a.group)}` :
 
 /* Onglet « Tâches » (staff/owner) : créer des tâches + suivre la validation en
    2 temps (joueur « Fait » → coach « Valider »/« Refuser »). */
-export default function Taches({ teamId, players = [] }) {
+export default function Taches({ teamId, players = [], openNew = false }) {
   const { tasks } = useTeamTasks(teamId, players);
   const { byTask } = useTeamTaskCompletions(teamId);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(!!openNew); // FAB « + Tâche » → formulaire ouvert d'emblée
 
   return (
     <section>
