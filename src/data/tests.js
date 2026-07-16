@@ -8,6 +8,7 @@ import { uniqueTopic } from "./messages.js";
    bronco, yoyo, squat_5rm, cmj_overall, bench_5rm, hang_clean_2rm. */
 
 export const TEST_METRICS = [
+  { key: "mas", label: "MAS", type: "num", unit: " km/h", better: "up" },
   { key: "bronco", label: "Bronco", type: "text", unit: "", better: "down" },
   { key: "yoyo", label: "Yo-Yo IR", type: "num", unit: " m", better: "up" },
   { key: "squat_5rm", label: "Squat 5RM", type: "text", unit: "", better: "up" },
@@ -19,9 +20,10 @@ export const TEST_METRICS = [
   { key: "bodyweight", label: "Poids de corps", type: "num", unit: " kg", better: "up" },
 ];
 
-const dbCampaign = (r) => ({ id: r.id, teamId: r.team_id, name: r.name, date: r.date });
+const dbCampaign = (r) => ({ id: r.id, teamId: r.team_id, name: r.name, date: r.date, campId: r.camp_id || null });
 const dbResult = (r) => ({
   id: r.id, campaignId: r.campaign_id, playerId: r.player_id,
+  mas: r.mas != null ? Number(r.mas) : null,
   bronco: r.bronco, yoyo: r.yoyo != null ? Number(r.yoyo) : null,
   squat_5rm: r.squat_5rm,
   cmj_overall: r.cmj_overall != null ? Number(r.cmj_overall) : null,
@@ -64,11 +66,11 @@ export function useTestCampaigns(teamId) {
   return { campaigns, results, loading, refresh: fetch };
 }
 
-export async function createCampaign(teamId, { name, date }) {
+export async function createCampaign(teamId, { name, date, campId = null }) {
   const { data: auth } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from("test_campaigns")
-    .insert({ team_id: teamId, name: name.trim(), date, created_by: auth?.user?.id })
+    .insert({ team_id: teamId, name: name.trim(), date, camp_id: campId, created_by: auth?.user?.id })
     .select()
     .single();
   if (error) throw error;

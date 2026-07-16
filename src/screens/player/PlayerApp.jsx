@@ -60,7 +60,7 @@ export default function PlayerApp({ profile, preview = false }) {
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <main style={{ flex: 1, padding: 18 }}>
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
-          {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} accent={ACCENT} />}
+          {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
           {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}

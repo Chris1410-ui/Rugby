@@ -9,8 +9,10 @@ import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
+import Camps from "./Camps.jsx";
+import { useTeamCamps } from "../../data/camps.js";
 import Alertes from "./Alertes.jsx";
 import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
@@ -33,6 +35,7 @@ export default function StaffApp({ profile }) {
   const [tab, setTab] = useState("effectif");
   const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
   const { players, sessions, logs, checkins, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
+  const { camps } = useTeamCamps(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
 
@@ -48,6 +51,7 @@ export default function StaffApp({ profile }) {
     ["alertes", "Alertes", Bell],
     ["messages", "Messages", MessageSquare, unread],
     ["programmes", "Programmes", Dumbbell],
+    ["camps", "Camps", Flag],
     ["exos", "Exos", BookOpen],
     ["classement", "Classement", Trophy],
     ["historique", "Historique", TrendingUp],
@@ -63,9 +67,10 @@ export default function StaffApp({ profile }) {
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
+        {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
-        {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} />}
+        {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
