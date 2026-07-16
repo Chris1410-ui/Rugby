@@ -50,7 +50,7 @@ export default function StaffApp({ profile }) {
       <main style={{ flex: 1, padding: 18 }}>
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
-        {tab === "alertes" && <Alertes players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
+        {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
@@ -223,7 +223,7 @@ function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {top.map((a, i) => (
-            <div key={i} onClick={() => setReport({ player: byId(a.pid), reason: { txt: a.txt, cat: a.cat, icon: a.icon, color: SEVC[a.sev] } })} style={sc({ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}`, cursor: "pointer" })}>
+            <div key={i} onClick={() => setReport({ player: byId(a.pid), reason: { ...a, color: SEVC[a.sev] } })} style={sc({ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderLeft: `3px solid ${SEVC[a.sev]}`, cursor: "pointer" })}>
               <span style={{ fontSize: 16 }}>{a.icon}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700 }}>{a.name}</div>

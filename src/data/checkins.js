@@ -99,10 +99,15 @@ export function useTeamCheckins(playerIds) {
       .in("player_id", playerIds)
       .order("date", { ascending: false });
     if (error) { console.error("[checkins]", error.message); return; }
+    // Reset 24h : la vue « du jour » (readiness / bien-être / _live) ne retient
+    // QUE le bilan daté d'aujourd'hui. Les jours précédents restent en base
+    // (historique) mais ne comptent plus comme bilan du jour → réencodage
+    // attendu chaque jour. L'historique d'activités reste complet (points).
+    const today = todayISO();
     const latest = {};
     const act = {};
     (data ?? []).forEach((row) => {
-      if (!latest[row.player_id]) latest[row.player_id] = dbToCheckin(row); // 1re = plus récente
+      if (row.date === today && !latest[row.player_id]) latest[row.player_id] = dbToCheckin(row);
       if (Array.isArray(row.activities) && row.activities.length) {
         (act[row.player_id] = act[row.player_id] || []).push({ date: row.date, activities: row.activities });
       }

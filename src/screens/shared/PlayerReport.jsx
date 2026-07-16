@@ -6,6 +6,7 @@ import { Ring, Section, KPI, Tag } from "../../lib/ui.jsx";
 import { X, MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins } from "../../data/checkins.js";
 import { useTestCampaigns } from "../../data/tests.js";
+import { markKine, markTreated } from "../../data/alerts.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import Conversation from "./Conversation.jsx";
 import TestsEvolution from "./TestsEvolution.jsx";
@@ -35,6 +36,8 @@ const fmtDateTime = (iso) => {
    depuis une alerte (avec `reason`) ou l'effectif. */
 export default function PlayerReport({ player, sessions, logs, activities = [], reason, onClose, onEditFiche }) {
   const [thread, setThread] = useState(false);
+  const [aNote, setANote] = useState("");
+  const canAct = !!reason?.key; // ouvert depuis une alerte → actions kiné/traiter
   const { checkins } = usePlayerCheckins(player.id);
   const cur = checkins[0] || null;      // bilan le plus récent
   const prev = checkins[1] || null;     // bilan précédent (évolution)
@@ -175,11 +178,20 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
         </Section>
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-          <button onClick={() => setThread(true)} style={{ flex: 1, background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><MessageSquare size={15} /> Envoyer un message</button>
-          {onEditFiche && (
-            <button onClick={() => { onEditFiche(); onClose(); }} style={{ flex: "0 0 auto", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Shield size={15} /> Fiche</button>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setThread(true)} style={{ flex: 1, background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><MessageSquare size={15} /> Envoyer un message</button>
+            {onEditFiche && (
+              <button onClick={() => { onEditFiche(); onClose(); }} style={{ flex: "0 0 auto", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Shield size={15} /> Fiche</button>
+            )}
+          </div>
+          {canAct && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => markKine(player.team, reason).then(() => setANote("Alerte transmise au kiné ✓")).catch((e) => setANote("Échec : " + (e.message || "")))} style={{ flex: 1, background: `${C.teal}1a`, border: `1px solid ${C.teal}66`, borderRadius: 10, padding: 11, color: C.teal, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>🩺 Envoyer vers kiné</button>
+              <button onClick={() => markTreated(player.team, reason).then(() => onClose()).catch((e) => setANote("Échec : " + (e.message || "")))} style={{ flex: 1, background: C.green, border: "none", borderRadius: 10, padding: 11, color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✓ Traiter</button>
+            </div>
           )}
+          {aNote && <div style={{ fontSize: 11, color: aNote.startsWith("Échec") ? C.coral : C.green, textAlign: "center" }}>{aNote}</div>}
         </div>
       </div>
     </div>

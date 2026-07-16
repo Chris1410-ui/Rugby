@@ -305,25 +305,25 @@ export function buildAlerts(players, sessions, logs, daily) {
   players.forEach((p) => {
     const L = p._load || playerLoad(p, sessions, logs);
     if (L.acwr > 1.5)
-      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "high", icon: "⚡", txt: `ACWR ${L.acwr} — zone de surcharge`, cat: "charge" });
+      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "high", icon: "⚡", txt: `ACWR ${L.acwr} — zone de surcharge`, cat: "charge", key: "acwr-high" });
     else if (L.acwr > 0 && L.acwr < 0.8)
-      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "low", icon: "📉", txt: `ACWR ${L.acwr} — sous-charge (désentraînement)`, cat: "charge" });
+      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "low", icon: "📉", txt: `ACWR ${L.acwr} — sous-charge (désentraînement)`, cat: "charge", key: "acwr-low" });
     if (L.monotony > 2)
-      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "🔁", txt: `Monotonie ${L.monotony} — manque de variété de charge`, cat: "charge" });
+      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "🔁", txt: `Monotonie ${L.monotony} — manque de variété de charge`, cat: "charge", key: "monotony" });
     const dd = daily?.[p.id];
     if (dd?.wb) {
       if (dd.wb.fatigue >= 8)
-        out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "high", icon: "🥵", txt: `Fatigue déclarée ${dd.wb.fatigue}/10`, cat: "bien-être" });
+        out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "high", icon: "🥵", txt: `Fatigue déclarée ${dd.wb.fatigue}/10`, cat: "bien-être", key: "fatigue" });
       if (dd.wb.soreness >= 8)
-        out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "💢", txt: `Courbatures ${dd.wb.soreness}/10`, cat: "bien-être" });
+        out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "💢", txt: `Courbatures ${dd.wb.soreness}/10`, cat: "bien-être", key: "soreness" });
       if (dd.wb.sleep <= 4 || dd.sleepH <= 5)
-        out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "😴", txt: `Sommeil insuffisant (${dd.sleepH || dd.wb.sleep}${dd.sleepH ? "h" : "/10"})`, cat: "bien-être" });
+        out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "😴", txt: `Sommeil insuffisant (${dd.sleepH || dd.wb.sleep}${dd.sleepH ? "h" : "/10"})`, cat: "bien-être", key: "sleep" });
     }
     const overdue = sessions.filter(
       (s) => s.assignedIds?.includes(p.id) && s.date < today && statusOfLog(logs, s.id, p.id) === "pending"
     ).length;
     if (overdue > 0)
-      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "⏳", txt: `${overdue} séance${overdue > 1 ? "s" : ""} non validée${overdue > 1 ? "s" : ""}`, cat: "compliance" });
+      out.push({ pid: p.id, name: p.name, grp: p.grp, sev: "med", icon: "⏳", txt: `${overdue} séance${overdue > 1 ? "s" : ""} non validée${overdue > 1 ? "s" : ""}`, cat: "compliance", key: "overdue" });
   });
   const order = { high: 0, med: 1, low: 2 };
   return out.sort((a, b) => order[a.sev] - order[b.sev]);
