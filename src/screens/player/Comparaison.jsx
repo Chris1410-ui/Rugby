@@ -1,65 +1,198 @@
-import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { Section } from "../../lib/ui.jsx";
+import { useTestCampaigns } from "../../data/tests.js";
+import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor } from "../../lib/top14.js";
 
-/* Comparaison intra-ligne (vue joueur). Métriques dérivées de l'effectif enrichi. */
-const CMP = [
-  { k: "readiness", l: "Readiness", fmt: (v) => Math.round(v), higher: true },
-  { k: "acwr", l: "ACWR", fmt: (v) => v.toFixed(2), higher: null },
-  { k: "wellness", l: "Bien-être", fmt: (v) => Math.round(v), higher: true },
-  { k: "charge7j", l: "Charge 7j", fmt: (v) => Math.round(v), higher: true },
-  { k: "backSquat", l: "Back Squat (×PDC)", fmt: (v) => Number(v).toFixed(2), higher: true },
-  { k: "monotonie", l: "Monotonie", fmt: (v) => Number(v).toFixed(2), higher: false },
-  { k: "risque", l: "Risque", fmt: (v) => Math.round(v), higher: false },
-];
+/* Comparaison « Où je me situe ? » (vue joueur). Pour chaque test : ma valeur,
+   la moyenne de ma ligne (avants/arrières) et le repère Top 14, sur une barre où
+   « à droite = mieux ». Langage simple, progrès mis en avant. Compare uniquement
+   dans mon club et ma ligne (RLS + filtre grp). Réutilise TOP14_TESTS /
+   TOP14_BENCH — aucune formule modifiée. */
 
-export default function Comparaison({ me, players, accent = C.green }) {
-  const [mk, setMk] = useState("readiness");
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const mean = (arr) => (arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : null);
+const secMMSS = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+
+// Les 8 tests demandés (Hang Clean exclu ici), en langage joueur.
+const FRIENDLY = {
+  mas:       { label: "Ta vitesse",     sub: "MAS",              fmt: (v) => `${v.toFixed(1)} m/s`, dfmt: (d) => `${d > 0 ? "+" : ""}${d.toFixed(1)} m/s` },
+  yoyo:      { label: "Ton cardio",     sub: "Yo-Yo",            fmt: (v) => `${Math.round(v)} m`,  dfmt: (d) => `${d > 0 ? "+" : ""}${Math.round(d)} m` },
+  bronco:    { label: "Ton endurance",  sub: "Bronco",           fmt: (v) => secMMSS(v),            dfmt: (d) => `${d > 0 ? "+" : ""}${Math.round(d)} s` },
+  cmj:       { label: "Ta détente",     sub: "CMJ",              fmt: (v) => `${Math.round(v)} cm`, dfmt: (d) => `${d > 0 ? "+" : ""}${Math.round(d)} cm` },
+  squat:     { label: "Ta force",       sub: "Squat",            fmt: (v) => `${v.toFixed(2)}×`,    dfmt: (d) => `${d > 0 ? "+" : ""}${d.toFixed(2)}×` },
+  bench:     { label: "Ta force",       sub: "Développé couché", fmt: (v) => `${v.toFixed(2)}×`,    dfmt: (d) => `${d > 0 ? "+" : ""}${d.toFixed(2)}×` },
+  deadlift:  { label: "Ta force",       sub: "Soulevé de terre", fmt: (v) => `${v.toFixed(2)}×`,    dfmt: (d) => `${d > 0 ? "+" : ""}${d.toFixed(2)}×` },
+  tractions: { label: "Ton tirage",     sub: "Tractions",        fmt: (v) => `${v.toFixed(2)}×`,    dfmt: (d) => `${d > 0 ? "+" : ""}${d.toFixed(2)}×` },
+};
+const ORDER = ["mas", "yoyo", "bronco", "cmj", "squat", "bench", "deadlift", "tractions"];
+const testDef = Object.fromEntries(TOP14_TESTS.map((t) => [t.key, t]));
+
+export default function Comparaison({ me, players }) {
+  const { campaigns, results, loading } = useTestCampaigns(me.team);
+  const cat = posToCat(me.pos);
+  const bench = cat ? TOP14_BENCH[cat] : null;
   const peers = players.filter((p) => p.grp === me.grp);
-  const metric = CMP.find((m) => m.k === mk);
-  const vals = peers.map((p) => Number(p[mk]) || 0);
-  const avg = vals.reduce((s, v) => s + v, 0) / (vals.length || 1);
-  const min = Math.min(...vals), max = Math.max(...vals);
-  const sorted = [...peers].sort((a, b) => (metric.higher === false ? a[mk] - b[mk] : b[mk] - a[mk]));
-  const rank = sorted.findIndex((p) => p.id === me.id) + 1;
-  const pct = max === min ? 50 : ((Number(me[mk]) - min) / (max - min)) * 100;
-  const better = metric.higher === null ? null : metric.higher ? me[mk] >= avg : me[mk] <= avg;
+
+  // Dernier résultat daté par joueur de ma ligne (+ mon avant-dernier pour le progrès).
+  const myDated = datedResultsFor(campaigns, results, me.id);
+  const myLast = myDated.length ? myDated[myDated.length - 1] : null;
+  const myPrev = myDated.length >= 2 ? myDated[myDated.length - 2] : null;
+  const peerLatest = peers.map((p) => {
+    const d = datedResultsFor(campaigns, results, p.id);
+    return { p, r: d.length ? d[d.length - 1] : null };
+  });
+
+  const cards = ORDER.map((key) => build(key, { me, myLast, myPrev, peerLatest, bench, grp: me.grp })).filter(Boolean);
+  const measured = cards.filter((c) => c.myVal != null);
+
+  // Message positif : meilleur progrès (plus gros gain relatif) depuis le dernier camp.
+  const best = measured
+    .filter((c) => c.improved === true && c.delta != null)
+    .sort((a, b) => Math.abs(b.delta / (b.myVal || 1)) - Math.abs(a.delta / (a.myVal || 1)))[0];
+
+  if (loading && !myLast) {
+    return <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement de tes tests…</div>;
+  }
 
   return (
     <div>
-      <div style={sc({ marginBottom: 12 })}>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, marginBottom: 8 }}>MON POSITIONNEMENT · {metric.l.toUpperCase()}</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
-          <span style={{ fontSize: 40, fontWeight: 900, color: accent }}>{metric.fmt(me[mk])}</span>
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>moyenne {metric.fmt(avg)}</span>
+      {/* En-tête : une seule question centrale */}
+      <div style={sc({ marginBottom: 12, padding: 16 })}>
+        <div style={{ fontSize: 19, fontWeight: 900 }}>Où je me situe ?</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 3 }}>
+          Comparé aux {peers.length} {grpLabel(me.grp)?.toLowerCase() || "joueurs"} de ton club. La barre : <b style={{ color: "#fff" }}>toi</b>, la moyenne de ta ligne, et le repère Top 14. À droite = mieux.
         </div>
-        <div style={{ fontSize: 12, color: better === null ? "rgba(255,255,255,0.5)" : better ? C.green : C.amb, fontWeight: 600, marginBottom: 14 }}>
-          {rank}{rank === 1 ? "ᵉʳ" : "ᵉ"} sur {peers.length} · {grpLabel(me.grp)} {better === null ? "" : better ? "· au-dessus de la moyenne" : "· sous la moyenne"}
-        </div>
-        <div style={{ position: "relative", height: 8, background: "rgba(255,255,255,0.08)", borderRadius: 4, marginBottom: 6 }}>
-          <div style={{ position: "absolute", left: `${((avg - min) / (max - min || 1)) * 100}%`, top: -3, width: 2, height: 14, background: "rgba(255,255,255,0.4)" }} />
-          <div style={{ position: "absolute", left: `calc(${pct}% - 7px)`, top: -3, width: 14, height: 14, borderRadius: 7, background: accent, border: "2px solid #fff" }} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "rgba(255,255,255,0.56)" }}><span>min {metric.fmt(min)}</span><span>moy.</span><span>max {metric.fmt(max)}</span></div>
+        {best && (
+          <div style={{ marginTop: 12, background: `${C.green}1a`, border: `1px solid ${C.green}55`, borderRadius: 10, padding: "10px 12px", fontSize: 13, fontWeight: 700, color: C.green }}>
+            {FRIENDLY[best.key].dfmt(best.delta)} {best.sub === "Bronco" ? "au Bronco (plus rapide)" : `en ${FRIENDLY[best.key].label.toLowerCase()} (${best.sub})`} depuis le dernier camp 💪
+          </div>
+        )}
       </div>
 
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 12, paddingBottom: 2 }}>
-        {CMP.map((m) => <button key={m.k} onClick={() => setMk(m.k)} style={{ flex: "0 0 auto", whiteSpace: "nowrap", padding: "7px 12px", borderRadius: 8, border: "none", fontWeight: 700, fontSize: 11, cursor: "pointer", background: mk === m.k ? accent : "rgba(255,255,255,0.07)", color: "#fff" }}>{m.l}</button>)}
+      {!myLast ? (
+        <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12.5, lineHeight: 1.6 })}>
+          Aucun test enregistré pour l'instant.<br />Tes résultats apparaîtront ici après ta prochaine évaluation physique.
+        </div>
+      ) : (
+        cards.map((c) => <TestCard key={c.key} c={c} />)
+      )}
+    </div>
+  );
+}
+
+function build(key, { me, myLast, myPrev, peerLatest, bench, grp }) {
+  const t = testDef[key];
+  const f = FRIENDLY[key];
+  if (!t || !f) return null;
+  const top14 = bench ? bench[key] : null;
+  const dir = t.dir; // 'up' | 'down'
+
+  const myVal = myLast ? val(t, myLast) : null;
+  const prevVal = myPrev ? val(t, myPrev) : null;
+  const delta = myVal != null && prevVal != null ? myVal - prevVal : null;
+  const improved = delta == null ? null : dir === "down" ? delta < 0 : delta > 0;
+
+  const peerVals = peerLatest
+    .map(({ p, r }) => ({ id: p.id, v: r ? val(t, r) : null }))
+    .filter((x) => x.v != null && Number.isFinite(x.v));
+  const lineAvg = mean(peerVals.map((x) => x.v));
+
+  // Rang dans ma ligne sur ce test (mieux d'abord).
+  const sorted = [...peerVals].sort((a, b) => (dir === "down" ? a.v - b.v : b.v - a.v));
+  const rank = myVal != null ? sorted.findIndex((x) => x.id === me.id) + 1 : null;
+  const total = peerVals.length;
+
+  // Couleur : au-dessus de la moyenne = vert, proche (±5 %) = ambre, en dessous = coral.
+  const reachedTop14 = top14 != null && myVal != null && (dir === "down" ? myVal <= top14 : myVal >= top14);
+  let color = C.gray;
+  if (reachedTop14) color = C.green;
+  else if (lineAvg != null && myVal != null) {
+    const rel = (dir === "down" ? lineAvg - myVal : myVal - lineAvg) / (Math.abs(lineAvg) || 1);
+    color = rel > 0.05 ? C.green : rel >= -0.05 ? C.amb : C.coral;
+  }
+
+  return { key, label: f.label, sub: f.sub, fmt: f.fmt, dir, myVal, delta, improved, lineAvg, top14, rank, total, color, reachedTop14, grp };
+}
+
+// Valeur comparable d'un test (×PdC pour la force via bodyweight ; brut sinon).
+function val(t, r) {
+  const v = t.from(r, r?.bodyweight != null ? Number(r.bodyweight) : null);
+  return v != null && Number.isFinite(v) && v > 0 ? v : null;
+}
+
+function TestCard({ c }) {
+  const { fmt, myVal, lineAvg, top14, dir } = c;
+  // Domaine de la barre (avec marge) ; « à droite = mieux » (axe inversé si down).
+  const pts = [myVal, lineAvg, top14].filter((v) => v != null && Number.isFinite(v));
+  const lo = Math.min(...pts), hi = Math.max(...pts);
+  const pad = (hi - lo) * 0.18 || Math.abs(hi) * 0.12 || 1;
+  const dMin = Math.max(0, lo - pad), dMax = hi + pad;
+  const pos = (v) => {
+    if (v == null || !Number.isFinite(v) || dMax === dMin) return null;
+    const raw = ((v - dMin) / (dMax - dMin)) * 100;
+    return clamp(dir === "down" ? 100 - raw : raw, 0, 100);
+  };
+  const myPos = pos(myVal), avgPos = pos(lineAvg), t14Pos = pos(top14);
+
+  if (myVal == null) {
+    return (
+      <div style={sc({ marginBottom: 10, padding: 14 })}>
+        <Head c={c} />
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>Pas encore mesuré.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={sc({ marginBottom: 10, padding: 14, borderLeft: `3px solid ${c.color}` })}>
+      <Head c={c} />
+
+      {/* Valeur + progrès */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 30, fontWeight: 900, color: c.color }}>{fmt(myVal)}</span>
+        {c.delta != null && Math.abs(c.delta) > 1e-9 && (
+          <span style={{ fontSize: 12, fontWeight: 800, color: c.improved ? C.green : C.coral }}>
+            {c.improved ? "▲" : "▼"} {FRIENDLY[c.key].dfmt(c.delta)} <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>depuis le dernier camp</span>
+          </span>
+        )}
       </div>
 
-      <Section title={`CLASSEMENT · ${metric.l} · ${grpLabel(me.grp)}`}>
-        {sorted.map((p, i) => {
-          const isMe = p.id === me.id;
-          return (
-            <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px", borderBottom: `1px solid ${C.border2}`, background: isMe ? `${accent}14` : "none", borderRadius: isMe ? 8 : 0 }}>
-              <span style={{ width: 22, fontSize: 13, fontWeight: 800, color: i === 0 ? accent : "rgba(255,255,255,0.6)" }}>{i + 1}</span>
-              <span style={{ flex: 1, fontSize: 13, fontWeight: isMe ? 800 : 500 }}>{isMe ? "Moi — " + p.name : p.name}</span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: isMe ? accent : "rgba(255,255,255,0.7)" }}>{metric.fmt(p[mk])}</span>
-            </div>
-          );
-        })}
-      </Section>
+      {/* Barre : toi / moyenne ligne / Top 14 */}
+      <div style={{ position: "relative", height: 10, background: "rgba(255,255,255,0.08)", borderRadius: 5, marginBottom: 8 }}>
+        {avgPos != null && (
+          <div style={{ position: "absolute", left: `${avgPos}%`, top: -3, width: 2, height: 16, background: "rgba(255,255,255,0.55)" }} title="Moyenne de ta ligne" />
+        )}
+        {t14Pos != null && (
+          <div style={{ position: "absolute", left: `calc(${t14Pos}% - 1px)`, top: -6, display: "flex", flexDirection: "column", alignItems: "center" }} title="Repère Top 14">
+            <span style={{ fontSize: 9 }}>🏆</span>
+            <div style={{ width: 2, height: 13, background: C.amb }} />
+          </div>
+        )}
+        <div style={{ position: "absolute", left: `calc(${myPos}% - 8px)`, top: -4, width: 18, height: 18, borderRadius: 9, background: c.color, border: "2px solid #fff", boxShadow: "0 1px 4px rgba(0,0,0,0.4)" }} title="Toi" />
+      </div>
+
+      {/* Légende chiffrée */}
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10 }}>
+        <span style={{ color: c.color, fontWeight: 800 }}>Toi {fmt(myVal)}</span>
+        <span style={{ color: "rgba(255,255,255,0.6)" }}>Ligne {lineAvg != null ? fmt(lineAvg) : "—"}</span>
+        <span style={{ color: C.amb, fontWeight: 700 }}>Top 14 {top14 != null ? fmt(top14) : "—"}</span>
+      </div>
+    </div>
+  );
+}
+
+function Head({ c }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 800 }}>{c.label} <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.55)" }}>· {c.sub}</span></div>
+      </div>
+      {c.reachedTop14 && <span style={{ fontSize: 9, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 5, padding: "2px 6px" }}>🏆 TOP 14</span>}
+      {c.rank != null && c.total > 0 && (
+        <span style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>
+          {c.rank}ᵉ / {c.total} {grpLabel(c.grp)?.toLowerCase() || ""}
+        </span>
+      )}
     </div>
   );
 }
