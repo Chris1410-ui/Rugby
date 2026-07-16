@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { useAuth } from "./useAuth.jsx";
+import { requestPasswordReset } from "../data/players.js";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { RUGBY_POS, POS_GROUPS } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
@@ -143,6 +144,16 @@ export default function LoginScreen() {
     setBusy(false);
     if (error) return setErr(error.message);
     setInfo("Email de réinitialisation envoyé (si le compte existe).");
+  };
+
+  // Joueur : demander au staff/responsable de réinitialiser le mot de passe.
+  const doRequestStaff = async () => {
+    reset();
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setErr("Saisis d'abord ton email.");
+    setBusy(true);
+    try { await requestPasswordReset(email.trim()); } catch { /* réponse volontairement générique */ }
+    setBusy(false);
+    setInfo("Demande transmise au staff. Il te communiquera un nouveau mot de passe.");
   };
 
   const spinner = (
@@ -346,12 +357,21 @@ export default function LoginScreen() {
         <button onClick={doSignIn} disabled={busy} style={{ width: "100%", background: busy ? "rgba(255,255,255,0.1)" : C.coral, border: "none", borderRadius: 10, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
           {busy ? spinner : "Se connecter"}
         </button>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14 }}>
-          <button onClick={() => { reset(); setStep("role"); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, cursor: "pointer" }}>
-            Créer un compte
-          </button>
+        {/* Deux options de réinitialisation, côte à côte :
+            — « Mot de passe oublié ? » : lien email (surtout staff/owner).
+            — « Demander au staff » : le joueur demande, ça remonte au responsable. */}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
           <button onClick={doForgot} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, cursor: "pointer" }}>
             Mot de passe oublié ?
+          </button>
+          <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>·</span>
+          <button onClick={doRequestStaff} style={{ background: "none", border: "none", color: C.green, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+            Demander au staff
+          </button>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          <button onClick={() => { reset(); setStep("role"); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, cursor: "pointer" }}>
+            Créer un compte
           </button>
         </div>
       </div>

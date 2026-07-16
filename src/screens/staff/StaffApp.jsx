@@ -11,7 +11,7 @@ import { useTeamTaskCompletions } from "../../data/tasks.js";
 import { useTeamAssignments } from "../../data/questionnaires.js";
 import { useAlertStatus } from "../../data/alerts.js";
 import { staffTaskToConfirm, staffQuestionnaireTodo, activeAlertsCount } from "../../lib/badges.js";
-import { addPlayer } from "../../data/players.js";
+import { addPlayer, usePasswordResetRequests, markResetHandled } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
@@ -54,6 +54,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   const { byTask } = useTeamTaskCompletions(profile.team_id);
   const { byQuestionnaire } = useTeamAssignments(profile.team_id);
   const { statuses } = useAlertStatus(profile.team_id);
+  const { requests: resetReqs } = usePasswordResetRequests(profile.team_id);
   const bTaches = staffTaskToConfirm(byTask);
   const bQuest = staffQuestionnaireTodo(byQuestionnaire);
   const bAlertes = activeAlertsCount(players, sessions, logs, checkins, statuses, todayISO());
@@ -65,7 +66,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   }
 
   const nav = [
-    ["effectif", "Joueurs", Users],
+    ["effectif", "Joueurs", Users, resetReqs.length],
     ["aujourdhui", "Aujourd'hui", Sun],
     ["alertes", "Suivi", Bell, bAlertes],
     ["messages", "Messages", MessageSquare, unread],
@@ -83,7 +84,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <main style={{ flex: 1, padding: 18 }}>
-        {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} />}
+        {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} resetRequests={resetReqs} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
@@ -134,7 +135,7 @@ function StaffFab({ go }) {
 }
 
 /* ── Effectif enrichi ── */
-function Effectif({ teamId, players, sessions, logs, activities = {}, loading, onPreview }) {
+function Effectif({ teamId, players, sessions, logs, activities = {}, loading, onPreview, resetRequests = [] }) {
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
   const [report, setReport] = useState(null); // joueur pour le récap détaillé
@@ -175,6 +176,28 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
           <Plus size={15} /> Ajouter
         </button>
       </div>
+
+      {/* Demandes de réinitialisation de mot de passe (joueur → staff) */}
+      {resetRequests.length > 0 && (
+        <div style={{ background: `${C.amb}14`, border: `1px solid ${C.amb}55`, borderRadius: 12, padding: 12, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.amb, letterSpacing: 0.5, marginBottom: 8 }}>🔑 DEMANDES DE MOT DE PASSE · {resetRequests.length}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {resetRequests.map((r) => {
+              const pl = players.find((p) => p.id === r.player_id);
+              return (
+                <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 9, padding: "8px 10px" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name || pl?.name || r.email}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.email}{r.note ? ` · « ${r.note} »` : ""}</div>
+                  </div>
+                  {pl && <button onClick={() => setFiche(pl)} title="Ouvrir la fiche pour réinitialiser" style={{ background: `${C.green}1f`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: "6px 10px", color: C.green, fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>Réinitialiser</button>}
+                  <button onClick={() => markResetHandled(r.id).catch((e) => console.error(e.message))} title="Marquer traité" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>Traité</button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Mode démo : joueurs fictifs complets pour démonstration */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>

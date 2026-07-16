@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Mappe une ligne DB `players` → la forme camelCase attendue par le moteur
    métier (lib/metrics.js). Les valeurs seed alimentent le moteur de charge/risque. */
@@ -127,4 +128,55 @@ export async function resetPlayerPassword(playerId, newPassword) {
   }
   if (data?.error) throw new Error(data.error);
   return data;
+}
+
+/* Demande de réinitialisation émise par un JOUEUR non authentifié (écran de
+   connexion). Passe par l'Edge Function publique `request-password-reset` qui
+   route la demande vers le staff/owner du club. Réponse générique. */
+export async function requestPasswordReset(email, note) {
+  const { data, error } = await supabase.functions.invoke("request-password-reset", {
+    body: { email, note },
+  });
+  if (error) {
+    let msg = error.message;
+    try { const body = await error.context?.json?.(); if (body?.error) msg = body.error; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  return data;
+}
+
+/* Demandes de réinitialisation en attente pour le club (staff/owner). Realtime →
+   la pastille/bannière se met à jour en direct. */
+export function usePasswordResetRequests(teamId) {
+  const [requests, setRequests] = useState([]);
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setRequests([]); return; }
+    const { data, error } = await supabase
+      .from("password_reset_requests")
+      .select("*").eq("team_id", teamId).eq("status", "pending")
+      .order("created_at", { ascending: false });
+    if (error) { console.error("[reset requests]", error.message); return; }
+    setRequests(data ?? []);
+  }, [teamId]);
+
+  useEffect(() => {
+    fetch();
+    if (!teamId) return;
+    const ch = supabase.channel(uniqueTopic(`prr:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "password_reset_requests", filter: `team_id=eq.${teamId}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [teamId, fetch]);
+
+  return { requests, refresh: fetch };
+}
+
+// Marque une demande comme traitée (retirée de la file).
+export async function markResetHandled(id) {
+  const { data: auth } = await supabase.auth.getUser();
+  const { error } = await supabase.from("password_reset_requests")
+    .update({ status: "done", handled_at: new Date().toISOString(), handled_by: auth?.user?.id })
+    .eq("id", id);
+  if (error) throw error;
 }
