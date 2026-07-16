@@ -3,6 +3,9 @@ import { C } from "../../lib/tokens.js";
 import { sc } from "../../lib/tokens.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
+import { useMyQuestionnaires } from "../../data/questionnaires.js";
+import { useTeamTasks, useMyTaskCompletions } from "../../data/tasks.js";
+import { playerSessionTodo, playerTaskTodo, questionnaireTodo } from "../../lib/badges.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
@@ -25,7 +28,7 @@ const ACCENT = C.green;
 /* Espace joueur. Toutes les données viennent de useTeamData → enrichPlayers
    (une seule dérivation ; aucun recalcul écran par écran). RLS limite l'effectif
    au joueur lui-même. */
-export default function PlayerApp({ profile, preview = false, tab: tabProp, onTab, notifs }) {
+export default function PlayerApp({ profile, preview = false, tab: tabProp, onTab }) {
   const [tabState, setTabState] = useState("bilan");
   const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
   const setTab = onTab || setTabState;
@@ -34,7 +37,13 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
-  const nb = (route) => notifs?.byRoute?.[route] || 0; // pastilles non-lus par onglet
+  // Pastilles = état réel en attente (pas le journal notifications), en direct.
+  const { list: myQ } = useMyQuestionnaires(me?.id);
+  const { tasks } = useTeamTasks(profile.team_id, players);
+  const { statutByTask } = useMyTaskCompletions(me?.id);
+  const bSeances = playerSessionTodo(sessions, logs, me?.id, today);
+  const bTaches = playerTaskTodo(tasks, statutByTask, me?.id);
+  const bQuest = questionnaireTodo(myQ);
   const mobile = useIsMobile();
 
   if (loading && !me) {
@@ -52,10 +61,10 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
 
   const nav = [
     ["bilan", "Aujourd'hui", Sun],
-    ["seances", "Mes séances", Dumbbell, nb("seances")],
-    ["taches", "Tâches", ClipboardList, nb("taches")],
-    ["questionnaires", "Quest.", FileText, nb("questionnaires")],
-    ["messages", "Messages", MessageSquare, Math.max(unread, nb("messages"))],
+    ["seances", "Mes séances", Dumbbell, bSeances],
+    ["taches", "Tâches", ClipboardList, bTaches],
+    ["questionnaires", "Quest.", FileText, bQuest],
+    ["messages", "Messages", MessageSquare, unread],
     ["equipe", "Mon équipe", Users],
     ["classement", "Classement", Trophy],
     ["calendrier", "Calendrier", Calendar],

@@ -81,7 +81,7 @@ export default function AppShell() {
 
         {staff
           ? <StaffApp profile={profile} tab={tab} onTab={goTab} />
-          : <PlayerApp profile={profile} tab={tab} onTab={goTab} notifs={notifs} />}
+          : <PlayerApp profile={profile} tab={tab} onTab={goTab} />}
       </div>
       {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} />}
     </div>
