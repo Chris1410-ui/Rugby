@@ -37,7 +37,14 @@ export function dbToSession(row, roster) {
     exercises: Array.isArray(row.exercises) ? row.exercises : [],
     assigned: row.assigned || { mode: "all" },
     assignedIds: resolveAssignedIds(row.assigned, roster),
+    campaignId: row.campaign_id || null, // séance-test → campagne de tests liée (0021)
   };
+}
+
+// Lie une séance-test à la campagne de tests qu'elle remplit (créée à la 1re saisie).
+export async function linkSessionCampaign(sessionId, campaignId) {
+  const { error } = await supabase.from("sessions").update({ campaign_id: campaignId }).eq("id", sessionId);
+  if (error) throw error;
 }
 
 export function useTeamSessions(teamId, roster) {

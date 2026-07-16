@@ -14,6 +14,25 @@ describe("top14 — seuils exacts", () => {
     expect(TOP14_BENCH.centres).toMatchObject({ squat: 1.75, bench: 1.35, deadlift: 2.05, tractions: 0.42, bronco: 290, yoyo: 1900, cmj: 40 });
     expect(TOP14_BENCH.triangle).toMatchObject({ squat: 1.7, bench: 1.3, deadlift: 2.05, tractions: 0.43, bronco: 285, yoyo: 2000, cmj: 42 });
   });
+  it("inclut les nouveaux seuils MAS (m/s) et Hang Clean 2RM (×PdC)", () => {
+    expect(TOP14_BENCH.premiere).toMatchObject({ mas: 4.3, hangclean: 1.0 });
+    expect(TOP14_BENCH.triangle).toMatchObject({ mas: 5.0, hangclean: 1.15 });
+    expect(TOP14_TESTS.map((t) => t.key)).toEqual(
+      ["squat", "bench", "deadlift", "hangclean", "tractions", "mas", "bronco", "yoyo", "cmj"]
+    );
+  });
+});
+
+describe("evalTest — nouveaux tests", () => {
+  it("MAS ≥ seuil (m/s) = valide", () => {
+    expect(evalTest(testByKey.mas, { mas: 5.0 }, "triangle").valid).toBe(true);   // 5.0 ≥ 5.0
+    expect(evalTest(testByKey.mas, { mas: 4.5 }, "triangle").valid).toBe(false);  // 4.5 < 5.0
+  });
+  it("Hang Clean 2RM en ×PdC (kg ÷ poids de corps)", () => {
+    const e = evalTest(testByKey.hangclean, { hang_clean_2rm: 110, bodyweight: 100 }, "troisieme"); // 1.10 ≥ 1.10
+    expect(e.valid).toBe(true);
+    expect(evalTest(testByKey.hangclean, { hang_clean_2rm: 100, bodyweight: 100 }, "charniere").valid).toBe(false); // 1.0 < 1.15
+  });
 });
 
 describe("posToCat — mapping (ancien + nouveau libellé)", () => {

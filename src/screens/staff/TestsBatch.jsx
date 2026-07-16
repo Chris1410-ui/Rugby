@@ -3,6 +3,7 @@ import { C } from "../../lib/tokens.js";
 import { Plus, X, CheckCircle } from "../../lib/icons.jsx";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
 import { useTestCampaigns, createCampaign, saveResultsBulk, TEST_METRICS } from "../../data/tests.js";
+import { linkSessionCampaign } from "../../data/sessions.js";
 
 const numFR = (v) => {
   if (v == null || v === "") return null;
@@ -13,20 +14,22 @@ const accent = C.coral;
 
 /* Saisie groupée des tests physiques : une campagne × tout l'effectif dans une
    grille éditable (staff). Un seul enregistrement (bulk upsert). */
-export default function TestsBatch({ teamId, players, camp = null, onClose }) {
+export default function TestsBatch({ teamId, players, camp = null, session = null, onClose }) {
   const { campaigns: allCampaigns, results } = useTestCampaigns(teamId);
   // En contexte camp : ne montrer/gérer que les campagnes rattachées à ce camp.
   const campaigns = camp ? allCampaigns.filter((c) => c.campId === camp.id) : allCampaigns;
   const [selCamp, setSelCamp] = useState(null);
-  const [creating, setCreating] = useState(camp ? campaigns.length === 0 : false);
-  const [newCamp, setNewCamp] = useState({ name: "", date: camp ? camp.dateDebut : todayISO() });
+  const [creating, setCreating] = useState((camp && campaigns.length === 0) && !session?.campaignId);
+  const [newCamp, setNewCamp] = useState({ name: session ? "Tests" : "", date: session?.date || (camp ? camp.dateDebut : todayISO()) });
   const [grid, setGrid] = useState({}); // { [playerId]: { metricKey: value } }
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    if (!selCamp && campaigns.length) setSelCamp(campaigns[campaigns.length - 1].id);
-  }, [campaigns, selCamp]);
+    // Séance-test déjà liée à une campagne → on l'ouvre directement.
+    if (!selCamp && session?.campaignId) setSelCamp(session.campaignId);
+    else if (!selCamp && campaigns.length) setSelCamp(campaigns[campaigns.length - 1].id);
+  }, [campaigns, selCamp, session]);
 
   // (Re)charge la grille depuis les résultats de la campagne sélectionnée.
   const byPlayer = useMemo(() => {
@@ -53,7 +56,9 @@ export default function TestsBatch({ teamId, players, camp = null, onClose }) {
     setBusy(true); setNote("");
     try {
       const c = await createCampaign(teamId, { ...newCamp, campId: camp?.id ?? null });
-      setSelCamp(c.id); setCreating(false); setNewCamp({ name: "", date: camp ? camp.dateDebut : todayISO() });
+      // Séance-test : on lie la campagne créée à la séance → réouvre la même.
+      if (session && !session.campaignId) { try { await linkSessionCampaign(session.id, c.id); } catch (e) { console.error("[link session campaign]", e.message); } }
+      setSelCamp(c.id); setCreating(false); setNewCamp({ name: session ? "Tests" : "", date: session?.date || (camp ? camp.dateDebut : todayISO()) });
     } catch (e) { setNote("Échec : " + (e.message || "réessaie.")); }
     setBusy(false);
   };

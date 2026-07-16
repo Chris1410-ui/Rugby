@@ -6,25 +6,26 @@
    borne basse de la fourchette. Modifie librement les nombres ici.
 
    Table de référence (borne basse) :
-     Poste (n°)            Squat  Bench  Deadlift  Tractions  Bronco   Yo-Yo   CMJ
-     1re ligne (1,2,3)     1.70   1.30   1.95      +0.25      ≤5:30    ≥1400   ≥32
-     2e ligne (4,5)        1.65   1.15   1.90      +0.30      ≤5:20    ≥1500   ≥34
-     3e ligne (6,7,8)      1.75   1.30   2.00      +0.37      ≤5:05    ≥1800   ≥38
-     Charnière (9,10)      1.75   1.30   2.10      +0.40      ≤4:45    ≥2000   ≥40
-     Centres (12,13)       1.75   1.35   2.05      +0.42      ≤4:50    ≥1900   ≥40
-     Triangle arr.(11,14,15)1.70  1.30   2.05      +0.43      ≤4:45    ≥2000   ≥42
-   (Squat/Bench/Deadlift/Tractions en ×PdC ; Bronco en secondes ; Yo-Yo en m ; CMJ en cm.)
+     Poste (n°)            Squat  Bench  Deadlift  HangCln  Tractions  MAS   Bronco   Yo-Yo   CMJ
+     1re ligne (1,2,3)     1.70   1.30   1.95      1.00     +0.25      4.3   ≤5:30    ≥1400   ≥32
+     2e ligne (4,5)        1.65   1.15   1.90      1.00     +0.30      4.4   ≤5:20    ≥1500   ≥34
+     3e ligne (6,7,8)      1.75   1.30   2.00      1.10     +0.37      4.7   ≤5:05    ≥1800   ≥38
+     Charnière (9,10)      1.75   1.30   2.10      1.15     +0.40      4.9   ≤4:45    ≥2000   ≥40
+     Centres (12,13)       1.75   1.35   2.05      1.15     +0.42      4.7   ≤4:50    ≥1900   ≥40
+     Triangle arr.(11,14,15)1.70  1.30   2.05      1.15     +0.43      5.0   ≤4:45    ≥2000   ≥42
+   (Squat/Bench/Deadlift/HangClean/Tractions en ×PdC ; MAS en m/s ; Bronco en
+    secondes ; Yo-Yo en m ; CMJ en cm.)
    ════════════════════════════════════════════════════════════════ */
 
 // Seuils EXACTS (Bronco converti en secondes : 5:30=330, 5:20=320, 5:05=305,
-// 4:45=285, 4:50=290).
+// 4:45=285, 4:50=290). hangclean = ×PdC ; mas = m/s.
 export const TOP14_BENCH = {
-  premiere:  { label: "1re ligne (1,2,3)",         squat: 1.70, bench: 1.30, deadlift: 1.95, tractions: 0.25, bronco: 330, yoyo: 1400, cmj: 32 },
-  deuxieme:  { label: "2e ligne (4,5)",            squat: 1.65, bench: 1.15, deadlift: 1.90, tractions: 0.30, bronco: 320, yoyo: 1500, cmj: 34 },
-  troisieme: { label: "3e ligne (6,7,8)",          squat: 1.75, bench: 1.30, deadlift: 2.00, tractions: 0.37, bronco: 305, yoyo: 1800, cmj: 38 },
-  charniere: { label: "Charnière (9,10)",          squat: 1.75, bench: 1.30, deadlift: 2.10, tractions: 0.40, bronco: 285, yoyo: 2000, cmj: 40 },
-  centres:   { label: "Centres (12,13)",           squat: 1.75, bench: 1.35, deadlift: 2.05, tractions: 0.42, bronco: 290, yoyo: 1900, cmj: 40 },
-  triangle:  { label: "Triangle arrière (11,14,15)", squat: 1.70, bench: 1.30, deadlift: 2.05, tractions: 0.43, bronco: 285, yoyo: 2000, cmj: 42 },
+  premiere:  { label: "1re ligne (1,2,3)",         squat: 1.70, bench: 1.30, deadlift: 1.95, hangclean: 1.00, tractions: 0.25, mas: 4.3, bronco: 330, yoyo: 1400, cmj: 32 },
+  deuxieme:  { label: "2e ligne (4,5)",            squat: 1.65, bench: 1.15, deadlift: 1.90, hangclean: 1.00, tractions: 0.30, mas: 4.4, bronco: 320, yoyo: 1500, cmj: 34 },
+  troisieme: { label: "3e ligne (6,7,8)",          squat: 1.75, bench: 1.30, deadlift: 2.00, hangclean: 1.10, tractions: 0.37, mas: 4.7, bronco: 305, yoyo: 1800, cmj: 38 },
+  charniere: { label: "Charnière (9,10)",          squat: 1.75, bench: 1.30, deadlift: 2.10, hangclean: 1.15, tractions: 0.40, mas: 4.9, bronco: 285, yoyo: 2000, cmj: 40 },
+  centres:   { label: "Centres (12,13)",           squat: 1.75, bench: 1.35, deadlift: 2.05, hangclean: 1.15, tractions: 0.42, mas: 4.7, bronco: 290, yoyo: 1900, cmj: 40 },
+  triangle:  { label: "Triangle arrière (11,14,15)", squat: 1.70, bench: 1.30, deadlift: 2.05, hangclean: 1.15, tractions: 0.43, mas: 5.0, bronco: 285, yoyo: 2000, cmj: 42 },
 };
 
 // Poste app (players.pos, ancien OU nouveau libellé) → catégorie Top 14.
@@ -52,15 +53,19 @@ export const broncoToSec = (s) => {
   return n == null ? null : (n < 20 ? Math.round(n * 60) : n); // repli : « 5 » → 300 s
 };
 
-// Les 7 tests : comment extraire la valeur joueur d'un résultat (+ poids de corps).
+// Les 9 tests : comment extraire la valeur joueur d'un résultat (+ poids de corps).
+// Squat/Bench/Deadlift/Hang Clean/Tractions dérivés en ×PdC depuis le kg saisi ;
+// MAS en m/s ; Bronco en secondes ; Yo-Yo en m ; CMJ en cm.
 export const TOP14_TESTS = [
-  { key: "squat",     label: "Squat",     unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? parseKg(r.squat_5rm) / bw : null) },
-  { key: "bench",     label: "Bench",     unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.bench_5rm) / bw : null) },
-  { key: "deadlift",  label: "Deadlift",  unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.deadlift) / bw : null) },
-  { key: "tractions", label: "Tractions", unit: "+×PdC", dir: "up",   from: (r, bw) => (bw ? numOrNull(r.tractions) / bw : null) },
-  { key: "bronco",    label: "Bronco",    unit: "",      dir: "down", from: (r) => broncoToSec(r.bronco) },
-  { key: "yoyo",      label: "Yo-Yo IR1", unit: "m",     dir: "up",   from: (r) => numOrNull(r.yoyo) },
-  { key: "cmj",       label: "CMJ",       unit: "cm",    dir: "up",   from: (r) => numOrNull(r.cmj_overall) },
+  { key: "squat",     label: "Squat 5RM",      unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? parseKg(r.squat_5rm) / bw : null) },
+  { key: "bench",     label: "Bench 5RM",      unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.bench_5rm) / bw : null) },
+  { key: "deadlift",  label: "Deadlift",       unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.deadlift) / bw : null) },
+  { key: "hangclean", label: "Hang Clean 2RM", unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.hang_clean_2rm) / bw : null) },
+  { key: "tractions", label: "Tractions",      unit: "+×PdC", dir: "up",   from: (r, bw) => (bw ? numOrNull(r.tractions) / bw : null) },
+  { key: "mas",       label: "MAS",            unit: "m/s",   dir: "up",   from: (r) => numOrNull(r.mas) },
+  { key: "bronco",    label: "Bronco",         unit: "",      dir: "down", from: (r) => broncoToSec(r.bronco) },
+  { key: "yoyo",      label: "Yo-Yo IR1",      unit: "m",     dir: "up",   from: (r) => numOrNull(r.yoyo) },
+  { key: "cmj",       label: "CMJ",            unit: "cm",    dir: "up",   from: (r) => numOrNull(r.cmj_overall) },
 ];
 
 // Évalue un test pour UN résultat (une campagne). Bronco : valide si ≤ seuil ;

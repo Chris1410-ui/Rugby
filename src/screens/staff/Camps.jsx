@@ -3,7 +3,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { Flag, Plus, Activity, Trash2 } from "../../lib/icons.jsx";
-import { useTeamCamps, useCampCounts, createCamp, updateCamp, deleteCamp, inCamp } from "../../data/camps.js";
+import { useTeamCamps, useCampCounts, useCampParticipants, createCamp, updateCamp, deleteCamp, inCamp } from "../../data/camps.js";
 import { createSession } from "../../data/sessions.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import TestsBatch from "./TestsBatch.jsx";
@@ -156,7 +156,7 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
       </Section>
 
       {/* Séances de la période */}
-      <CampSessions camp={camp} teamId={teamId} sessions={campSessions} />
+      <CampSessions camp={camp} teamId={teamId} sessions={campSessions} players={players} />
 
       {/* Participation (inscrits / présents / séances validées) */}
       <CampParticipation camp={camp} teamId={teamId} players={players} sessions={campSessions} logs={logs} />
@@ -179,21 +179,33 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
   );
 }
 
-/* Séances de la période + création rapide (dont mode « inscription libre »). */
-function CampSessions({ camp, teamId, sessions }) {
+/* Séances de la période + création rapide (équipe / inscription libre / test).
+   Une séance-test (code TEST) ouvre l'écran unique de saisie des résultats,
+   lié à la campagne de tests du camp. */
+function CampSessions({ camp, teamId, sessions, players = [] }) {
   const [adding, setAdding] = useState(false);
   const [f, setF] = useState({ date: camp.dateDebut, code: "RS", titre: "Séance", mode: "all" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [saisie, setSaisie] = useState(null); // séance-test dont on saisit les résultats
+  const { participants } = useCampParticipants(camp.id);
   const inp = { background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" };
+
+  const isTest = (s) => s.code === "TEST";
 
   const add = async () => {
     if (f.date < camp.dateDebut || f.date > camp.dateFin) return setErr("La date doit être dans la période du camp.");
     setBusy(true); setErr("");
+    const test = f.mode === "test";
+    // Séance-test → assignée aux joueurs du camp (participants ; à défaut toute l'équipe).
+    const campIds = players.filter((p) => participants[p.id]).map((p) => p.id);
+    const assigned = test
+      ? { mode: "players", ids: campIds.length ? campIds : players.map((p) => p.id) }
+      : f.mode === "open" ? { mode: "open", ids: [] } : { mode: "all" };
     try {
       await createSession(teamId, {
-        date: f.date, code: f.code, titre: f.titre, durationMin: 60, exercises: [],
-        assigned: f.mode === "open" ? { mode: "open", ids: [] } : { mode: "all" },
+        date: f.date, code: test ? "TEST" : f.code, titre: test ? (f.titre === "Séance" ? "Tests physiques" : f.titre) : f.titre,
+        durationMin: 60, exercises: [], assigned,
       });
       setAdding(false); setF({ date: camp.dateDebut, code: "RS", titre: "Séance", mode: "all" });
     } catch (e) { setErr("Échec : " + (e.message || "")); }
@@ -207,16 +219,17 @@ function CampSessions({ camp, teamId, sessions }) {
           <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
             <input type="date" value={f.date} min={camp.dateDebut} max={camp.dateFin} onChange={(e) => setF((p) => ({ ...p, date: e.target.value }))} style={{ ...inp, flex: "0 0 140px" }} />
             <input value={f.titre} onChange={(e) => setF((p) => ({ ...p, titre: e.target.value }))} placeholder="Titre" style={{ ...inp, flex: "1 1 120px" }} />
-            <input value={f.code} onChange={(e) => setF((p) => ({ ...p, code: e.target.value.toUpperCase().slice(0, 4) }))} placeholder="Code" style={{ ...inp, flex: "0 0 70px", textAlign: "center" }} />
+            {f.mode !== "test" && <input value={f.code} onChange={(e) => setF((p) => ({ ...p, code: e.target.value.toUpperCase().slice(0, 4) }))} placeholder="Code" style={{ ...inp, flex: "0 0 70px", textAlign: "center" }} />}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <select value={f.mode} onChange={(e) => setF((p) => ({ ...p, mode: e.target.value }))} style={{ ...inp, flex: "1 1 160px" }}>
               <option value="all">Toute l'équipe</option>
               <option value="open">Inscription libre (les joueurs s'inscrivent)</option>
+              <option value="test">Tests physiques (saisie des résultats)</option>
             </select>
             <button onClick={add} disabled={busy} style={{ background: accent, border: "none", borderRadius: 8, padding: "8px 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>Créer</button>
           </div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>Séance vierge — complète les exercices ensuite dans Programmes.</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>{f.mode === "test" ? "Séance-test assignée aux joueurs du camp — tu saisiras leurs valeurs le jour dit." : "Séance vierge — complète les exercices ensuite dans Programmes."}</div>
           {err && <div style={{ fontSize: 11, color: C.coral, marginTop: 6 }}>{err}</div>}
         </div>
       )}
@@ -224,15 +237,23 @@ function CampSessions({ camp, teamId, sessions }) {
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Aucune séance dans la période.</div>
       ) : sessions.map((s) => {
         const open = s.assigned?.mode === "open";
+        const test = isTest(s);
         return (
           <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: `1px solid ${C.border2}` }}>
             <span style={{ fontSize: 11, fontWeight: 700, width: 54 }}>{fmtShort(s.date)}</span>
-            <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.code} · {s.titre}</span>
-            {open && <Tag c={C.teal}>{s.assignedIds.length} inscrit{s.assignedIds.length > 1 ? "s" : ""}</Tag>}
-            {open ? <Tag c={C.viol}>ouverte</Tag> : <Tag c="rgba(255,255,255,0.4)">équipe</Tag>}
+            <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{test ? "🧪 " : `${s.code} · `}{s.titre}</span>
+            {test ? (
+              <button onClick={() => setSaisie(s)} style={{ background: `${C.blue}22`, border: `1px solid ${C.blue}66`, borderRadius: 8, padding: "5px 10px", color: C.blue, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>
+            ) : (
+              <>
+                {open && <Tag c={C.teal}>{s.assignedIds.length} inscrit{s.assignedIds.length > 1 ? "s" : ""}</Tag>}
+                {open ? <Tag c={C.viol}>ouverte</Tag> : <Tag c="rgba(255,255,255,0.4)">équipe</Tag>}
+              </>
+            )}
           </div>
         );
       })}
+      {saisie && <TestsBatch teamId={teamId} players={players} camp={camp} session={saisie} onClose={() => setSaisie(null)} />}
     </Section>
   );
 }

@@ -8,7 +8,7 @@ import { uniqueTopic } from "./messages.js";
    bronco, yoyo, squat_5rm, cmj_overall, bench_5rm, hang_clean_2rm. */
 
 export const TEST_METRICS = [
-  { key: "mas", label: "MAS", type: "num", unit: " km/h", better: "up" },
+  { key: "mas", label: "MAS", type: "num", unit: " m/s", better: "up" },
   { key: "bronco", label: "Bronco", type: "text", unit: "", better: "down" },
   { key: "yoyo", label: "Yo-Yo IR", type: "num", unit: " m", better: "up" },
   { key: "squat_5rm", label: "Squat 5RM", type: "text", unit: "", better: "up" },
