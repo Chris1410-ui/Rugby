@@ -3,6 +3,7 @@ import { C, NEON, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
+import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import { KPI } from "../../lib/ui.jsx";
 import { Trophy, X } from "../../lib/icons.jsx";
 
@@ -17,7 +18,7 @@ const Move = ({ m }) =>
 
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
-export default function Classement({ players, sessions, logs, activities = {}, crews = [], me, accent = C.coral }) {
+export default function Classement({ players, sessions, logs, activities = {}, crews = [], testCampaigns = [], testResults = [], me, accent = C.coral }) {
   const isJoueur = !!me;
   const groups = [...new Set(players.map((p) => p.grp))];
   const [scope, setScope] = useState("all");
@@ -25,14 +26,17 @@ export default function Classement({ players, sessions, logs, activities = {}, c
   const [sel, setSel] = useState(null);
 
   const data = useMemo(() => {
-    const all = players.map((p) => ({ p, ...computePoints(p, sessions, logs, activities[p.id]) }));
+    const all = players.map((p) => {
+      const t14 = top14Player(p.pos, datedResultsFor(testCampaigns, testResults, p.id));
+      return { p, top14: t14.count, ...computePoints(p, sessions, logs, activities[p.id], t14.events) };
+    });
     const cur = [...all].sort((a, b) => b.pts - a.pts);
     const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
     const pr = {};
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.rank = i + 1; d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, logs, activities]);
+  }, [players, sessions, logs, activities, testCampaigns, testResults]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
@@ -106,7 +110,10 @@ export default function Classement({ players, sessions, logs, activities = {}, c
             <div key={d.p.id} onClick={() => setSel(d)} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto auto", alignItems: "center", gap: 8, padding: "9px 10px", marginBottom: 6, borderRadius: 9, cursor: "pointer", background: top ? "linear-gradient(90deg,rgba(39,232,214,0.9),rgba(39,232,214,0.5))" : meRow ? NEON.rowB : NEON.row, border: meRow && !top ? `1px solid ${accent}` : "1px solid transparent" }}>
               <div style={{ fontSize: d.scopeRank <= 3 ? 15 : 13, fontWeight: 900, fontStyle: "italic", textAlign: "center", color: top ? "#0c2b2b" : d.scopeRank === 2 ? "#C8D2E0" : d.scopeRank === 3 ? "#F2C84B" : "rgba(255,255,255,0.65)" }}>{top ? "#1" : d.scopeRank + "ᵉ"}</div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + d.p.name : d.p.name}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + d.p.name : d.p.name}</span>
+                  {d.top14 > 0 && <span title={`${d.top14} test(s) au niveau Top 14`} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.2, color: "#0c2b2b", background: C.amb, borderRadius: 5, padding: "1px 5px" }}>🏆14{d.top14 > 1 ? `×${d.top14}` : ""}</span>}
+                </div>
                 <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {d.div.l}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

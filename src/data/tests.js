@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Campagnes de tests physiques + résultats (historisation par date/camp).
    RLS : campagnes lues par le club, écrites par le staff ; résultats lus par le
@@ -10,9 +11,12 @@ export const TEST_METRICS = [
   { key: "bronco", label: "Bronco", type: "text", unit: "", better: "down" },
   { key: "yoyo", label: "Yo-Yo IR", type: "num", unit: " m", better: "up" },
   { key: "squat_5rm", label: "Squat 5RM", type: "text", unit: "", better: "up" },
-  { key: "cmj_overall", label: "CMJ / Overall", type: "num", unit: " cm", better: "up" },
   { key: "bench_5rm", label: "Bench 5RM", type: "num", unit: " kg", better: "up" },
+  { key: "deadlift", label: "Deadlift", type: "num", unit: " kg", better: "up" },
   { key: "hang_clean_2rm", label: "Hang Clean 2RM", type: "num", unit: " kg", better: "up" },
+  { key: "tractions", label: "Tractions +", type: "num", unit: " kg", better: "up" },
+  { key: "cmj_overall", label: "CMJ / Overall", type: "num", unit: " cm", better: "up" },
+  { key: "bodyweight", label: "Poids de corps", type: "num", unit: " kg", better: "up" },
 ];
 
 const dbCampaign = (r) => ({ id: r.id, teamId: r.team_id, name: r.name, date: r.date });
@@ -23,6 +27,9 @@ const dbResult = (r) => ({
   cmj_overall: r.cmj_overall != null ? Number(r.cmj_overall) : null,
   bench_5rm: r.bench_5rm != null ? Number(r.bench_5rm) : null,
   hang_clean_2rm: r.hang_clean_2rm != null ? Number(r.hang_clean_2rm) : null,
+  deadlift: r.deadlift != null ? Number(r.deadlift) : null,
+  tractions: r.tractions != null ? Number(r.tractions) : null,
+  bodyweight: r.bodyweight != null ? Number(r.bodyweight) : null,
 });
 
 // Campagnes (triées par date croissante) + résultats visibles (RLS scope).
@@ -47,7 +54,7 @@ export function useTestCampaigns(teamId) {
     fetch();
     if (!teamId) return;
     const ch = supabase
-      .channel(`tests:${teamId}`)
+      .channel(uniqueTopic(`tests:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "test_campaigns" }, () => fetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "test_results" }, () => fetch())
       .subscribe();

@@ -85,7 +85,8 @@ export async function generateDemoPlayers(teamId, { count = 12 } = {}) {
   const campsOrdered = [...camps].sort((a, b) => a.date.localeCompare(b.date));
   const results = [];
   players.forEach((pl) => {
-    const base = { yoyo: rndi(1400, 2000), cmj: rnd(30, 54), bench: rnd(60, 120), hang: rndi(60, 110), squat: rndi(120, 190), bronco: rndi(285, 340) };
+    const bw = rndi(80, 115); // poids de corps → ×PdC réalistes
+    const base = { yoyo: rndi(1400, 2000), cmj: rnd(30, 54), bench: rnd(60, 120), hang: rndi(60, 110), squat: rndi(120, 190), bronco: rndi(285, 340), dead: rndi(160, 230), trac: rndi(10, 55) };
     campsOrdered.forEach((c, ci) => {
       results.push({
         campaign_id: c.id, player_id: pl.id, team_id: teamId,
@@ -95,6 +96,9 @@ export async function generateDemoPlayers(teamId, { count = 12 } = {}) {
         cmj_overall: round1(base.cmj + ci * rnd(0.5, 2)),
         bench_5rm: round1(base.bench + ci * rnd(2, 6)),
         hang_clean_2rm: base.hang + ci * rndi(2, 6),
+        deadlift: base.dead + ci * rndi(3, 10),
+        tractions: base.trac + ci * rndi(1, 5),
+        bodyweight: bw,
       });
     });
   });

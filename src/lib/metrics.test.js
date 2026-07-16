@@ -154,4 +154,10 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 20); // 2 thématiques × 10
     expect(r.ev.some((e) => e.label === "Activité : Salle")).toBe(true);
   });
+  it("test Top 14 validé : +30 (crédité une fois)", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const r = computePoints(p, [], {}, [], [{ label: "Yo-Yo IR1", date: todayISO() }]);
+    expect(r.pts).toBe(108 + 30);
+    expect(r.ev.some((e) => e.label === "Top 14 : Yo-Yo IR1")).toBe(true);
+  });
 });

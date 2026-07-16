@@ -5,8 +5,11 @@ import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES } from "../../l
 import { Ring, Section, KPI, Tag } from "../../lib/ui.jsx";
 import { X, MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins } from "../../data/checkins.js";
+import { useTestCampaigns } from "../../data/tests.js";
+import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import Conversation from "./Conversation.jsx";
 import TestsEvolution from "./TestsEvolution.jsx";
+import Top14Panel from "./Top14Panel.jsx";
 
 const accent = C.coral;
 
@@ -36,7 +39,9 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   const cur = checkins[0] || null;      // bilan le plus récent
   const prev = checkins[1] || null;     // bilan précédent (évolution)
 
-  const pts = computePoints(player, sessions, logs, activities);
+  const { campaigns, results } = useTestCampaigns(player.team);
+  const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
+  const pts = computePoints(player, sessions, logs, activities, t14.events);
   const zone = acwrZ(player.acwr);
 
   // Dernières séances assignées (récentes d'abord) + statut + RPE.
@@ -147,6 +152,9 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
 
         {/* Tests (évolution par campagne, lecture seule) */}
         <TestsEvolution player={player} canEdit={false} />
+
+        {/* Comparaison Top 14 du poste */}
+        <Top14Panel t14={t14} />
 
         {/* Points */}
         <Section title="POINTS" right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{pts.streak >= 3 ? `série ${pts.streak} 🔥` : ""}</span>}>

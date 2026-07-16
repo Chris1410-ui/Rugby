@@ -64,14 +64,11 @@ export default function TestsEvolution({ player, canEdit = false, accent = C.vio
   const doSave = async () => {
     if (!selCamp) return setNote("Choisis ou crée une campagne.");
     setBusy(true); setNote("");
-    const metrics = {
-      bronco: (form.bronco ?? "").toString().trim() || null,
-      yoyo: numFR(form.yoyo),
-      squat_5rm: (form.squat_5rm ?? "").toString().trim() || null,
-      cmj_overall: numFR(form.cmj_overall),
-      bench_5rm: numFR(form.bench_5rm),
-      hang_clean_2rm: numFR(form.hang_clean_2rm),
-    };
+    const metrics = {};
+    TEST_METRICS.forEach((m) => {
+      const raw = form[m.key];
+      metrics[m.key] = m.type === "text" ? ((raw ?? "").toString().trim() || null) : numFR(raw);
+    });
     try {
       await saveResult(selCamp, player.id, teamId, metrics);
       setEditing(false); setNote("");

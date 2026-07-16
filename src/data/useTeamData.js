@@ -4,6 +4,7 @@ import { useTeamSessions } from "./sessions.js";
 import { useTeamLogs } from "./logs.js";
 import { useTeamCheckins } from "./checkins.js";
 import { useCrews } from "./crews.js";
+import { useTestCampaigns } from "./tests.js";
 import { enrichPlayers } from "../lib/metrics.js";
 
 /* SOURCE DE VÉRITÉ UNIQUE côté client (MIGRATION §5).
@@ -17,6 +18,7 @@ export function useTeamData(teamId) {
   const playerIds = useMemo(() => roster.map((p) => p.id), [roster]);
   const { checkins, activities } = useTeamCheckins(playerIds);
   const { crews } = useCrews(teamId);
+  const { campaigns: testCampaigns, results: testResults } = useTestCampaigns(teamId);
 
   const players = useMemo(
     () => enrichPlayers(roster, sessions, logs, checkins),
@@ -31,6 +33,8 @@ export function useTeamData(teamId) {
     checkins,
     activities, // historique d'activités déclarées par joueur (points #6)
     crews, // équipes formées par les joueurs (classement par équipe)
+    testCampaigns, // campagnes de tests (pour la comparaison / points Top 14)
+    testResults,
     loading: rosterLoading || sessionsLoading,
   };
 }
