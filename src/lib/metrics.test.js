@@ -160,6 +160,12 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 30);
     expect(r.ev.some((e) => e.label === "Top 14 : Yo-Yo IR1")).toBe(true);
   });
+  it("tâche validée : +2 par tâche", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const r = computePoints(p, [], {}, [], [], [{ label: "Amener ses crampons", date: todayISO() }, { label: "RDV kiné", date: todayISO() }]);
+    expect(r.pts).toBe(108 + 4); // 2 tâches × 2
+    expect(r.ev.some((e) => e.label === "Tâche : Amener ses crampons")).toBe(true);
+  });
 });
 
 describe("buildAlerts — clés stables (file de traitement)", () => {

@@ -6,6 +6,7 @@ import { Ring, Section, KPI, Tag } from "../../lib/ui.jsx";
 import { X, MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins } from "../../data/checkins.js";
 import { useTestCampaigns } from "../../data/tests.js";
+import { useTeamTaskPoints } from "../../data/tasks.js";
 import { markKine, markTreated } from "../../data/alerts.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import { prescribedVsRealized } from "../../lib/hevy.js";
@@ -46,7 +47,9 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
 
   const { campaigns, results } = useTestCampaigns(player.team);
   const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
-  const pts = computePoints(player, sessions, logs, activities, t14.events);
+  const taskPts = useTeamTaskPoints(player.team);
+  const taskEvents = (taskPts[player.id] || []).map((t) => ({ label: t.titre, date: t.date }));
+  const pts = computePoints(player, sessions, logs, activities, t14.events, taskEvents);
   const zone = acwrZ(player.acwr);
 
   // Dernières séances assignées (récentes d'abord) + statut + RPE.
