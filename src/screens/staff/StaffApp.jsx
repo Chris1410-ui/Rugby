@@ -9,7 +9,7 @@ import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp } from "../../lib/icons.jsx";
 import Alertes from "./Alertes.jsx";
 import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
@@ -22,6 +22,7 @@ import Fiche from "../shared/Fiche.jsx";
 import PlayerReport from "../shared/PlayerReport.jsx";
 import TotemPicker from "../shared/TotemPicker.jsx";
 import TestsBatch from "./TestsBatch.jsx";
+import Historique from "./Historique.jsx";
 
 const ACCENT = C.coral;
 
@@ -41,6 +42,7 @@ export default function StaffApp({ profile }) {
     ["programmes", "Programmes", Dumbbell],
     ["exos", "Exos", BookOpen],
     ["classement", "Classement", Trophy],
+    ["historique", "Historique", TrendingUp],
     ["calendrier", "Calendrier", Calendar],
     ["video", "Vidéo", Video],
     ["veille", "Veille", Activity],
@@ -55,6 +57,7 @@ export default function StaffApp({ profile }) {
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
+        {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
