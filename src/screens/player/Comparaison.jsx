@@ -1,16 +1,18 @@
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { useTestCampaigns } from "../../data/tests.js";
+import { useTestCampaigns, useLineStats } from "../../data/tests.js";
 import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor } from "../../lib/top14.js";
 
 /* Comparaison « Où je me situe ? » (vue joueur). Pour chaque test : ma valeur,
    la moyenne de ma ligne (avants/arrières) et le repère Top 14, sur une barre où
-   « à droite = mieux ». Langage simple, progrès mis en avant. Compare uniquement
-   dans mon club et ma ligne (RLS + filtre grp). Réutilise TOP14_TESTS /
-   TOP14_BENCH — aucune formule modifiée. */
+   « à droite = mieux ». Langage simple, progrès mis en avant.
+
+   Confidentialité : mes propres valeurs viennent de mes résultats (lisibles) ;
+   la moyenne de ligne et mon rang viennent d'une fonction SECURITY DEFINER
+   (comparison_line_stats) — jamais les valeurs brutes des coéquipiers.
+   Réutilise TOP14_TESTS / TOP14_BENCH — aucune formule modifiée. */
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const mean = (arr) => (arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : null);
 const secMMSS = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 
 // Les 8 tests demandés (Hang Clean exclu ici), en langage joueur.
@@ -29,20 +31,17 @@ const testDef = Object.fromEntries(TOP14_TESTS.map((t) => [t.key, t]));
 
 export default function Comparaison({ me, players }) {
   const { campaigns, results, loading } = useTestCampaigns(me.team);
+  const lineStats = useLineStats(me.id); // { [metric]: { avg, n, rank } } — agrégats serveur
   const cat = posToCat(me.pos);
   const bench = cat ? TOP14_BENCH[cat] : null;
   const peers = players.filter((p) => p.grp === me.grp);
 
-  // Dernier résultat daté par joueur de ma ligne (+ mon avant-dernier pour le progrès).
+  // Mes propres résultats datés (dernier + avant-dernier pour le progrès).
   const myDated = datedResultsFor(campaigns, results, me.id);
   const myLast = myDated.length ? myDated[myDated.length - 1] : null;
   const myPrev = myDated.length >= 2 ? myDated[myDated.length - 2] : null;
-  const peerLatest = peers.map((p) => {
-    const d = datedResultsFor(campaigns, results, p.id);
-    return { p, r: d.length ? d[d.length - 1] : null };
-  });
 
-  const cards = ORDER.map((key) => build(key, { me, myLast, myPrev, peerLatest, bench, grp: me.grp })).filter(Boolean);
+  const cards = ORDER.map((key) => build(key, { myLast, myPrev, bench, grp: me.grp, stat: lineStats[key] })).filter(Boolean);
   const measured = cards.filter((c) => c.myVal != null);
 
   // Message positif : meilleur progrès (plus gros gain relatif) depuis le dernier camp.
@@ -80,7 +79,7 @@ export default function Comparaison({ me, players }) {
   );
 }
 
-function build(key, { me, myLast, myPrev, peerLatest, bench, grp }) {
+function build(key, { myLast, myPrev, bench, grp, stat }) {
   const t = testDef[key];
   const f = FRIENDLY[key];
   if (!t || !f) return null;
@@ -92,15 +91,10 @@ function build(key, { me, myLast, myPrev, peerLatest, bench, grp }) {
   const delta = myVal != null && prevVal != null ? myVal - prevVal : null;
   const improved = delta == null ? null : dir === "down" ? delta < 0 : delta > 0;
 
-  const peerVals = peerLatest
-    .map(({ p, r }) => ({ id: p.id, v: r ? val(t, r) : null }))
-    .filter((x) => x.v != null && Number.isFinite(x.v));
-  const lineAvg = mean(peerVals.map((x) => x.v));
-
-  // Rang dans ma ligne sur ce test (mieux d'abord).
-  const sorted = [...peerVals].sort((a, b) => (dir === "down" ? a.v - b.v : b.v - a.v));
-  const rank = myVal != null ? sorted.findIndex((x) => x.id === me.id) + 1 : null;
-  const total = peerVals.length;
+  // Moyenne de ligne + mon rang : agrégats serveur (pas de valeurs coéquipiers).
+  const lineAvg = stat?.avg ?? null;
+  const rank = stat?.rank ?? null;
+  const total = stat?.n ?? null;
 
   // Couleur : au-dessus de la moyenne = vert, proche (±5 %) = ambre, en dessous = coral.
   const reachedTop14 = top14 != null && myVal != null && (dir === "down" ? myVal <= top14 : myVal >= top14);

@@ -3,7 +3,7 @@ import { C, NEON, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
-import { top14Player, datedResultsFor } from "../../lib/top14.js";
+import { useTeamTop14 } from "../../data/tests.js";
 import { KPI } from "../../lib/ui.jsx";
 import { Trophy, X } from "../../lib/icons.jsx";
 
@@ -18,17 +18,22 @@ const Move = ({ m }) =>
 
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
-export default function Classement({ players, sessions, logs, activities = {}, crews = [], testCampaigns = [], testResults = [], me, accent = C.coral }) {
+export default function Classement({ players, sessions, logs, activities = {}, crews = [], me, accent = C.coral }) {
   const isJoueur = !!me;
   const groups = [...new Set(players.map((p) => p.grp))];
   const [scope, setScope] = useState("all");
   const [mode, setMode] = useState("indiv"); // indiv | team (bascule #6)
   const [sel, setSel] = useState(null);
 
+  // Statut Top 14 par joueur, dérivé côté serveur (SECURITY DEFINER) → visible
+  // par tous (émulation collective) sans exposer les valeurs brutes des tests.
+  const teamId = players[0]?.team || null;
+  const top14ByPlayer = useTeamTop14(teamId);
+
   const data = useMemo(() => {
     const all = players.map((p) => {
-      const t14 = top14Player(p.pos, datedResultsFor(testCampaigns, testResults, p.id));
-      return { p, top14: t14.count, top14Tests: t14.events, ...computePoints(p, sessions, logs, activities[p.id], t14.events) };
+      const events = top14ByPlayer[p.id] || [];
+      return { p, top14: events.length, top14Tests: events, ...computePoints(p, sessions, logs, activities[p.id], events) };
     });
     const cur = [...all].sort((a, b) => b.pts - a.pts);
     const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
@@ -36,7 +41,7 @@ export default function Classement({ players, sessions, logs, activities = {}, c
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.rank = i + 1; d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, logs, activities, testCampaigns, testResults]);
+  }, [players, sessions, logs, activities, top14ByPlayer]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
