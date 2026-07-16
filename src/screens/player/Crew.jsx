@@ -4,12 +4,14 @@ import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { Section } from "../../lib/ui.jsx";
 import { Users, Plus, X, CheckCircle } from "../../lib/icons.jsx";
 import { createCrew, inviteToCrew, acceptInvite, removeMember, dissolveCrew } from "../../data/crews.js";
+import { usePreview } from "../../lib/preview.js";
 
 /* « Mon équipe » (crew) côté joueur : créer, inviter des coéquipiers du même
    club, accepter/refuser, quitter, voir les membres + bannière. L'isolation par
    club est garantie par la RLS + les contraintes DB ; l'UI ne propose que des
    joueurs du club (props `players` déjà scopé par team). */
 export default function Crew({ me, teamId, players, crews = [], accent = C.green }) {
+  const preview = usePreview(); // aperçu owner/staff → lecture seule
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [name, setName] = useState("");
@@ -26,6 +28,7 @@ export default function Crew({ me, teamId, players, crews = [], accent = C.green
   );
 
   const run = async (fn, okMsg) => {
+    if (preview) return; // lecture seule : aucune action crew sous l'identité du joueur
     setBusy(true); setNote("");
     try { await fn(); if (okMsg) setNote(okMsg); }
     catch (e) { setNote(err(e)); }
@@ -49,6 +52,9 @@ export default function Crew({ me, teamId, players, crews = [], accent = C.green
   const noteBox = note && (
     <div style={sc({ marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", background: `${accent}1a`, borderColor: `${accent}55` })}>{note}</div>
   );
+  const previewBox = preview && (
+    <div style={sc({ marginBottom: 12, fontSize: 11.5, lineHeight: 1.5, color: "rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.05)", borderColor: C.border, fontWeight: 700, textAlign: "center" })}>👁 Mode aperçu — lecture seule (actions équipe désactivées)</div>
+  );
 
   // ── J'ai une équipe active ──
   if (myActive) {
@@ -60,6 +66,7 @@ export default function Crew({ me, teamId, players, crews = [], accent = C.green
 
     return (
       <div>
+        {previewBox}
         {noteBox}
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16, borderRadius: 16, background: bannerGradient(myActive.banner), marginBottom: 14, position: "relative", overflow: "hidden" }}>
           <div style={{ fontSize: 40 }}>{bannerOf(myActive.banner).emoji}</div>
@@ -121,6 +128,7 @@ export default function Crew({ me, teamId, players, crews = [], accent = C.green
   // ── Pas d'équipe active : invitations en attente + création ──
   return (
     <div>
+      {previewBox}
       {noteBox}
 
       {myInvites.length > 0 && (

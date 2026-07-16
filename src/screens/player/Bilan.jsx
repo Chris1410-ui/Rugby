@@ -4,6 +4,7 @@ import { wbToWellness, computeReadiness, acwrZ, ACTIVITIES } from "../../lib/met
 import { Ring, Section } from "../../lib/ui.jsx";
 import { CheckCircle, Send } from "../../lib/icons.jsx";
 import { useMyCheckin, saveCheckin } from "../../data/checkins.js";
+import { usePreview } from "../../lib/preview.js";
 
 const WELL_KEYS = [
   ["sleep", "Sommeil", C.viol],
@@ -25,6 +26,7 @@ const defaults = (me) => ({
 });
 
 export default function Bilan({ me, accent }) {
+  const preview = usePreview(); // aperçu owner/staff → lecture seule
   const { checkin, loading, refresh } = useMyCheckin(me.id);
   const [d, setD] = useState(defaults(me));
   const [saved, setSaved] = useState(false);
@@ -61,6 +63,7 @@ export default function Bilan({ me, accent }) {
   const readiness = computeReadiness(wbScore, me.risque, d.sleepH);
 
   const save = async () => {
+    if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
     setBusy(true); setErr("");
     try {
       await saveCheckin(me.id, d);
@@ -156,10 +159,10 @@ export default function Bilan({ me, accent }) {
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8, textAlign: "center" }}>{err}</div>}
       <button
         onClick={save}
-        disabled={saved || busy || loading}
-        style={{ width: "100%", background: saved ? "rgba(44,140,90,0.2)" : accent || C.green, border: saved ? `1px solid ${C.green}66` : "none", borderRadius: 12, padding: 14, color: saved ? C.green : "#fff", fontWeight: 700, fontSize: 14, cursor: saved ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 20, opacity: busy ? 0.7 : 1 }}
+        disabled={preview || saved || busy || loading}
+        style={{ width: "100%", background: preview ? "rgba(255,255,255,0.06)" : saved ? "rgba(44,140,90,0.2)" : accent || C.green, border: preview ? `1px solid ${C.border}` : saved ? `1px solid ${C.green}66` : "none", borderRadius: 12, padding: 14, color: preview ? "rgba(255,255,255,0.6)" : saved ? C.green : "#fff", fontWeight: 700, fontSize: 14, cursor: preview || saved ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 20, opacity: busy ? 0.7 : 1 }}
       >
-        {saved ? (<><CheckCircle size={16} /> Journée enregistrée</>) : busy ? "Enregistrement…" : (<><Send size={16} /> Enregistrer la journée</>)}
+        {preview ? "👁 Mode aperçu — lecture seule" : saved ? (<><CheckCircle size={16} /> Journée enregistrée</>) : busy ? "Enregistrement…" : (<><Send size={16} /> Enregistrer la journée</>)}
       </button>
     </div>
   );

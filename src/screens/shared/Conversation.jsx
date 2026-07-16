@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { C } from "../../lib/tokens.js";
 import { MessageSquare, Send, ChevronLeft, X } from "../../lib/icons.jsx";
 import { useThread, sendMessage, markRead } from "../../data/messages.js";
+import { usePreview } from "../../lib/preview.js";
 
 /* Fil de discussion réutilisable (staff ↔ joueur).
    - `who` = point de vue courant ('staff' | 'joueur').
@@ -11,6 +12,7 @@ import { useThread, sendMessage, markRead } from "../../data/messages.js";
    À l'ouverture et à chaque nouveau message, marque comme lus ceux de l'autre
    partie (accusé de réception). Toujours possible d'écrire, même fil vide. */
 export default function Conversation({ playerId, title, who, accent = C.coral, selfName, onBack, onClose }) {
+  const preview = usePreview(); // aperçu owner/staff → lecture seule
   const { msgs } = useThread(playerId);
   const [txt, setTxt] = useState("");
   const [busy, setBusy] = useState(false);
@@ -23,6 +25,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
   useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [msgs.length]);
 
   const send = async () => {
+    if (preview) return; // lecture seule : aucun envoi sous l'identité du joueur
     const t = txt.trim();
     if (!t || busy) return;
     setBusy(true);
@@ -81,18 +84,24 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
       </div>
 
       {/* saisie */}
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          value={txt}
-          onChange={(e) => setTxt(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Écrire un message…"
-          style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 13, outline: "none" }}
-        />
-        <button onClick={send} disabled={busy || !txt.trim()} title="Envoyer" style={{ background: txt.trim() ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "0 16px", color: "#fff", cursor: txt.trim() ? "pointer" : "default", display: "flex", alignItems: "center", opacity: busy ? 0.6 : 1 }}>
-          <Send size={16} />
-        </button>
-      </div>
+      {preview ? (
+        <div style={{ textAlign: "center", padding: "11px 13px", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700 }}>
+          👁 Mode aperçu — lecture seule (envoi désactivé)
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            value={txt}
+            onChange={(e) => setTxt(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send()}
+            placeholder="Écrire un message…"
+            style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 13, outline: "none" }}
+          />
+          <button onClick={send} disabled={busy || !txt.trim()} title="Envoyer" style={{ background: txt.trim() ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "0 16px", color: "#fff", cursor: txt.trim() ? "pointer" : "default", display: "flex", alignItems: "center", opacity: busy ? 0.6 : 1 }}>
+            <Send size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 
