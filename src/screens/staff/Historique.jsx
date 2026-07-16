@@ -17,7 +17,8 @@ const daysBetween = (fromIso) => Math.max(1, Math.round((Date.now() - parseISO(f
    calcul). Readiness historique = wellness du jour + risque courant (approx). */
 export default function Historique({ players, testCampaigns = [], camps = [] }) {
   const [scope, setScope] = useState("all"); // all | <grp> | <playerId>
-  const [period, setPeriod] = useState("30"); // 7 | 30 | camp | all
+  const [period, setPeriod] = useState("30"); // 7 | 30 | camp | all | custom
+  const [custom, setCustom] = useState({ debut: isoDate(new Date(Date.now() - 30 * 864e5)), fin: todayISO() });
   const [barMetric, setBarMetric] = useState("wellness"); // wellness | readiness | sleep
 
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
@@ -28,16 +29,29 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
   const campFrom = camp?.dateDebut || lastCamp?.date || null;
   const days = period === "7" ? 7 : period === "30" ? 30 : period === "camp" ? (campFrom ? daysBetween(campFrom) : 30) : 3650;
 
+  // Fenêtre [fromISO, toISO] appliquée à TOUS les graphiques + à l'en-tête « Au … ».
+  // Presets : se terminent aujourd'hui. Personnalisé : bornes début/fin choisies.
+  const toISO = period === "custom" ? custom.fin : todayISO();
+  const fromISO = period === "custom" ? custom.debut : isoDate(new Date(Date.now() - (days - 1) * 864e5));
+  // On élargit juste la requête pour couvrir le début choisi (même requête
+  // daily_checkins ; l'axe restreint ensuite à date >= début ET date <= fin).
+  const fetchDays = period === "custom" ? Math.max(1, daysBetween(custom.debut)) : days;
+
   const allIds = players.map((p) => p.id);
-  const { rows, loading } = useTeamCheckinHistory(allIds, days);
+  const { rows, loading } = useTeamCheckinHistory(allIds, fetchDays);
   const playerById = useMemo(() => Object.fromEntries(players.map((p) => [p.id, p])), [players]);
 
   const filtered = scope === "all" ? players : grps.includes(scope) ? players.filter((p) => p.grp === scope) : players.filter((p) => p.id === scope);
   const fIds = new Set(filtered.map((p) => p.id));
 
-  // Axe de dates (borné à 60 j pour la lisibilité), du + ancien au + récent.
-  const axisN = Math.min(days, 60);
-  const dateAxis = useMemo(() => Array.from({ length: axisN }, (_, i) => isoDate(new Date(Date.now() - (axisN - 1 - i) * 864e5))), [axisN]);
+  // Axe de dates de la fenêtre choisie (borné à 60 j pour la lisibilité).
+  // Arithmétique calendaire (setDate) → robuste aux changements d'heure.
+  const dateAxis = useMemo(() => {
+    const end = parseISO(toISO);
+    const full = [];
+    for (let d = parseISO(fromISO); d <= end && full.length < 4000; d.setDate(d.getDate() + 1)) full.push(isoDate(d));
+    return full.slice(-60);
+  }, [fromISO, toISO]);
 
   // hist[pid][date] = { wellness, sleepH }
   const hist = useMemo(() => {
@@ -106,6 +120,7 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
   }));
 
   const btn = (active) => ({ padding: "6px 11px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: active ? C.coral : "rgba(255,255,255,0.07)", color: "#fff", whiteSpace: "nowrap" });
+  const dateInp = { background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 9px", color: "#fff", fontSize: 12, outline: "none", colorScheme: "dark" };
 
   return (
     <section>
@@ -120,11 +135,20 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: period === "custom" ? 8 : 14 }}>
         {[["7", "7 jours"], ["30", "30 jours"], ["camp", "Depuis le camp"], ["all", "Tout"]].map(([v, l]) => (
           <button key={v} onClick={() => setPeriod(v)} style={btn(period === v)} disabled={v === "camp" && !campFrom} title={v === "camp" && camp ? camp.nom : undefined}>{l}</button>
         ))}
+        <button onClick={() => setPeriod("custom")} style={btn(period === "custom")}>Personnalisé</button>
       </div>
+      {period === "custom" && (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>du</span>
+          <input type="date" value={custom.debut} max={custom.fin} onChange={(e) => setCustom((c) => ({ ...c, debut: e.target.value }))} style={dateInp} />
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>au</span>
+          <input type="date" value={custom.fin} min={custom.debut} max={todayISO()} onChange={(e) => setCustom((c) => ({ ...c, fin: e.target.value }))} style={dateInp} />
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
         <KPI label="BILANS (RÉF.)" value={`${filledRef}/${filtered.length}`} sub={fmtShort(refDate)} color={C.viol} />
