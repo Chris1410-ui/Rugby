@@ -21,15 +21,29 @@ export const isoDate = (d) => {
   const z = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
 };
+/* Tolérant : accepte une date seule (YYYY-MM-DD → minuit local, pas de décalage
+   de fuseau) OU un timestamp ISO complet (2026-07-16T19:00:00Z, ex. sent_at/
+   filled_at/created_at en timestamptz) OU un Date. Renvoie une Date invalide
+   (jamais un crash) si l'entrée est nulle/illisible → les formatteurs affichent
+   un repli « — » plutôt que « Invalid Date ». */
 export const parseISO = (s) => {
-  const [y, m, d] = s.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  if (s == null || s === "") return new Date(NaN);
+  if (s instanceof Date) return s;
+  if (typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [y, m, d] = s.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(s); // timestamp ISO complet ou autre format Date-compatible
 };
 export const todayISO = () => isoDate(new Date());
-export const fmtShort = (s) =>
-  parseISO(s).toLocaleDateString("fr-BE", { day: "numeric", month: "short" });
-export const fmtDay = (s) =>
-  parseISO(s).toLocaleDateString("fr-BE", { weekday: "short", day: "numeric", month: "short" });
+export const fmtShort = (s, fallback = "—") => {
+  const d = parseISO(s);
+  return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString("fr-BE", { day: "numeric", month: "short" });
+};
+export const fmtDay = (s, fallback = "—") => {
+  const d = parseISO(s);
+  return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString("fr-BE", { weekday: "short", day: "numeric", month: "short" });
+};
 
 /* ── PRNG déterministe (seed scramblé + warmup) ── */
 export function rng(seed) {

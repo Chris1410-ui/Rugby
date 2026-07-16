@@ -6,6 +6,10 @@ import { rosterCSV, downloadCSV } from "../../lib/csv.js";
 import { todayISO } from "../../lib/metrics.js";
 import { useTeamData } from "../../data/useTeamData.js";
 import { useTeamMessages } from "../../data/messages.js";
+import { useTeamTaskCompletions } from "../../data/tasks.js";
+import { useTeamAssignments } from "../../data/questionnaires.js";
+import { useAlertStatus } from "../../data/alerts.js";
+import { staffTaskToConfirm, staffQuestionnaireTodo, activeAlertsCount } from "../../lib/badges.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
@@ -45,6 +49,13 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   const { camps } = useTeamCamps(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
+  // Pastilles = état réel non-traité (en direct via realtime des tables sources).
+  const { byTask } = useTeamTaskCompletions(profile.team_id);
+  const { byQuestionnaire } = useTeamAssignments(profile.team_id);
+  const { statuses } = useAlertStatus(profile.team_id);
+  const bTaches = staffTaskToConfirm(byTask);
+  const bQuest = staffQuestionnaireTodo(byQuestionnaire);
+  const bAlertes = activeAlertsCount(players, sessions, logs, checkins, statuses, todayISO());
 
   // Vue joueur (lecture seule) : le staff ouvre l'expérience d'un joueur telle
   // qu'il la voit, pour tester sans se déconnecter. Aucune écriture (usePreview).
@@ -55,12 +66,12 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   const nav = [
     ["effectif", "Joueurs", Users],
     ["aujourdhui", "Aujourd'hui", Sun],
-    ["alertes", "Suivi", Bell],
+    ["alertes", "Suivi", Bell, bAlertes],
     ["messages", "Messages", MessageSquare, unread],
     ["programmes", "Programmes", Dumbbell],
     ["camps", "Camps", Flag],
-    ["taches", "Tâches", ClipboardList],
-    ["questionnaires", "Quest.", FileText],
+    ["taches", "Tâches", ClipboardList, bTaches],
+    ["questionnaires", "Quest.", FileText, bQuest],
     ["exos", "Exos", BookOpen],
     ["classement", "Classement", Trophy],
     ["historique", "Historique", TrendingUp],
