@@ -9,7 +9,8 @@ import { useTeamMessages } from "../../data/messages.js";
 import { addPlayer } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, Tag, Pill, KPI } from "../../lib/ui.jsx";
-import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, X, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye } from "../../lib/icons.jsx";
+import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Alertes from "./Alertes.jsx";
 import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
@@ -30,9 +31,16 @@ const ACCENT = C.coral;
    onglets lisent l'effectif enrichi. */
 export default function StaffApp({ profile }) {
   const [tab, setTab] = useState("effectif");
+  const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
   const { players, sessions, logs, checkins, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
+
+  // Vue joueur (lecture seule) : le staff ouvre l'expérience d'un joueur telle
+  // qu'il la voit, pour tester sans se déconnecter. Aucune écriture (usePreview).
+  if (preview) {
+    return <PlayerPreview profile={profile} teamId={profile.team_id} playerId={preview.id} playerName={preview.name} onExit={() => setPreview(null)} />;
+  }
 
   const nav = [
     ["effectif", "Effectif", Users],
@@ -50,7 +58,7 @@ export default function StaffApp({ profile }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <main style={{ flex: 1, padding: 18 }}>
-        {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} />}
+        {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
@@ -68,7 +76,7 @@ export default function StaffApp({ profile }) {
 }
 
 /* ── Effectif enrichi ── */
-function Effectif({ teamId, players, sessions, logs, activities = {}, loading }) {
+function Effectif({ teamId, players, sessions, logs, activities = {}, loading, onPreview }) {
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
   const [report, setReport] = useState(null); // joueur pour le récap détaillé
@@ -141,6 +149,9 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading })
                 <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
                 <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>READY</div>
               </div>
+              <button onClick={(e) => { e.stopPropagation(); onPreview?.(p); }} title="Vue joueur (lecture seule)" style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
+                <Eye size={15} />
+              </button>
               <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title="Récap détaillé" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
                 <Activity size={15} />
               </button>

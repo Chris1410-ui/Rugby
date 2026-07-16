@@ -85,6 +85,16 @@ export function useRoster(teamId) {
   return { players, loading, error, refresh: fetchRoster };
 }
 
+/* Liste plate de l'effectif d'un club (réels + démo) pour le sélecteur
+   « Vue joueur » de l'owner — lecture seule, triée num puis nom. Les joueurs de
+   démo sont marqués pour être distingués visuellement dans le sélecteur. */
+export async function fetchTeamPlayers(teamId) {
+  const { data, error } = await supabase
+    .from("players").select("id, name, pos, grp, num, is_demo").eq("team_id", teamId);
+  if (error) throw error;
+  return (data ?? []).sort((a, b) => (a.num ?? 999) - (b.num ?? 999) || a.name.localeCompare(b.name));
+}
+
 /* Ajout d'un joueur par le staff (RLS players_staff). */
 export async function addPlayer(teamId, { name, pos, grp, num }) {
   const { data, error } = await supabase

@@ -9,11 +9,13 @@ import {
   lastExercisePerf, exerciseRecords, exerciseHistory,
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
+import { usePreview } from "../../lib/preview.js";
 
 const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
 export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved }) {
+  const preview = usePreview(); // aperçu owner/staff → lecture seule
   const past = s.date <= todayISO();
   const [open, setOpen] = useState(false);
   const [rest, setRest] = useState(null);
@@ -87,6 +89,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   };
 
   const valider = async (status) => {
+    if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
     setBusy(true);
     const pe = {};
     s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, ...summarize(sets) }; });
@@ -183,13 +186,21 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             ))}
           </div>
           <textarea value={fb} onChange={(e) => { setDirty(true); setFb(e.target.value); }} placeholder="Commentaire (douleur, ressenti…)" style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", resize: "none", height: 50, marginBottom: 10 }} />
-          <button onClick={() => valider("done")} disabled={busy} style={{ width: "100%", background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1, marginBottom: 8 }}>
-            <CheckCircle size={13} />{st === "done" ? "Mettre à jour" : "Terminer la séance"}
-          </button>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => valider("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Séance manquée</button>
-            <button onClick={() => valider("postponed")} disabled={busy} title="Reporter / remettre la séance (sans pénalité)" style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Reporter</button>
-          </div>
+          {preview ? (
+            <div style={{ textAlign: "center", padding: "10px", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 8, color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 700 }}>
+              👁 Mode aperçu — lecture seule (validation désactivée)
+            </div>
+          ) : (
+            <>
+              <button onClick={() => valider("done")} disabled={busy} style={{ width: "100%", background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1, marginBottom: 8 }}>
+                <CheckCircle size={13} />{st === "done" ? "Mettre à jour" : "Terminer la séance"}
+              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => valider("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Séance manquée</button>
+                <button onClick={() => valider("postponed")} disabled={busy} title="Reporter / remettre la séance (sans pénalité)" style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Reporter</button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
