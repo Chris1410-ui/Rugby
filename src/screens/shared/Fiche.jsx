@@ -3,8 +3,9 @@ import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { acwrZ } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle } from "../../lib/icons.jsx";
-import { updatePlayer } from "../../data/players.js";
+import { CheckCircle, Eye, EyeOff, Lock } from "../../lib/icons.jsx";
+import { pwdStrength } from "../../lib/password.js";
+import { updatePlayer, resetPlayerPassword } from "../../data/players.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
@@ -31,6 +32,70 @@ function FicheQuestionnaires({ player }) {
         </div>
       ))}
       {sel && <PlayerAnswers questionnaire={sel.questionnaire} player={player} assignment={sel} onClose={() => setSel(null)} />}
+    </Section>
+  );
+}
+
+/* Réinitialisation du mot de passe d'un joueur PAR LE STAFF / L'OWNER (pas
+   d'auto-service côté joueur). Pose directement un nouveau mot de passe via
+   l'Edge Function sécurisée — aucun email, aucun lien. Affiché uniquement si le
+   joueur a un compte (auto-inscrit → owner_uid). Mêmes règles de robustesse
+   qu'à l'inscription + confirmation. */
+function PasswordReset({ playerId }) {
+  const [open, setOpen] = useState(false);
+  const [pwd, setPwd] = useState("");
+  const [pwd2, setPwd2] = useState("");
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null); // { ok, text }
+  const st = pwdStrength(pwd);
+  const sCol = st.score <= 2 ? C.coral : st.score <= 4 ? C.amb : C.green;
+  const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 11px", color: "#fff", fontSize: 13.5, outline: "none", marginBottom: 8 };
+
+  const submit = async () => {
+    setMsg(null);
+    if (!st.valid) return setMsg({ ok: false, text: "Mot de passe trop faible (10+, majuscule, minuscule, chiffre, spécial)." });
+    if (pwd !== pwd2) return setMsg({ ok: false, text: "Les mots de passe ne correspondent pas." });
+    setBusy(true);
+    try {
+      await resetPlayerPassword(playerId, pwd);
+      setMsg({ ok: true, text: "Mot de passe réinitialisé ✓ — communique-le au joueur." });
+      setPwd(""); setPwd2("");
+    } catch (e) { setMsg({ ok: false, text: e.message || "Échec de la réinitialisation." }); }
+    setBusy(false);
+  };
+
+  return (
+    <Section title="COMPTE">
+      {!open ? (
+        <button onClick={() => { setOpen(true); setMsg(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 12px", color: "rgba(255,255,255,0.85)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+          <Lock size={14} /> Réinitialiser le mot de passe
+        </button>
+      ) : (
+        <div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, marginBottom: 10 }}>
+            Définis un nouveau mot de passe pour ce joueur, puis communique-le-lui. Aucun email n'est envoyé.
+          </div>
+          <div style={{ position: "relative" }}>
+            <input type={show ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setMsg(null); }} placeholder="Nouveau mot de passe" autoComplete="new-password" style={inp} />
+            <button onClick={() => setShow((v) => !v)} style={{ position: "absolute", right: 8, top: 8, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>{show ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+          </div>
+          {pwd && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: 4, width: `${(st.score / 7) * 100}%`, background: sCol, transition: "width .3s" }} />
+              </div>
+              <div style={{ fontSize: 9.5, color: sCol, marginTop: 3 }}>{st.valid ? "✓ valide" : "10+ caractères, majuscule, minuscule, chiffre, spécial"}</div>
+            </div>
+          )}
+          <input type={show ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setMsg(null); }} placeholder="Confirmer le mot de passe" autoComplete="new-password" style={{ ...inp, borderColor: pwd2 && pwd !== pwd2 ? C.coral : C.border }} />
+          {msg && <div style={{ fontSize: 11.5, color: msg.ok ? C.green : C.coral, margin: "2px 0 8px", lineHeight: 1.4 }}>{msg.text}</div>}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { setOpen(false); setPwd(""); setPwd2(""); setMsg(null); }} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Fermer</button>
+            <button onClick={submit} disabled={busy} style={{ flex: 2, background: C.green, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : "Enregistrer le mot de passe"}</button>
+          </div>
+        </div>
+      )}
     </Section>
   );
 }
@@ -192,6 +257,10 @@ export default function Fiche({ player, canEdit = false, onClose }) {
 
       {/* RGPD — le staff gère le consentement / export / effacement du joueur */}
       {canEdit && <Confidentialite player={player} onErased={onClose} />}
+
+      {/* Compte — réinitialisation du mot de passe par le staff (si le joueur
+          a un compte). Pas d'auto-service côté joueur. */}
+      {canEdit && player.ownerUid && <PasswordReset playerId={player.id} />}
     </div>
   );
 

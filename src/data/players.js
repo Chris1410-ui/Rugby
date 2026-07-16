@@ -111,3 +111,20 @@ export async function updatePlayer(id, patch) {
   const { error } = await supabase.from("players").update(patch).eq("id", id);
   if (error) throw error;
 }
+
+/* Réinitialisation du mot de passe d'un joueur PAR LE STAFF / L'OWNER.
+   Passe par l'Edge Function `admin-reset-password` (service role + contrôle
+   d'autorité côté serveur) : le staff pose directement un nouveau mot de passe,
+   sans email ni lien. Renvoie l'erreur métier du serveur si présente. */
+export async function resetPlayerPassword(playerId, newPassword) {
+  const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+    body: { player_id: playerId, new_password: newPassword },
+  });
+  if (error) {
+    let msg = error.message;
+    try { const body = await error.context?.json?.(); if (body?.error) msg = body.error; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
