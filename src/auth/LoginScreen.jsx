@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { useAuth } from "./useAuth.jsx";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { RUGBY_POS, POS_GROUPS } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
@@ -33,7 +34,9 @@ const input = (err) => ({
 const label = { fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 6, fontWeight: 700 };
 
 export default function LoginScreen() {
-  const [step, setStep] = useState("role"); // role | details | signin
+  const { linkError, clearLinkError } = useAuth();
+  // Lien de réinit expiré/invalide → on ouvre directement la connexion + message.
+  const [step, setStep] = useState(linkError ? "signin" : "role"); // role | details | signin
   const [role, setRole] = useState(null);
   const [team, setTeam] = useState(TEAMS.rugby[0].id);
   const [fullName, setFullName] = useState("");
@@ -59,7 +62,7 @@ export default function LoginScreen() {
   const sLab = st.score <= 2 ? "Faible" : st.score <= 4 ? "Moyen" : "Fort";
 
   const reset = () => {
-    setErr(""); setInfo(""); setPwd(""); setPwd2("");
+    setErr(""); setInfo(""); setPwd(""); setPwd2(""); clearLinkError();
   };
 
   const chooseRole = (r) => {
@@ -325,6 +328,11 @@ export default function LoginScreen() {
           <Shield size={15} color={C.green} />
           <span style={{ fontSize: 12, fontWeight: 700 }}>Connexion sécurisée</span>
         </div>
+        {linkError && (
+          <div style={{ fontSize: 11.5, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 9, padding: "9px 11px", marginBottom: 12, textAlign: "center", lineHeight: 1.5 }}>
+            {linkError}
+          </div>
+        )}
         <div style={label}>EMAIL</div>
         <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} placeholder="prenom.nom@email.be" autoComplete="email" style={input(false)} />
         <div style={label}>MOT DE PASSE</div>

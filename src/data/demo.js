@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase.js";
-import { TOTEMS } from "../lib/totems.js";
+import { TOTEMS, freeTotem } from "../lib/totems.js";
 import { RUGBY_POS } from "../lib/positions.js";
 import { isoDate } from "../lib/metrics.js";
 
@@ -17,8 +17,17 @@ const dayISO = (back) => { const t = new Date(); return isoDate(new Date(t.getFu
 const broncoFmt = (sec) => `${Math.floor(sec / 60)}'${String(sec % 60).padStart(2, "0")}`;
 
 export async function generateDemoPlayers(teamId, { count = 12 } = {}) {
-  // ── 1) Joueurs (totems variés, postes variés, seeds plausibles) ──
-  const totems = shuffle(TOTEMS).slice(0, Math.min(count, TOTEMS.length));
+  // ── 1) Joueurs (totems UNIQUES dans le club, postes variés, seeds plausibles) ──
+  // On exclut les totems déjà utilisés (réels ou démo) pour ne pas violer
+  // l'unicité par club (index players_team_name_uq, migration 0027).
+  const { data: existing } = await supabase.from("players").select("name").eq("team_id", teamId);
+  const taken = (existing ?? []).map((p) => p.name);
+  const usedLower = new Set(taken.map((t) => t.toLowerCase()));
+  const freePool = shuffle(TOTEMS.filter((t) => !usedLower.has(t.toLowerCase())));
+  const totems = [];
+  for (let i = 0; i < count; i++) {
+    totems.push(freePool[i] || freeTotem([...taken, ...totems], "Joueur")); // banque épuisée → suffixe
+  }
   const posPool = shuffle(RUGBY_POS);
   const rows = totems.map((name, i) => {
     const p = posPool[i % posPool.length];
