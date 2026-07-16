@@ -84,6 +84,63 @@ export function useTestCampaigns(teamId) {
   return { campaigns, results, loading, refresh: fetch };
 }
 
+/* Statut Top 14 par joueur du club, calculé côté serveur (SECURITY DEFINER) :
+   ne renvoie que les tests atteints — jamais les valeurs brutes des coéquipiers.
+   Renvoie { [playerId]: [{ key, label, date }] }. Sert au badge + aux points
+   (+30) du classement, y compris en vue joueur. */
+export function useTeamTop14(teamId) {
+  const [byPlayer, setByPlayer] = useState({});
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setByPlayer({}); return; }
+    const { data, error } = await supabase.rpc("team_top14", { p_team: teamId });
+    if (error) { console.error("[team_top14]", error.message); return; }
+    const m = {};
+    (data ?? []).forEach((r) => { (m[r.player_id] = m[r.player_id] || []).push({ key: r.key, label: r.label, date: r.first_date }); });
+    setByPlayer(m);
+  }, [teamId]);
+
+  useEffect(() => {
+    fetch();
+    if (!teamId) return;
+    const ch = supabase
+      .channel(uniqueTopic(`t14:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "test_results" }, () => fetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "test_campaigns" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [teamId, fetch]);
+
+  return byPlayer;
+}
+
+/* Stats de comparaison de MA ligne (SECURITY DEFINER) : par test, moyenne de la
+   ligne, effectif et mon rang — sans aucune valeur individuelle de coéquipier.
+   Renvoie { [metric]: { avg, n, rank } }. */
+export function useLineStats(playerId) {
+  const [stats, setStats] = useState({});
+
+  const fetch = useCallback(async () => {
+    const { data, error } = await supabase.rpc("comparison_line_stats");
+    if (error) { console.error("[line stats]", error.message); return; }
+    const m = {};
+    (data ?? []).forEach((r) => { m[r.metric] = { avg: r.line_avg != null ? Number(r.line_avg) : null, n: r.n, rank: r.my_rank }; });
+    setStats(m);
+  }, []);
+
+  useEffect(() => {
+    fetch();
+    if (!playerId) return;
+    const ch = supabase
+      .channel(uniqueTopic(`linestats:${playerId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "test_results" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [playerId, fetch]);
+
+  return stats;
+}
+
 export async function createCampaign(teamId, { name, date, campId = null }) {
   const { data: auth } = await supabase.auth.getUser();
   const { data, error } = await supabase
