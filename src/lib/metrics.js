@@ -214,7 +214,7 @@ const ACTIVITY_LABEL = Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label]
 // `top14Events` : tests validés Top 14 → [{ label, date }] (calculés en amont via
 //   lib/top14.js). +30 pts par test, DATÉS de la 1re validation → un seul crédit
 //   par test (pas de double comptage aux re-saisies).
-export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = []) {
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -280,6 +280,13 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
   (taskEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
     add(2, `Tâche : ${e.label}`, e.date, inWk);
+  });
+  // Bonus « top 2 réactivité » : +15 aux 2 premiers à compléter un input du staff
+  // (tâche / séance / questionnaire / camp). Event daté additionnel, idempotent
+  // (rang figé sur la 1re complétion, cf. reactivity_events / migration 0026).
+  (reactivityEvents || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(15, e.label || "⚡ Top 2 réactivité", e.date, inWk);
   });
   if (streak >= 5) add(15, "Série de 5 séances 🔥", today, true);
   else if (streak >= 3) add(5, "Série de 3 séances", today, true);

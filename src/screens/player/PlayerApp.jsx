@@ -24,13 +24,16 @@ const ACCENT = C.green;
 /* Espace joueur. Toutes les données viennent de useTeamData → enrichPlayers
    (une seule dérivation ; aucun recalcul écran par écran). RLS limite l'effectif
    au joueur lui-même. */
-export default function PlayerApp({ profile, preview = false }) {
-  const [tab, setTab] = useState("bilan");
+export default function PlayerApp({ profile, preview = false, tab: tabProp, onTab, notifs }) {
+  const [tabState, setTabState] = useState("bilan");
+  const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
+  const setTab = onTab || setTabState;
   const today = useLocalToday(); // reset du bilan du jour à minuit local
   const { players, sessions, logs, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
+  const nb = (route) => notifs?.byRoute?.[route] || 0; // pastilles non-lus par onglet
 
   if (loading && !me) {
     return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement…</div>;
@@ -47,10 +50,10 @@ export default function PlayerApp({ profile, preview = false }) {
 
   const nav = [
     ["bilan", "Mon bilan", Sun],
-    ["seances", "Mes séances", Dumbbell],
-    ["taches", "Tâches", ClipboardList],
-    ["questionnaires", "Quest.", FileText],
-    ["messages", "Messages", MessageSquare, unread],
+    ["seances", "Mes séances", Dumbbell, nb("seances")],
+    ["taches", "Tâches", ClipboardList, nb("taches")],
+    ["questionnaires", "Quest.", FileText, nb("questionnaires")],
+    ["messages", "Messages", MessageSquare, Math.max(unread, nb("messages"))],
     ["equipe", "Mon équipe", Users],
     ["classement", "Classement", Trophy],
     ["calendrier", "Calendrier", Calendar],
