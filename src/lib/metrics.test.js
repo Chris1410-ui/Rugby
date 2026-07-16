@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO,
+  acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
 } from "./metrics.js";
 
 const basePlayer = (over = {}) => ({
@@ -159,5 +159,15 @@ describe("computePoints — gamification", () => {
     const r = computePoints(p, [], {}, [], [{ label: "Yo-Yo IR1", date: todayISO() }]);
     expect(r.pts).toBe(108 + 30);
     expect(r.ev.some((e) => e.label === "Top 14 : Yo-Yo IR1")).toBe(true);
+  });
+});
+
+describe("buildAlerts — clés stables (file de traitement)", () => {
+  it("chaque alerte porte une clé identifiable", () => {
+    const p = { ...basePlayer(), _load: { acwr: 1.7, monotony: 1 } };
+    const alerts = buildAlerts([p], [], {}, {});
+    expect(alerts.length).toBeGreaterThan(0);
+    expect(alerts.every((a) => !!a.key)).toBe(true);
+    expect(alerts.some((a) => a.key === "acwr-high")).toBe(true);
   });
 });
