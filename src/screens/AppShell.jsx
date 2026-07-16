@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { useAuth } from "../auth/useAuth.jsx";
 import { C, FONT, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
-import { LogOut } from "../lib/icons.jsx";
+import { LogOut, Bell } from "../lib/icons.jsx";
+import { useNotifications } from "../data/notifications.js";
+import NotificationCenter from "./shared/NotificationCenter.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import OwnerApp from "./OwnerApp.jsx";
@@ -10,6 +13,10 @@ const roleObjOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c
 
 export default function AppShell() {
   const { profile, user, signOut, profileLoading } = useAuth();
+  // Notifications joueur (hook appelé inconditionnellement ; vide pour staff/owner).
+  const notifs = useNotifications(profile?.player_id);
+  const [ptab, setPtab] = useState("bilan");
+  const [notifOpen, setNotifOpen] = useState(false);
 
   if (profileLoading && !profile) return <Centered>Chargement du profil…</Centered>;
   if (!profile) {
@@ -32,6 +39,7 @@ export default function AppShell() {
 
   const roleObj = roleObjOf(profile.role);
   const staff = isStaffRole(profile.role);
+  const goTab = (t) => { setPtab(t); notifs.markRouteRead(t); };
 
   return (
     <div style={{ minHeight: "100vh", background: C.navy, fontFamily: FONT, color: "#fff" }}>
@@ -45,13 +53,20 @@ export default function AppShell() {
             <div style={{ fontSize: 12, fontWeight: 700 }}>{profile.full_name || user?.email}</div>
             <span style={{ fontSize: 10, fontWeight: 700, color: roleObj.c }}>{roleObj.e} {roleObj.l}</span>
           </div>
+          {!staff && (
+            <button onClick={() => setNotifOpen(true)} title="Notifications" style={{ position: "relative", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+              <Bell size={16} />
+              {notifs.unread > 0 && <span style={{ position: "absolute", top: -5, right: -5, background: C.coral, color: "#fff", fontSize: 8.5, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 14, textAlign: "center", lineHeight: "14px" }}>{notifs.unread > 9 ? "9+" : notifs.unread}</span>}
+            </button>
+          )}
           <button onClick={signOut} title="Se déconnecter" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <LogOut size={16} />
           </button>
         </header>
 
-        {staff ? <StaffApp profile={profile} /> : <PlayerApp profile={profile} />}
+        {staff ? <StaffApp profile={profile} /> : <PlayerApp profile={profile} tab={ptab} onTab={goTab} notifs={notifs} />}
       </div>
+      {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} />}
     </div>
   );
 }

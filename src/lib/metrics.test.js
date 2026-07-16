@@ -166,6 +166,12 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 4); // 2 tâches × 2
     expect(r.ev.some((e) => e.label === "Tâche : Amener ses crampons")).toBe(true);
   });
+  it("bonus top 2 réactivité : +15 par event", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const r = computePoints(p, [], {}, [], [], [], [{ label: "⚡ Top 2 réactivité (tâche)", date: todayISO() }]);
+    expect(r.pts).toBe(108 + 15);
+    expect(r.ev.some((e) => e.label === "⚡ Top 2 réactivité (tâche)")).toBe(true);
+  });
 });
 
 describe("buildAlerts — clés stables (file de traitement)", () => {
