@@ -61,17 +61,12 @@ export default function TestsBatch({ teamId, players, onClose }) {
     setBusy(true); setNote("");
     const rows = players.map((p) => {
       const row = grid[p.id] || {};
-      return {
-        playerId: p.id,
-        metrics: {
-          bronco: (row.bronco ?? "").toString().trim() || null,
-          yoyo: numFR(row.yoyo),
-          squat_5rm: (row.squat_5rm ?? "").toString().trim() || null,
-          cmj_overall: numFR(row.cmj_overall),
-          bench_5rm: numFR(row.bench_5rm),
-          hang_clean_2rm: numFR(row.hang_clean_2rm),
-        },
-      };
+      const metrics = {};
+      TEST_METRICS.forEach((m) => {
+        const raw = row[m.key];
+        metrics[m.key] = m.type === "text" ? ((raw ?? "").toString().trim() || null) : numFR(raw);
+      });
+      return { playerId: p.id, metrics };
     });
     try {
       await saveResultsBulk(selCamp, teamId, rows);

@@ -5,8 +5,15 @@ import { acwrZ } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI } from "../../lib/ui.jsx";
 import { CheckCircle, X } from "../../lib/icons.jsx";
 import { updatePlayer } from "../../data/players.js";
+import { useTestCampaigns } from "../../data/tests.js";
+import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import TestsEvolution from "./TestsEvolution.jsx";
+import Top14Panel from "./Top14Panel.jsx";
 import Confidentialite from "./Confidentialite.jsx";
+
+// Étiquette de charge hebdo (UA).
+const chargeLabel = (v) => (v == null ? { l: "—", c: C.gray } : v < 1500 ? { l: "Faible", c: C.amb } : v <= 2400 ? { l: "Normale", c: C.green } : { l: "Élevée", c: C.coral });
+const triC = (v, good, mid) => (v >= good ? C.green : v >= mid ? C.amb : C.coral);
 
 const num = (v) => (v == null || v === "" ? null : Number(v));
 const fmt = (v, unit = "") => (v == null ? "—" : `${v}${unit}`);
@@ -18,6 +25,9 @@ export default function Fiche({ player, canEdit = false, onClose }) {
   const [d, setD] = useState({});
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [adv, setAdv] = useState(false);
+  const { campaigns, results } = useTestCampaigns(player.team);
+  const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
 
   useEffect(() => {
     setD({
@@ -86,15 +96,33 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         </div>
       </div>
 
-      {/* indicateurs (enrichis) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-        <KPI label="BIEN-ÊTRE" value={`${player.wellness}/50`} color={C.blue} />
-        <KPI label="RISQUE" value={`${player.risque}`} sub="/100" color={player.risque >= 60 ? C.coral : player.risque >= 40 ? C.amb : C.green} />
-        <KPI label="CHARGE 7J" value={player.charge7j} sub="UA" color={C.coral} />
-        <KPI label="ACWR" value={player.acwr.toFixed(2)} color={acwrZ(player.acwr).c} />
-        <KPI label="MONOTONIE" value={player.monotonie} color={player.monotonie > 2 ? C.amb : C.green} />
-        <KPI label="STRAIN" value={player.strain} color={C.viol} />
-      </div>
+      {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
+      {(() => {
+        const ch = chargeLabel(player.charge7j);
+        const z = acwrZ(player.acwr);
+        return (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
+            <KPI label="READINESS" value={player.readiness} sub="/100" color={triC(player.readiness, 71, 51)} />
+            <KPI label="BIEN-ÊTRE" value={`${player.wellness}/50`} color={triC(player.wellness, 35, 25)} />
+            <KPI label="SOMMEIL" value={player.sleep} sub="h · dernier bilan" color={triC(player.sleep, 7.5, 6.5)} />
+            <KPI label="CHARGE 7J" value={player.charge7j} sub={`UA · ${ch.l}`} color={ch.c} />
+            <KPI label="ACWR" value={player.acwr.toFixed(2)} sub={z.l} color={z.c} />
+            <KPI label="DISPONIBILITÉ" value={`${player.dispo}%`} color={triC(player.dispo, 85, 70)} />
+          </div>
+        );
+      })()}
+
+      {/* Détails avancés — repli (monotonie / strain / risque) */}
+      <button onClick={() => setAdv((a) => !a)} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 12px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer", marginBottom: 12, textAlign: "left" }}>
+        {adv ? "▾" : "▸"} Détails avancés
+      </button>
+      {adv && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
+          <KPI label="MONOTONIE" value={player.monotonie} color={player.monotonie > 2 ? C.amb : C.green} />
+          <KPI label="STRAIN" value={player.strain} color={C.viol} />
+          <KPI label="RISQUE" value={player.risque} sub="/100" color={player.risque >= 60 ? C.coral : player.risque >= 40 ? C.amb : C.green} />
+        </div>
+      )}
 
       {/* tests physiques */}
       <Section title="TESTS PHYSIQUES" right={canEdit && !edit ? <button onClick={() => setEdit(true)} style={{ background: "none", border: "none", color: C.viol, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Éditer</button> : null}>
@@ -129,6 +157,9 @@ export default function Fiche({ player, canEdit = false, onClose }) {
 
       {/* Tests historisés par campagne (évolution + mini-graphe) */}
       <TestsEvolution player={player} canEdit={canEdit} />
+
+      {/* Comparaison aux normes Top 14 du poste */}
+      <Top14Panel t14={t14} />
 
       {/* RGPD — le staff gère le consentement / export / effacement du joueur */}
       {canEdit && <Confidentialite player={player} onErased={onClose} />}

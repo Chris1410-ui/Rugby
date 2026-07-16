@@ -211,7 +211,10 @@ export const ACTIVITIES = [
 const ACTIVITY_LABEL = Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label]));
 
 // `dailyActivities` : historique d'activités déclarées du joueur → [{ date, activities:[keys] }].
-export function computePoints(player, sessions, logs, dailyActivities = []) {
+// `top14Events` : tests validés Top 14 → [{ label, date }] (calculés en amont via
+//   lib/top14.js). +30 pts par test, DATÉS de la 1re validation → un seul crédit
+//   par test (pas de double comptage aux re-saisies).
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -265,6 +268,12 @@ export function computePoints(player, sessions, logs, dailyActivities = []) {
   (dailyActivities || []).forEach((d) => {
     const inWk = d.date >= wkAgo && d.date <= today;
     (d.activities || []).forEach((a) => add(10, `Activité : ${ACTIVITY_LABEL[a] || a}`, d.date, inWk));
+  });
+  // Tests atteignant le niveau Top 14 du poste : +30 par test (une seule fois,
+  // daté de la 1re validation → compte dans le total ET le delta de la semaine).
+  (top14Events || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(30, `Top 14 : ${e.label}`, e.date, inWk);
   });
   if (streak >= 5) add(15, "Série de 5 séances 🔥", today, true);
   else if (streak >= 3) add(5, "Série de 3 séances", today, true);
