@@ -46,7 +46,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   const go = (t, intent = null) => { (onTab || setTabState)(t); setNewIntent(intent); };
   const mobile = useIsMobile();
   const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
-  const { players, sessions, logs, checkins, activities, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, checkins, activities, bilans, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const { camps } = useTeamCamps(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
@@ -93,7 +93,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
-        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
+        {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}

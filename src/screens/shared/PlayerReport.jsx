@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES } from "../../lib/metrics.js";
+import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS } from "../../lib/metrics.js";
 import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
-import { usePlayerCheckins } from "../../data/checkins.js";
+import { usePlayerCheckins, bilanEventsOf } from "../../data/checkins.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
 import { useTeamReactivity } from "../../data/notifications.js";
@@ -44,15 +44,19 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   useModalClose(onClose);
   const canAct = !!reason?.key; // ouvert depuis une alerte → actions kiné/traiter
   const { checkins } = usePlayerCheckins(player.id);
-  const cur = checkins[0] || null;      // bilan le plus récent
-  const prev = checkins[1] || null;     // bilan précédent (évolution)
+  const matinList = checkins.filter((c) => c.moment !== "soir");
+  const soirList = checkins.filter((c) => c.moment === "soir");
+  const cur = matinList[0] || null;      // dernier bilan MATIN
+  const prev = matinList[1] || null;     // matin précédent (évolution)
+  const curSoir = soirList[0] || null;   // dernier bilan SOIR
 
   const { campaigns, results } = useTestCampaigns(player.team);
   const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
   const taskPts = useTeamTaskPoints(player.team);
   const taskEvents = (taskPts[player.id] || []).map((t) => ({ label: t.titre, date: t.date }));
   const reactEvents = useTeamReactivity(player.team)[player.id] || [];
-  const pts = computePoints(player, sessions, logs, activities, t14.events, taskEvents, reactEvents);
+  const bilanEvents = bilanEventsOf(checkins.map((c) => ({ date: c.date, moment: c.moment })));
+  const pts = computePoints(player, sessions, logs, activities, t14.events, taskEvents, reactEvents, bilanEvents);
   const zone = acwrZ(player.acwr);
 
   // Dernières séances assignées (récentes d'abord) + statut + RPE.
@@ -90,8 +94,8 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
           </div>
         )}
 
-        {/* Bilan du jour détaillé */}
-        <Section title="BILAN DU JOUR" right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{cur ? fmtDateTime(cur.createdAt) : "non rempli"}</span>}>
+        {/* Bilan du MATIN détaillé */}
+        <Section title="☀️ BILAN DU MATIN" right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{cur ? fmtDateTime(cur.createdAt) : "non rempli"}</span>}>
           {!cur ? (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Aucun bilan enregistré récemment.</div>
           ) : (
@@ -127,6 +131,38 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
                   ? <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Aucune</span>
                   : cur.activities.map((a) => <Tag key={a} c={C.green}>{actLabel[a] || a}</Tag>)}
               </div>
+            </>
+          )}
+        </Section>
+
+        {/* Bilan du SOIR détaillé (6 marqueurs + ressenti match + remarques) */}
+        <Section title="🌙 BILAN DU SOIR" right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{curSoir ? fmtDateTime(curSoir.createdAt) : "non rempli"}</span>}>
+          {!curSoir ? (
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Aucun bilan du soir enregistré récemment.</div>
+          ) : (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 10 }}>
+                {EVENING_MARKERS.map((m) => (
+                  <div key={m.k} style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{m.l}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+                      <span style={{ fontSize: 17, fontWeight: 800 }}>{curSoir.wb?.[m.k] ?? "—"}</span><span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>/10</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {curSoir.wb?.ressentiMatch && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 3 }}>Ressenti du match</div>
+                  <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{curSoir.wb.ressentiMatch}</div>
+                </div>
+              )}
+              {curSoir.wb?.remarques && (
+                <div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 3 }}>Remarques</div>
+                  <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{curSoir.wb.remarques}</div>
+                </div>
+              )}
             </>
           )}
         </Section>

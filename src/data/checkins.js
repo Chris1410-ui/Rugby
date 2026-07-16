@@ -11,6 +11,7 @@ import { useLocalToday } from "../lib/useLocalToday.js";
 function dbToCheckin(row) {
   return {
     date: row.date,
+    moment: row.moment || "matin",
     wb: row.wb,
     sleepH: row.sleep_h != null ? Number(row.sleep_h) : null,
     hydra: row.hydra != null ? Number(row.hydra) : null,
@@ -35,10 +36,10 @@ export function useTeamCheckinHistory(playerIds, days = 30) {
     if (!playerIds || playerIds.length === 0) { setRows([]); setLoading(false); return; }
     const from = isoDate(new Date(Date.now() - days * 864e5));
     const { data, error } = await supabase
-      .from("daily_checkins").select("player_id, date, wb, sleep_h, activities")
+      .from("daily_checkins").select("player_id, date, moment, wb, sleep_h, activities")
       .in("player_id", playerIds).gte("date", from).order("date", { ascending: true });
     if (error) { console.error("[checkin history]", error.message); setLoading(false); return; }
-    setRows((data ?? []).map((r) => ({ playerId: r.player_id, date: r.date, wb: r.wb, sleepH: r.sleep_h != null ? Number(r.sleep_h) : null, activities: r.activities || [] })));
+    setRows((data ?? []).map((r) => ({ playerId: r.player_id, date: r.date, moment: r.moment || "matin", wb: r.wb, sleepH: r.sleep_h != null ? Number(r.sleep_h) : null, activities: r.activities || [] })));
     setLoading(false);
   }, [key, days]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -84,15 +85,35 @@ export function usePlayerCheckins(playerId, days = 21) {
   return { checkins, loading };
 }
 
-export async function saveCheckin(playerId, payload, date = todayISO()) {
+export async function saveCheckin(playerId, payload, date = todayISO(), moment = "matin") {
   const { wb, sleepH, hydra, fc, hrv, poids, activities } = payload;
+  const row = moment === "soir"
+    ? { player_id: playerId, date, moment, wb } // le soir stocke tout dans le jsonb
+    : { player_id: playerId, date, moment, wb, sleep_h: sleepH, hydra, fc, hrv, poids, activities: activities || [] };
   const { error } = await supabase
     .from("daily_checkins")
-    .upsert(
-      { player_id: playerId, date, wb, sleep_h: sleepH, hydra, fc, hrv, poids, activities: activities || [] },
-      { onConflict: "player_id,date" }
-    );
+    .upsert(row, { onConflict: "player_id,date,moment" });
   if (error) throw error;
+}
+
+/* Bilans du JOUR (matin + soir) du joueur connecté → { matin, soir }. Sert à
+   afficher les deux blocs de l'écran Aujourd'hui + leur état « complété ✓ ». */
+export function useMyDay(playerId, date = todayISO()) {
+  const [day, setDay] = useState({ matin: null, soir: null });
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!playerId) { setDay({ matin: null, soir: null }); setLoading(false); return; }
+    const { data } = await supabase
+      .from("daily_checkins").select("*").eq("player_id", playerId).eq("date", date);
+    const map = { matin: null, soir: null };
+    (data ?? []).forEach((r) => { map[r.moment === "soir" ? "soir" : "matin"] = dbToCheckin(r); });
+    setDay(map);
+    setLoading(false);
+  }, [playerId, date]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { day, loading, refresh: fetch };
 }
 
 // Bilan du jour du joueur connecté (pour préremplir / afficher « enregistré »)
@@ -125,9 +146,11 @@ export function useTeamCheckins(playerIds) {
   // Historique d'activités déclarées par joueur → { [pid]: [{date, activities}] }
   // (alimente le classement : +10 pts par thématique, cf. computePoints).
   const [activities, setActivities] = useState({});
+  // Bilans complétés par joueur → { [pid]: [{date, moment}] } (+10 chacun, points).
+  const [bilans, setBilans] = useState({});
 
   const fetch = useCallback(async () => {
-    if (!playerIds || playerIds.length === 0) { setByPlayer({}); setActivities({}); return; }
+    if (!playerIds || playerIds.length === 0) { setByPlayer({}); setActivities({}); setBilans({}); return; }
     const { data, error } = await supabase
       .from("daily_checkins")
       .select("*")
@@ -141,14 +164,21 @@ export function useTeamCheckins(playerIds) {
     // (useLocalToday). L'historique d'activités reste complet (points).
     const latest = {};
     const act = {};
+    const bil = {};
     (data ?? []).forEach((row) => {
-      if (row.date === today && !latest[row.player_id]) latest[row.player_id] = dbToCheckin(row);
+      const moment = row.moment || "matin";
+      // Bilan « du jour » (readiness / _live) = MATIN uniquement (formule inchangée).
+      if (row.date === today && moment === "matin" && !latest[row.player_id]) latest[row.player_id] = dbToCheckin(row);
+      // Activités déclarées (portées par la ligne matin).
       if (Array.isArray(row.activities) && row.activities.length) {
         (act[row.player_id] = act[row.player_id] || []).push({ date: row.date, activities: row.activities });
       }
+      // Événements « bilan complété » (matin + soir) → +10 chacun dans computePoints.
+      (bil[row.player_id] = bil[row.player_id] || []).push({ date: row.date, moment });
     });
     setByPlayer(latest);
     setActivities(act);
+    setBilans(bil);
   }, [key, today]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -161,5 +191,14 @@ export function useTeamCheckins(playerIds) {
     return () => { supabase.removeChannel(channel); };
   }, [key, fetch]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { checkins: byPlayer, activities, refresh: fetch };
+  return { checkins: byPlayer, activities, bilans, refresh: fetch };
+}
+
+/* Construit les events « bilan complété » d'un joueur pour computePoints :
+   +10 par bilan (matin/soir), datés. `days` = [{date, moment}]. */
+export function bilanEventsOf(days = []) {
+  return (days || []).map((b) => ({
+    date: b.date,
+    label: b.moment === "soir" ? "Bilan du soir complété" : "Bilan du matin complété",
+  }));
 }

@@ -16,7 +16,7 @@ export function useTeamData(teamId) {
   const { logs } = useTeamLogs(teamId);
 
   const playerIds = useMemo(() => roster.map((p) => p.id), [roster]);
-  const { checkins, activities } = useTeamCheckins(playerIds);
+  const { checkins, activities, bilans } = useTeamCheckins(playerIds);
   const { crews } = useCrews(teamId);
   const { campaigns: testCampaigns, results: testResults } = useTestCampaigns(teamId);
 
@@ -32,6 +32,7 @@ export function useTeamData(teamId) {
     logs,
     checkins,
     activities, // historique d'activités déclarées par joueur (points #6)
+    bilans, // bilans complétés par joueur { pid: [{date, moment}] } (points +10)
     crews, // équipes formées par les joueurs (classement par équipe)
     testCampaigns, // campagnes de tests (pour la comparaison / points Top 14)
     testResults,

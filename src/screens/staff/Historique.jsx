@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { wbToWellness, computeReadiness, isoDate, parseISO, fmtShort, todayISO } from "../../lib/metrics.js";
+import { wbToWellness, computeReadiness, isoDate, parseISO, fmtShort, todayISO, EVENING_MARKERS } from "../../lib/metrics.js";
 import { Section, KPI } from "../../lib/ui.jsx";
 import { useTeamCheckinHistory } from "../../data/checkins.js";
 import { activeCamp } from "../../data/camps.js";
@@ -53,15 +53,30 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
     return full.slice(-60);
   }, [fromISO, toISO]);
 
-  // hist[pid][date] = { wellness, sleepH }
+  // Sépare matin (readiness/bien-être — formule inchangée) et soir (ressenti).
+  const matinRows = useMemo(() => rows.filter((r) => r.moment !== "soir"), [rows]);
+  const soirRows = useMemo(() => rows.filter((r) => r.moment === "soir"), [rows]);
+
+  // hist[pid][date] = { wellness, sleepH } — MATIN uniquement.
   const hist = useMemo(() => {
     const m = {};
-    rows.forEach((r) => {
+    matinRows.forEach((r) => {
       const w = wbToWellness(r.wb, r.sleepH);
       (m[r.playerId] = m[r.playerId] || {})[r.date] = { wellness: w, sleepH: r.sleepH };
     });
     return m;
-  }, [rows]);
+  }, [matinRows]);
+
+  // soirHist[pid][date] = moyenne des 6 marqueurs du soir (/10).
+  const soirHist = useMemo(() => {
+    const m = {};
+    soirRows.forEach((r) => {
+      const vals = EVENING_MARKERS.map((k) => r.wb?.[k.k]).filter((v) => typeof v === "number");
+      const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+      (m[r.playerId] = m[r.playerId] || {})[r.date] = avg;
+    });
+    return m;
+  }, [soirRows]);
 
   const readinessAt = (pid, date) => {
     const c = hist[pid]?.[date];
@@ -83,9 +98,10 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
       readiness: avg((pid, d) => readinessAt(pid, d)),
       wellness: avg((pid, d) => hist[pid]?.[d]?.wellness),
       sleep: avg((pid, d) => hist[pid]?.[d]?.sleepH),
+      soir: avg((pid, d) => soirHist[pid]?.[d]),
       charge: chargeByDate,
     };
-  }, [dateAxis, filtered, hist]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateAxis, filtered, hist, soirHist]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const axisLabels = dateAxis.map((d) => fmtShort(d).replace(/\.$/, ""));
 
@@ -161,13 +177,14 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
       ) : (
         <>
           <Section title="TENDANCES (MOYENNE)">
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>Readiness /100 · Bien-être /50 · Sommeil (h)</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>☀️ Matin — Readiness /100 · Bien-être /50 · Sommeil (h) &nbsp;·&nbsp; 🌙 Soir — Ressenti /10</div>
             <MultiLine
               labels={axisLabels}
               series={[
                 { name: "Readiness", color: C.green, pts: series.readiness },
                 { name: "Bien-être", color: C.blue, pts: series.wellness },
                 { name: "Sommeil", color: C.viol, pts: series.sleep },
+                { name: "Ressenti soir", color: C.amb, pts: series.soir },
               ]}
             />
           </Section>

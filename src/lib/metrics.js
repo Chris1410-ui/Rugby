@@ -224,11 +224,22 @@ export const ACTIVITIES = [
 ];
 const ACTIVITY_LABEL = Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label]));
 
+// Marqueurs du bilan du SOIR (6 sliders 1–10). Le matin garde ses 6 marqueurs
+// historiques (cf. écran Bilan). Utilisé par l'écran joueur + la vue staff.
+export const EVENING_MARKERS = [
+  { k: "quality", l: "Qualité" },
+  { k: "intensity", l: "Intensité" },
+  { k: "difficulty", l: "Difficulté" },
+  { k: "fatigue", l: "Fatigue perçue" },
+  { k: "moral", l: "Moral" },
+  { k: "motivation", l: "Plaisir / Motivation" },
+];
+
 // `dailyActivities` : historique d'activités déclarées du joueur → [{ date, activities:[keys] }].
 // `top14Events` : tests validés Top 14 → [{ label, date }] (calculés en amont via
 //   lib/top14.js). +30 pts par test, DATÉS de la 1re validation → un seul crédit
 //   par test (pas de double comptage aux re-saisies).
-export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = []) {
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -301,6 +312,13 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
   (reactivityEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
     add(15, e.label || "⚡ Top 2 réactivité", e.date, inWk);
+  });
+  // Bilans complétés : +10 par bilan (matin / soir), DATÉS. Source = existence de
+  // la ligne daily_checkins du moment → un seul crédit par (date, moment). Distinct
+  // de l'« activité du jour » (activities[]) → aucun double comptage.
+  (bilanEvents || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(10, e.label || "Bilan complété", e.date, inWk);
   });
   if (streak >= 5) add(15, "Série de 5 séances 🔥", today, true);
   else if (streak >= 3) add(5, "Série de 3 séances", today, true);
