@@ -8,6 +8,7 @@ import { usePlayerCheckins } from "../../data/checkins.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { markKine, markTreated } from "../../data/alerts.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
+import { prescribedVsRealized } from "../../lib/hevy.js";
 import Conversation from "./Conversation.jsx";
 import TestsEvolution from "./TestsEvolution.jsx";
 import Top14Panel from "./Top14Panel.jsx";
@@ -37,6 +38,7 @@ const fmtDateTime = (iso) => {
 export default function PlayerReport({ player, sessions, logs, activities = [], reason, onClose, onEditFiche }) {
   const [thread, setThread] = useState(false);
   const [aNote, setANote] = useState("");
+  const [openSess, setOpenSess] = useState(null); // séance dépliée (détail prescrit vs réalisé)
   const canAct = !!reason?.key; // ouvert depuis une alerte → actions kiné/traiter
   const { checkins } = usePlayerCheckins(player.id);
   const cur = checkins[0] || null;      // bilan le plus récent
@@ -141,13 +143,51 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Aucune séance assignée.</div>
           ) : mine.map(({ s, st, rpe }) => {
             const cfg = stCfg[st] || stCfg.pending;
+            const pe = logs?.[s.id]?.[player.id]?.perExercise || {};
+            const hasDetail = st === "done" && (s.exercises || []).length > 0;
+            const open = openSess === s.id;
             return (
-              <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: `1px solid ${C.border2}` }}>
-                <span style={{ width: 8, height: 8, borderRadius: 4, background: cfg.c, flexShrink: 0 }} />
-                <span style={{ fontSize: 11, fontWeight: 700, width: 54 }}>{fmtShort(s.date)}</span>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 11, color: "rgba(255,255,255,0.75)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.code} · {s.titre}</span>
-                {rpe != null && st === "done" && <span style={{ fontSize: 10, fontWeight: 700, color: C.green }}>RPE {rpe}</span>}
-                <Tag c={cfg.c}>{cfg.l}</Tag>
+              <div key={s.id} style={{ borderBottom: `1px solid ${C.border2}` }}>
+                <div onClick={() => hasDetail && setOpenSess(open ? null : s.id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", cursor: hasDetail ? "pointer" : "default" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 4, background: cfg.c, flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, width: 54 }}>{fmtShort(s.date)}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 11, color: "rgba(255,255,255,0.75)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.code} · {s.titre}</span>
+                  {hasDetail && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}>{open ? "▲" : "▼ détail"}</span>}
+                  {rpe != null && st === "done" && <span style={{ fontSize: 10, fontWeight: 700, color: C.green }}>RPE {rpe}</span>}
+                  <Tag c={cfg.c}>{cfg.l}</Tag>
+                </div>
+                {open && (
+                  <div style={{ padding: "4px 0 10px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {s.exercises.map((e) => {
+                      const cmp = prescribedVsRealized(e, pe[e.id]);
+                      const note = (pe[e.id]?.note || "").trim();
+                      return (
+                        <div key={e.id} style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 10px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 3 }}>{e.name}</div>
+                          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 10.5 }}>
+                            <span style={{ color: "rgba(255,255,255,0.6)" }}>Prescrit <b style={{ color: "rgba(255,255,255,0.85)" }}>{e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</b></span>
+                            <span style={{ color: "rgba(255,255,255,0.6)" }}>Réalisé <b style={{ color: cmp.diff ? C.amb : C.green }}>{cmp.hasRealized ? `${cmp.doneSets} séries${cmp.realTop > 0 ? ` · ${cmp.realTop} kg` : ""}` : "—"}</b></span>
+                          </div>
+                          {cmp.diff && (
+                            <div style={{ fontSize: 10, color: C.amb, marginTop: 3, fontWeight: 700 }}>
+                              ≠ {[cmp.setsDiff ? `${cmp.doneSets}/${cmp.prescSets} séries` : null, cmp.chargeDiff ? `${cmp.realTop} kg au lieu de ${cmp.prescCharge} kg` : null].filter(Boolean).join(" · ")}
+                            </div>
+                          )}
+                          {note && (
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 4, fontStyle: "italic", display: "flex", gap: 5 }}>
+                              <span aria-hidden>💬</span><span>{note}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {logs?.[s.id]?.[player.id]?.feedback && (
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", padding: "2px 2px", display: "flex", gap: 5 }}>
+                        <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.55)" }}>Commentaire séance :</span><span style={{ fontStyle: "italic" }}>{logs[s.id][player.id].feedback}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
