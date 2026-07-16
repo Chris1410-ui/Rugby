@@ -6,8 +6,9 @@ import { useThread } from "../../data/messages.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav } from "../../lib/ui.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
+import Taches from "./Taches.jsx";
 import Seances from "./Seances.jsx";
 import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
@@ -46,6 +47,7 @@ export default function PlayerApp({ profile, preview = false }) {
   const nav = [
     ["bilan", "Mon bilan", Sun],
     ["seances", "Mes séances", Dumbbell],
+    ["taches", "Tâches", ClipboardList],
     ["messages", "Messages", MessageSquare, unread],
     ["equipe", "Mon équipe", Users],
     ["classement", "Classement", Trophy],
@@ -61,6 +63,7 @@ export default function PlayerApp({ profile, preview = false }) {
         <main style={{ flex: 1, padding: 18 }}>
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
+          {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
           {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}

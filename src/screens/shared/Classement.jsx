@@ -4,6 +4,7 @@ import { grpLabel } from "../../lib/positions.js";
 import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
+import { useTeamTaskPoints } from "../../data/tasks.js";
 import { KPI } from "../../lib/ui.jsx";
 import { Trophy, X } from "../../lib/icons.jsx";
 
@@ -29,11 +30,13 @@ export default function Classement({ players, sessions, logs, activities = {}, c
   // par tous (émulation collective) sans exposer les valeurs brutes des tests.
   const teamId = players[0]?.team || null;
   const top14ByPlayer = useTeamTop14(teamId);
+  const taskPtsByPlayer = useTeamTaskPoints(teamId);
 
   const data = useMemo(() => {
     const all = players.map((p) => {
       const events = top14ByPlayer[p.id] || [];
-      return { p, top14: events.length, top14Tests: events, ...computePoints(p, sessions, logs, activities[p.id], events) };
+      const taskEvents = (taskPtsByPlayer[p.id] || []).map((t) => ({ label: t.titre, date: t.date }));
+      return { p, top14: events.length, top14Tests: events, ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents) };
     });
     const cur = [...all].sort((a, b) => b.pts - a.pts);
     const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
@@ -41,7 +44,7 @@ export default function Classement({ players, sessions, logs, activities = {}, c
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.rank = i + 1; d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, logs, activities, top14ByPlayer]);
+  }, [players, sessions, logs, activities, top14ByPlayer, taskPtsByPlayer]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
