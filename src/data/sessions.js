@@ -4,11 +4,24 @@ import { supabase } from "../lib/supabase.js";
 /* Séances (sessions). En attendant les programmes complets (étape 7), les séances
    sont des lignes datées directes. `assigned` (jsonb) définit les destinataires. */
 
-// Résout la liste des joueurs assignés à partir de `assigned` + effectif
+// Résout la liste des joueurs assignés à partir de `assigned` + effectif.
+// mode 'open' = inscription libre → destinataires = joueurs déjà inscrits (ids).
 export function resolveAssignedIds(assigned, roster) {
   if (!assigned || assigned.mode === "all" || !assigned.mode) return roster.map((p) => p.id);
   if (assigned.mode === "group") return roster.filter((p) => p.grp === assigned.group).map((p) => p.id);
-  return assigned.ids || [];
+  return assigned.ids || []; // 'players' ou 'open'
+}
+
+// Auto-inscription du joueur connecté à une séance ouverte (mode 'open').
+// Passe par une fonction SECURITY DEFINER : le joueur n'écrit jamais sur
+// `sessions` directement (voir migration 0020).
+export async function enrollInSession(sessionId) {
+  const { error } = await supabase.rpc("enroll_in_session", { p_session: sessionId });
+  if (error) throw error;
+}
+export async function leaveSession(sessionId) {
+  const { error } = await supabase.rpc("leave_session", { p_session: sessionId });
+  if (error) throw error;
 }
 
 // Ligne DB → forme attendue par les écrans + le moteur (assignedIds, dur, exercises[])

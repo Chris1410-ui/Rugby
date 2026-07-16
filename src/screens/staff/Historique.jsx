@@ -4,6 +4,7 @@ import { grpLabel } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, isoDate, parseISO, fmtShort, todayISO } from "../../lib/metrics.js";
 import { Section, KPI } from "../../lib/ui.jsx";
 import { useTeamCheckinHistory } from "../../data/checkins.js";
+import { activeCamp } from "../../data/camps.js";
 import { MultiLine, Bars, Donut, Heatmap } from "../../lib/charts.jsx";
 
 const zoneOfReadiness = (v) => (v == null ? null : v > 70 ? "green" : v > 50 ? "amber" : "red");
@@ -14,14 +15,18 @@ const daysBetween = (fromIso) => Math.max(1, Math.round((Date.now() - parseISO(f
 /* Historique des bilans — vue analytique (staff). Filtres + graphiques dérivés
    des bilans (wbToWellness / computeReadiness — source unique, aucun nouveau
    calcul). Readiness historique = wellness du jour + risque courant (approx). */
-export default function Historique({ players, testCampaigns = [] }) {
+export default function Historique({ players, testCampaigns = [], camps = [] }) {
   const [scope, setScope] = useState("all"); // all | <grp> | <playerId>
   const [period, setPeriod] = useState("30"); // 7 | 30 | camp | all
   const [barMetric, setBarMetric] = useState("wellness"); // wellness | readiness | sleep
 
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
+  // « Depuis le camp » = le camp actif (période nommée). Repli : la campagne de
+  // tests la plus récente si aucun camp n'existe encore.
+  const camp = activeCamp(camps);
   const lastCamp = [...testCampaigns].sort((a, b) => b.date.localeCompare(a.date))[0];
-  const days = period === "7" ? 7 : period === "30" ? 30 : period === "camp" ? (lastCamp ? daysBetween(lastCamp.date) : 30) : 3650;
+  const campFrom = camp?.dateDebut || lastCamp?.date || null;
+  const days = period === "7" ? 7 : period === "30" ? 30 : period === "camp" ? (campFrom ? daysBetween(campFrom) : 30) : 3650;
 
   const allIds = players.map((p) => p.id);
   const { rows, loading } = useTeamCheckinHistory(allIds, days);
@@ -117,7 +122,7 @@ export default function Historique({ players, testCampaigns = [] }) {
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
         {[["7", "7 jours"], ["30", "30 jours"], ["camp", "Depuis le camp"], ["all", "Tout"]].map(([v, l]) => (
-          <button key={v} onClick={() => setPeriod(v)} style={btn(period === v)} disabled={v === "camp" && !lastCamp}>{l}</button>
+          <button key={v} onClick={() => setPeriod(v)} style={btn(period === v)} disabled={v === "camp" && !campFrom} title={v === "camp" && camp ? camp.nom : undefined}>{l}</button>
         ))}
       </div>
 

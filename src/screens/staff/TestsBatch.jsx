@@ -13,11 +13,13 @@ const accent = C.coral;
 
 /* Saisie groupée des tests physiques : une campagne × tout l'effectif dans une
    grille éditable (staff). Un seul enregistrement (bulk upsert). */
-export default function TestsBatch({ teamId, players, onClose }) {
-  const { campaigns, results } = useTestCampaigns(teamId);
+export default function TestsBatch({ teamId, players, camp = null, onClose }) {
+  const { campaigns: allCampaigns, results } = useTestCampaigns(teamId);
+  // En contexte camp : ne montrer/gérer que les campagnes rattachées à ce camp.
+  const campaigns = camp ? allCampaigns.filter((c) => c.campId === camp.id) : allCampaigns;
   const [selCamp, setSelCamp] = useState(null);
-  const [creating, setCreating] = useState(false);
-  const [newCamp, setNewCamp] = useState({ name: "", date: todayISO() });
+  const [creating, setCreating] = useState(camp ? campaigns.length === 0 : false);
+  const [newCamp, setNewCamp] = useState({ name: "", date: camp ? camp.dateDebut : todayISO() });
   const [grid, setGrid] = useState({}); // { [playerId]: { metricKey: value } }
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -50,8 +52,8 @@ export default function TestsBatch({ teamId, players, onClose }) {
     if (!newCamp.name.trim()) return setNote("Donne un nom à la campagne.");
     setBusy(true); setNote("");
     try {
-      const c = await createCampaign(teamId, newCamp);
-      setSelCamp(c.id); setCreating(false); setNewCamp({ name: "", date: todayISO() });
+      const c = await createCampaign(teamId, { ...newCamp, campId: camp?.id ?? null });
+      setSelCamp(c.id); setCreating(false); setNewCamp({ name: "", date: camp ? camp.dateDebut : todayISO() });
     } catch (e) { setNote("Échec : " + (e.message || "réessaie.")); }
     setBusy(false);
   };
@@ -83,7 +85,7 @@ export default function TestsBatch({ teamId, players, onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 320, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 820, background: C.panel, borderRadius: 18, padding: 18, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Saisie groupée des tests</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{camp ? `Résultats — ${camp.nom}` : "Saisie groupée des tests"}</div>
           <X size={20} color="rgba(255,255,255,0.6)" style={{ cursor: "pointer" }} onClick={onClose} />
         </div>
 
@@ -91,8 +93,8 @@ export default function TestsBatch({ teamId, players, onClose }) {
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
           {creating ? (
             <>
-              <input value={newCamp.name} onChange={(e) => setNewCamp((p) => ({ ...p, name: e.target.value }))} placeholder="Nom (ex. Camp 2 – Août)" style={{ flex: "1 1 180px", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none" }} />
-              <input type="date" value={newCamp.date} onChange={(e) => setNewCamp((p) => ({ ...p, date: e.target.value }))} style={{ flex: "0 0 140px", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" }} />
+              <input value={newCamp.name} onChange={(e) => setNewCamp((p) => ({ ...p, name: e.target.value }))} placeholder={camp ? "Nom (ex. Début, Fin)" : "Nom (ex. Camp 2 – Août)"} style={{ flex: "1 1 180px", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none" }} />
+              <input type="date" value={newCamp.date} min={camp ? camp.dateDebut : undefined} max={camp ? camp.dateFin : undefined} onChange={(e) => setNewCamp((p) => ({ ...p, date: e.target.value }))} style={{ flex: "0 0 140px", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" }} />
               <button onClick={doCreate} disabled={busy} style={{ background: accent, border: "none", borderRadius: 8, padding: "8px 12px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Créer</button>
               <button onClick={() => setCreating(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer" }}><X size={16} /></button>
             </>
