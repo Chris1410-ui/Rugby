@@ -109,6 +109,21 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const doneSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.filter((x) => x.done).length, 0);
   const totSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.length, 0);
 
+  // Séance-test : les résultats sont saisis par le staff → carte informative,
+  // pas de logging set-par-set côté joueur.
+  if (s.code === "TEST") {
+    return (
+      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.blue}`, borderRadius: 14, padding: 14, marginBottom: 10, display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 20 }}>🧪</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 800 }}>{fmtShort(s.date)} · {s.titre}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>Tests physiques — le staff saisit tes résultats (fiche + comparaison Top 14).</div>
+        </div>
+        <Tag c={C.blue}>Test</Tag>
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${st === "done" ? C.green : st === "missed" ? C.coral : st === "postponed" ? C.gray : accent}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
       <div onClick={() => setOpen((o) => !o)} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
