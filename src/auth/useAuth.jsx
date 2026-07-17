@@ -92,8 +92,16 @@ export function AuthProvider({ children }) {
       // Clic sur le lien de réinitialisation → écran « nouveau mot de passe »
       if (event === "PASSWORD_RECOVERY") setRecovery(true);
       setSession(next ?? null);
-      if (next?.user) loadProfile(next.user.id);
-      else setProfile(null);
+      // ⚠️ NE PAS appeler d'autre fonction supabase directement ici : supabase-js
+      // (v2, avec LockManager) tient un verrou d'auth pendant ce callback, et la
+      // requête profil — qui a besoin du token — se bloque dessus (deadlock) →
+      // « Chargement du profil… » figé APRÈS connexion. On diffère hors du verrou.
+      if (next?.user) {
+        const uid = next.user.id;
+        setTimeout(() => { if (active) loadProfile(uid); }, 0);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => {
