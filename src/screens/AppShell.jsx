@@ -122,7 +122,7 @@ export default function AppShell() {
           ? <StaffApp profile={profile} tab={tab} onTab={goTab} />
           : <PlayerApp profile={profile} tab={tab} onTab={goTab} />}
       </div>
-      {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} />}
+      {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} playerId={profile.player_id} teamId={profile.team_id} />}
     </div>
   );
 }

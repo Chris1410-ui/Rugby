@@ -5,28 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#16142E" />
     <title>Performance — Rugby U18</title>
-    <!-- Kill-switch : l'app n'utilise PAS de service worker. Si un SW obsolète
-         (laissé par un ancien déploiement/outil) traîne sur l'appareil, il sert
-         de vieux assets hashés → chargement infini. On le désenregistre, on vide
-         les caches, puis on recharge UNE fois pour repartir propre. Inoffensif
-         s'il n'y a aucun SW. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Kill-switch ciblé : l'app n'utilise qu'UN service worker, `push-sw.js`
+         (notifications push, sans cache). Tout AUTRE SW (obsolète, laissé par un
+         ancien déploiement/outil) servirait de vieux assets hashés → chargement
+         infini : on le désenregistre, on vide les caches, puis on recharge UNE
+         fois. On ÉPARGNE explicitement push-sw.js pour ne pas casser les push. -->
     <script>
       (function () {
         try {
-          if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (regs) {
-              if (!regs || !regs.length) return;
-              Promise.all(regs.map(function (r) { return r.unregister(); })).then(function () {
-                if (window.caches && caches.keys) {
-                  caches.keys().then(function (keys) { keys.forEach(function (k) { caches.delete(k); }); });
-                }
-                if (!sessionStorage.getItem("sw-killed")) {
-                  sessionStorage.setItem("sw-killed", "1");
-                  location.reload();
-                }
-              });
-            }).catch(function () {});
-          }
+          if (!("serviceWorker" in navigator)) return;
+          var isOurs = function (reg) {
+            var s = (reg.active || reg.waiting || reg.installing);
+            return s && s.scriptURL && s.scriptURL.indexOf("/push-sw.js") !== -1;
+          };
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            var foreign = (regs || []).filter(function (r) { return !isOurs(r); });
+            if (!foreign.length) return;
+            Promise.all(foreign.map(function (r) { return r.unregister(); })).then(function () {
+              if (window.caches && caches.keys) {
+                caches.keys().then(function (keys) { keys.forEach(function (k) { caches.delete(k); }); });
+              }
+              if (!sessionStorage.getItem("sw-killed")) {
+                sessionStorage.setItem("sw-killed", "1");
+                location.reload();
+              }
+            });
+          }).catch(function () {});
         } catch (e) { /* noop */ }
       })();
     </script>
