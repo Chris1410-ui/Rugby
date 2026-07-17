@@ -3,12 +3,14 @@ import { C } from "../../lib/tokens.js";
 import { statusOfLog } from "../../lib/metrics.js";
 import { Section } from "../../lib/ui.jsx";
 import { useCampParticipants, enrollInCamp, setParticipantStatus, removeParticipant } from "../../data/camps.js";
+import { useReadOnly } from "../../lib/readonly.js";
 
 /* Liste de participation d'un camp (staff) : qui est inscrit / présent, et
    combien de séances de la période chacun a validées. Le staff inscrit
    manuellement, marque « présent », ou retire. « Séances validées » est dérivé
    des session_logs (aucun stockage). */
 export default function CampParticipation({ camp, teamId, players = [], sessions = [], logs = {} }) {
+  const readOnly = useReadOnly();
   const { participants } = useCampParticipants(camp.id);
 
   // Séances validées par joueur dans la période (dérivé).
@@ -42,7 +44,9 @@ export default function CampParticipation({ camp, teamId, players = [], sessions
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{p.name}</div>
                   <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{done} séance{done > 1 ? "s" : ""} validée{done > 1 ? "s" : ""}</div>
                 </div>
-                {!st ? (
+                {readOnly ? (
+                  <span style={{ fontSize: 11, fontWeight: 800, color: !st ? "rgba(255,255,255,0.4)" : st === "present" ? C.green : C.viol }}>{!st ? "Non inscrit" : st === "present" ? "✓ Présent" : "Inscrit"}</span>
+                ) : !st ? (
                   <button onClick={() => enroll(p.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 11px", color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Inscrire</button>
                 ) : (
                   <>

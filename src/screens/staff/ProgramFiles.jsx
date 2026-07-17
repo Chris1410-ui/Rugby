@@ -3,6 +3,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { X, Upload, FileText, Video, ExternalLink } from "../../lib/icons.jsx";
 import { programFolder, uploadFile, listFolder, signedUrl, removeFile } from "../../data/storage.js";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 const kb = (n) => (n == null ? "" : n < 1024 ? `${n} o` : n < 1048576 ? `${Math.round(n / 1024)} Ko` : `${(n / 1048576).toFixed(1)} Mo`);
@@ -12,6 +13,7 @@ const isVideo = (name) => /\.(mp4|mov|webm|m4v|avi)$/i.test(name);
    privé `team-files`. Ouverture via URL signée (jamais d'URL publique). */
 export default function ProgramFiles({ teamId, program, onClose }) {
   useModalClose(onClose);
+  const readOnly = useReadOnly();
   const folder = programFolder(teamId, program.id);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,10 +62,12 @@ export default function ProgramFiles({ teamId, program, onClose }) {
         </div>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 14 }}>Bucket privé · accès par lien signé (1 h)</div>
 
+        {!readOnly && (
         <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 10, padding: 12, color: accent, fontWeight: 700, fontSize: 13, cursor: "pointer", marginBottom: 14 }}>
           <Upload size={15} />{busy ? "Envoi…" : "Ajouter un PDF ou une vidéo"}
           <input type="file" accept="application/pdf,video/*" style={{ display: "none" }} onChange={(e) => onUpload(e.target.files[0])} />
         </label>
+        )}
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 10 }}>{err}</div>}
 
