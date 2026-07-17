@@ -88,3 +88,29 @@ describe("buildPreview — plan create/update sans écriture", () => {
     expect(rows[0].metrics).toEqual({ cmj_overall: 42 });
   });
 });
+
+describe("import — POSTE CONSERVÉ (joueur existant jamais écrasé)", () => {
+  const roster = [{ id: "p1", name: "Lion", num: 5, pos: "Pilier gauche", grp: "avants" }];
+
+  it("update : garde le poste/ligne du joueur, ignore le fichier (reconnu)", () => {
+    const { rows } = buildPreview([{ Totem: "Lion", Poste: "Ailier", Ligne: "Arrières" }], roster);
+    const r = rows[0];
+    expect(r.action).toBe("update");
+    expect(r.pos).toBe("Pilier gauche");   // valeur du joueur, PAS « Ailier »
+    expect(r.grp).toBe("avants");           // pas « arrieres »
+    expect(r.posKept).toBe(true);
+    expect(r.warnings.some((w) => /Poste conservé/.test(w))).toBe(true);
+  });
+
+  it("update : poste fichier NON reconnu ou vide → toujours conservé, aucun blocage/alerte", () => {
+    const bad = buildPreview([{ Totem: "Lion", Poste: "ZZZ" }], roster).rows[0];
+    expect(bad.action).toBe("update");
+    expect(bad.pos).toBe("Pilier gauche");
+    expect(bad.errors).toEqual([]);                       // jamais bloqué pour motif de poste
+    expect(bad.warnings.some((w) => /non reconnu/.test(w))).toBe(false); // pas d'alerte poste sur un existant
+
+    const empty = buildPreview([{ Totem: "Lion" }], roster).rows[0];
+    expect(empty.action).toBe("update");
+    expect(empty.pos).toBe("Pilier gauche");
+  });
+});
