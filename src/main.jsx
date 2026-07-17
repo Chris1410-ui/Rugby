@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import "./styles.css";
 
 /* Chunk manquant après (re)déploiement : un onglet ouvert garde l'ancien
@@ -20,6 +21,12 @@ window.addEventListener("vite:preloadError", (event) => {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>
 );
+
+// Signale à la sentinelle d'index.html que le bundle a bien été évalué et le
+// rendu lancé — sinon elle affiche l'écran « L'application n'a pas pu démarrer ».
+window.__appMounted = true;

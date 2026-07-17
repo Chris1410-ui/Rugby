@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../auth/useAuth.jsx";
-import { C, FONT, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
+import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
 import { Bell } from "../lib/icons.jsx";
 import { useNotifications } from "../data/notifications.js";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
@@ -48,6 +48,25 @@ export default function AppShell() {
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
             Ton compte est authentifié ({user?.email}) mais aucun profil métier n'est associé.
             Reconnecte-toi ou contacte le staff.
+          </div>
+          <button onClick={signOut} style={{ marginTop: 16, background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Se déconnecter</button>
+        </div>
+      </Centered>
+    );
+  }
+
+  // Profil présent mais incomplet pour son rôle (ex. joueur sans club/fiche,
+  // staff sans club, rôle non reconnu) : écran clair au lieu d'un chargement
+  // infini ou d'un crash plus loin. Ne bloque JAMAIS l'owner (team_id null OK).
+  if (!isProfileComplete(profile)) {
+    return (
+      <Centered>
+        <div style={{ maxWidth: 340, textAlign: "center" }}>
+          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>Profil incomplet</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+            Ton compte ({user?.email}) est bien authentifié, mais sa configuration
+            est incomplète (rôle ou rattachement à un club manquant). Contacte le
+            staff pour finaliser ton accès.
           </div>
           <button onClick={signOut} style={{ marginTop: 16, background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Se déconnecter</button>
         </div>
