@@ -7,6 +7,8 @@ import { MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins, bilanEventsOf } from "../../data/checkins.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
+import { useTeamChallengePoints } from "../../data/challenges.js";
+import { challengeBadges } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
 import { markKine, markTreated } from "../../data/alerts.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
@@ -56,7 +58,9 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   const taskEvents = (taskPts[player.id] || []).map((t) => ({ label: t.titre, date: t.date }));
   const reactEvents = useTeamReactivity(player.team)[player.id] || [];
   const bilanEvents = bilanEventsOf(checkins.map((c) => ({ date: c.date, moment: c.moment })));
-  const pts = computePoints(player, sessions, logs, activities, t14.events, taskEvents, reactEvents, bilanEvents);
+  const chalPts = useTeamChallengePoints(player.team)[player.id] || [];
+  const challengeEvents = chalPts.map((c) => ({ label: c.titre, points: c.points, date: c.date }));
+  const pts = computePoints(player, sessions, logs, activities, t14.events, taskEvents, reactEvents, bilanEvents, challengeEvents);
   const zone = acwrZ(player.acwr);
 
   // Dernières séances assignées (récentes d'abord) + statut + RPE.
@@ -166,6 +170,18 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
             </>
           )}
         </Section>
+
+        {/* Badges défis */}
+        {chalPts.length > 0 && (
+          <Section title={`🎯 DÉFIS · ${chalPts.length} relevé${chalPts.length > 1 ? "s" : ""}`}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+              {challengeBadges(chalPts.length).map((b) => (
+                <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.65)" }}>+{chalPts.reduce((a, c) => a + (c.points || 0), 0)} pts de défis</div>
+          </Section>
+        )}
 
         {/* Charge */}
         <Section title="CHARGE">

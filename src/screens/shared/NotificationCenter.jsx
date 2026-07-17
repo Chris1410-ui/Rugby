@@ -1,10 +1,10 @@
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
-import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Shield } from "../../lib/icons.jsx";
+import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Flame, Shield } from "../../lib/icons.jsx";
 
 /* Centre de notifications (joueur). Liste datée, non-lus en surbrillance,
    clic → écran concerné + marqué lu, « tout lu ». Rendu en modal. */
-const ICON = { task: ClipboardList, session: Dumbbell, message: MessageSquare, questionnaire: FileText, camp: Flag, test: Shield };
+const ICON = { task: ClipboardList, session: Dumbbell, message: MessageSquare, questionnaire: FileText, camp: Flag, test: Shield, challenge: Flame };
 
 const fmtWhen = (iso) => {
   try {

@@ -176,6 +176,15 @@ describe("computePoints — gamification", () => {
     const r = computePoints(p, [], {}, acts, [], [], [], bilans);
     expect(r.pts).toBe(108 + 10 + 20); // activité (10) + matin (10) + soir (10)
   });
+  it("défis confirmés : +N points paramétrables, datés", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const challenges = [
+      { label: "100 passes", points: 25, date: todayISO() },
+      { label: "Réveil musculaire", points: 15, date: todayISO() },
+    ];
+    const r = computePoints(p, [], {}, [], [], [], [], [], challenges);
+    expect(r.pts).toBe(108 + 40); // 25 + 15
+  });
   it("bonus top 2 réactivité : +15 par event", () => {
     const p = basePlayer({ acwr: 1.0 });
     const r = computePoints(p, [], {}, [], [], [], [{ label: "⚡ Top 2 réactivité (tâche)", date: todayISO() }]);

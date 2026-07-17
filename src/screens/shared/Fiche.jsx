@@ -8,6 +8,8 @@ import { pwdStrength } from "../../lib/password.js";
 import { updatePlayer, resetPlayerPassword } from "../../data/players.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
+import { useTeamChallengePoints } from "../../data/challenges.js";
+import { challengeBadges } from "../../lib/challenges.js";
 import { top14Player, datedResultsFor } from "../../lib/top14.js";
 import TestsEvolution from "./TestsEvolution.jsx";
 import Top14Panel from "./Top14Panel.jsx";
@@ -117,6 +119,7 @@ export default function Fiche({ player, canEdit = false, onClose }) {
   const [adv, setAdv] = useState(false);
   const { campaigns, results } = useTestCampaigns(player.team);
   const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
+  const chalPts = useTeamChallengePoints(player.team)[player.id] || [];
   useModalClose(onClose);
 
   useEffect(() => {
@@ -251,6 +254,18 @@ export default function Fiche({ player, canEdit = false, onClose }) {
 
       {/* Comparaison aux normes Top 14 du poste */}
       <Top14Panel t14={t14} />
+
+      {/* Badges défis gagnés (visibles joueur + staff) */}
+      {chalPts.length > 0 && (
+        <Section title={`🎯 DÉFIS · ${chalPts.length} relevé${chalPts.length > 1 ? "s" : ""}`}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {challengeBadges(chalPts.length).map((b) => (
+              <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
+            ))}
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.viol, alignSelf: "center" }}>· +{chalPts.reduce((a, c) => a + (c.points || 0), 0)} pts</span>
+          </div>
+        </Section>
+      )}
 
       {/* Réponses aux questionnaires (staff — données santé, lien croisé) */}
       {canEdit && <FicheQuestionnaires player={player} />}
