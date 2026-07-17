@@ -19,10 +19,10 @@ export async function commitImport(teamId, previewRows, date = todayISO()) {
       playerId = p.id;
       if (r.club) { try { await updatePlayer(playerId, { club: r.club }); } catch { /* non bloquant */ } }
     } else {
+      // POSTE CONSERVÉ : on ne met JAMAIS à jour pos/grp d'un joueur existant à
+      // l'import (règle produit) — seuls numéro et club peuvent changer.
       const patch = {};
       if (r.num != null) patch.num = r.num;
-      if (r.pos) patch.pos = r.pos;
-      if (r.grp) patch.grp = r.grp;
       if (r.club) patch.club = r.club;
       if (Object.keys(patch).length) await updatePlayer(playerId, patch);
     }

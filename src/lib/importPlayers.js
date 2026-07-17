@@ -156,8 +156,11 @@ export function buildPreview(rawRows = [], roster = []) {
     const grpOverride = matchGrp(cell(raw, "grp"));
     const grp = grpOverride || posMatch?.grp || null;
     const pos = posMatch?.pos || null;
-    if (cell(raw, "pos") && !posMatch) warnings.push(`Poste « ${cell(raw, "pos")} » non reconnu`);
-    if (cell(raw, "grp") && !grpOverride) warnings.push(`Ligne « ${cell(raw, "grp")} » non reconnue`);
+    // RÈGLE : à l'import, le poste/ligne d'un joueur EXISTANT n'est JAMAIS touché
+    // (cf. branche `match` plus bas). On n'avertit donc du poste/ligne « non
+    // reconnu » que pour les CRÉATIONS (pas d'appariement).
+    if (!match && cell(raw, "pos") && !posMatch) warnings.push(`Poste « ${cell(raw, "pos")} » non reconnu`);
+    if (!match && cell(raw, "grp") && !grpOverride) warnings.push(`Ligne « ${cell(raw, "grp")} » non reconnue`);
 
     // Métriques fournies (colonnes optionnelles absentes = ignorées).
     const metrics = {};
@@ -188,7 +191,11 @@ export function buildPreview(rawRows = [], roster = []) {
       const nk = `id:${match.id}`;
       if (seenNameKeys.has(nk)) warnings.push("Doublon dans le fichier (même joueur)");
       seenNameKeys.add(nk);
-      return { index, action: "update", matchId: match.id, name: match.name, num, pos, grp, club, metrics, warnings, errors, hasData };
+      // POSTE CONSERVÉ : on garde TOUJOURS le poste/ligne déjà saisi par le joueur
+      // (reconnu, non reconnu ou vide dans le fichier n'a aucune importance) →
+      // jamais d'écrasement, jamais de blocage pour motif de poste.
+      warnings.push(`Poste conservé (${match.pos || "valeur du joueur"})`);
+      return { index, action: "update", matchId: match.id, name: match.name, num, pos: match.pos ?? null, grp: match.grp ?? null, club, metrics, warnings, errors, hasData, posKept: true };
     }
 
     // Création : il faut un totem ET un poste résolu (sinon erreur).
