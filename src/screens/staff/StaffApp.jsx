@@ -15,7 +15,7 @@ import { addPlayer, usePasswordResetRequests, markResetHandled } from "../../dat
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, MessageSquare, TrendingUp, Eye, Flag, ClipboardList, FileText } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, ClipboardList, FileText } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -26,6 +26,7 @@ import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import AnalyseVideo from "./AnalyseVideo.jsx";
+import Mediatheque from "../shared/Mediatheque.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
@@ -76,6 +77,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
     ["taches", "Tâches", ClipboardList, bTaches],
     ["questionnaires", "Quest.", FileText, bQuest],
     ["exos", "Exos", BookOpen],
+    ["media", "Média", Film],
     ["classement", "Classement", Trophy],
     ["historique", "Historique", TrendingUp],
     ["calendrier", "Calendrier", Calendar],
@@ -94,6 +96,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
+        {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
