@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { C } from "../../lib/tokens.js";
-import { wbToWellness, computeReadiness, acwrZ, ACTIVITIES, EVENING_MARKERS } from "../../lib/metrics.js";
+import { wbToWellness, computeReadiness, acwrZ, ACTIVITIES, EVENING_MARKERS, SLEEP_OPTIONS, sleepLabel } from "../../lib/metrics.js";
 import { Ring, Section } from "../../lib/ui.jsx";
 import { CheckCircle, Send } from "../../lib/icons.jsx";
 import { useMyDay, saveCheckin } from "../../data/checkins.js";
@@ -46,6 +46,36 @@ const Slider = ({ label, value, color, onChange }) => (
       <span style={{ fontSize: 14, fontWeight: 700, color }}>{value}/10</span>
     </div>
     <input type="range" min="1" max="10" value={value} onChange={(e) => onChange(parseInt(e.target.value, 10))} style={{ width: "100%", accentColor: color, height: 4 }} />
+  </div>
+);
+
+/* Sélecteur d'heures de sommeil en tranches de 30 min (grille de boutons, wrap).
+   Le joueur clique la bonne durée ; la valeur décimale (7.5) reste stockée.
+   Cibles ≥44px, style actif violet, thème sombre. Désactivé en aperçu. */
+const SleepPicker = ({ value, onChange, disabled }) => (
+  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+    {SLEEP_OPTIONS.map((h) => {
+      const on = Number(value) === h;
+      return (
+        <button
+          key={h}
+          type="button"
+          onClick={() => !disabled && onChange(h)}
+          disabled={disabled}
+          aria-pressed={on}
+          style={{
+            flex: "1 0 auto", minWidth: 58, minHeight: 44, padding: "0 12px",
+            borderRadius: 10, cursor: disabled ? "default" : "pointer",
+            background: on ? C.viol : "rgba(255,255,255,0.06)",
+            border: `1.5px solid ${on ? C.viol : C.border}`,
+            color: on ? "#fff" : "rgba(255,255,255,0.75)",
+            fontSize: 13.5, fontWeight: on ? 800 : 600, opacity: disabled ? 0.55 : 1,
+          }}
+        >
+          {sleepLabel(h)}
+        </button>
+      );
+    })}
   </div>
 );
 
@@ -148,15 +178,14 @@ export default function Bilan({ me, accent }) {
       </Section>
 
       <Section title="SOMMEIL & HYDRATATION">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Sommeil (heures)</div>
-            <input type="number" step="0.5" value={d.sleepH ?? ""} onChange={(e) => setM({ sleepH: parseFloat(e.target.value) || 0 })} style={numInp(C.viol)} />
-          </div>
-          <div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Hydratation (L)</div>
-            <input type="number" step="0.1" value={d.hydra ?? ""} onChange={(e) => setM({ hydra: parseFloat(e.target.value) || 0 })} style={numInp(C.teal)} />
-          </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>Sommeil</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: C.viol }}>{sleepLabel(d.sleepH)}</span>
+        </div>
+        <SleepPicker value={d.sleepH} onChange={(v) => setM({ sleepH: v })} disabled={preview} />
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Hydratation (L)</div>
+          <input type="number" step="0.1" value={d.hydra ?? ""} onChange={(e) => setM({ hydra: parseFloat(e.target.value) || 0 })} style={numInp(C.teal)} />
         </div>
       </Section>
 

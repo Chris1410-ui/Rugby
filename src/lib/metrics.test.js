@@ -1,7 +1,29 @@
 import { describe, it, expect } from "vitest";
 import {
   acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
+  SLEEP_OPTIONS, sleepLabel,
 } from "./metrics.js";
+
+describe("sélecteur de sommeil (tranches 30 min)", () => {
+  it("options de 4h à 12h par pas de 0,5", () => {
+    expect(SLEEP_OPTIONS[0]).toBe(4);
+    expect(SLEEP_OPTIONS[SLEEP_OPTIONS.length - 1]).toBe(12);
+    expect(SLEEP_OPTIONS).toHaveLength(17);
+    expect(SLEEP_OPTIONS).toContain(7.5);
+    // pas de 0,5 partout
+    for (let i = 1; i < SLEEP_OPTIONS.length; i++) {
+      expect(SLEEP_OPTIONS[i] - SLEEP_OPTIONS[i - 1]).toBeCloseTo(0.5);
+    }
+  });
+  it("affichage humanisé « 7h30 » (pas « 7.5 »)", () => {
+    expect(sleepLabel(7.5)).toBe("7h30");
+    expect(sleepLabel(7)).toBe("7h");
+    expect(sleepLabel(4)).toBe("4h");
+    expect(sleepLabel(12)).toBe("12h");
+    expect(sleepLabel(null)).toBe("—");
+    expect(sleepLabel(undefined)).toBe("—");
+  });
+});
 
 const basePlayer = (over = {}) => ({
   id: "r_u18_1",

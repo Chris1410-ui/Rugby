@@ -153,6 +153,16 @@ export function computeReadiness(wellness, risque, sleepH) {
   return Math.round((wellness / 50) * 50 + ((100 - risque) / 100) * 30 + ((sleepH || 7) / 10) * 20);
 }
 
+/* Sélecteur d'heures de sommeil : tranches de 30 min de 4h à 12h. La valeur
+   STOCKÉE reste décimale (7.5) ; seul l'affichage est humanisé (« 7h30 »). */
+export const SLEEP_OPTIONS = Array.from({ length: 17 }, (_, i) => 4 + i * 0.5); // 4 → 12 par 0,5
+export function sleepLabel(v) {
+  if (v == null || Number.isNaN(+v)) return "—";
+  const h = Math.floor(v);
+  const m = Math.round((v - h) * 60);
+  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
+
 // SOURCE DE VÉRITÉ UNIQUE : enrichit chaque joueur (charge + bilan du jour → risque & readiness)
 export function enrichPlayers(players, sessions, logs, daily) {
   return players.map((p) => {
