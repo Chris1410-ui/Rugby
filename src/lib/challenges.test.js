@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { challengeBadges, topChallengeBadge, defiOfWeek, CHALLENGE_BANNERS } from "./challenges.js";
+import { challengeBadges, topChallengeBadge, defiOfWeek, CHALLENGE_BANNERS, assignedLabel } from "./challenges.js";
 
 describe("badges de défis (paliers 1/5/10/25)", () => {
   it("débloque les paliers selon le nombre de défis confirmés", () => {
@@ -34,5 +34,18 @@ describe("defiOfWeek", () => {
 describe("bannières réutilisées des équipes", () => {
   it("la palette n'est pas vide", () => {
     expect(CHALLENGE_BANNERS.length).toBeGreaterThan(4);
+  });
+});
+
+describe("assignedLabel (destinataires lisibles)", () => {
+  it("mappe chaque mode d'assignation", () => {
+    expect(assignedLabel({ mode: "all" })).toBe("Toute l'équipe");
+    expect(assignedLabel({ mode: "open" })).toBe("Ouvert à tous");
+    expect(assignedLabel({ mode: "group", group: "avants" })).toBe("Ligne · Avants");
+    expect(assignedLabel({ mode: "players", ids: ["a", "b", "c"] })).toBe("Joueurs choisis · 3");
+  });
+  it("valeurs par défaut robustes", () => {
+    expect(assignedLabel()).toBe("Toute l'équipe");
+    expect(assignedLabel({ mode: "players" })).toBe("Joueurs choisis · 0");
   });
 });

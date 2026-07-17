@@ -7,9 +7,10 @@ import { Plus, Trash2, CheckCircle, X, Grid } from "../../lib/icons.jsx";
 import { CHALLENGE_BANNERS, CHALLENGE_EMOJIS, bannerGradient, defiOfWeek } from "../../lib/challenges.js";
 import {
   useTeamChallenges, useTeamChallengeCompletions, useTeamChallengeStats,
-  createChallenge, createChallengesBulk, deleteChallenge, confirmChallenge, refuseChallenge,
+  createChallenge, createChallengesBulk, deleteChallenge, confirmChallenge, refuseChallenge, updateChallenge,
 } from "../../data/challenges.js";
 import ChallengeCard from "../shared/ChallengeCard.jsx";
+import ChallengeDetail from "../shared/ChallengeDetail.jsx";
 
 const accent = C.coral;
 const parseMateriel = (s) => String(s || "").split(",").map((x) => x.trim()).filter(Boolean);
@@ -23,11 +24,19 @@ export default function Defis({ teamId, players = [], openNew = false }) {
   const stats = useTeamChallengeStats(teamId);
   const [form, setForm] = useState(openNew);
   const [grid, setGrid] = useState(false);
+  const [detailId, setDetailId] = useState(null); // défi ouvert en grand
+  const [edit, setEdit] = useState(null);          // défi en cours d'édition
   const nameById = Object.fromEntries(players.map((p) => [p.id, p.name]));
   const today = todayISO();
   const featured = defiOfWeek(challenges, today);
+  const detail = challenges.find((c) => c.id === detailId) || null; // suit le temps réel
 
-  const del = (id) => { if (confirm("Supprimer ce défi ?")) deleteChallenge(id).catch((e) => console.error(e.message)); };
+  const del = (id) => {
+    if (confirm("Supprimer ce défi ?")) {
+      deleteChallenge(id).then(() => setDetailId(null)).catch((e) => console.error(e.message));
+    }
+  };
+  const openEdit = (c) => { setDetailId(null); setEdit(c); };
 
   const Footer = ({ c }) => {
     const comps = byChallenge[c.id] || {};
@@ -57,11 +66,40 @@ export default function Defis({ teamId, players = [], openNew = false }) {
     );
   };
 
+  // Liste des participants + statut (relevé / en attente / validé) — vue détail.
+  const Participants = ({ c }) => {
+    const comps = byChallenge[c.id] || {};
+    const open = c.assigned?.mode === "open";
+    // Ouvert : ceux qui ont relevé ; sinon : les assignés.
+    const ids = open ? Object.keys(comps) : c.assignedIds;
+    if (ids.length === 0) {
+      return <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{open ? "Personne n'a encore relevé ce défi ouvert." : "Aucun destinataire."}</div>;
+    }
+    const rank = (st) => (st === "confirmee" ? 0 : st === "validee_joueur" ? 1 : 2);
+    const sorted = [...ids].sort((a, b) => rank(comps[a]?.statut) - rank(comps[b]?.statut));
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {sorted.map((pid) => {
+          const st = comps[pid]?.statut;
+          const chip = st === "confirmee" ? { t: "✅ Validé", c: C.green }
+            : st === "validee_joueur" ? { t: "✋ Relevé", c: C.amb }
+            : { t: "⏳ En attente", c: "rgba(255,255,255,0.45)" };
+          return (
+            <div key={pid} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "7px 10px" }}>
+              <div style={{ flex: 1, fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nameById[pid] || "Joueur"}</div>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: chip.c }}>{chip.t}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const Card = (c) => {
     const open = c.assigned?.mode === "open";
     const s = stats[c.id] || { releves: 0 };
     const participants = open ? s.releves : (c.assignedIds.length || 0);
-    return <ChallengeCard key={c.id} c={c} releves={s.releves} participants={participants} open={open} highlight={featured?.id === c.id}><Footer c={c} /></ChallengeCard>;
+    return <ChallengeCard key={c.id} c={c} releves={s.releves} participants={participants} open={open} highlight={featured?.id === c.id} onOpen={() => setDetailId(c.id)}><Footer c={c} /></ChallengeCard>;
   };
 
   return (
@@ -84,19 +122,41 @@ export default function Defis({ teamId, players = [], openNew = false }) {
         </div>
       )}
 
-      {form && <DefiForm teamId={teamId} players={players} onClose={() => setForm(false)} />}
+      {detail && (
+        <ChallengeDetail
+          c={detail}
+          onClose={() => setDetailId(null)}
+          topRight={
+            <>
+              <button onClick={() => openEdit(detail)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: "8px 14px", color: "#fff", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>Modifier</button>
+              <button onClick={() => del(detail.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 14px", color: C.coral, fontWeight: 800, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={13} /> Supprimer</button>
+            </>
+          }
+        >
+          <div style={{ marginTop: 4 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.55)", letterSpacing: 0.5, marginBottom: 8 }}>PARTICIPANTS</div>
+            <Participants c={detail} />
+          </div>
+        </ChallengeDetail>
+      )}
+
+      {(form || edit) && <DefiForm teamId={teamId} players={players} initial={edit} onClose={() => { setForm(false); setEdit(null); }} />}
       {grid && <DefiGrid teamId={teamId} onClose={() => setGrid(false)} />}
     </section>
   );
 }
 
-/* Formulaire unitaire complet (tous les champs + bannière + badge + destinataires fins). */
-function DefiForm({ teamId, players, onClose }) {
+/* Formulaire unitaire complet (tous les champs + bannière + badge + destinataires
+   fins). `initial` (défi existant) → mode ÉDITION : pré-remplissage + mise à jour. */
+function DefiForm({ teamId, players, initial = null, onClose }) {
   useModalClose(onClose);
-  const [d, setD] = useState({ titre: "", description: "", points: 10, heure: "", lieu: "", materiel: "", echeance: "", banner: "flame", badge: "🏆" });
-  const [mode, setMode] = useState("all");
-  const [group, setGroup] = useState("avants");
-  const [ids, setIds] = useState([]);
+  const editing = Boolean(initial);
+  const [d, setD] = useState(() => initial
+    ? { titre: initial.titre || "", description: initial.description || "", points: initial.points ?? 10, heure: initial.heure || "", lieu: initial.lieu || "", materiel: (initial.materiel || []).join(", "), echeance: initial.echeance || "", banner: initial.banner || "flame", badge: initial.badge || "🏆" }
+    : { titre: "", description: "", points: 10, heure: "", lieu: "", materiel: "", echeance: "", banner: "flame", badge: "🏆" });
+  const [mode, setMode] = useState(initial?.assigned?.mode || "all");
+  const [group, setGroup] = useState(initial?.assigned?.group || "avants");
+  const [ids, setIds] = useState(initial?.assigned?.ids || []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
@@ -108,8 +168,26 @@ function DefiForm({ teamId, players, onClose }) {
     const assigned = mode === "group" ? { mode: "group", group } : mode === "players" ? { mode: "players", ids } : mode === "open" ? { mode: "open" } : { mode: "all" };
     if (mode === "players" && ids.length === 0) return setErr("Choisis au moins un joueur.");
     setBusy(true); setErr("");
-    try { await createChallenge(teamId, { ...d, materiel: parseMateriel(d.materiel), assigned }); onClose(); }
-    catch (e) { setErr("Échec : " + (e.message || "")); setBusy(false); }
+    const fields = { ...d, materiel: parseMateriel(d.materiel), assigned };
+    try {
+      if (editing) {
+        await updateChallenge(initial.id, {
+          titre: fields.titre.trim(),
+          description: fields.description?.trim() || null,
+          points: Math.max(0, Math.min(500, Math.round(+fields.points) || 0)),
+          heure: fields.heure?.trim() || null,
+          lieu: fields.lieu?.trim() || null,
+          materiel: fields.materiel,
+          echeance: fields.echeance || null,
+          assigned,
+          banner: fields.banner,
+          badge: fields.badge,
+        });
+      } else {
+        await createChallenge(teamId, fields);
+      }
+      onClose();
+    } catch (e) { setErr("Échec : " + (e.message || "")); setBusy(false); }
   };
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10, boxSizing: "border-box" };
   const pill = (on) => ({ padding: "6px 11px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: on ? accent : "rgba(255,255,255,0.07)", color: "#fff" });
@@ -118,7 +196,7 @@ function DefiForm({ teamId, players, onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, background: C.navy, borderRadius: 18, padding: 20, maxHeight: "92vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Nouveau défi</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{editing ? "Modifier le défi" : "Nouveau défi"}</div>
           <CloseX onClose={onClose} />
         </div>
 
@@ -170,7 +248,7 @@ function DefiForm({ teamId, players, onClose }) {
         )}
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
-        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : "Publier le défi"}</button>
+        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : editing ? "Enregistrer les changements" : "Publier le défi"}</button>
       </div>
     </div>
   );

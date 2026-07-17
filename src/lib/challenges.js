@@ -1,7 +1,18 @@
 /* challenges.js — helpers PURS pour les Défis (badges, défi de la semaine).
    La palette de bannières est celle des équipes (crews.js), réutilisée. */
+import { grpLabel } from "./positions.js";
 
 export { CREW_BANNERS as CHALLENGE_BANNERS, bannerOf, bannerGradient, randomBannerKey } from "./crews.js";
+
+/* Libellé lisible des destinataires d'un défi (pour la vue détail). */
+export function assignedLabel(assigned = { mode: "all" }) {
+  switch (assigned?.mode) {
+    case "open": return "Ouvert à tous";
+    case "group": return `Ligne · ${grpLabel(assigned.group)}`;
+    case "players": return `Joueurs choisis · ${(assigned.ids || []).length}`;
+    default: return "Toute l'équipe";
+  }
+}
 
 // Emojis proposés pour le badge d'un défi (le staff peut aussi taper le sien).
 export const CHALLENGE_EMOJIS = ["🏆", "🔥", "⚡", "💪", "🎯", "🚀", "🥇", "⭐", "🦁", "🏉"];
