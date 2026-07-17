@@ -12,14 +12,34 @@ const teamLabel = (id) => TEAMS.rugby.find((t) => t.id === id)?.label || id;
 const roleObjOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
 
 export default function AppShell() {
-  const { profile, user, signOut, profileLoading } = useAuth();
+  const { profile, user, signOut, profileLoaded, profileError, refreshProfile, hardReset } = useAuth();
   // Notifications joueur (hook appelé inconditionnellement ; vide pour staff/owner).
   const notifs = useNotifications(profile?.player_id);
   const [navTab, setNavTab] = useState(null); // onglet actif (piloté ici pour cloche/hub/avatar)
   const [notifOpen, setNotifOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
 
-  if (profileLoading && !profile) return <Centered>Chargement du profil…</Centered>;
+  // Échec de chargement du profil (timeout + retries épuisés) : écran d'erreur
+  // explicite avec des issues de secours — JAMAIS un spinner infini.
+  if (profileError && !profile) {
+    return (
+      <Centered>
+        <div style={{ maxWidth: 340, textAlign: "center" }}>
+          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>Impossible de charger le profil</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+            La connexion au serveur a échoué ou expiré. Vérifie ta connexion internet,
+            puis réessaie.
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+            <button onClick={refreshProfile} style={{ background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Réessayer</button>
+            <button onClick={hardReset} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Réinitialiser l'app</button>
+            <button onClick={signOut} style={{ background: "none", border: "none", padding: "6px", color: "rgba(255,255,255,0.5)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Se déconnecter</button>
+          </div>
+        </div>
+      </Centered>
+    );
+  }
+  if (!profile && !profileLoaded) return <Centered>Chargement du profil…</Centered>;
   if (!profile) {
     return (
       <Centered>
