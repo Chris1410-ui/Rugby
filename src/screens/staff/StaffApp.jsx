@@ -16,7 +16,7 @@ import { addPlayer, usePasswordResetRequests, markResetHandled } from "../../dat
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
