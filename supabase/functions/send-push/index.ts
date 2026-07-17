@@ -32,9 +32,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
 
-  // Auth interne : secret partagé avec le trigger DB.
-  const secret = req.headers.get("x-push-secret");
-  const expected = Deno.env.get("PUSH_HOOK_SECRET");
+  // Auth interne : secret partagé avec le trigger DB. On tolère un espace/retour
+  // à la ligne parasite (copié-collé du dashboard) via trim() des deux côtés.
+  const secret = (req.headers.get("x-push-secret") || "").trim();
+  const expected = (Deno.env.get("PUSH_HOOK_SECRET") || "").trim();
   if (!expected || secret !== expected) return json({ error: "unauthorized" }, 401);
 
   let payloadIn: Record<string, unknown>;
