@@ -5,6 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#16142E" />
     <title>Performance — Rugby U18</title>
+    <!-- Kill-switch : l'app n'utilise PAS de service worker. Si un SW obsolète
+         (laissé par un ancien déploiement/outil) traîne sur l'appareil, il sert
+         de vieux assets hashés → chargement infini. On le désenregistre, on vide
+         les caches, puis on recharge UNE fois pour repartir propre. Inoffensif
+         s'il n'y a aucun SW. -->
+    <script>
+      (function () {
+        try {
+          if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              if (!regs || !regs.length) return;
+              Promise.all(regs.map(function (r) { return r.unregister(); })).then(function () {
+                if (window.caches && caches.keys) {
+                  caches.keys().then(function (keys) { keys.forEach(function (k) { caches.delete(k); }); });
+                }
+                if (!sessionStorage.getItem("sw-killed")) {
+                  sessionStorage.setItem("sw-killed", "1");
+                  location.reload();
+                }
+              });
+            }).catch(function () {});
+          }
+        } catch (e) { /* noop */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
