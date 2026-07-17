@@ -1,8 +1,50 @@
 import { describe, it, expect } from "vitest";
 import {
   acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
-  SLEEP_OPTIONS, sleepLabel,
+  SLEEP_OPTIONS, sleepLabel, rankLeaderboard,
 } from "./metrics.js";
+
+describe("rankLeaderboard — ex æquo (rang partagé + départage stable)", () => {
+  const opts = { pointsOf: (r) => r.pts, labelOf: (r) => r.name, rankKey: "rank" };
+
+  it("conserve TOUS les joueurs, même à égalité (aucune déduplication)", () => {
+    const rows = [
+      { id: "a", name: "Alice", pts: 30 },
+      { id: "b", name: "Bob", pts: 30 },
+      { id: "c", name: "Chloé", pts: 30 },
+      { id: "d", name: "David", pts: 10 },
+    ];
+    const out = rankLeaderboard(rows, opts);
+    expect(out).toHaveLength(4);
+    expect(out.map((r) => r.id).sort()).toEqual(["a", "b", "c", "d"]);
+  });
+
+  it("rang PARTAGÉ puis saut (compétition : deux 3ᵉ → 5ᵉ)", () => {
+    const rows = [
+      { id: "1", name: "A", pts: 50 },
+      { id: "2", name: "B", pts: 40 },
+      { id: "3", name: "C", pts: 30 },
+      { id: "4", name: "D", pts: 30 },
+      { id: "5", name: "E", pts: 20 },
+    ];
+    const out = rankLeaderboard(rows, opts);
+    expect(out.map((r) => r.rank)).toEqual([1, 2, 3, 3, 5]);
+  });
+
+  it("départage STABLE par nom pour les ex æquo (ordre déterministe)", () => {
+    const a = [{ id: "z", name: "Zoé", pts: 20 }, { id: "a", name: "Aaron", pts: 20 }];
+    const b = [{ id: "a", name: "Aaron", pts: 20 }, { id: "z", name: "Zoé", pts: 20 }];
+    expect(rankLeaderboard(a, opts).map((r) => r.id)).toEqual(["a", "z"]);
+    expect(rankLeaderboard(b, opts).map((r) => r.id)).toEqual(["a", "z"]); // même ordre quel que soit l'entrée
+  });
+
+  it("clé de rang configurable, items préservés (pas de mutation des points)", () => {
+    const rows = [{ id: "x", name: "X", pts: 5 }];
+    const out = rankLeaderboard(rows, { ...opts, rankKey: "scopeRank" });
+    expect(out[0].scopeRank).toBe(1);
+    expect(out[0].pts).toBe(5);
+  });
+});
 
 describe("sélecteur de sommeil (tranches 30 min)", () => {
   it("options de 4h à 12h par pas de 0,5", () => {
