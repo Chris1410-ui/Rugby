@@ -44,16 +44,15 @@ const ACCENT = C.coral;
 
 /* Espace staff. Une seule dérivation (useTeamData → enrichPlayers) ; tous les
    onglets lisent l'effectif enrichi. */
-export default function StaffApp({ profile, tab: tabProp, onTab }) {
+export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: forceReadOnly = false }) {
   const [tabState, setTabState] = useState("effectif");
   const tab = tabProp ?? tabState;               // piloté par AppShell (mobile) ou interne
   const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
   const go = (t, intent = null) => { (onTab || setTabState)(t); setNewIntent(intent); };
   const mobile = useIsMobile();
-  // Coach → tout le club en LECTURE SEULE (miroir de la RLS can_write()). On cible
-  // explicitement le coach : l'owner (qui rend aussi StaffApp via OwnerApp) n'est
-  // PAS impacté ici — son mode « regarder en tant que » viendra séparément.
-  const readOnly = profile.role === "coach";
+  // Lecture seule si : coach (miroir RLS can_write()) OU owner en « Voir comme »
+  // (forceReadOnly) — dans les deux cas, toutes les commandes d'écriture masquées.
+  const readOnly = forceReadOnly || profile.role === "coach";
   const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
   const { players, sessions, logs, checkins, activities, bilans, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const { camps } = useTeamCamps(profile.team_id);
