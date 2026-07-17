@@ -163,6 +163,26 @@ export function sleepLabel(v) {
   return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
+/* Classement STABLE avec ex æquo. Trie par points décroissants puis départage
+   par un libellé stable (nom) — l'ordre d'affichage ne « saute » donc plus entre
+   deux rendus quand des joueurs sont à égalité. Attribue un RANG PARTAGÉ (rang de
+   compétition standard : 1, 2, 2, 4 …). AUCUNE déduplication : chaque entrée est
+   conservée telle quelle, augmentée du champ `rankKey`. La clé React (player_id)
+   n'est jamais dérivée des points. */
+export function rankLeaderboard(items, { pointsOf, labelOf, rankKey = "rank" }) {
+  const sorted = [...items].sort((a, b) =>
+    (pointsOf(b) - pointsOf(a)) ||
+    String(labelOf(a) ?? "").localeCompare(String(labelOf(b) ?? ""), "fr", { sensitivity: "base" }),
+  );
+  let prevPts = null, prevRank = 0;
+  return sorted.map((it, i) => {
+    const pts = pointsOf(it);
+    const rank = prevPts !== null && pts === prevPts ? prevRank : i + 1;
+    prevPts = pts; prevRank = rank;
+    return { ...it, [rankKey]: rank };
+  });
+}
+
 // SOURCE DE VÉRITÉ UNIQUE : enrichit chaque joueur (charge + bilan du jour → risque & readiness)
 export function enrichPlayers(players, sessions, logs, daily) {
   return players.map((p) => {

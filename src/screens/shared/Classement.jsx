@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { computePoints, nextDiv, fmtShort } from "../../lib/metrics.js";
+import { computePoints, nextDiv, fmtShort, rankLeaderboard } from "../../lib/metrics.js";
 import { bilanEventsOf } from "../../data/checkins.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
@@ -48,11 +48,14 @@ export default function Classement({ players, sessions, logs, activities = {}, b
       const challengeEvents = chalPts.map((c) => ({ label: c.titre, points: c.points, date: c.date }));
       return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents) };
     });
-    const cur = [...all].sort((a, b) => b.pts - a.pts);
-    const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
+    // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
+    const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
+    // Rang de la semaine précédente (pts - delta), même départage, pour la flèche ▲▼.
+    const prev = [...all].sort((a, b) =>
+      ((b.pts - b.weekDelta) - (a.pts - a.weekDelta)) || String(a.p.name ?? "").localeCompare(String(b.p.name ?? ""), "fr", { sensitivity: "base" }));
     const pr = {};
     prev.forEach((d, i) => (pr[d.p.id] = i));
-    cur.forEach((d, i) => { d.rank = i + 1; d.move = pr[d.p.id] - i; });
+    cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
   }, [players, sessions, logs, activities, bilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer]);
 
@@ -81,7 +84,8 @@ export default function Classement({ players, sessions, logs, activities = {}, b
   }, [hasCrews, crews, data, ptsById]);
 
   const pool = scope === "all" ? data : data.filter((d) => d.p.grp === scope);
-  const ranked = pool.map((d, i) => ({ ...d, scopeRank: i + 1 }));
+  // Rang partagé au sein du périmètre affiché (même départage stable par nom).
+  const ranked = rankLeaderboard(pool, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "scopeRank" });
   const mine = isJoueur ? data.find((d) => d.p.id === me.id) : null;
   // Mon équipe = mon crew actif si j'en ai un, sinon ma ligne.
   const myCrew = isJoueur ? crews.find((c) => c.members.some((m) => m.playerId === me.id && m.status === "active")) : null;
