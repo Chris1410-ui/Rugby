@@ -15,6 +15,16 @@ describe("push — helpers purs", () => {
     expect(urlBase64ToUint8Array("-_-_").length).toBe(3);
   });
 
+  it("urlBase64ToUint8Array : tolère espaces / retours à la ligne (env Vercel)", () => {
+    const key = "BL5oz7h3-3EGk6nCYb6uvMBglZerVyx-19QhHKJRRMrymCKwHFbdAUU8onmdzNpMZzQfPs7cgw7Y5PfH8t28kTc";
+    const dirty = ["\n" + key + "\n", " " + key + " ", key.slice(0, 10) + "\n" + key.slice(10)];
+    for (const v of dirty) {
+      const arr = urlBase64ToUint8Array(v);
+      expect(arr.length).toBe(65);   // sinon atob lèverait « invalid characters »
+      expect(arr[0]).toBe(4);
+    }
+  });
+
   it("subscriptionRow : mappe une PushSubscription JSON en ligne DB", () => {
     const row = subscriptionRow("p1", "rugby-u18", {
       endpoint: "https://push.example/abc",

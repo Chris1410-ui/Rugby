@@ -12,9 +12,14 @@ export function pushSupported() {
 }
 
 // Clé VAPID publique (base64url) → Uint8Array attendu par pushManager.subscribe.
+// ROBUSTE : on retire tout blanc (espace / retour à la ligne collé dans l'env
+// Vercel) AVANT de calculer le padding — sinon atob() lève « The string contains
+// invalid characters » sur iOS/Safari (bug observé à l'activation des push).
 export function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const clean = String(base64String || "").replace(/\s+/g, "");        // trim + newlines internes
+  const base64 = (clean + "=".repeat((4 - (clean.length % 4)) % 4))
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
   const raw = atob(base64);
   const arr = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
