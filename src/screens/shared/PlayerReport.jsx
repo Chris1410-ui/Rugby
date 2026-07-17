@@ -5,6 +5,7 @@ import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKER
 import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins, bilanEventsOf } from "../../data/checkins.js";
+import { useReadOnly } from "../../lib/readonly.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
@@ -44,7 +45,8 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   const [aNote, setANote] = useState("");
   const [openSess, setOpenSess] = useState(null); // séance dépliée (détail prescrit vs réalisé)
   useModalClose(onClose);
-  const canAct = !!reason?.key; // ouvert depuis une alerte → actions kiné/traiter
+  const readOnly = useReadOnly();
+  const canAct = !readOnly && !!reason?.key; // ouvert depuis une alerte → actions kiné/traiter (jamais en lecture seule)
   const { checkins } = usePlayerCheckins(player.id);
   const matinList = checkins.filter((c) => c.moment !== "soir");
   const soirList = checkins.filter((c) => c.moment === "soir");
@@ -278,9 +280,9 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
         {/* Actions */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => setThread(true)} style={{ flex: 1, background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><MessageSquare size={15} /> Envoyer un message</button>
+            {!readOnly && <button onClick={() => setThread(true)} style={{ flex: 1, background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><MessageSquare size={15} /> Envoyer un message</button>}
             {onEditFiche && (
-              <button onClick={() => { onEditFiche(); onClose(); }} style={{ flex: "0 0 auto", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Shield size={15} /> Fiche</button>
+              <button onClick={() => { onEditFiche(); onClose(); }} style={{ flex: readOnly ? 1 : "0 0 auto", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Shield size={15} /> Fiche{readOnly ? " (consultation)" : ""}</button>
             )}
           </div>
           {canAct && (

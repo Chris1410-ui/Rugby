@@ -8,6 +8,7 @@ import { createSession } from "../../data/sessions.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import TestsBatch from "./TestsBatch.jsx";
 import CampParticipation from "./CampParticipation.jsx";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 const period = (c) => `${fmtShort(c.dateDebut)} → ${fmtShort(c.dateFin)}`;
@@ -16,6 +17,7 @@ const period = (c) => `${fmtShort(c.dateDebut)} → ${fmtShort(c.dateFin)}`;
    résultats de tests (datés par camp) et inscriptions. Ne duplique rien —
    les séances « du camp » sont celles dont la date tombe dans la fenêtre. */
 export default function Camps({ teamId, players = [], sessions = [], logs = {} }) {
+  const readOnly = useReadOnly();
   const { camps } = useTeamCamps(teamId);
   const counts = useCampCounts(teamId, camps.map((c) => c.id));
   const [sel, setSel] = useState(null);
@@ -32,12 +34,14 @@ export default function Camps({ teamId, players = [], sessions = [], logs = {} }
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Flag size={18} color={accent} />
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Camps · {camps.length}</div>
-        <button onClick={() => setCreating((v) => !v)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={15} /> Nouveau camp
-        </button>
+        {!readOnly && (
+          <button onClick={() => setCreating((v) => !v)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Plus size={15} /> Nouveau camp
+          </button>
+        )}
       </div>
 
-      {creating && <CampForm teamId={teamId} onDone={() => setCreating(false)} onCancel={() => setCreating(false)} />}
+      {!readOnly && creating && <CampForm teamId={teamId} onDone={() => setCreating(false)} onCancel={() => setCreating(false)} />}
 
       {camps.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6 })}>
@@ -105,6 +109,7 @@ function CampForm({ teamId, camp, onDone, onCancel }) {
 }
 
 function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }) {
+  const readOnly = useReadOnly();
   const [edit, setEdit] = useState(false);
   const [results, setResults] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
@@ -131,13 +136,13 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
           <div style={{ fontSize: 16, fontWeight: 900 }}>{camp.nom}</div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{period(camp)}</div>
         </div>
-        <button onClick={() => setEdit((v) => !v)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 8, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Modifier</button>
+        {!readOnly && <button onClick={() => setEdit((v) => !v)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 8, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Modifier</button>}
       </div>
 
-      {edit && <CampForm teamId={teamId} camp={camp} onDone={() => setEdit(false)} onCancel={() => setEdit(false)} />}
+      {!readOnly && edit && <CampForm teamId={teamId} camp={camp} onDone={() => setEdit(false)} onCancel={() => setEdit(false)} />}
 
       {/* Résultats de tests datés par camp (baseline début vs fin) */}
-      <Section title="RÉSULTATS DU CAMP" right={<button onClick={() => setResults(true)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>}>
+      <Section title="RÉSULTATS DU CAMP" right={readOnly ? null : <button onClick={() => setResults(true)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>}>
         {campCampaigns.length === 0 ? (
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
             Aucune campagne rattachée. « Saisir » crée une campagne (ex. « Début » puis « Fin ») datée du camp — les valeurs se reportent dans la fiche joueur + comparaison Top 14 + points.
@@ -162,7 +167,7 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
       <CampParticipation camp={camp} teamId={teamId} players={players} sessions={campSessions} logs={logs} />
 
       {/* Suppression */}
-      {!confirmDel ? (
+      {readOnly ? null : !confirmDel ? (
         <button onClick={() => setConfirmDel(true)} style={{ marginTop: 6, width: "100%", background: "transparent", border: `1px solid ${C.coral}55`, borderRadius: 10, padding: 11, color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Trash2 size={14} /> Supprimer le camp</button>
       ) : (
         <div style={{ marginTop: 6, border: `1px solid ${C.coral}55`, borderRadius: 10, padding: 12, background: `${C.coral}11` }}>
@@ -183,6 +188,7 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
    Une séance-test (code TEST) ouvre l'écran unique de saisie des résultats,
    lié à la campagne de tests du camp. */
 function CampSessions({ camp, teamId, sessions, players = [] }) {
+  const readOnly = useReadOnly();
   const [adding, setAdding] = useState(false);
   const [f, setF] = useState({ date: camp.dateDebut, code: "RS", titre: "Séance", mode: "all" });
   const [busy, setBusy] = useState(false);
@@ -213,7 +219,7 @@ function CampSessions({ camp, teamId, sessions, players = [] }) {
   };
 
   return (
-    <Section title={`SÉANCES DU CAMP · ${sessions.length}`} right={<button onClick={() => setAdding((v) => !v)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={13} /> Séance</button>}>
+    <Section title={`SÉANCES DU CAMP · ${sessions.length}`} right={readOnly ? null : <button onClick={() => setAdding((v) => !v)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={13} /> Séance</button>}>
       {adding && (
         <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}` }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
@@ -243,7 +249,7 @@ function CampSessions({ camp, teamId, sessions, players = [] }) {
             <span style={{ fontSize: 11, fontWeight: 700, width: 54 }}>{fmtShort(s.date)}</span>
             <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{test ? "🧪 " : `${s.code} · `}{s.titre}</span>
             {test ? (
-              <button onClick={() => setSaisie(s)} style={{ background: `${C.blue}22`, border: `1px solid ${C.blue}66`, borderRadius: 8, padding: "5px 10px", color: C.blue, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>
+              !readOnly && <button onClick={() => setSaisie(s)} style={{ background: `${C.blue}22`, border: `1px solid ${C.blue}66`, borderRadius: 8, padding: "5px 10px", color: C.blue, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>
             ) : (
               <>
                 {open && <Tag c={C.teal}>{s.assignedIds.length} inscrit{s.assignedIds.length > 1 ? "s" : ""}</Tag>}

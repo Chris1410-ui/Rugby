@@ -12,6 +12,7 @@ import { useExercises } from "../../data/exercises.js";
 import { parsePDFtoTemplates } from "../../lib/pdf.js";
 import { programFolder, uploadFile } from "../../data/storage.js";
 import ProgramFiles from "./ProgramFiles.jsx";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 const dateSt = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" };
@@ -40,6 +41,7 @@ const ExoRow = ({ exo, onChange, onDel, cues }) => {
 };
 
 export default function Programmes({ teamId, players, sessions, logs }) {
+  const readOnly = useReadOnly();
   const { programs } = usePrograms(teamId);
   const { routines } = useRoutines(teamId);
   const { exercises, find } = useExercises(teamId);
@@ -141,6 +143,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   if (view === "list") {
     return (
       <div>
+        {!readOnly && (
         <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
           <button onClick={startNew} style={{ flex: 1, background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <Plus size={15} /> Nouveau programme
@@ -150,6 +153,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
             <input type="file" accept="application/pdf" style={{ display: "none" }} onChange={(e) => onPDF(e.target.files[0])} />
           </label>
         </div>
+        )}
 
         {note && (
           <div style={sc({ marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", background: note.startsWith("Programme envoyé") ? `${C.green}1a` : `${C.amb}1a`, borderColor: note.startsWith("Programme envoyé") ? `${C.green}66` : `${C.amb}66` })}>{note}</div>
@@ -170,8 +174,8 @@ export default function Programmes({ teamId, players, sessions, logs }) {
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{r.name}</div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{r.templates.length} séance(s) · {r.templates.reduce((a, t) => a + t.exercises.length, 0)} exercices</div>
                 </div>
-                <button onClick={() => applyRoutine(r)} style={{ background: accent, border: "none", borderRadius: 7, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Utiliser</button>
-                <button onClick={() => deleteRoutine(r.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={15} /></button>
+                {!readOnly && <button onClick={() => applyRoutine(r)} style={{ background: accent, border: "none", borderRadius: 7, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Utiliser</button>}
+                {!readOnly && <button onClick={() => deleteRoutine(r.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={15} /></button>}
               </div>
             ))}
           </Section>
@@ -195,7 +199,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <button onClick={() => setFilesOf(pr)} title="Fichiers (PDF / vidéos)" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}><Paperclip size={14} /></button>
-                  <button onClick={() => deleteProgram(pr.id)} title="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={16} /></button>
+                  {!readOnly && <button onClick={() => deleteProgram(pr.id)} title="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={16} /></button>}
                 </div>
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border2}`, display: "flex", alignItems: "center", gap: 10 }}>

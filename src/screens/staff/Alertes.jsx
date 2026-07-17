@@ -5,6 +5,7 @@ import { KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Sparkles, CheckCircle } from "../../lib/icons.jsx";
 import { getRecommendation } from "../../data/recommendations.js";
 import { useAlertStatus, markTreated, reopenAlert } from "../../data/alerts.js";
+import { useReadOnly } from "../../lib/readonly.js";
 import Conversation from "../shared/Conversation.jsx";
 import PlayerReport from "../shared/PlayerReport.jsx";
 
@@ -15,6 +16,7 @@ const skey = (pid, k) => `${pid}|${k}`;
    Alertes calculées en direct (buildAlerts) ; leur traitement (kiné/traité)
    est persisté dans alert_status. La file active = alertes du jour non traitées. */
 export default function Alertes({ teamId, players, sessions, logs, checkins, activities = {} }) {
+  const readOnly = useReadOnly();
   const [thread, setThread] = useState(null); // player pour la messagerie
   const [reco, setReco] = useState(null); // player pour la reco IA
   const [report, setReport] = useState(null); // { player, reason } — récap détaillé
@@ -85,12 +87,16 @@ export default function Alertes({ teamId, players, sessions, logs, checkins, act
               <button onClick={(e) => { e.stopPropagation(); setReco(byId(a.pid)); }} title="Recommandation IA" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
                 <Sparkles size={15} />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); setThread(byId(a.pid)); }} title="Message" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}>
-                <MessageSquare size={15} />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); markTreated(teamId, a).catch(() => {}); }} title="Traiter (retirer de la file)" style={{ background: `${C.green}1a`, border: `1px solid ${C.green}55`, borderRadius: 8, padding: 7, color: C.green, cursor: "pointer", display: "flex" }}>
-                <CheckCircle size={15} />
-              </button>
+              {!readOnly && (
+                <button onClick={(e) => { e.stopPropagation(); setThread(byId(a.pid)); }} title="Message" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}>
+                  <MessageSquare size={15} />
+                </button>
+              )}
+              {!readOnly && (
+                <button onClick={(e) => { e.stopPropagation(); markTreated(teamId, a).catch(() => {}); }} title="Traiter (retirer de la file)" style={{ background: `${C.green}1a`, border: `1px solid ${C.green}55`, borderRadius: 8, padding: 7, color: C.green, cursor: "pointer", display: "flex" }}>
+                  <CheckCircle size={15} />
+                </button>
+              )}
             </div>
           ); })}
         </div>
@@ -113,7 +119,7 @@ export default function Alertes({ teamId, players, sessions, logs, checkins, act
                   </div>
                   {s.kineAt && <Tag c={C.teal}>Kiné</Tag>}
                   {s.treatedAt ? <Tag c={C.green}>Traité</Tag> : <Tag c={C.amb}>En file</Tag>}
-                  {s.treatedAt && <button onClick={() => reopenAlert(s.id).catch(() => {})} title="Réactiver" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.5)", padding: 4, fontSize: 13 }}>↩</button>}
+                  {s.treatedAt && !readOnly && <button onClick={() => reopenAlert(s.id).catch(() => {})} title="Réactiver" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.5)", padding: 4, fontSize: 13 }}>↩</button>}
                 </div>
               ))}
             </div>

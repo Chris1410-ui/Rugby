@@ -5,6 +5,7 @@ import { fmtShort } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { ClipboardList, Plus, CheckCircle, Trash2, Calendar } from "../../lib/icons.jsx";
 import { useTeamTasks, useTeamTaskCompletions, createTask, deleteTask, confirmTask, refuseTask } from "../../data/tasks.js";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 const modeLabel = (a) => a?.mode === "group" ? `Ligne · ${grpLabel(a.group)}` : a?.mode === "players" ? `${(a.ids || []).length} joueur(s)` : "Toute l'équipe";
@@ -12,21 +13,24 @@ const modeLabel = (a) => a?.mode === "group" ? `Ligne · ${grpLabel(a.group)}` :
 /* Onglet « Tâches » (staff/owner) : créer des tâches + suivre la validation en
    2 temps (joueur « Fait » → coach « Valider »/« Refuser »). */
 export default function Taches({ teamId, players = [], openNew = false }) {
+  const readOnly = useReadOnly();
   const { tasks } = useTeamTasks(teamId, players);
   const { byTask } = useTeamTaskCompletions(teamId);
-  const [creating, setCreating] = useState(!!openNew); // FAB « + Tâche » → formulaire ouvert d'emblée
+  const [creating, setCreating] = useState(!readOnly && !!openNew); // FAB « + Tâche » → formulaire ouvert d'emblée
 
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <ClipboardList size={18} color={accent} />
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Tâches · {tasks.length}</div>
-        <button onClick={() => setCreating((v) => !v)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={15} /> Nouvelle tâche
-        </button>
+        {!readOnly && (
+          <button onClick={() => setCreating((v) => !v)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Plus size={15} /> Nouvelle tâche
+          </button>
+        )}
       </div>
 
-      {creating && <TaskForm teamId={teamId} players={players} onDone={() => setCreating(false)} onCancel={() => setCreating(false)} />}
+      {!readOnly && creating && <TaskForm teamId={teamId} players={players} onDone={() => setCreating(false)} onCancel={() => setCreating(false)} />}
 
       {tasks.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6 })}>
@@ -98,6 +102,7 @@ function TaskForm({ teamId, players, onDone, onCancel }) {
 }
 
 function TaskCard({ task, players, completions, teamId }) {
+  const readOnly = useReadOnly();
   const [busy, setBusy] = useState(null);
   const [confirmDel, setConfirmDel] = useState(false);
   const assignedPlayers = players.filter((p) => task.assignedIds.includes(p.id));
@@ -119,7 +124,7 @@ function TaskCard({ task, players, completions, teamId }) {
             <Tag c={C.viol}>{modeLabel(task.assigned)}</Tag>
           </div>
         </div>
-        {!confirmDel ? (
+        {readOnly ? null : !confirmDel ? (
           <button onClick={() => setConfirmDel(true)} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", padding: 4 }}><Trash2 size={15} /></button>
         ) : (
           <div style={{ display: "flex", gap: 4 }}>
@@ -143,9 +148,9 @@ function TaskCard({ task, players, completions, teamId }) {
               {st === "confirmee" && <Tag c={C.green}>✓ Confirmée</Tag>}
               {st === "validee_joueur" && (
                 <>
-                  <Tag c={C.amb}>Fait — à valider</Tag>
-                  <button onClick={() => act(`c${p.id}`, () => confirmTask(task.id, p.id, teamId))} disabled={busy === `c${p.id}`} style={{ background: C.green, border: "none", borderRadius: 7, padding: "4px 9px", color: "#fff", fontSize: 10.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle size={12} /> Valider</button>
-                  <button onClick={() => act(`r${p.id}`, () => refuseTask(task.id, p.id))} disabled={busy === `r${p.id}`} title="Refuser (retire les points)" style={{ background: "rgba(232,85,59,0.14)", border: `1px solid ${C.coral}44`, borderRadius: 7, padding: "4px 8px", color: C.coral, fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>Refuser</button>
+                  <Tag c={C.amb}>Fait{readOnly ? "" : " — à valider"}</Tag>
+                  {!readOnly && <button onClick={() => act(`c${p.id}`, () => confirmTask(task.id, p.id, teamId))} disabled={busy === `c${p.id}`} style={{ background: C.green, border: "none", borderRadius: 7, padding: "4px 9px", color: "#fff", fontSize: 10.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle size={12} /> Valider</button>}
+                  {!readOnly && <button onClick={() => act(`r${p.id}`, () => refuseTask(task.id, p.id))} disabled={busy === `r${p.id}`} title="Refuser (retire les points)" style={{ background: "rgba(232,85,59,0.14)", border: `1px solid ${C.coral}44`, borderRadius: 7, padding: "4px 8px", color: C.coral, fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>Refuser</button>}
                 </>
               )}
             </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
 import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
 import { isTotemTaken } from "../../lib/totems.js";
 import { buildAlerts, SEVC } from "../../lib/metrics.js";
@@ -49,6 +50,10 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
   const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
   const go = (t, intent = null) => { (onTab || setTabState)(t); setNewIntent(intent); };
   const mobile = useIsMobile();
+  // Coach → tout le club en LECTURE SEULE (miroir de la RLS can_write()). On cible
+  // explicitement le coach : l'owner (qui rend aussi StaffApp via OwnerApp) n'est
+  // PAS impacté ici — son mode « regarder en tant que » viendra séparément.
+  const readOnly = profile.role === "coach";
   const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
   const { players, sessions, logs, checkins, activities, bilans, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
   const { camps } = useTeamCamps(profile.team_id);
@@ -90,7 +95,13 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
     ["veille", "Veille", Activity],
   ];
   return (
+   <ReadOnlyContext.Provider value={readOnly}>
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      {readOnly && (
+        <div style={{ background: `${C.blue}22`, borderBottom: `1px solid ${C.blue}55`, color: "#fff", padding: "8px 18px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          <Eye size={15} color={C.blue} /> Mode lecture seule — coach. Consultation complète du club, sans modification.
+        </div>
+      )}
       <main style={{ flex: 1, padding: 18 }}>
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} resetRequests={resetReqs} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
@@ -102,18 +113,19 @@ export default function StaffApp({ profile, tab: tabProp, onTab }) {
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
-        {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit accent={ACCENT} />}
+        {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
       </main>
-      {mobile && tab === "aujourdhui" && <StaffFab go={go} />}
+      {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}
       {mobile
         ? <MobileNav items={nav} primary={["aujourdhui", "effectif", "alertes", "messages"]} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />
         : <BottomNav items={nav} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />}
     </div>
+   </ReadOnlyContext.Provider>
   );
 }
 
@@ -147,6 +159,7 @@ function StaffFab({ go }) {
 
 /* ── Effectif enrichi ── */
 function Effectif({ teamId, players, sessions, logs, activities = {}, loading, onPreview, resetRequests = [] }) {
+  const readOnly = useReadOnly();
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
   const [report, setReport] = useState(null); // joueur pour le récap détaillé
@@ -174,7 +187,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Users size={18} color={ACCENT} />
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Effectif · {players.length}</div>
-        {players.length > 0 && (
+        {!readOnly && players.length > 0 && (
           <button onClick={() => setBatch(true)} title="Saisie groupée des tests" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <Activity size={16} />
           </button>
@@ -184,16 +197,20 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
             <Download size={16} />
           </button>
         )}
-        <button onClick={() => setImporting(true)} title="Importer depuis Excel / CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
-          <Upload size={16} />
-        </button>
-        <button onClick={() => setAdding(true)} style={{ background: ACCENT, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={15} /> Ajouter
-        </button>
+        {!readOnly && (
+          <button onClick={() => setImporting(true)} title="Importer depuis Excel / CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+            <Upload size={16} />
+          </button>
+        )}
+        {!readOnly && (
+          <button onClick={() => setAdding(true)} style={{ background: ACCENT, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Plus size={15} /> Ajouter
+          </button>
+        )}
       </div>
 
       {/* Demandes de réinitialisation de mot de passe (joueur → staff) */}
-      {resetRequests.length > 0 && (
+      {!readOnly && resetRequests.length > 0 && (
         <div style={{ background: `${C.amb}14`, border: `1px solid ${C.amb}55`, borderRadius: 12, padding: 12, marginBottom: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: C.amb, letterSpacing: 0.5, marginBottom: 8 }}>🔑 DEMANDES DE MOT DE PASSE · {resetRequests.length}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -215,6 +232,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       )}
 
       {/* Mode démo : joueurs fictifs complets pour démonstration */}
+      {!readOnly && (
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
         {demoCount === 0 ? (
           <button onClick={genDemo} disabled={demoBusy} style={{ background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 9, padding: "8px 12px", color: C.viol, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🎭 {demoBusy ? "Génération…" : "Générer des joueurs de démo"}</button>
@@ -223,6 +241,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
         )}
         {demoNote && <span style={{ fontSize: 11, color: demoNote.includes("Échec") ? C.coral : C.green }}>{demoNote}</span>}
       </div>
+      )}
       {loading && !players.length ? (
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Chargement…</div>
       ) : players.length === 0 ? (
@@ -260,7 +279,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       {importing && <ImportPlayers teamId={teamId} players={players} onClose={() => setImporting(false)} />}
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
       {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
-      {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit onClose={() => setFiche(null)} />}
+      {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit={!readOnly} onClose={() => setFiche(null)} />}
     </section>
   );
 }

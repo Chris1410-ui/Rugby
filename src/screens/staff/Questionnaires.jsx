@@ -7,15 +7,17 @@ import { QUESTION_BANK, QCATS, QTYPES, bankById, newQid } from "../../lib/questi
 import { resolveAssignedIds } from "../../data/sessions.js";
 import { useTeamQuestionnaires, useTeamAssignments, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire, sendQuestionnaire } from "../../data/questionnaires.js";
 import QuestionnaireResponses from "./QuestionnaireResponses.jsx";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 
 /* Onglet « Questionnaires » (staff/owner) : composer des modèles réutilisables,
    les envoyer, suivre qui a rempli, consulter les réponses. */
 export default function Questionnaires({ teamId, players = [], openNew = false }) {
+  const readOnly = useReadOnly();
   const { questionnaires } = useTeamQuestionnaires(teamId);
   const { byQuestionnaire } = useTeamAssignments(teamId);
-  const [edit, setEdit] = useState(openNew ? "new" : null);   // 'new' | questionnaire (FAB → éditeur ouvert)
+  const [edit, setEdit] = useState(openNew && !readOnly ? "new" : null);   // 'new' | questionnaire (FAB → éditeur ouvert)
   const [send, setSend] = useState(null);   // questionnaire à envoyer
   const [responses, setResponses] = useState(null); // questionnaire dont on voit les réponses
 
@@ -27,7 +29,7 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <ClipboardList size={18} color={accent} />
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Questionnaires · {questionnaires.length}</div>
-        <button onClick={() => setEdit("new")} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={15} /> Nouveau</button>
+        {!readOnly && <button onClick={() => setEdit("new")} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={15} /> Nouveau</button>}
       </div>
 
       {questionnaires.length === 0 ? (
@@ -46,11 +48,11 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
                   <div style={{ fontSize: 14, fontWeight: 800 }}>{q.nom}</div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{q.questions.length} question{q.questions.length > 1 ? "s" : ""}{sent > 0 ? ` · ${filled}/${sent} rempli(s)` : " · non envoyé"}</div>
                 </div>
-                <button onClick={() => setEdit(q)} title="Modifier" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Modifier</button>
-                <button onClick={() => deleteQuestionnaire(q.id).catch((e) => console.error(e.message))} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", padding: 4 }}><Trash2 size={15} /></button>
+                {!readOnly && <button onClick={() => setEdit(q)} title="Modifier" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Modifier</button>}
+                {!readOnly && <button onClick={() => deleteQuestionnaire(q.id).catch((e) => console.error(e.message))} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", padding: 4 }}><Trash2 size={15} /></button>}
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button onClick={() => setSend(q)} style={{ flex: 1, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: 9, color: accent, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Send size={13} /> Envoyer</button>
+                {!readOnly && <button onClick={() => setSend(q)} style={{ flex: 1, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: 9, color: accent, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Send size={13} /> Envoyer</button>}
                 <button onClick={() => setResponses(q)} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.8)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Réponses{sent > 0 ? ` (${filled}/${sent})` : ""}</button>
               </div>
             </div>

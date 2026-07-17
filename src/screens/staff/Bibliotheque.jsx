@@ -4,11 +4,13 @@ import { EXCATS, EXCATC } from "../../lib/exlib.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Plus, Search } from "../../lib/icons.jsx";
 import { useExercises, addCustomExercise } from "../../data/exercises.js";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 
 /* Bibliothèque d'exercices : catalogue global + perso d'équipe, avec cues. */
 export default function Bibliotheque({ teamId }) {
+  const readOnly = useReadOnly();
   const { exercises } = useExercises(teamId);
   const [cat, setCat] = useState("Toutes");
   const [q, setQ] = useState("");
@@ -40,12 +42,14 @@ export default function Bibliotheque({ teamId }) {
           <Search size={15} color="rgba(255,255,255,0.35)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un exercice…" style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px 10px 34px", color: "#fff", fontSize: 13, outline: "none" }} />
         </div>
-        <button onClick={() => setAdding((a) => !a)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: "0 14px", color: accent, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={14} /> Créer
-        </button>
+        {!readOnly && (
+          <button onClick={() => setAdding((a) => !a)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: "0 14px", color: accent, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Plus size={14} /> Créer
+          </button>
+        )}
       </div>
 
-      {adding && (
+      {!readOnly && adding && (
         <div style={sc({ marginBottom: 12 })}>
           <input value={nName} onChange={(e) => setNName(e.target.value)} placeholder="Nom de l'exercice" autoFocus style={inp} />
           <select value={nCat} onChange={(e) => setNCat(e.target.value)} style={{ ...inp, fontWeight: 600 }}>

@@ -62,10 +62,17 @@ export const ROLES = [
   { id: "preparateur", l: "Préparateur physique", s: "Staff complet · charge · séances", e: "⚡", c: C.coral },
   { id: "joueur", l: "Joueur", s: "Mon espace · bilan · feedback", e: "🏉", c: C.green },
   { id: "medical", l: "Médical", s: "Kiné / réathlé · disponibilité", e: "🩺", c: C.teal },
+  { id: "coach", l: "Coach (lecture seule)", s: "Vue complète du club · consultation", e: "📋", c: C.blue },
 ];
 
 export const STAFF_ROLES = ["preparateur", "medical", "coach"];
 export const isStaffRole = (r) => STAFF_ROLES.includes(r);
+
+/* Rôles autorisés à ÉCRIRE (création / édition / validation / envoi). Le coach
+   est staff (accès lecture à tout le club) mais SANS écriture — miroir exact de
+   la RLS serveur `can_write()` = preparateur/medical. */
+export const CAN_WRITE_ROLES = ["preparateur", "medical"];
+export const canWrite = (r) => CAN_WRITE_ROLES.includes(r);
 
 /* Un profil est « complet » s'il possède les champs REQUIS pour son rôle.
    Sert de garde-fou UI : un compte authentifié mais à moitié provisionné

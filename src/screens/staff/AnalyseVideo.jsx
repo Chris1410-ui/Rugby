@@ -3,6 +3,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { Video, Upload, X, ExternalLink } from "../../lib/icons.jsx";
 import { teamVideosFolder, uploadFile, listFolder, signedUrl, removeFile } from "../../data/storage.js";
+import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 const mb = (n) => (n == null ? "" : n < 1048576 ? `${Math.round(n / 1024)} Ko` : `${(n / 1048576).toFixed(1)} Mo`);
@@ -11,6 +12,7 @@ const mb = (n) => (n == null ? "" : n < 1048576 ? `${Math.round(n / 1024)} Ko` :
    stockées dans le bucket privé `team-files` (dossier <team_id>/videos).
    Lecture par lien signé (jamais d'URL publique). Upload réservé au staff. */
 export default function AnalyseVideo({ teamId }) {
+  const readOnly = useReadOnly();
   const folder = teamVideosFolder(teamId);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,10 +62,12 @@ export default function AnalyseVideo({ teamId }) {
           Vidéos de match/entraînement stockées dans le <strong style={{ color: "#fff" }}>bucket privé</strong> de
           l'équipe. Lecture par lien signé temporaire — jamais d'URL publique (données de mineurs, RGPD).
         </div>
+        {!readOnly && (
         <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 10, padding: 13, color: accent, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
           <Upload size={16} />{busy ? "Envoi…" : "Téléverser une vidéo"}
           <input type="file" accept="video/*" style={{ display: "none" }} onChange={(e) => onUpload(e.target.files[0])} />
         </label>
+        )}
         {err && <div style={{ fontSize: 11, color: C.coral, marginTop: 10 }}>{err}</div>}
       </Section>
 
@@ -93,7 +97,7 @@ export default function AnalyseVideo({ teamId }) {
                   <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name.replace(/^\d{8}_/, "")}</div>
                   <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{mb(f.size)}</div>
                 </div>
-                <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}><X size={15} /></button>
+                {!readOnly && <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}><X size={15} /></button>}
               </div>
             ))}
           </div>

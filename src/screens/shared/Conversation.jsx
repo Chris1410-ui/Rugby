@@ -4,6 +4,7 @@ import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Send, ChevronLeft } from "../../lib/icons.jsx";
 import { useThread, sendMessage, markRead } from "../../data/messages.js";
 import { usePreview } from "../../lib/preview.js";
+import { useReadOnly } from "../../lib/readonly.js";
 
 /* Fil de discussion réutilisable (staff ↔ joueur).
    - `who` = point de vue courant ('staff' | 'joueur').
@@ -13,7 +14,9 @@ import { usePreview } from "../../lib/preview.js";
    À l'ouverture et à chaque nouveau message, marque comme lus ceux de l'autre
    partie (accusé de réception). Toujours possible d'écrire, même fil vide. */
 export default function Conversation({ playerId, title, who, accent = C.coral, selfName, onBack, onClose }) {
-  const preview = usePreview(); // aperçu owner/staff → lecture seule
+  const inPreview = usePreview();
+  const readOnly = useReadOnly();
+  const preview = inPreview || readOnly; // aperçu owner/staff OU coach → lecture seule (aucun envoi)
   const { msgs } = useThread(playerId);
   useModalClose(onClose);
   const [txt, setTxt] = useState("");

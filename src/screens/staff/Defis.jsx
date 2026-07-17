@@ -3,6 +3,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { todayISO } from "../../lib/metrics.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { useReadOnly } from "../../lib/readonly.js";
 import { Plus, Trash2, CheckCircle, X, Grid } from "../../lib/icons.jsx";
 import { CHALLENGE_BANNERS, CHALLENGE_EMOJIS, bannerGradient, defiOfWeek } from "../../lib/challenges.js";
 import {
@@ -19,6 +20,7 @@ const destToAssigned = (d) => d === "avants" ? { mode: "group", group: "avants" 
 /* « Défis » (staff/owner) : création (formulaire unitaire + grille tableur),
    file de validation en 2 temps (Valider / Refuser), suppression. */
 export default function Defis({ teamId, players = [], openNew = false }) {
+  const readOnly = useReadOnly();
   const { challenges } = useTeamChallenges(teamId, players);
   const { byChallenge } = useTeamChallengeCompletions(teamId);
   const stats = useTeamChallengeStats(teamId);
@@ -45,7 +47,9 @@ export default function Defis({ teamId, players = [], openNew = false }) {
     return (
       <div>
         {confirmed > 0 && <div style={{ fontSize: 11, fontWeight: 700, color: C.green, marginBottom: pending.length ? 8 : 0 }}>✅ {confirmed} validé{confirmed > 1 ? "s" : ""} · +{c.points} chacun</div>}
-        {pending.length === 0 ? (
+        {readOnly ? (
+          pending.length > 0 && <div style={{ fontSize: 11, color: C.amb, fontWeight: 700 }}>✋ {pending.length} relevé{pending.length > 1 ? "s" : ""} en attente de validation</div>
+        ) : pending.length === 0 ? (
           confirmed === 0 && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Aucun relevé en attente.</div>
         ) : (
           <>
@@ -61,7 +65,7 @@ export default function Defis({ teamId, players = [], openNew = false }) {
             </div>
           </>
         )}
-        <button onClick={() => del(c.id)} style={{ marginTop: 10, background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Trash2 size={12} /> Supprimer le défi</button>
+        {!readOnly && <button onClick={() => del(c.id)} style={{ marginTop: 10, background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Trash2 size={12} /> Supprimer le défi</button>}
       </div>
     );
   };
@@ -107,8 +111,8 @@ export default function Defis({ teamId, players = [], openNew = false }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 18 }}>🏆</span>
         <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Défis · {challenges.length}</div>
-        <button onClick={() => setGrid(true)} title="Saisie en grille" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}><Grid size={16} /></button>
-        <button onClick={() => setForm(true)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={15} /> Défi</button>
+        {!readOnly && <button onClick={() => setGrid(true)} title="Saisie en grille" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}><Grid size={16} /></button>}
+        {!readOnly && <button onClick={() => setForm(true)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={15} /> Défi</button>}
       </div>
 
       {challenges.length === 0 ? (
@@ -126,12 +130,12 @@ export default function Defis({ teamId, players = [], openNew = false }) {
         <ChallengeDetail
           c={detail}
           onClose={() => setDetailId(null)}
-          topRight={
+          topRight={readOnly ? null : (
             <>
               <button onClick={() => openEdit(detail)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: "8px 14px", color: "#fff", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>Modifier</button>
               <button onClick={() => del(detail.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 14px", color: C.coral, fontWeight: 800, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={13} /> Supprimer</button>
             </>
-          }
+          )}
         >
           <div style={{ marginTop: 4 }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.55)", letterSpacing: 0.5, marginBottom: 8 }}>PARTICIPANTS</div>
