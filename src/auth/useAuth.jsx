@@ -26,6 +26,17 @@ function readUrlAuthError() {
 }
 const INITIAL_LINK_ERROR = readUrlAuthError();
 
+// Purge la session Supabase persistée (clés « sb-* ») quand elle est illisible/
+// corrompue — sinon getSession() peut rejeter/bloquer à CHAQUE chargement et
+// figer l'app sur « Chargement… » (bug « seule la navigation privée marche »).
+function clearSupabaseAuthStorage() {
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("sb-") || k.includes("supabase.auth"))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch { /* noop */ }
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -41,24 +52,41 @@ export function AuthProvider({ children }) {
       return;
     }
     setProfileLoading(true);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, role, full_name, team_id, player_id")
-      .eq("id", uid)
-      .maybeSingle();
-    if (error) console.error("[auth] chargement profil:", error.message);
-    setProfile(data ?? null);
-    setProfileLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, role, full_name, team_id, player_id")
+        .eq("id", uid)
+        .maybeSingle();
+      if (error) console.error("[auth] chargement profil:", error.message);
+      setProfile(data ?? null);
+    } catch (e) {
+      console.error("[auth] chargement profil:", e?.message || e);
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session ?? null);
-      setLoading(false);
-      if (data.session?.user) loadProfile(data.session.user.id);
-    });
+    // Filet anti « chargement infini » : si getSession() ne se résout jamais
+    // (session persistée corrompue, refresh réseau bloqué…), on bascule vers
+    // l'écran de connexion au bout de quelques secondes au lieu de rester figé.
+    const safety = setTimeout(() => { if (active) setLoading(false); }, 8000);
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        setSession(data.session ?? null);
+        if (data.session?.user) loadProfile(data.session.user.id);
+      })
+      .catch((e) => {
+        // Session persistée illisible → on la purge pour repartir propre.
+        console.error("[auth] getSession:", e?.message || e);
+        clearSupabaseAuthStorage();
+        if (active) setSession(null);
+      })
+      .finally(() => { if (active) { clearTimeout(safety); setLoading(false); } });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       // Clic sur le lien de réinitialisation → écran « nouveau mot de passe »
@@ -70,6 +98,7 @@ export function AuthProvider({ children }) {
 
     return () => {
       active = false;
+      clearTimeout(safety);
       sub.subscription.unsubscribe();
     };
   }, [loadProfile]);
