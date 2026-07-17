@@ -9,6 +9,7 @@ import { useTeamTaskPoints } from "../../data/tasks.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
 import { challengeBadges, topChallengeBadge } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
+import { useTeamSessionLogs, useTeamCheckinEvents } from "../../data/leaderboard.js";
 import { KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Trophy } from "../../lib/icons.jsx";
 
@@ -23,7 +24,7 @@ const Move = ({ m }) =>
 
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
-export default function Classement({ players, sessions, logs, activities = {}, bilans = {}, crews = [], me, accent = C.coral }) {
+export default function Classement({ players, sessions, crews = [], me, accent = C.coral }) {
   const isJoueur = !!me;
   const groups = [...new Set(players.map((p) => p.grp))];
   const [scope, setScope] = useState("all");
@@ -37,16 +38,22 @@ export default function Classement({ players, sessions, logs, activities = {}, b
   const taskPtsByPlayer = useTeamTaskPoints(teamId);
   const chalPtsByPlayer = useTeamChallengePoints(teamId);
   const reactByPlayer = useTeamReactivity(teamId);
+  // Entrées de points À L'ÉCHELLE DU CLUB (RPC SECURITY DEFINER) → classement
+  // IDENTIQUE pour owner/staff/joueur. Sans ça, un joueur (RLS = ses données
+  // seules) calculait de faux points pour ses coéquipiers. On IGNORE donc les
+  // props logs/activities/bilans (limités par la RLS) pour le calcul des points.
+  const clubLogs = useTeamSessionLogs(teamId);
+  const { activities: clubActivities, bilans: clubBilans } = useTeamCheckinEvents(teamId);
 
   const data = useMemo(() => {
     const all = players.map((p) => {
       const events = top14ByPlayer[p.id] || [];
       const taskEvents = (taskPtsByPlayer[p.id] || []).map((t) => ({ label: t.titre, date: t.date }));
       const reactEvents = reactByPlayer[p.id] || [];
-      const bilanEvents = bilanEventsOf(bilans[p.id]);
+      const bilanEvents = bilanEventsOf(clubBilans[p.id]);
       const chalPts = chalPtsByPlayer[p.id] || [];
       const challengeEvents = chalPts.map((c) => ({ label: c.titre, points: c.points, date: c.date }));
-      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents) };
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents) };
     });
     // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
     const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
@@ -57,7 +64,7 @@ export default function Classement({ players, sessions, logs, activities = {}, b
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, logs, activities, bilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer]);
+  }, [players, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
