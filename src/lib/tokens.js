@@ -67,6 +67,22 @@ export const ROLES = [
 export const STAFF_ROLES = ["preparateur", "medical", "coach"];
 export const isStaffRole = (r) => STAFF_ROLES.includes(r);
 
+/* Un profil est « complet » s'il possède les champs REQUIS pour son rôle.
+   Sert de garde-fou UI : un compte authentifié mais à moitié provisionné
+   (rôle sans team_id, joueur sans player_id…) doit afficher un écran clair
+   « profil incomplet » plutôt que de charger à l'infini.
+   - owner  : voit tous les clubs → team_id/player_id null OK
+   - joueur : rattaché à un club ET à une fiche joueur → team_id + player_id
+   - staff  : rattaché à un club → team_id
+   - rôle inconnu / absent : incomplet */
+export function isProfileComplete(profile) {
+  if (!profile || !profile.role) return false;
+  if (profile.role === "owner") return true;
+  if (profile.role === "joueur") return Boolean(profile.team_id && profile.player_id);
+  if (isStaffRole(profile.role)) return Boolean(profile.team_id);
+  return false; // rôle non reconnu → à corriger côté staff
+}
+
 // Codes de séance (couleur de pastille)
 export const CODES = {
   RS: C.coral,   // Renforcement / force
