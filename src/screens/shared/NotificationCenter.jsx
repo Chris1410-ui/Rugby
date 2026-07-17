@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Flame, Shield } from "../../lib/icons.jsx";
+import { pushSupported, getPushState, enablePush, disablePush } from "../../data/push.js";
 
 /* Centre de notifications (joueur). Liste datée, non-lus en surbrillance,
    clic → écran concerné + marqué lu, « tout lu ». Rendu en modal. */
@@ -17,7 +19,58 @@ const fmtWhen = (iso) => {
   } catch { return ""; }
 };
 
-export default function NotificationCenter({ notifs, onNavigate, onClose, accent = C.green }) {
+/* Opt-in Web Push (joueur) : autorise et abonne l'appareil courant. La sécurité
+   et l'envoi sont côté serveur ; ici on ne gère que l'état d'abonnement local. */
+function PushToggle({ playerId, teamId, accent }) {
+  const [state, setState] = useState("loading"); // loading|unsupported|denied|default|granted|subscribed
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    getPushState().then((s) => { if (active) setState(s); }).catch(() => { if (active) setState("unsupported"); });
+    return () => { active = false; };
+  }, []);
+
+  if (!pushSupported() || state === "unsupported") {
+    return (
+      <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.border2}`, fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
+        🔔 Notifications push non disponibles sur ce navigateur. Sur iPhone, ajoute d'abord l'app à l'écran d'accueil.
+      </div>
+    );
+  }
+
+  const act = async (fn) => {
+    setBusy(true); setErr("");
+    try { setState(await fn()); }
+    catch (e) { setErr(e?.message || "Échec."); }
+    setBusy(false);
+  };
+
+  const subscribed = state === "subscribed";
+  return (
+    <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.border2}`, display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 700 }}>Notifications push</div>
+        <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>
+          {state === "denied" ? "Bloquées — autorise-les dans les réglages du navigateur."
+            : subscribed ? "Activées sur cet appareil."
+            : "Reçois défis, tâches et messages même app fermée."}
+          {err && <span style={{ color: C.coral }}> · {err}</span>}
+        </div>
+      </div>
+      {state !== "denied" && (
+        subscribed ? (
+          <button onClick={() => act(disablePush)} disabled={busy} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 11px", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, opacity: busy ? 0.6 : 1 }}>Désactiver</button>
+        ) : (
+          <button onClick={() => act(() => enablePush(playerId, teamId))} disabled={busy || !playerId} style={{ background: accent, border: "none", borderRadius: 8, padding: "7px 12px", color: "#fff", fontSize: 11.5, fontWeight: 800, cursor: "pointer", flexShrink: 0, opacity: busy || !playerId ? 0.6 : 1 }}>{busy ? "…" : "Activer"}</button>
+        )
+      )}
+    </div>
+  );
+}
+
+export default function NotificationCenter({ notifs, onNavigate, onClose, accent = C.green, playerId, teamId }) {
   useModalClose(onClose);
   const { list, unread, markRead, markAllRead } = notifs;
 
@@ -38,6 +91,7 @@ export default function NotificationCenter({ notifs, onNavigate, onClose, accent
         </div>
 
         <div style={{ flex: 1, overflowY: "auto" }}>
+          <PushToggle playerId={playerId} teamId={teamId} accent={accent} />
           {list.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 20px", color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.6 }}>
               <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.7 }}>🔔</div>
