@@ -6,6 +6,8 @@ import { bilanEventsOf } from "../../data/checkins.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
+import { useTeamChallengePoints } from "../../data/challenges.js";
+import { challengeBadges, topChallengeBadge } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
 import { KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Trophy } from "../../lib/icons.jsx";
@@ -33,6 +35,7 @@ export default function Classement({ players, sessions, logs, activities = {}, b
   const teamId = players[0]?.team || null;
   const top14ByPlayer = useTeamTop14(teamId);
   const taskPtsByPlayer = useTeamTaskPoints(teamId);
+  const chalPtsByPlayer = useTeamChallengePoints(teamId);
   const reactByPlayer = useTeamReactivity(teamId);
 
   const data = useMemo(() => {
@@ -41,7 +44,9 @@ export default function Classement({ players, sessions, logs, activities = {}, b
       const taskEvents = (taskPtsByPlayer[p.id] || []).map((t) => ({ label: t.titre, date: t.date }));
       const reactEvents = reactByPlayer[p.id] || [];
       const bilanEvents = bilanEventsOf(bilans[p.id]);
-      return { p, top14: events.length, top14Tests: events, ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents, reactEvents, bilanEvents) };
+      const chalPts = chalPtsByPlayer[p.id] || [];
+      const challengeEvents = chalPts.map((c) => ({ label: c.titre, points: c.points, date: c.date }));
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, logs, activities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents) };
     });
     const cur = [...all].sort((a, b) => b.pts - a.pts);
     const prev = [...all].sort((a, b) => b.pts - b.weekDelta - (a.pts - a.weekDelta));
@@ -49,7 +54,7 @@ export default function Classement({ players, sessions, logs, activities = {}, b
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.rank = i + 1; d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, logs, activities, bilans, top14ByPlayer, taskPtsByPlayer, reactByPlayer]);
+  }, [players, sessions, logs, activities, bilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
@@ -126,6 +131,7 @@ export default function Classement({ players, sessions, logs, activities = {}, b
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + d.p.name : d.p.name}</span>
                   {d.top14 > 0 && <span title={`${d.top14} test(s) au niveau Top 14 — clic pour le détail`} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}
+                  {d.chalBadge && <span title={`${d.chalCount} défi(s) relevé(s) — ${d.chalBadge.label}`} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
                 </div>
                 <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {d.div.l}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
               </div>
@@ -220,6 +226,16 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {sel.top14Tests.map((e) => (
                 <span key={e.key} style={{ fontSize: 10.5, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 6, padding: "3px 9px" }}>{e.label}</span>
+              ))}
+            </div>
+          </div>
+        )}
+        {sel.chalCount > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.viol, letterSpacing: 1, marginBottom: 8 }}>🎯 BADGES DÉFIS · {sel.chalCount} relevé{sel.chalCount > 1 ? "s" : ""}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {challengeBadges(sel.chalCount).map((b) => (
+                <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
               ))}
             </div>
           </div>

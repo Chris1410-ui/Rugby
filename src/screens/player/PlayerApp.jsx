@@ -5,13 +5,14 @@ import { useTeamData } from "../../data/useTeamData.js";
 import { useThread } from "../../data/messages.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamTasks, useMyTaskCompletions } from "../../data/tasks.js";
+import { useTeamChallenges, useMyChallengeCompletions } from "../../data/challenges.js";
 import { useMyDay } from "../../data/checkins.js";
-import { playerSessionTodo, playerTaskTodo, questionnaireTodo, bilanTodo } from "../../lib/badges.js";
+import { playerSessionTodo, playerTaskTodo, questionnaireTodo, bilanTodo, playerChallengeTodo } from "../../lib/badges.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Plus } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Taches from "./Taches.jsx";
 import Questionnaires from "./Questionnaires.jsx";
@@ -19,6 +20,7 @@ import Seances from "./Seances.jsx";
 import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
 import Crew from "./Crew.jsx";
+import Defis from "./Defis.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
@@ -43,11 +45,14 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const { list: myQ } = useMyQuestionnaires(me?.id);
   const { tasks } = useTeamTasks(profile.team_id, players);
   const { statutByTask } = useMyTaskCompletions(me?.id);
+  const { challenges } = useTeamChallenges(profile.team_id, players);
+  const { statutByChallenge } = useMyChallengeCompletions(me?.id);
   const { day } = useMyDay(me?.id, today);
   const bSeances = playerSessionTodo(sessions, logs, me?.id, today);
   const bTaches = playerTaskTodo(tasks, statutByTask, me?.id);
   const bQuest = questionnaireTodo(myQ);
   const bBilan = bilanTodo(day);
+  const bDefis = playerChallengeTodo(challenges, statutByChallenge, me?.id);
   const mobile = useIsMobile();
 
   if (loading && !me) {
@@ -67,6 +72,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["bilan", "Aujourd'hui", Sun, bBilan],
     ["seances", "Mes séances", Dumbbell, bSeances],
     ["taches", "Tâches", ClipboardList, bTaches],
+    ["defis", "Défis", Flame, bDefis],
     ["questionnaires", "Quest.", FileText, bQuest],
     ["messages", "Messages", MessageSquare, unread],
     ["equipe", "Mon équipe", Users],
@@ -85,6 +91,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
+          {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}

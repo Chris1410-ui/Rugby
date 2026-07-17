@@ -31,6 +31,10 @@ export const questionnaireTodo = (list = []) =>
 // Bilans du jour encore à compléter (matin / soir) : nombre manquant (0, 1 ou 2).
 export const bilanTodo = (day = {}) => (day?.matin ? 0 : 1) + (day?.soir ? 0 : 1);
 
+// Défis qui m'attendent : assignés ou ouverts, pas encore relevés.
+export const playerChallengeTodo = (challenges = [], statutByChallenge = {}, myId) =>
+  challenges.filter((c) => (c.assigned?.mode === "open" || (c.assignedIds || []).includes(myId)) && (statutByChallenge[c.id] || "a_faire") === "a_faire").length;
+
 /* ── Côté staff ── */
 
 // Tâches « faites » par un joueur en attente de confirmation du coach.
