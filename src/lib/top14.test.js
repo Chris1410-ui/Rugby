@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   TOP14_BENCH, posToCat, parseKg, broncoToSec, evalTest, top14Player, TOP14_TESTS, datedResultsFor,
+  currentBodyweight, withCurrentBodyweight,
 } from "./top14.js";
 
 const testByKey = Object.fromEntries(TOP14_TESTS.map((t) => [t.key, t]));
@@ -103,6 +104,40 @@ describe("top14Player — agrégat + anti-double-comptage", () => {
     expect(yoyoEvents[0].date).toBe("2026-07-01");
     expect(t.byTest.yoyo.everValid).toBe(true);
     expect(t.count).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("currentBodyweight — poids courant (profil vs dernier test)", () => {
+  const dated = [{ date: "2026-06-01", bodyweight: 100 }, { date: "2026-07-01", bodyweight: 98 }];
+  it("profil plus récent que le dernier test → profil gagne", () => {
+    const p = { bodyweight: 95, bodyweightAt: "2026-08-01T09:00:00Z" };
+    expect(currentBodyweight(p, dated)).toMatchObject({ value: 95, source: "profil" });
+  });
+  it("dernier test plus récent que le profil → test gagne", () => {
+    const p = { bodyweight: 95, bodyweightAt: "2026-05-01T09:00:00Z" };
+    expect(currentBodyweight(p, dated)).toMatchObject({ value: 98, source: "test" });
+  });
+  it("pas de poids profil → dernier test ; pas de test → profil", () => {
+    expect(currentBodyweight({}, dated)).toMatchObject({ value: 98, source: "test" });
+    expect(currentBodyweight({ bodyweight: 90, bodyweightAt: "2026-08-01" }, [])).toMatchObject({ value: 90, source: "profil" });
+    expect(currentBodyweight({}, [])).toBeNull();
+  });
+  it("ignore un poids profil nul ou négatif", () => {
+    expect(currentBodyweight({ bodyweight: 0, bodyweightAt: "2026-08-01" }, dated)).toMatchObject({ source: "test" });
+  });
+});
+
+describe("withCurrentBodyweight — le dernier résultat porte le poids courant", () => {
+  it("remplace le poids du dernier résultat par le poids courant (profil récent)", () => {
+    const dated = [{ date: "2026-06-01", bodyweight: 100 }, { date: "2026-07-01", bodyweight: 98 }];
+    const p = { bodyweight: 95, bodyweightAt: "2026-08-01T09:00:00Z" };
+    const out = withCurrentBodyweight(p, dated);
+    expect(out[out.length - 1].bodyweight).toBe(95); // dernier = poids courant
+    expect(out[0].bodyweight).toBe(100);             // historique intact
+    expect(dated[dated.length - 1].bodyweight).toBe(98); // pas de mutation de l'entrée
+  });
+  it("liste vide → renvoie la liste telle quelle", () => {
+    expect(withCurrentBodyweight({ bodyweight: 95, bodyweightAt: "2026-08-01" }, [])).toEqual([]);
   });
 });
 

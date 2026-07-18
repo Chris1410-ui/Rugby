@@ -3,7 +3,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { fmtShort } from "../../lib/metrics.js";
 import { useTestCampaigns } from "../../data/tests.js";
-import { TOP14_TESTS, catLabel, datedResultsFor, top14Player } from "../../lib/top14.js";
+import { TOP14_TESTS, catLabel, datedResultsFor, top14Player, withCurrentBodyweight } from "../../lib/top14.js";
 import { Activity } from "../../lib/icons.jsx";
 
 /* Comparaison A/B (staff) : deux joueurs côte à côte sur les 9 tests physiques,
@@ -23,8 +23,10 @@ function fmtVal(key, v) {
 // Analyse un joueur : dernier résultat daté + évaluation Top 14 par test.
 function analyze(player, campaigns, results) {
   if (!player) return null;
-  const dated = datedResultsFor(campaigns, results, player.id);
-  const latest = dated.length ? dated[dated.length - 1] : null;
+  const raw = datedResultsFor(campaigns, results, player.id);
+  const latest = raw.length ? raw[raw.length - 1] : null;
+  // Poids « courant » (dernier test OU questionnaire) pour les valeurs ×PdC.
+  const dated = withCurrentBodyweight(player, raw);
   const t14 = top14Player(player.pos, dated);
   return { player, cat: t14.cat, byTest: t14.byTest, count: t14.count, lastDate: latest?.date || null };
 }

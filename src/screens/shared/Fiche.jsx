@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { acwrZ } from "../../lib/metrics.js";
+import { acwrZ, fmtShort } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Eye, EyeOff, Lock } from "../../lib/icons.jsx";
 import { pwdStrength } from "../../lib/password.js";
@@ -11,7 +11,7 @@ import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
 import { challengeBadges } from "../../lib/challenges.js";
-import { top14Player, datedResultsFor } from "../../lib/top14.js";
+import { top14Player, datedResultsFor, currentBodyweight, withCurrentBodyweight } from "../../lib/top14.js";
 import TestsEvolution from "./TestsEvolution.jsx";
 import Top14Panel from "./Top14Panel.jsx";
 import { PlayerAnswers } from "../staff/QuestionnaireResponses.jsx";
@@ -153,7 +153,10 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
   const [err, setErr] = useState("");
   const [adv, setAdv] = useState(false);
   const { campaigns, results } = useTestCampaigns(player.team);
-  const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
+  const dated = datedResultsFor(campaigns, results, player.id);
+  // Poids « courant » (dernier test OU questionnaire) : affiché + injecté dans le Top 14.
+  const bw = currentBodyweight(player, dated);
+  const t14 = top14Player(player.pos, withCurrentBodyweight(player, dated));
   const chalPts = useTeamChallengePoints(player.team)[player.id] || [];
   useModalClose(onClose);
 
@@ -161,6 +164,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
     setD({
       num: player.num ?? "",
       initials: player.initials ?? "",
+      bodyweight: player.bodyweight ?? "",
       mas: player.mas ?? "",
       back_squat: player.backSquat ?? "",
       cmj_g: player.cmjG ?? "",
@@ -180,9 +184,13 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
   const save = async () => {
     setBusy(true); setErr("");
     try {
+      const bwNum = num(d.bodyweight);
       await updatePlayer(player.id, {
         num: num(d.num),
         initials: normalizeInitials(d.initials) || null,
+        bodyweight: bwNum,
+        // Édition staff = mesure du jour → devient le poids le plus récent.
+        ...(bwNum !== (player.bodyweight ?? null) ? { bodyweight_at: new Date().toISOString() } : {}),
         mas: num(d.mas),
         back_squat: num(d.back_squat),
         cmj_g: num(d.cmj_g),
@@ -269,6 +277,17 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
 
       {/* tests physiques */}
       <Section title="TESTS PHYSIQUES" right={canEdit && !edit ? <button onClick={() => setEdit(true)} style={{ background: "none", border: "none", color: C.viol, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Éditer</button> : null}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${C.border2}` }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+            Poids de corps
+            {bw?.at && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}> · {fmtShort(bw.at)}{bw.source === "profil" ? " (questionnaire)" : ""}</span>}
+          </span>
+          {edit ? (
+            <input value={d.bodyweight ?? ""} onChange={(e) => setD((p) => ({ ...p, bodyweight: e.target.value }))} inputMode="decimal" placeholder="kg" style={inp} />
+          ) : (
+            <span style={{ fontSize: 14, fontWeight: 800 }}>{bw?.value != null ? `${bw.value} kg` : "—"}</span>
+          )}
+        </div>
         <Row label="MAS (m/min)" k="mas" value={player.mas} />
         <Row label="Back Squat (×PDC)" k="back_squat" value={player.backSquat} />
         <Row label="CMJ gauche (cm)" k="cmj_g" value={player.cmjG} />

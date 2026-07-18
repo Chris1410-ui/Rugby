@@ -35,6 +35,8 @@ export function dbToPlayer(row) {
     cmjOverall: row.cmj_overall != null ? Number(row.cmj_overall) : null,
     bench5rm: row.bench_5rm != null ? Number(row.bench_5rm) : null,
     hangClean2rm: row.hang_clean_2rm != null ? Number(row.hang_clean_2rm) : null,
+    bodyweight: row.bodyweight != null ? Number(row.bodyweight) : null,
+    bodyweightAt: row.bodyweight_at ?? null,
     ppNotes: row.pp_notes ?? null,
     isCustom: row.is_custom,
     isDemo: row.is_demo ?? false,
