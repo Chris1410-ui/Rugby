@@ -42,6 +42,7 @@ import TestsBatch from "./TestsBatch.jsx";
 import ImportPlayers from "./ImportPlayers.jsx";
 import Historique from "./Historique.jsx";
 import ComparaisonAB from "./ComparaisonAB.jsx";
+import Abonnements from "./Abonnements.jsx";
 
 const ACCENT = C.coral;
 
@@ -97,6 +98,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["calendrier", t("nav.calendrier"), Calendar],
     ["video", t("nav.video"), Video],
     ["veille", t("nav.veille"), Activity],
+    ["abonnements", t("nav.abonnements"), Bell],
   ];
   return (
    <ReadOnlyContext.Provider value={readOnly}>
@@ -124,6 +126,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
+        {tab === "abonnements" && <Abonnements teamId={profile.team_id} players={players} />}
       </main>
       {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}
       {mobile

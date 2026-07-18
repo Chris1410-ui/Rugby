@@ -1,8 +1,41 @@
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Web Push (joueur) : souscription du navigateur + enregistrement en base.
    L'ENVOI se fait côté serveur (Edge Function, PR séparée). Ici on ne gère que
    l'abonnement/désabonnement de l'appareil courant. */
+
+/* Abonnements push du club (staff/owner) : lecture seule des lignes
+   `push_subscriptions` de l'équipe (RLS `push_staff_read`). Sert à voir d'un
+   coup qui recevra les push (et qui relancer). Realtime : la liste se met à jour
+   en direct quand un joueur (dés)active ses notifications. */
+export function useTeamPushSubscriptions(teamId) {
+  const [subs, setSubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setSubs([]); setLoading(false); return; }
+    const { data, error } = await supabase
+      .from("push_subscriptions")
+      .select("id, player_id, endpoint, user_agent, updated_at, created_at")
+      .eq("team_id", teamId);
+    if (error) { console.error("[push subs]", error.message); setLoading(false); return; }
+    setSubs(data ?? []);
+    setLoading(false);
+  }, [teamId]);
+
+  useEffect(() => {
+    fetch();
+    if (!teamId) return;
+    const ch = supabase.channel(uniqueTopic(`push_subs:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "push_subscriptions", filter: `team_id=eq.${teamId}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [teamId, fetch]);
+
+  return { subs, loading, refresh: fetch };
+}
 
 export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 

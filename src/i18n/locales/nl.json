@@ -35,7 +35,8 @@
     "historique": "Geschiedenis",
     "video": "Video-analyse",
     "veille": "Nieuws",
-    "compare": "A/B vergelijking"
+    "compare": "A/B vergelijking",
+    "abonnements": "Push-abonnementen"
   },
   "nav": {
     "bilan": "Vandaag",
@@ -60,7 +61,8 @@
     "historique": "Historiek",
     "video": "Video",
     "veille": "Nieuws",
-    "compare": "Vergelijk +"
+    "compare": "Vergelijk +",
+    "abonnements": "Abonnementen"
   },
   "roles": {
     "preparateur": "Fysiektrainer",

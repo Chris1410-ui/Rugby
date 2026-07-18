@@ -35,7 +35,8 @@
     "historique": "History",
     "video": "Video analysis",
     "veille": "Watch",
-    "compare": "A/B comparison"
+    "compare": "A/B comparison",
+    "abonnements": "Push subscriptions"
   },
   "nav": {
     "bilan": "Today",
@@ -60,7 +61,8 @@
     "historique": "History",
     "video": "Video",
     "veille": "Watch",
-    "compare": "Compare +"
+    "compare": "Compare +",
+    "abonnements": "Subscriptions"
   },
   "roles": {
     "preparateur": "S&C coach",
