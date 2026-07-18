@@ -1,7 +1,7 @@
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { useTestCampaigns, useLineStats } from "../../data/tests.js";
-import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor } from "../../lib/top14.js";
+import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor, top14Player } from "../../lib/top14.js";
 
 /* Comparaison « Où je me situe ? » (vue joueur). Pour chaque test : ma valeur,
    la moyenne de ma ligne (avants/arrières) et le repère Top 14, sur une barre où
@@ -40,6 +40,9 @@ export default function Comparaison({ me, players }) {
   const myDated = datedResultsFor(campaigns, results, me.id);
   const myLast = myDated.length ? myDated[myDated.length - 1] : null;
   const myPrev = myDated.length >= 2 ? myDated[myDated.length - 2] : null;
+  // Compteur officiel X/9 (même logique que la fiche + les points : un test
+  // validé au moins une fois compte). 9 tests Top 14 (Hang Clean inclus).
+  const t14Count = cat ? top14Player(me.pos, myDated).count : 0;
 
   const cards = ORDER.map((key) => build(key, { myLast, myPrev, bench, grp: me.grp, stat: lineStats[key] })).filter(Boolean);
   const measured = cards.filter((c) => c.myVal != null);
@@ -64,6 +67,17 @@ export default function Comparaison({ me, players }) {
         {best && (
           <div style={{ marginTop: 12, background: `${C.green}1a`, border: `1px solid ${C.green}55`, borderRadius: 10, padding: "10px 12px", fontSize: 13, fontWeight: 700, color: C.green }}>
             {FRIENDLY[best.key].dfmt(best.delta)} {best.sub === "Bronco" ? "au Bronco (plus rapide)" : `en ${FRIENDLY[best.key].label.toLowerCase()} (${best.sub})`} depuis le dernier camp 💪
+          </div>
+        )}
+        {myLast && cat && (
+          <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 11, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 10, padding: "10px 12px" }}>
+            <span style={{ fontSize: 22 }}>🏆</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 900, color: C.amb }}>{t14Count}/9 <span style={{ color: "#fff", fontWeight: 800 }}>tests au niveau Top 14</span></div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)", marginTop: 1 }}>
+                {t14Count === 0 ? "Continue, tu vas décrocher ton premier repère." : t14Count >= 9 ? "Profil complet Top 14 — exceptionnel ! 🔥" : "Chaque test franchi te rapproche du profil Top 14."}
+              </div>
+            </div>
           </div>
         )}
       </div>
