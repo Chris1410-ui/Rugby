@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
 import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
@@ -45,6 +46,7 @@ const ACCENT = C.coral;
 /* Espace staff. Une seule dérivation (useTeamData → enrichPlayers) ; tous les
    onglets lisent l'effectif enrichi. */
 export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: forceReadOnly = false }) {
+  const { t } = useTranslation();
   const [tabState, setTabState] = useState("effectif");
   const tab = tabProp ?? tabState;               // piloté par AppShell (mobile) ou interne
   const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
@@ -76,29 +78,29 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
   }
 
   const nav = [
-    ["effectif", "Joueurs", Users, resetReqs.length],
-    ["aujourdhui", "Aujourd'hui", Sun],
-    ["alertes", "Suivi", Bell, bAlertes],
-    ["messages", "Messages", MessageSquare, unread],
-    ["programmes", "Programmes", Dumbbell],
-    ["camps", "Camps", Flag],
-    ["taches", "Tâches", ClipboardList, bTaches],
-    ["defis", "Défis", Flame, bDefis],
-    ["questionnaires", "Quest.", FileText, bQuest],
-    ["exos", "Exos", BookOpen],
-    ["media", "Média", Film],
-    ["classement", "Classement", Trophy],
-    ["historique", "Historique", TrendingUp],
-    ["calendrier", "Calendrier", Calendar],
-    ["video", "Vidéo", Video],
-    ["veille", "Veille", Activity],
+    ["effectif", t("nav.effectif"), Users, resetReqs.length],
+    ["aujourdhui", t("nav.aujourdhui"), Sun],
+    ["alertes", t("nav.alertes"), Bell, bAlertes],
+    ["messages", t("nav.messages"), MessageSquare, unread],
+    ["programmes", t("nav.programmes"), Dumbbell],
+    ["camps", t("nav.camps"), Flag],
+    ["taches", t("nav.taches"), ClipboardList, bTaches],
+    ["defis", t("nav.defis"), Flame, bDefis],
+    ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
+    ["exos", t("nav.exos"), BookOpen],
+    ["media", t("nav.media"), Film],
+    ["classement", t("nav.classement"), Trophy],
+    ["historique", t("nav.historique"), TrendingUp],
+    ["calendrier", t("nav.calendrier"), Calendar],
+    ["video", t("nav.video"), Video],
+    ["veille", t("nav.veille"), Activity],
   ];
   return (
    <ReadOnlyContext.Provider value={readOnly}>
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       {readOnly && (
         <div style={{ background: `${C.blue}22`, borderBottom: `1px solid ${C.blue}55`, color: "#fff", padding: "8px 18px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
-          <Eye size={15} color={C.blue} /> Mode lecture seule — coach. Consultation complète du club, sans modification.
+          <Eye size={15} color={C.blue} /> {t("shell.readOnlyBanner")}
         </div>
       )}
       <main style={{ flex: 1, padding: 18 }}>

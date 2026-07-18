@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { sc } from "../../lib/tokens.js";
 import { useTeamData } from "../../data/useTeamData.js";
@@ -33,6 +34,7 @@ const ACCENT = C.green;
    (une seule dérivation ; aucun recalcul écran par écran). RLS limite l'effectif
    au joueur lui-même. */
 export default function PlayerApp({ profile, preview = false, tab: tabProp, onTab }) {
+  const { t } = useTranslation();
   const [tabState, setTabState] = useState("bilan");
   const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
   const setTab = onTab || setTabState;
@@ -56,32 +58,32 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const mobile = useIsMobile();
 
   if (loading && !me) {
-    return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement…</div>;
+    return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("common.loading")}</div>;
   }
   if (!me) {
     return (
       <div style={{ padding: 18 }}>
         <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.5)", fontSize: 12 })}>
-          Ton profil joueur n'est pas encore lié à l'effectif. Contacte le staff.
+          {t("shell.playerNotLinked")}
         </div>
       </div>
     );
   }
 
   const nav = [
-    ["bilan", "Aujourd'hui", Sun, bBilan],
-    ["seances", "Mes séances", Dumbbell, bSeances],
-    ["taches", "Tâches", ClipboardList, bTaches],
-    ["defis", "Défis", Flame, bDefis],
-    ["questionnaires", "Quest.", FileText, bQuest],
-    ["messages", "Messages", MessageSquare, unread],
-    ["equipe", "Mon équipe", Users],
-    ["media", "Média", Film],
-    ["classement", "Classement", Trophy],
-    ["calendrier", "Calendrier", Calendar],
-    ["fiche", "Ma fiche", Shield],
-    ["comparaison", "Comparaison", Activity],
-    ["donnees", "Mes données", Lock],
+    ["bilan", t("nav.bilan"), Sun, bBilan],
+    ["seances", t("nav.seances"), Dumbbell, bSeances],
+    ["taches", t("nav.taches"), ClipboardList, bTaches],
+    ["defis", t("nav.defis"), Flame, bDefis],
+    ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
+    ["messages", t("nav.messages"), MessageSquare, unread],
+    ["equipe", t("nav.equipe"), Users],
+    ["media", t("nav.media"), Film],
+    ["classement", t("nav.classement"), Trophy],
+    ["calendrier", t("nav.calendrier"), Calendar],
+    ["fiche", t("nav.fiche"), Shield],
+    ["comparaison", t("nav.comparaison"), Activity],
+    ["donnees", t("nav.donnees"), Lock],
   ];
 
   return (
