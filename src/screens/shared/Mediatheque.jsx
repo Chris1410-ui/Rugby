@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
 import { CloseX, useModalClose, Tag } from "../../lib/ui.jsx";
-import { Video, Plus, Trash2, ExternalLink } from "../../lib/icons.jsx";
-import { useTeamMedia, addMedia, deleteMedia } from "../../data/media.js";
+import { Video, Plus, Trash2, Pencil, ExternalLink } from "../../lib/icons.jsx";
+import { useTeamMedia, addMedia, updateMedia, deleteMedia } from "../../data/media.js";
 import { MEDIA_THEMES, detectPlatform, mediaThumb, mediaEmbed, safeVideoUrl } from "../../lib/media.js";
 
 const PLAT_LABEL = { youtube: "YouTube", instagram: "Instagram", autre: "Lien" };
@@ -16,6 +16,7 @@ export default function Mediatheque({ teamId, canEdit = false, accent = C.coral 
   const [theme, setTheme] = useState("all");
   const [sel, setSel] = useState(null);   // média ouvert (lecteur)
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(null);   // média en cours d'édition
 
   const themes = useMemo(() => [...new Set(media.map((m) => m.theme).filter(Boolean))], [media]);
   const shown = theme === "all" ? media : media.filter((m) => m.theme === theme);
@@ -53,17 +54,18 @@ export default function Mediatheque({ teamId, canEdit = false, accent = C.coral 
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
-          {shown.map((m) => <Tile key={m.id} m={m} canEdit={canEdit} onOpen={() => setSel(m)} onDelete={() => del(m.id)} />)}
+          {shown.map((m) => <Tile key={m.id} m={m} canEdit={canEdit} onOpen={() => setSel(m)} onEdit={() => setEditing(m)} onDelete={() => del(m.id)} />)}
         </div>
       )}
 
       {sel && <Player m={sel} onClose={() => setSel(null)} />}
-      {adding && <AddModal teamId={teamId} themes={themes} onClose={() => setAdding(false)} accent={accent} />}
+      {adding && <MediaModal teamId={teamId} themes={themes} onClose={() => setAdding(false)} accent={accent} />}
+      {editing && <MediaModal teamId={teamId} media={editing} themes={themes} onClose={() => setEditing(null)} accent={accent} />}
     </section>
   );
 }
 
-function Tile({ m, canEdit, onOpen, onDelete }) {
+function Tile({ m, canEdit, onOpen, onEdit, onDelete }) {
   const [broken, setBroken] = useState(false);
   const thumb = mediaThumb(m);
   const plat = m.plateforme || detectPlatform(m.url);
@@ -80,9 +82,14 @@ function Tile({ m, canEdit, onOpen, onDelete }) {
         </div>
         <span style={{ position: "absolute", top: 6, left: 6, fontSize: 8.5, fontWeight: 800, color: "#fff", background: PLAT_COLOR[plat], borderRadius: 5, padding: "1px 6px" }}>{PLAT_LABEL[plat]}</span>
         {canEdit && (
-          <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Supprimer" style={{ position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,0.6)", border: "none", borderRadius: 7, padding: 5, color: "#fff", cursor: "pointer", display: "flex" }}>
-            <Trash2 size={13} />
-          </button>
+          <div style={{ position: "absolute", top: 6, right: 6, display: "flex", gap: 5 }}>
+            <button onClick={(e) => { e.stopPropagation(); onEdit(); }} title="Modifier" style={{ background: "rgba(0,0,0,0.6)", border: "none", borderRadius: 7, padding: 5, color: "#fff", cursor: "pointer", display: "flex" }}>
+              <Pencil size={13} />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Supprimer" style={{ background: "rgba(0,0,0,0.6)", border: "none", borderRadius: 7, padding: 5, color: "#fff", cursor: "pointer", display: "flex" }}>
+              <Trash2 size={13} />
+            </button>
+          </div>
         )}
       </div>
       <div style={{ padding: "8px 10px" }}>
@@ -126,11 +133,14 @@ function Player({ m, onClose }) {
   );
 }
 
-function AddModal({ teamId, themes, onClose, accent }) {
+/* Modal add/edit. `media` fourni → édition (thème, titre, URL) ; sinon → ajout.
+   La vignette (thumb) n'est proposée qu'à l'ajout d'un lien non-YouTube. */
+function MediaModal({ teamId, media, themes, onClose, accent }) {
   useModalClose(onClose);
-  const [url, setUrl] = useState("");
-  const [titre, setTitre] = useState("");
-  const [theme, setTheme] = useState("");
+  const isEdit = !!media;
+  const [url, setUrl] = useState(media?.url || "");
+  const [titre, setTitre] = useState(media?.titre || "");
+  const [theme, setTheme] = useState(media?.theme || "");
   const [thumb, setThumb] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -142,8 +152,11 @@ function AddModal({ teamId, themes, onClose, accent }) {
     if (!titre.trim()) return setErr("Donne un titre à la vidéo.");
     if (!theme.trim()) return setErr("Choisis ou saisis un thème.");
     setBusy(true); setErr("");
-    try { await addMedia(teamId, { theme, titre, url, thumbUrl: thumb }); onClose(); }
-    catch (e) { setErr("Échec : " + (e.message || "")); setBusy(false); }
+    try {
+      if (isEdit) await updateMedia(media.id, { theme, titre, url });
+      else await addMedia(teamId, { theme, titre, url, thumbUrl: thumb });
+      onClose();
+    } catch (e) { setErr("Échec : " + (e.message || "")); setBusy(false); }
   };
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10, boxSizing: "border-box" };
 
@@ -151,19 +164,19 @@ function AddModal({ teamId, themes, onClose, accent }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: C.panel, borderRadius: 18, padding: 20 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Ajouter une vidéo</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{isEdit ? "Modifier la vidéo" : "Ajouter une vidéo"}</div>
           <CloseX onClose={onClose} />
         </div>
         <input value={url} onChange={(e) => { setUrl(e.target.value); setErr(""); }} placeholder="URL (YouTube, Instagram, autre…)" style={inp} />
-        {plat && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: -4, marginBottom: 10 }}>Plateforme détectée : <b style={{ color: PLAT_COLOR[plat] }}>{PLAT_LABEL[plat]}</b>{plat !== "youtube" ? " — vignette générique (ajoute une image ci-dessous si tu veux)" : ""}</div>}
+        {plat && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: -4, marginBottom: 10 }}>Plateforme détectée : <b style={{ color: PLAT_COLOR[plat] }}>{PLAT_LABEL[plat]}</b>{plat !== "youtube" ? " — vignette générique" + (isEdit ? "." : " (ajoute une image ci-dessous si tu veux)") : ""}</div>}
         <input value={titre} onChange={(e) => { setTitre(e.target.value); setErr(""); }} placeholder="Titre" maxLength={120} style={inp} />
         <input value={theme} onChange={(e) => { setTheme(e.target.value); setErr(""); }} placeholder="Thème (ex. Technique, Prévention…)" list="media-themes" style={inp} />
         <datalist id="media-themes">{suggestions.map((t) => <option key={t} value={t} />)}</datalist>
-        {plat && plat !== "youtube" && (
+        {!isEdit && plat && plat !== "youtube" && (
           <input value={thumb} onChange={(e) => setThumb(e.target.value)} placeholder="URL vignette (optionnel)" style={inp} />
         )}
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
-        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : "Ajouter à la médiathèque"}</button>
+        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : isEdit ? "Enregistrer les modifications" : "Ajouter à la médiathèque"}</button>
       </div>
     </div>
   );
