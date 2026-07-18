@@ -50,6 +50,19 @@ export async function addMedia(teamId, { theme, titre, url, thumbUrl }) {
   if (error) throw error;
 }
 
+/* Modifie une vidéo publiée : thème, titre et URL. La plateforme est
+   re-dérivée de la nouvelle URL (une URL YouTube → Instagram change le lecteur).
+   Ne touche pas la vignette (thumb_url) : elle reste ce qui avait été saisi. */
+export async function updateMedia(id, { theme, titre, url }) {
+  const { error } = await supabase.from("media").update({
+    theme: (theme || "").trim() || "Autre",
+    titre: (titre || "").trim(),
+    url: (url || "").trim(),
+    plateforme: detectPlatform(url),
+  }).eq("id", id);
+  if (error) throw error;
+}
+
 export async function deleteMedia(id) {
   const { error } = await supabase.from("media").delete().eq("id", id);
   if (error) throw error;
