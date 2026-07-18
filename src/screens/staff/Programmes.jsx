@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, CODES, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { fmtShort, todayISO, isoDate, statusOfLog } from "../../lib/metrics.js";
 import { WD, wdLabel, newExo } from "../../lib/exlib.js";
@@ -244,7 +245,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
         {recMode === "players" && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxHeight: 160, overflowY: "auto" }}>
             {players.map((p) => { const on = recIds.includes(p.id); return (
-              <button key={p.id} onClick={() => setRecIds((s) => (on ? s.filter((x) => x !== p.id) : [...s, p.id]))} style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${on ? accent : C.border}`, fontSize: 10, fontWeight: 700, cursor: "pointer", background: on ? `${accent}33` : "transparent", color: "#fff" }}>#{p.num} {p.name}</button>
+              <button key={p.id} onClick={() => setRecIds((s) => (on ? s.filter((x) => x !== p.id) : [...s, p.id]))} style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${on ? accent : C.border}`, fontSize: 10, fontWeight: 700, cursor: "pointer", background: on ? `${accent}33` : "transparent", color: "#fff" }}>#{p.num} {displayName(p)}</button>
             ); })}
           </div>
         )}

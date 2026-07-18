@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { MessageSquare, ChevronRight, Search } from "../../lib/icons.jsx";
 import { useTeamMessages } from "../../data/messages.js";
@@ -40,7 +41,7 @@ export default function StaffMessages({ players }) {
   if (sel) {
     return (
       <section style={{ height: "100%" }}>
-        <Conversation playerId={sel.id} title={`${sel.name}`} who="staff" accent={accent} onBack={() => setSelId(null)} />
+        <Conversation playerId={sel.id} title={displayName(sel)} who="staff" accent={accent} onBack={() => setSelId(null)} />
       </section>
     );
   }
@@ -71,7 +72,7 @@ export default function StaffMessages({ players }) {
               <div style={{ width: 38, height: 38, borderRadius: 19, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{p.num ?? "—"}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(p)}</span>
                   <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)", flexShrink: 0 }}>{grpLabel(p.grp)}</span>
                 </div>
                 <div style={{ fontSize: 11, color: t.unread ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: t.unread ? 600 : 400 }}>

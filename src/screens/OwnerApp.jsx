@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { C, FONT, ROLES } from "../lib/tokens.js";
+import { displayName } from "../lib/identity.js";
 import { LogOut, Users, Search } from "../lib/icons.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
@@ -83,12 +84,12 @@ export default function OwnerApp({ profile, user, signOut }) {
               <option value="">👁 Vue joueur…</option>
               {realPlayers.length > 0 && (
                 <optgroup label="Joueurs">
-                  {realPlayers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {realPlayers.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
                 </optgroup>
               )}
               {demoOnes.length > 0 && (
                 <optgroup label="Démo">
-                  {demoOnes.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {demoOnes.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
                 </optgroup>
               )}
             </select>

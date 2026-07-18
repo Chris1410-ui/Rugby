@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { C } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { statusOfLog } from "../../lib/metrics.js";
 import { Section } from "../../lib/ui.jsx";
 import { useCampParticipants, enrollInCamp, setParticipantStatus, removeParticipant } from "../../data/camps.js";
@@ -41,7 +42,7 @@ export default function CampParticipation({ camp, teamId, players = [], sessions
             return (
               <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{p.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{displayName(p)}</div>
                   <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{done} séance{done > 1 ? "s" : ""} validée{done > 1 ? "s" : ""}</div>
                 </div>
                 {readOnly ? (

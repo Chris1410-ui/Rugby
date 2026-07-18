@@ -5,7 +5,8 @@ import { acwrZ } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Eye, EyeOff, Lock } from "../../lib/icons.jsx";
 import { pwdStrength } from "../../lib/password.js";
-import { updatePlayer, resetPlayerPassword } from "../../data/players.js";
+import { normalizeInitials } from "../../lib/identity.js";
+import { updatePlayer, resetPlayerPassword, setMyInitials } from "../../data/players.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
@@ -109,9 +110,43 @@ const triC = (v, good, mid) => (v >= good ? C.green : v >= mid ? C.amb : C.coral
 const num = (v) => (v == null || v === "" ? null : Number(v));
 const fmt = (v, unit = "") => (v == null ? "—" : `${v}${unit}`);
 
+/* Éditeur d'initiales pour le joueur (sa propre fiche). RPC set_my_initials
+   (SECURITY DEFINER) → ne modifie QUE `initials`. Realtime rafraîchit l'effectif,
+   donc l'affichage « Totem (I.F.) » se met à jour partout après enregistrement. */
+function SelfInitials({ player }) {
+  const [val, setVal] = useState(player.initials ?? "");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  useEffect(() => { setVal(player.initials ?? ""); }, [player.initials]);
+  const preview = normalizeInitials(val);
+  const dirty = preview !== (player.initials ?? "");
+
+  const save = async () => {
+    setBusy(true); setMsg("");
+    try { await setMyInitials(preview); setMsg("Initiales enregistrées."); }
+    catch (e) { setMsg(e.message || "Échec."); }
+    setBusy(false);
+  };
+
+  return (
+    <div style={sc({ padding: 14, marginBottom: 12 })}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>MES INITIALES</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.5, marginBottom: 10 }}>
+        Elles s'affichent partout dans l'app sous la forme <b style={{ color: "#fff" }}>{player.name} ({preview || "I.F."})</b>. Ton nom complet n'est jamais affiché.
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input value={val} onChange={(e) => { setVal(e.target.value); setMsg(""); }} placeholder="I.F." maxLength={8}
+          style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px", color: "#fff", fontSize: 14, outline: "none" }} />
+        <button onClick={save} disabled={busy || !dirty} style={{ background: dirty ? C.green : "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "10px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : "Enregistrer"}</button>
+      </div>
+      {msg && <div style={{ fontSize: 11, color: msg.includes("enregistr") ? C.green : C.coral, marginTop: 8 }}>{msg}</div>}
+    </div>
+  );
+}
+
 /* Fiche joueur détaillée. Lit l'effectif enrichi (aucun recalcul). Éditable par
    le staff (tests physiques). `onClose` → rendu en modal. */
-export default function Fiche({ player, canEdit = false, onClose }) {
+export default function Fiche({ player, canEdit = false, self = false, onClose }) {
   const [edit, setEdit] = useState(false);
   const [d, setD] = useState({});
   const [busy, setBusy] = useState(false);
@@ -125,6 +160,7 @@ export default function Fiche({ player, canEdit = false, onClose }) {
   useEffect(() => {
     setD({
       num: player.num ?? "",
+      initials: player.initials ?? "",
       mas: player.mas ?? "",
       back_squat: player.backSquat ?? "",
       cmj_g: player.cmjG ?? "",
@@ -146,6 +182,7 @@ export default function Fiche({ player, canEdit = false, onClose }) {
     try {
       await updatePlayer(player.id, {
         num: num(d.num),
+        initials: normalizeInitials(d.initials) || null,
         mas: num(d.mas),
         back_squat: num(d.back_squat),
         cmj_g: num(d.cmj_g),
@@ -180,7 +217,15 @@ export default function Fiche({ player, canEdit = false, onClose }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)" }}>{edit ? <input value={d.num ?? ""} onChange={(e) => setD((p) => ({ ...p, num: e.target.value }))} style={{ ...inp, width: 44, textAlign: "center" }} /> : (player.num ?? "—")}</span>
-            <div><div style={{ fontSize: 17, fontWeight: 800 }}>{player.name}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{player.pos} · {grpLabel(player.grp)}</div></div>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>
+                {player.name}
+                {edit
+                  ? <input value={d.initials ?? ""} onChange={(e) => setD((p) => ({ ...p, initials: e.target.value }))} placeholder="I.F." maxLength={8} style={{ ...inp, width: 60, textAlign: "left" }} />
+                  : (player.initials && <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.6)" }}>({player.initials})</span>)}
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{player.pos} · {grpLabel(player.grp)}</div>
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <Pill v={player.acwr} /><Tag c={acwrZ(player.acwr).c}>{acwrZ(player.acwr).l}</Tag>
@@ -188,6 +233,10 @@ export default function Fiche({ player, canEdit = false, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Le joueur saisit / modifie SES initiales (affichées « Totem (I.F.) »
+          partout). Réservé à sa propre fiche. */}
+      {self && <SelfInitials player={player} />}
 
       {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
       {(() => {

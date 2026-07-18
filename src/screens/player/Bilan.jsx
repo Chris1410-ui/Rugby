@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { C } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { wbToWellness, computeReadiness, acwrZ, ACTIVITIES, EVENING_MARKERS, SLEEP_OPTIONS, sleepLabel } from "../../lib/metrics.js";
 import { Ring, Section } from "../../lib/ui.jsx";
 import { CheckCircle, Send } from "../../lib/icons.jsx";
@@ -154,7 +155,7 @@ export default function Bilan({ me, accent }) {
           <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
             AUJOURD'HUI · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
           </div>
-          <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{me.name}</div>
+          <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{displayName(me)}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{me.pos}</div>
         </div>
       </div>

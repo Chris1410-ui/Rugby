@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
 import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
 import { isTotemTaken } from "../../lib/totems.js";
@@ -74,7 +75,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
   // Vue joueur (lecture seule) : le staff ouvre l'expérience d'un joueur telle
   // qu'il la voit, pour tester sans se déconnecter. Aucune écriture (usePreview).
   if (preview) {
-    return <PlayerPreview profile={profile} teamId={profile.team_id} playerId={preview.id} playerName={preview.name} onExit={() => setPreview(null)} />;
+    return <PlayerPreview profile={profile} teamId={profile.team_id} playerId={preview.id} playerName={displayName(preview)} onExit={() => setPreview(null)} />;
   }
 
   const nav = [
@@ -256,7 +257,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
               <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)", width: 30, textAlign: "center" }}>{p.num ?? "—"}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-                  {p.name}{p._live && <span title="Bilan du jour encodé" style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
+                  {displayName(p)}{p._live && <span title="Bilan du jour encodé" style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
                   {p.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>DÉMO</span>}
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{p.pos} · {grpLabel(p.grp)}</div>
@@ -321,7 +322,7 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
             {POS_GROUPS.map((grp) => (
               <optgroup key={grp.grp} label={grp.label}>
-                {grp.items.map((p) => <option key={p.i} value={p.i}>{p.num} — {p.name}</option>)}
+                {grp.items.map((p) => <option key={p.i} value={p.i}>{p.num} — {displayName(p)}</option>)}
               </optgroup>
             ))}
           </select>

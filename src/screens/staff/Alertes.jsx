@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { buildAlerts, SEVC, playerLoad, isoDate, todayISO, statusOfLog, fmtShort } from "../../lib/metrics.js";
 import { KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Sparkles, CheckCircle } from "../../lib/icons.jsx";
@@ -149,7 +150,7 @@ function RecoModal({ player, onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "80vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
           <Sparkles size={18} color={C.viol} />
-          <div style={{ flex: 1, marginLeft: 8, fontSize: 15, fontWeight: 800 }}>Recommandation · {player.name}</div>
+          <div style={{ flex: 1, marginLeft: 8, fontSize: 15, fontWeight: 800 }}>Recommandation · {displayName(player)}</div>
           <CloseX onClose={onClose} />
         </div>
         {state.loading ? (
