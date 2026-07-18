@@ -35,7 +35,8 @@
     "historique": "Historique",
     "video": "Analyse vidéo",
     "veille": "Veille",
-    "compare": "Comparaison A/B"
+    "compare": "Comparaison A/B",
+    "abonnements": "Abonnements notifications"
   },
   "nav": {
     "bilan": "Aujourd'hui",
@@ -60,7 +61,8 @@
     "historique": "Historique",
     "video": "Vidéo",
     "veille": "Veille",
-    "compare": "Comparaison"
+    "compare": "Comparaison",
+    "abonnements": "Abonnements"
   },
   "roles": {
     "preparateur": "Préparateur physique",
