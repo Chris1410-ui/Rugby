@@ -1,7 +1,7 @@
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { useTestCampaigns, useLineStats } from "../../data/tests.js";
-import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor, top14Player } from "../../lib/top14.js";
+import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor, top14Player, withCurrentBodyweight } from "../../lib/top14.js";
 
 /* Comparaison « Où je me situe ? » (vue joueur). Pour chaque test : ma valeur,
    la moyenne de ma ligne (avants/arrières) et le repère Top 14, sur une barre où
@@ -36,8 +36,10 @@ export default function Comparaison({ me, players }) {
   const bench = cat ? TOP14_BENCH[cat] : null;
   const peers = players.filter((p) => p.grp === me.grp);
 
-  // Mes propres résultats datés (dernier + avant-dernier pour le progrès).
-  const myDated = datedResultsFor(campaigns, results, me.id);
+  // Mes propres résultats datés. Le DERNIER porte mon poids « courant » (dernier
+  // test OU questionnaire, le plus récent) → les valeurs ×PdC actuelles reflètent
+  // mon poids d'aujourd'hui. L'avant-dernier (progrès) garde son poids d'époque.
+  const myDated = withCurrentBodyweight(me, datedResultsFor(campaigns, results, me.id));
   const myLast = myDated.length ? myDated[myDated.length - 1] : null;
   const myPrev = myDated.length >= 2 ? myDated[myDated.length - 2] : null;
   // Compteur officiel X/9 (même logique que la fiche + les points : un test

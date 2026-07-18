@@ -106,6 +106,38 @@ export function top14Player(pos, datedResults) {
   return { cat, byTest, count, events };
 }
 
+/* Poids de corps « courant » = le plus récent entre le poids du profil
+   (players.bodyweight, alimenté par le questionnaire / la fiche, daté par
+   bodyweight_at) et le poids du dernier test daté. Renvoie { value, at, source }
+   ou null. Sert de référence pour les valeurs ACTUELLES ×PdC. */
+export function currentBodyweight(player, datedResults) {
+  const list = datedResults || [];
+  const last = list.length ? list[list.length - 1] : null;
+  const pw = (player?.bodyweight != null && Number(player.bodyweight) > 0)
+    ? { value: Number(player.bodyweight), at: player.bodyweightAt || null, source: "profil" } : null;
+  const tw = (last && last.bodyweight != null && Number(last.bodyweight) > 0)
+    ? { value: Number(last.bodyweight), at: last.date || null, source: "test" } : null;
+  if (!pw) return tw;
+  if (!tw) return pw;
+  // Profil = timestamptz, test = 'YYYY-MM-DD' → on compare sur le jour.
+  const pDay = String(pw.at || "").slice(0, 10);
+  return (pDay && tw.at && pDay < tw.at) ? tw : pw; // test strictement plus récent → test, sinon profil
+}
+
+/* Renvoie la liste datée où le DERNIER résultat porte le poids « courant »
+   (profil OU dernier test, le plus récent). Ainsi les valeurs actuelles ×PdC
+   (Top 14 / comparaisons) reflètent le dernier poids connu, sans réécrire
+   l'historique (les résultats antérieurs gardent leur propre poids). */
+export function withCurrentBodyweight(player, datedResults) {
+  const list = datedResults || [];
+  const cur = currentBodyweight(player, list);
+  if (!cur || !list.length) return list;
+  const copy = list.slice();
+  const last = copy[copy.length - 1];
+  if (Number(last.bodyweight) !== cur.value) copy[copy.length - 1] = { ...last, bodyweight: cur.value };
+  return copy;
+}
+
 // Construit la liste des résultats DATÉS d'un joueur (jointure campagne→date).
 export function datedResultsFor(campaigns, results, playerId) {
   const dateById = Object.fromEntries((campaigns || []).map((c) => [c.id, c.date]));
