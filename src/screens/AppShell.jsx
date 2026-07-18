@@ -11,6 +11,21 @@ import OwnerApp from "./OwnerApp.jsx";
 const teamLabel = (id) => TEAMS.rugby.find((t) => t.id === id)?.label || id;
 const roleObjOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
 
+/* Titre d'écran affiché dans le header (remplace le wordmark statique). Clé =
+   `tab` (cf. tableaux `nav` de PlayerApp/StaffApp). Regroupe joueur + staff ;
+   les clés communes (media, classement…) partagent le même libellé. */
+const SCREEN_TITLES = {
+  // Joueur
+  bilan: "Aujourd'hui", seances: "Mes séances", taches: "Tâches", defis: "Défis",
+  questionnaires: "Questionnaires", messages: "Messages", equipe: "Mon équipe",
+  media: "Médiathèque", classement: "Classement", calendrier: "Calendrier",
+  fiche: "Ma fiche", comparaison: "Comparaison", donnees: "Mes données",
+  // Staff
+  effectif: "Joueurs", aujourdhui: "Aujourd'hui", alertes: "Suivi",
+  programmes: "Programmes", camps: "Camps", exos: "Exercices",
+  historique: "Historique", video: "Analyse vidéo", veille: "Veille",
+};
+
 export default function AppShell() {
   const { profile, user, signOut, profileLoaded, profileError, refreshProfile, hardReset } = useAuth();
   // Notifications joueur (hook appelé inconditionnellement ; vide pour staff/owner).
@@ -90,8 +105,8 @@ export default function AppShell() {
         {/* Header compact : titre + cloche (joueur) + avatar (menu) */}
         <header style={{ position: "sticky", top: 0, zIndex: 30, background: `${C.navy}f2`, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border2}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 900, color: C.coral, letterSpacing: 0.5 }}>PERFORMANCE</div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{teamLabel(profile.team_id)}</div>
+            <div style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{SCREEN_TITLES[tab] || "Performance"}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, letterSpacing: 0.4 }}>PERFORMANCE · <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: 0 }}>{teamLabel(profile.team_id)}</span></div>
           </div>
           {!staff && (
             <button onClick={() => setNotifOpen(true)} title="Notifications" style={{ position: "relative", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
@@ -109,8 +124,9 @@ export default function AppShell() {
                     <div style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</div>
                     <div style={{ fontSize: 10, fontWeight: 700, color: roleObj.c }}>{roleObj.e} {roleObj.l}</div>
                   </div>
-                  {!staff && <MenuItem label="Ma fiche" onClick={() => goTab("fiche")} />}
-                  {staff && <MenuItem label="👁 Vue joueur" onClick={() => goTab("effectif")} />}
+                  {/* Le sélecteur de langue (🇫🇷 🇬🇧 🇳🇱) s'insère ici avec l'i18n (PR1). */}
+                  {/* Navigation retirée du header : « Ma fiche » / « Vue joueur » sont
+                     déjà dans la barre du bas + hub « Plus » (un seul système). */}
                   <MenuItem label="Se déconnecter" danger onClick={() => { setAvatarOpen(false); signOut(); }} />
                 </div>
               </>
