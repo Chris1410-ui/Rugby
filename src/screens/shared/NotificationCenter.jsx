@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
-import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Flame, Shield } from "../../lib/icons.jsx";
+import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Flame, Shield, Film } from "../../lib/icons.jsx";
 import { pushSupported, getPushState, enablePush, disablePush } from "../../data/push.js";
 
 /* Centre de notifications (joueur). Liste datée, non-lus en surbrillance,
    clic → écran concerné + marqué lu, « tout lu ». Rendu en modal. */
-const ICON = { task: ClipboardList, session: Dumbbell, message: MessageSquare, questionnaire: FileText, camp: Flag, test: Shield, challenge: Flame };
+const ICON = { task: ClipboardList, session: Dumbbell, message: MessageSquare, questionnaire: FileText, camp: Flag, test: Shield, challenge: Flame, media: Film };
 
 const fmtWhen = (iso) => {
   try {
