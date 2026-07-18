@@ -15,6 +15,7 @@
    ════════════════════════════════════════════════════════════════ */
 
 import { C } from "./tokens.js";
+import { localeTag } from "../i18n/locale.js";
 
 /* ── Dates ── */
 export const isoDate = (d) => {
@@ -38,11 +39,11 @@ export const parseISO = (s) => {
 export const todayISO = () => isoDate(new Date());
 export const fmtShort = (s, fallback = "—") => {
   const d = parseISO(s);
-  return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString("fr-BE", { day: "numeric", month: "short" });
+  return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString(localeTag(), { day: "numeric", month: "short" });
 };
 export const fmtDay = (s, fallback = "—") => {
   const d = parseISO(s);
-  return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString("fr-BE", { weekday: "short", day: "numeric", month: "short" });
+  return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString(localeTag(), { weekday: "short", day: "numeric", month: "short" });
 };
 
 /* ── PRNG déterministe (seed scramblé + warmup) ── */

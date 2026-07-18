@@ -1,0 +1,82 @@
+{
+  "common": {
+    "logout": "Se déconnecter",
+    "close": "Fermer",
+    "more": "Plus",
+    "menu": "Menu",
+    "skip": "Passer",
+    "loading": "Chargement…",
+    "language": "Langue",
+    "retry": "Réessayer"
+  },
+  "header": {
+    "brand": "PERFORMANCE"
+  },
+  "title": {
+    "bilan": "Aujourd'hui",
+    "seances": "Mes séances",
+    "taches": "Tâches",
+    "defis": "Défis",
+    "questionnaires": "Questionnaires",
+    "messages": "Messages",
+    "equipe": "Mon équipe",
+    "media": "Médiathèque",
+    "classement": "Classement",
+    "calendrier": "Calendrier",
+    "fiche": "Ma fiche",
+    "comparaison": "Comparaison",
+    "donnees": "Mes données",
+    "effectif": "Joueurs",
+    "aujourdhui": "Aujourd'hui",
+    "alertes": "Suivi",
+    "programmes": "Programmes",
+    "camps": "Camps",
+    "exos": "Exercices",
+    "historique": "Historique",
+    "video": "Analyse vidéo",
+    "veille": "Veille"
+  },
+  "nav": {
+    "bilan": "Aujourd'hui",
+    "seances": "Mes séances",
+    "taches": "Tâches",
+    "defis": "Défis",
+    "questionnaires": "Quest.",
+    "messages": "Messages",
+    "equipe": "Mon équipe",
+    "media": "Média",
+    "classement": "Classement",
+    "calendrier": "Calendrier",
+    "fiche": "Ma fiche",
+    "comparaison": "Comparaison",
+    "donnees": "Mes données",
+    "effectif": "Joueurs",
+    "aujourdhui": "Aujourd'hui",
+    "alertes": "Suivi",
+    "programmes": "Programmes",
+    "camps": "Camps",
+    "exos": "Exos",
+    "historique": "Historique",
+    "video": "Vidéo",
+    "veille": "Veille"
+  },
+  "roles": {
+    "preparateur": "Préparateur physique",
+    "joueur": "Joueur",
+    "medical": "Médical",
+    "coach": "Coach (lecture seule)",
+    "owner": "Head of Performance"
+  },
+  "shell": {
+    "loadingProfile": "Chargement du profil…",
+    "profileErrorTitle": "Impossible de charger le profil",
+    "profileErrorBody": "La connexion au serveur a échoué ou expiré. Vérifie ta connexion internet, puis réessaie.",
+    "resetApp": "Réinitialiser l'app",
+    "profileNotFoundTitle": "Profil introuvable",
+    "profileNotFoundBody": "Ton compte est authentifié ({{email}}) mais aucun profil métier n'est associé. Reconnecte-toi ou contacte le staff.",
+    "profileIncompleteTitle": "Profil incomplet",
+    "profileIncompleteBody": "Ton compte ({{email}}) est bien authentifié, mais sa configuration est incomplète (rôle ou rattachement à un club manquant). Contacte le staff pour finaliser ton accès.",
+    "readOnlyBanner": "Mode lecture seule — coach. Consultation complète du club, sans modification.",
+    "playerNotLinked": "Ton profil joueur n'est pas encore lié à l'effectif. Contacte le staff."
+  }
+}

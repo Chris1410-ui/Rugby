@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "./auth/useAuth.jsx";
 import LoginScreen from "./auth/LoginScreen.jsx";
 import ResetPassword from "./auth/ResetPassword.jsx";
@@ -7,6 +8,7 @@ import { C, FONT } from "./lib/tokens.js";
 
 function Gate() {
   const { session, loading, recovery } = useAuth();
+  const { t } = useTranslation();
 
   // Lien « mot de passe oublié » suivi → écran de réinitialisation prioritaire
   if (recovery) return <ResetPassword />;
@@ -14,7 +16,7 @@ function Gate() {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: C.navy, color: "#fff", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>Chargement…</span>
+        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{t("common.loading")}</span>
       </div>
     );
   }

@@ -1,8 +1,13 @@
 /* Atomes UI portés du prototype (SVG maison, styles inline). */
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "./tokens.js";
 import { acwrZ } from "./metrics.js";
 import { Clock, Grid, X } from "./icons.jsx";
+import i18n from "../i18n/config.js";
+
+// Traduction hors composant (atomes sans hook, ex. aria-label de CloseX).
+const tt = (key) => i18n.t(key);
 
 /* ── Fermeture des modaux / bottom sheets (comportement global cohérent) ──
    - CloseX : bouton croix avec cible tactile ≥ 44×44 px (padding cliquable
@@ -13,7 +18,7 @@ import { Clock, Grid, X } from "./icons.jsx";
 export const CloseX = ({ onClose, style }) => (
   <button
     type="button"
-    aria-label="Fermer"
+    aria-label={tt("common.close")}
     onClick={(e) => { e.stopPropagation(); onClose(); }}
     style={{ position: "relative", zIndex: 2, width: 44, height: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 12, color: "rgba(255,255,255,0.85)", cursor: "pointer", WebkitTapHighlightColor: "transparent", ...style }}
   >
@@ -148,6 +153,7 @@ export const LineChart = ({ pts, color, target, height = 120 }) => {
 };
 
 export const RestTimer = ({ seconds, onDone, accent }) => {
+  const { t } = useTranslation();
   const [left, setLeft] = useState(seconds);
   useEffect(() => {
     setLeft(seconds);
@@ -168,7 +174,7 @@ export const RestTimer = ({ seconds, onDone, accent }) => {
         </div>
       </div>
       <span style={{ fontSize: 14, fontWeight: 800, fontVariantNumeric: "tabular-nums", color: accent }}>{mm}:{ss}</span>
-      <button onClick={() => onDone && onDone()} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, cursor: "pointer", fontWeight: 700 }}>Passer</button>
+      <button onClick={() => onDone && onDone()} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, cursor: "pointer", fontWeight: 700 }}>{t("common.skip")}</button>
     </div>
   );
 };
@@ -201,6 +207,7 @@ const dot = (v) => (v > 0 ? <span style={{ position: "absolute", top: 2, right: 
    + pastille de non-lus). `items` = liste complète [key,label,Icon,badge] ;
    `primary` = clés affichées dans la barre. */
 export const MobileNav = ({ items, primary, active, onSelect, accent }) => {
+  const { t } = useTranslation();
   const [hub, setHub] = useState(false);
   const byKey = Object.fromEntries(items.map((it) => [it[0], it]));
   const primItems = primary.map((k) => byKey[k]).filter(Boolean);
@@ -223,7 +230,7 @@ export const MobileNav = ({ items, primary, active, onSelect, accent }) => {
         })}
         <button onClick={() => setHub(true)} style={navBtn(hub || activeHidden, accent)}>
           <Grid size={21} color={hub || activeHidden ? accent : "rgba(255,255,255,0.62)"} />
-          <span style={{ fontSize: 9.5, fontWeight: hub || activeHidden ? 800 : 600 }}>Plus</span>
+          <span style={{ fontSize: 9.5, fontWeight: hub || activeHidden ? 800 : 600 }}>{t("common.more")}</span>
           {dot(hiddenBadge)}
         </button>
       </nav>
@@ -234,13 +241,14 @@ export const MobileNav = ({ items, primary, active, onSelect, accent }) => {
 
 /* Hub en grille (feuille du bas) : toutes les sections en tuiles. */
 export const NavHub = ({ items, active, accent, onSelect, onClose }) => {
+  const { t } = useTranslation();
   useModalClose(onClose);
   return (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 60, display: "flex", alignItems: "flex-end" }}>
     <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", background: C.navy, borderTop: `1px solid ${C.border2}`, borderRadius: "18px 18px 0 0", padding: "4px 14px 22px", maxHeight: "80vh", overflowY: "auto" }}>
       <SheetHandle onClose={onClose} />
       <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-        <div style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>Menu</div>
+        <div style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>{t("common.menu")}</div>
         <CloseX onClose={onClose} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>

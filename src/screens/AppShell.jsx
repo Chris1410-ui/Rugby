@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/useAuth.jsx";
 import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
 import { Bell } from "../lib/icons.jsx";
 import { useNotifications } from "../data/notifications.js";
+import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
@@ -10,24 +12,12 @@ import OwnerApp from "./OwnerApp.jsx";
 
 const teamLabel = (id) => TEAMS.rugby.find((t) => t.id === id)?.label || id;
 const roleObjOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
-
-/* Titre d'écran affiché dans le header (remplace le wordmark statique). Clé =
-   `tab` (cf. tableaux `nav` de PlayerApp/StaffApp). Regroupe joueur + staff ;
-   les clés communes (media, classement…) partagent le même libellé. */
-const SCREEN_TITLES = {
-  // Joueur
-  bilan: "Aujourd'hui", seances: "Mes séances", taches: "Tâches", defis: "Défis",
-  questionnaires: "Questionnaires", messages: "Messages", equipe: "Mon équipe",
-  media: "Médiathèque", classement: "Classement", calendrier: "Calendrier",
-  fiche: "Ma fiche", comparaison: "Comparaison", donnees: "Mes données",
-  // Staff
-  effectif: "Joueurs", aujourdhui: "Aujourd'hui", alertes: "Suivi",
-  programmes: "Programmes", camps: "Camps", exos: "Exercices",
-  historique: "Historique", video: "Analyse vidéo", veille: "Veille",
-};
+// Le titre d'écran est traduit via t(`title.${tab}`) — clé = `tab` (cf. tableaux
+// `nav` de PlayerApp/StaffApp). Regroupe joueur + staff (clés communes partagées).
 
 export default function AppShell() {
   const { profile, user, signOut, profileLoaded, profileError, refreshProfile, hardReset } = useAuth();
+  const { t } = useTranslation();
   // Notifications joueur (hook appelé inconditionnellement ; vide pour staff/owner).
   const notifs = useNotifications(profile?.player_id);
   const [navTab, setNavTab] = useState(null); // onglet actif (piloté ici pour cloche/hub/avatar)
@@ -40,31 +30,29 @@ export default function AppShell() {
     return (
       <Centered>
         <div style={{ maxWidth: 340, textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>Impossible de charger le profil</div>
+          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>{t("shell.profileErrorTitle")}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
-            La connexion au serveur a échoué ou expiré. Vérifie ta connexion internet,
-            puis réessaie.
+            {t("shell.profileErrorBody")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
-            <button onClick={refreshProfile} style={{ background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Réessayer</button>
-            <button onClick={hardReset} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Réinitialiser l'app</button>
-            <button onClick={signOut} style={{ background: "none", border: "none", padding: "6px", color: "rgba(255,255,255,0.5)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Se déconnecter</button>
+            <button onClick={refreshProfile} style={{ background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>{t("common.retry")}</button>
+            <button onClick={hardReset} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>{t("shell.resetApp")}</button>
+            <button onClick={signOut} style={{ background: "none", border: "none", padding: "6px", color: "rgba(255,255,255,0.5)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.logout")}</button>
           </div>
         </div>
       </Centered>
     );
   }
-  if (!profile && !profileLoaded) return <Centered>Chargement du profil…</Centered>;
+  if (!profile && !profileLoaded) return <Centered>{t("shell.loadingProfile")}</Centered>;
   if (!profile) {
     return (
       <Centered>
         <div style={{ maxWidth: 340, textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>Profil introuvable</div>
+          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>{t("shell.profileNotFoundTitle")}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
-            Ton compte est authentifié ({user?.email}) mais aucun profil métier n'est associé.
-            Reconnecte-toi ou contacte le staff.
+            {t("shell.profileNotFoundBody", { email: user?.email })}
           </div>
-          <button onClick={signOut} style={{ marginTop: 16, background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Se déconnecter</button>
+          <button onClick={signOut} style={{ marginTop: 16, background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>{t("common.logout")}</button>
         </div>
       </Centered>
     );
@@ -77,13 +65,11 @@ export default function AppShell() {
     return (
       <Centered>
         <div style={{ maxWidth: 340, textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>Profil incomplet</div>
+          <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>{t("shell.profileIncompleteTitle")}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
-            Ton compte ({user?.email}) est bien authentifié, mais sa configuration
-            est incomplète (rôle ou rattachement à un club manquant). Contacte le
-            staff pour finaliser ton accès.
+            {t("shell.profileIncompleteBody", { email: user?.email })}
           </div>
-          <button onClick={signOut} style={{ marginTop: 16, background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Se déconnecter</button>
+          <button onClick={signOut} style={{ marginTop: 16, background: C.coral, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>{t("common.logout")}</button>
         </div>
       </Centered>
     );
@@ -95,7 +81,7 @@ export default function AppShell() {
   const roleObj = roleObjOf(profile.role);
   const staff = isStaffRole(profile.role);
   const tab = navTab ?? (staff ? "effectif" : "bilan");
-  const goTab = (t) => { setNavTab(t); notifs.markRouteRead(t); setAvatarOpen(false); };
+  const goTab = (tk) => { setNavTab(tk); notifs.markRouteRead(tk); setAvatarOpen(false); };
   const name = profile.full_name || user?.email || "Moi";
   const initial = (name.trim()[0] || "?").toUpperCase();
 
@@ -105,8 +91,8 @@ export default function AppShell() {
         {/* Header compact : titre + cloche (joueur) + avatar (menu) */}
         <header style={{ position: "sticky", top: 0, zIndex: 30, background: `${C.navy}f2`, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border2}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{SCREEN_TITLES[tab] || "Performance"}</div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, letterSpacing: 0.4 }}>PERFORMANCE · <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: 0 }}>{teamLabel(profile.team_id)}</span></div>
+            <div style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t(`title.${tab}`, "Performance")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, letterSpacing: 0.4 }}>{t("header.brand")} · <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: 0 }}>{teamLabel(profile.team_id)}</span></div>
           </div>
           {!staff && (
             <button onClick={() => setNotifOpen(true)} title="Notifications" style={{ position: "relative", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
@@ -122,12 +108,14 @@ export default function AppShell() {
                 <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 36, width: 210, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 6, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
                   <div style={{ padding: "8px 10px", borderBottom: `1px solid ${C.border2}`, marginBottom: 4 }}>
                     <div style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: roleObj.c }}>{roleObj.e} {roleObj.l}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: roleObj.c }}>{roleObj.e} {t(`roles.${profile.role}`, roleObj.l)}</div>
                   </div>
-                  {/* Le sélecteur de langue (🇫🇷 🇬🇧 🇳🇱) s'insère ici avec l'i18n (PR1). */}
+                  {/* Sélecteur de langue 🇫🇷 🇬🇧 🇳🇱 (applique + persiste immédiatement). */}
+                  <LanguageSelector compact />
+                  <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
                   {/* Navigation retirée du header : « Ma fiche » / « Vue joueur » sont
                      déjà dans la barre du bas + hub « Plus » (un seul système). */}
-                  <MenuItem label="Se déconnecter" danger onClick={() => { setAvatarOpen(false); signOut(); }} />
+                  <MenuItem label={t("common.logout")} danger onClick={() => { setAvatarOpen(false); signOut(); }} />
                 </div>
               </>
             )}

@@ -1,0 +1,82 @@
+{
+  "common": {
+    "logout": "Log out",
+    "close": "Close",
+    "more": "More",
+    "menu": "Menu",
+    "skip": "Skip",
+    "loading": "Loading…",
+    "language": "Language",
+    "retry": "Retry"
+  },
+  "header": {
+    "brand": "PERFORMANCE"
+  },
+  "title": {
+    "bilan": "Today",
+    "seances": "My sessions",
+    "taches": "Tasks",
+    "defis": "Challenges",
+    "questionnaires": "Questionnaires",
+    "messages": "Messages",
+    "equipe": "My team",
+    "media": "Media library",
+    "classement": "Leaderboard",
+    "calendrier": "Calendar",
+    "fiche": "My profile",
+    "comparaison": "Comparison",
+    "donnees": "My data",
+    "effectif": "Players",
+    "aujourdhui": "Today",
+    "alertes": "Monitoring",
+    "programmes": "Programs",
+    "camps": "Camps",
+    "exos": "Exercises",
+    "historique": "History",
+    "video": "Video analysis",
+    "veille": "Watch"
+  },
+  "nav": {
+    "bilan": "Today",
+    "seances": "My sessions",
+    "taches": "Tasks",
+    "defis": "Challenges",
+    "questionnaires": "Forms",
+    "messages": "Messages",
+    "equipe": "My team",
+    "media": "Media",
+    "classement": "Ranking",
+    "calendrier": "Calendar",
+    "fiche": "Profile",
+    "comparaison": "Compare",
+    "donnees": "My data",
+    "effectif": "Players",
+    "aujourdhui": "Today",
+    "alertes": "Monitoring",
+    "programmes": "Programs",
+    "camps": "Camps",
+    "exos": "Drills",
+    "historique": "History",
+    "video": "Video",
+    "veille": "Watch"
+  },
+  "roles": {
+    "preparateur": "S&C coach",
+    "joueur": "Player",
+    "medical": "Medical",
+    "coach": "Coach (read-only)",
+    "owner": "Head of Performance"
+  },
+  "shell": {
+    "loadingProfile": "Loading profile…",
+    "profileErrorTitle": "Couldn't load profile",
+    "profileErrorBody": "The connection to the server failed or timed out. Check your internet connection, then try again.",
+    "resetApp": "Reset the app",
+    "profileNotFoundTitle": "Profile not found",
+    "profileNotFoundBody": "Your account is authenticated ({{email}}) but no profile is associated with it. Sign in again or contact the staff.",
+    "profileIncompleteTitle": "Incomplete profile",
+    "profileIncompleteBody": "Your account ({{email}}) is authenticated, but its setup is incomplete (missing role or club link). Contact the staff to finalise your access.",
+    "readOnlyBanner": "Read-only mode — coach. Full club view, no editing.",
+    "playerNotLinked": "Your player profile isn't linked to the squad yet. Contact the staff."
+  }
+}

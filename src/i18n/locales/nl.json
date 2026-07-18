@@ -1,0 +1,82 @@
+{
+  "common": {
+    "logout": "Afmelden",
+    "close": "Sluiten",
+    "more": "Meer",
+    "menu": "Menu",
+    "skip": "Overslaan",
+    "loading": "Laden…",
+    "language": "Taal",
+    "retry": "Opnieuw"
+  },
+  "header": {
+    "brand": "PERFORMANCE"
+  },
+  "title": {
+    "bilan": "Vandaag",
+    "seances": "Mijn sessies",
+    "taches": "Taken",
+    "defis": "Uitdagingen",
+    "questionnaires": "Vragenlijsten",
+    "messages": "Berichten",
+    "equipe": "Mijn team",
+    "media": "Mediatheek",
+    "classement": "Klassement",
+    "calendrier": "Kalender",
+    "fiche": "Mijn profiel",
+    "comparaison": "Vergelijking",
+    "donnees": "Mijn gegevens",
+    "effectif": "Spelers",
+    "aujourdhui": "Vandaag",
+    "alertes": "Opvolging",
+    "programmes": "Programma's",
+    "camps": "Stages",
+    "exos": "Oefeningen",
+    "historique": "Geschiedenis",
+    "video": "Video-analyse",
+    "veille": "Nieuws"
+  },
+  "nav": {
+    "bilan": "Vandaag",
+    "seances": "Mijn sessies",
+    "taches": "Taken",
+    "defis": "Uitdagingen",
+    "questionnaires": "Vragen",
+    "messages": "Berichten",
+    "equipe": "Mijn team",
+    "media": "Media",
+    "classement": "Klassement",
+    "calendrier": "Kalender",
+    "fiche": "Profiel",
+    "comparaison": "Vergelijk",
+    "donnees": "Gegevens",
+    "effectif": "Spelers",
+    "aujourdhui": "Vandaag",
+    "alertes": "Opvolging",
+    "programmes": "Programma's",
+    "camps": "Stages",
+    "exos": "Oefen.",
+    "historique": "Historiek",
+    "video": "Video",
+    "veille": "Nieuws"
+  },
+  "roles": {
+    "preparateur": "Fysiektrainer",
+    "joueur": "Speler",
+    "medical": "Medisch",
+    "coach": "Coach (alleen-lezen)",
+    "owner": "Head of Performance"
+  },
+  "shell": {
+    "loadingProfile": "Profiel laden…",
+    "profileErrorTitle": "Profiel laden mislukt",
+    "profileErrorBody": "De verbinding met de server is mislukt of verlopen. Controleer je internetverbinding en probeer opnieuw.",
+    "resetApp": "App resetten",
+    "profileNotFoundTitle": "Profiel niet gevonden",
+    "profileNotFoundBody": "Je account is geverifieerd ({{email}}) maar er is geen profiel aan gekoppeld. Meld je opnieuw aan of neem contact op met de staf.",
+    "profileIncompleteTitle": "Onvolledig profiel",
+    "profileIncompleteBody": "Je account ({{email}}) is geverifieerd, maar de configuratie is onvolledig (rol of clubkoppeling ontbreekt). Neem contact op met de staf om je toegang te voltooien.",
+    "readOnlyBanner": "Alleen-lezen modus — coach. Volledig cluboverzicht, zonder wijzigen.",
+    "playerNotLinked": "Je spelersprofiel is nog niet aan de selectie gekoppeld. Neem contact op met de staf."
+  }
+}

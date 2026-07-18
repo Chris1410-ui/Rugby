@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
+import "./i18n/config.js"; // initialise i18next (FR/EN/NL) avant le rendu
 import "./styles.css";
 
 /* Chunk manquant après (re)déploiement : un onglet ouvert garde l'ancien
