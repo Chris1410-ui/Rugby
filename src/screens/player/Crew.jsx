@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { Section } from "../../lib/ui.jsx";
 import { Users, Plus, X, CheckCircle } from "../../lib/icons.jsx";
@@ -16,7 +17,7 @@ export default function Crew({ me, teamId, players, crews = [], accent = C.green
   const [note, setNote] = useState("");
   const [name, setName] = useState("");
 
-  const nameOf = (pid) => players.find((p) => p.id === pid)?.name || "Joueur";
+  const nameOf = (pid) => { const p = players.find((x) => x.id === pid); return p ? displayName(p) : "Joueur"; };
 
   const myActive = useMemo(
     () => crews.find((c) => c.members.some((m) => m.playerId === me.id && m.status === "active")),
@@ -108,8 +109,8 @@ export default function Crew({ me, teamId, players, crews = [], accent = C.green
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 220, overflowY: "auto" }}>
               {candidates.map((p) => (
                 <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 4px" }}>
-                  <div style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{p.name}</div>
-                  <button onClick={() => run(() => inviteToCrew(myActive, me.id, p.id), `${p.name} invité.`)} disabled={busy} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "6px 12px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={13} /> Inviter</button>
+                  <div style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{displayName(p)}</div>
+                  <button onClick={() => run(() => inviteToCrew(myActive, me.id, p.id), `${displayName(p)} invité.`)} disabled={busy} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "6px 12px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={13} /> Inviter</button>
                 </div>
               ))}
             </div>

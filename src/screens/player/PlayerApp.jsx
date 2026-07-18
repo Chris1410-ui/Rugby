@@ -100,7 +100,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={false} accent={ACCENT} />}
           {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}
           {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} />}
-          {tab === "fiche" && <Fiche player={me} canEdit={false} />}
+          {tab === "fiche" && <Fiche player={me} canEdit={false} self />}
           {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}
           {tab === "donnees" && <Confidentialite player={me} self />}
         </main>

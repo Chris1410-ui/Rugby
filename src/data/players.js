@@ -11,6 +11,7 @@ export function dbToPlayer(row) {
     ownerUid: row.owner_uid,
     num: row.num,
     name: row.name,
+    initials: row.initials ?? null,
     pos: row.pos,
     grp: row.grp,
     club: row.club,
@@ -91,20 +92,27 @@ export function useRoster(teamId) {
    démo sont marqués pour être distingués visuellement dans le sélecteur. */
 export async function fetchTeamPlayers(teamId) {
   const { data, error } = await supabase
-    .from("players").select("id, name, pos, grp, num, is_demo").eq("team_id", teamId);
+    .from("players").select("id, name, initials, pos, grp, num, is_demo").eq("team_id", teamId);
   if (error) throw error;
   return (data ?? []).sort((a, b) => (a.num ?? 999) - (b.num ?? 999) || a.name.localeCompare(b.name));
 }
 
-/* Ajout d'un joueur par le staff (RLS players_staff). */
-export async function addPlayer(teamId, { name, pos, grp, num }) {
+/* Ajout d'un joueur par le staff (RLS players_staff). `initials` optionnel. */
+export async function addPlayer(teamId, { name, pos, grp, num, initials }) {
   const { data, error } = await supabase
     .from("players")
-    .insert({ team_id: teamId, name: name.trim(), pos, grp, num: num || null })
+    .insert({ team_id: teamId, name: name.trim(), pos, grp, num: num || null, initials: (initials || "").trim() || null })
     .select()
     .single();
   if (error) throw error;
   return dbToPlayer(data);
+}
+
+/* Le joueur modifie SES initiales (RPC SECURITY DEFINER — ne touche que
+   `initials` de sa propre ligne ; cf. migration 0038). */
+export async function setMyInitials(initials) {
+  const { error } = await supabase.rpc("set_my_initials", { p_initials: (initials || "").trim() });
+  if (error) throw error;
 }
 
 /* Mise à jour d'un joueur (staff). `patch` en colonnes DB (snake_case). */

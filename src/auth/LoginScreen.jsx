@@ -5,6 +5,7 @@ import { requestPasswordReset } from "../data/players.js";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { RUGBY_POS, POS_GROUPS } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
+import { normalizeInitials } from "../lib/identity.js";
 import { POLICY_VERSION } from "../lib/policy.js";
 import PrivacyPolicy from "../screens/shared/PrivacyPolicy.jsx";
 import TotemPicker from "../screens/shared/TotemPicker.jsx";
@@ -41,6 +42,7 @@ export default function LoginScreen() {
   const [role, setRole] = useState(null);
   const [team, setTeam] = useState(TEAMS.rugby[0].id);
   const [fullName, setFullName] = useState("");
+  const [initials, setInitials] = useState(""); // initiales joueur (« I.F. »), affichées partout
   const [nPos, setNPos] = useState(0);
   const [nNum, setNNum] = useState("");
   const [email, setEmail] = useState("");
@@ -69,7 +71,7 @@ export default function LoginScreen() {
   const chooseRole = (r) => {
     reset();
     setRole(r);
-    setFullName(""); setEmail(""); setNPos(0); setNNum("");
+    setFullName(""); setInitials(""); setEmail(""); setNPos(0); setNNum("");
     setGuardianName(""); setGuardianEmail(""); setConsent(false); setPolicyOk(false);
     setTeam(TEAMS.rugby[0].id);
     setStep("details");
@@ -84,6 +86,7 @@ export default function LoginScreen() {
     if (pwd !== pwd2) return setErr("Les mots de passe ne correspondent pas.");
     if (!policyOk) return setErr("Merci de prendre connaissance de la politique de confidentialité.");
     if (role === "joueur") {
+      if (!normalizeInitials(initials)) return setErr("Indique tes initiales (ex. « I.F. »).");
       if (!guardianName.trim()) return setErr("Indique le nom du représentant légal.");
       if (!/^\S+@\S+\.\S+$/.test(guardianEmail)) return setErr("Email du représentant légal invalide.");
       if (!consent) return setErr("Le consentement parental est requis (joueur mineur).");
@@ -100,6 +103,7 @@ export default function LoginScreen() {
     if (role === "joueur") {
       Object.assign(meta, {
         new_player: true,
+        initials: normalizeInitials(initials),
         pos,
         grp,
         num: nNum ? String(parseInt(nNum, 10)) : "",
@@ -255,6 +259,9 @@ export default function LoginScreen() {
 
           {role === "joueur" && (
             <>
+              <div style={label}>TES INITIALES (affichées partout, ex. « I.F. »)</div>
+              <input value={initials} onChange={(e) => { setInitials(e.target.value); setErr(""); }} placeholder="I.F." maxLength={8} style={input(false)} />
+
               <div style={label}>POSTE</div>
               <div style={{ display: "flex", gap: 8 }}>
                 <select value={nPos} onChange={(e) => setNPos(Number(e.target.value))} style={{ ...input(false), flex: 2 }}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { Section } from "../../lib/ui.jsx";
 import { Shield, Download, Trash2, AlertTriangle, CheckCircle, Loader, Lock } from "../../lib/icons.jsx";
 import { useAuth } from "../../auth/useAuth.jsx";
@@ -70,7 +71,7 @@ export default function Confidentialite({ player, self = false, onErased }) {
       <div style={sc({ display: "flex", alignItems: "center", gap: 12, padding: 16, marginBottom: 12 })}>
         <Lock size={22} color={C.green} />
         <div>
-          <div style={{ fontSize: 15, fontWeight: 800 }}>{self ? "Mes données" : `Données de ${player.name}`}</div>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>{self ? "Mes données" : `Données de ${displayName(player)}`}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
             Accès, export et effacement — conformément au RGPD.
           </div>

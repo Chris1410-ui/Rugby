@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { todayISO } from "../../lib/metrics.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
@@ -247,7 +248,7 @@ function DefiForm({ teamId, players, initial = null, onClose }) {
         )}
         {mode === "players" && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxHeight: 160, overflowY: "auto", marginBottom: 10 }}>
-            {players.map((p) => <button key={p.id} onClick={() => toggle(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{p.name}</button>)}
+            {players.map((p) => <button key={p.id} onClick={() => toggle(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{displayName(p)}</button>)}
           </div>
         )}
 

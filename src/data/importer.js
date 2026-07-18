@@ -15,15 +15,16 @@ export async function commitImport(teamId, previewRows, date = todayISO()) {
   for (const r of rows) {
     let playerId = r.matchId;
     if (r.action === "create") {
-      const p = await addPlayer(teamId, { name: r.name, pos: r.pos, grp: r.grp, num: r.num });
+      const p = await addPlayer(teamId, { name: r.name, pos: r.pos, grp: r.grp, num: r.num, initials: r.initials });
       playerId = p.id;
       if (r.club) { try { await updatePlayer(playerId, { club: r.club }); } catch { /* non bloquant */ } }
     } else {
       // POSTE CONSERVÉ : on ne met JAMAIS à jour pos/grp d'un joueur existant à
-      // l'import (règle produit) — seuls numéro et club peuvent changer.
+      // l'import (règle produit) — seuls numéro, club et initiales peuvent changer.
       const patch = {};
       if (r.num != null) patch.num = r.num;
       if (r.club) patch.club = r.club;
+      if (r.initials) patch.initials = r.initials;
       if (Object.keys(patch).length) await updatePlayer(playerId, patch);
     }
     if (playerId && r.hasData && Object.keys(r.metrics || {}).length) {

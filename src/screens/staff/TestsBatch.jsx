@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { C } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Plus, X, CheckCircle } from "../../lib/icons.jsx";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
@@ -135,7 +136,7 @@ export default function TestsBatch({ teamId, players, camp = null, session = nul
               <tbody>
                 {players.map((p) => (
                   <tr key={p.id}>
-                    <td style={{ ...nameCol, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${C.border2}` }}>{p.name}</td>
+                    <td style={{ ...nameCol, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${C.border2}` }}>{displayName(p)}</td>
                     {TEST_METRICS.map((m) => (
                       <td key={m.key} style={{ padding: "5px 4px", textAlign: "right", borderBottom: `1px solid ${C.border2}` }}>
                         <input

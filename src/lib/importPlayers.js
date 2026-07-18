@@ -5,11 +5,13 @@
 
 import { RUGBY_POS } from "./positions.js";
 import { freeTotem } from "./totems.js";
+import { normalizeInitials } from "./identity.js";
 
 /* Colonnes du modèle (ordre = modèle téléchargeable + aperçu).
    `metric: true` → va dans test_results ; sinon → identité (players). */
 export const IMPORT_COLUMNS = [
   { key: "name", header: "Totem" },
+  { key: "initials", header: "Initiales" },
   { key: "num", header: "Numéro" },
   { key: "pos", header: "Poste" },
   { key: "grp", header: "Ligne" },
@@ -34,6 +36,7 @@ export const norm = (s) => String(s ?? "").toLowerCase().normalize("NFD").replac
 // Variantes d'en-têtes acceptées (déjà normalisées) par colonne canonique.
 const ALIASES = {
   name: ["totem", "pseudo", "nom", "joueur", "name"],
+  initials: ["initiales", "initials", "ini"],
   num: ["numero", "num", "n", "no", "maillot", "dossard", "number"],
   pos: ["poste", "position", "pos"],
   grp: ["ligne", "groupe", "grp", "categorie"],
@@ -143,6 +146,7 @@ export function buildPreview(rawRows = [], roster = []) {
     const warnings = [];
     const errors = [];
     const wantedName = cell(raw, "name");
+    const initials = normalizeInitials(cell(raw, "initials")) || null;
     const numStr = cell(raw, "num").replace(/[^\d]/g, "");
     const num = numStr ? parseInt(numStr, 10) : null;
 
@@ -183,7 +187,7 @@ export function buildPreview(rawRows = [], roster = []) {
     // Ligne vide (ni totem, ni numéro) → erreur.
     if (!wantedName && num == null) {
       errors.push("Ni totem ni numéro — ligne ignorée");
-      return { index, action: "error", matchId: null, name: wantedName, num, pos, grp, club, metrics, warnings, errors, hasData: false };
+      return { index, action: "error", matchId: null, name: wantedName, num, pos, grp, club, initials, metrics, warnings, errors, hasData: false };
     }
 
     if (match) {
@@ -195,20 +199,20 @@ export function buildPreview(rawRows = [], roster = []) {
       // (reconnu, non reconnu ou vide dans le fichier n'a aucune importance) →
       // jamais d'écrasement, jamais de blocage pour motif de poste.
       warnings.push(`Poste conservé (${match.pos || "valeur du joueur"})`);
-      return { index, action: "update", matchId: match.id, name: match.name, num, pos: match.pos ?? null, grp: match.grp ?? null, club, metrics, warnings, errors, hasData, posKept: true };
+      return { index, action: "update", matchId: match.id, name: match.name, num, pos: match.pos ?? null, grp: match.grp ?? null, club, initials, metrics, warnings, errors, hasData, posKept: true };
     }
 
     // Création : il faut un totem ET un poste résolu (sinon erreur).
     if (!wantedName) { errors.push("Création impossible sans totem (numéro seul non trouvé)"); }
     if (!pos || !grp) { errors.push("Création impossible sans poste valide"); }
     if (errors.length) {
-      return { index, action: "error", matchId: null, name: wantedName, num, pos, grp, club, metrics, warnings, errors, hasData: false };
+      return { index, action: "error", matchId: null, name: wantedName, num, pos, grp, club, initials, metrics, warnings, errors, hasData: false };
     }
     // Totem unique par club (propose un alternatif si déjà pris).
     const resolved = freeTotem([...taken], wantedName);
     if (resolved.toLowerCase() !== wantedName.toLowerCase()) warnings.push(`Totem « ${wantedName} » déjà pris → « ${resolved} »`);
     taken.push(resolved);
-    return { index, action: "create", matchId: null, name: resolved, num, pos, grp, club, metrics, warnings, errors, hasData };
+    return { index, action: "create", matchId: null, name: resolved, num, pos, grp, club, initials, metrics, warnings, errors, hasData };
   });
 
   const counts = {

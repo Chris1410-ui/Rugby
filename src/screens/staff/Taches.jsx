@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { fmtShort } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
@@ -87,7 +88,7 @@ function TaskForm({ teamId, players, onDone, onCancel }) {
       {mode === "players" && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxHeight: 160, overflowY: "auto", marginBottom: 8 }}>
           {players.map((p) => (
-            <button key={p.id} onClick={() => toggleId(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{p.name}</button>
+            <button key={p.id} onClick={() => toggleId(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{displayName(p)}</button>
           ))}
         </div>
       )}
@@ -143,7 +144,7 @@ function TaskCard({ task, players, completions, teamId }) {
           const st = statutOf(p.id);
           return (
             <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${C.border2}` }}>
-              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600 }}>{p.name}</span>
+              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600 }}>{displayName(p)}</span>
               {st === "a_faire" && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>à faire</span>}
               {st === "confirmee" && <Tag c={C.green}>✓ Confirmée</Tag>}
               {st === "validee_joueur" && (

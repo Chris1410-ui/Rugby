@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { fmtShort } from "../../lib/metrics.js";
 import { Section, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
@@ -71,7 +72,7 @@ export default function QuestionnaireResponses({ questionnaire, players, assignm
             <tbody>
               {rows.map(({ p, a }) => (
                 <tr key={p.id} onClick={() => setDetail(p)} style={{ cursor: "pointer" }}>
-                  <td style={{ ...nameCol, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${C.border2}` }}>{p.name}</td>
+                  <td style={{ ...nameCol, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${C.border2}` }}>{displayName(p)}</td>
                   <td style={{ padding: "6px 8px", borderBottom: `1px solid ${C.border2}` }}>
                     {a.statut === "rempli" ? <Tag c={C.green}>rempli</Tag> : <Tag c={C.amb}>en attente</Tag>}
                   </td>
@@ -104,7 +105,7 @@ export function PlayerAnswers({ questionnaire, player, assignment, onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 620, background: C.navy, borderRadius: 18, padding: 20, maxHeight: "88vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>{player.name}</div>
+            <div style={{ fontSize: 16, fontWeight: 800 }}>{displayName(player)}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{questionnaire.nom}{a?.filledAt ? ` · rempli le ${fmtShort(a.filledAt)}` : ""}</div>
           </div>
           <CloseX onClose={onClose} />

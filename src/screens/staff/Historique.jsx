@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { C, sc } from "../../lib/tokens.js";
+import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, isoDate, parseISO, fmtShort, todayISO, EVENING_MARKERS } from "../../lib/metrics.js";
 import { Section, KPI } from "../../lib/ui.jsx";
@@ -131,7 +132,7 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
   // Heatmap joueurs × jours (readiness).
   const heatCols = dateAxis.slice(-Math.min(dateAxis.length, 42));
   const heatRows = filtered.slice(0, 30).map((p) => ({
-    label: p.name,
+    label: displayName(p),
     cells: heatCols.map((d) => { const v = readinessAt(p.id, d); return { v, color: readyColor(v) }; }),
   }));
 
@@ -148,7 +149,7 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
         {grps.map((g) => <button key={g} onClick={() => setScope(g)} style={btn(scope === g)}>{grpLabel(g)}</button>)}
         <select value={fIds.size === 1 && !grps.includes(scope) && scope !== "all" ? scope : ""} onChange={(e) => e.target.value && setScope(e.target.value)} style={{ ...btn(false), background: "rgba(255,255,255,0.07)", appearance: "auto", colorScheme: "dark" }}>
           <option value="">Un joueur…</option>
-          {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {players.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
         </select>
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: period === "custom" ? 8 : 14 }}>
