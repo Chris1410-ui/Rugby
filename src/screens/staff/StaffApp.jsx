@@ -41,6 +41,7 @@ import TotemPicker from "../shared/TotemPicker.jsx";
 import TestsBatch from "./TestsBatch.jsx";
 import ImportPlayers from "./ImportPlayers.jsx";
 import Historique from "./Historique.jsx";
+import ComparaisonAB from "./ComparaisonAB.jsx";
 
 const ACCENT = C.coral;
 
@@ -91,6 +92,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["exos", t("nav.exos"), BookOpen],
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
+    ["compare", t("nav.compare"), Activity],
     ["historique", t("nav.historique"), TrendingUp],
     ["calendrier", t("nav.calendrier"), Calendar],
     ["video", t("nav.video"), Video],
@@ -117,6 +119,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
+        {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}

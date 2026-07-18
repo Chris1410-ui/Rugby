@@ -34,7 +34,8 @@
     "exos": "Oefeningen",
     "historique": "Geschiedenis",
     "video": "Video-analyse",
-    "veille": "Nieuws"
+    "veille": "Nieuws",
+    "compare": "A/B vergelijking"
   },
   "nav": {
     "bilan": "Vandaag",
@@ -58,7 +59,8 @@
     "exos": "Oefen.",
     "historique": "Historiek",
     "video": "Video",
-    "veille": "Nieuws"
+    "veille": "Nieuws",
+    "compare": "Vergelijk +"
   },
   "roles": {
     "preparateur": "Fysiektrainer",

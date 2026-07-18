@@ -34,7 +34,8 @@
     "exos": "Exercises",
     "historique": "History",
     "video": "Video analysis",
-    "veille": "Watch"
+    "veille": "Watch",
+    "compare": "A/B comparison"
   },
   "nav": {
     "bilan": "Today",
@@ -58,7 +59,8 @@
     "exos": "Drills",
     "historique": "History",
     "video": "Video",
-    "veille": "Watch"
+    "veille": "Watch",
+    "compare": "Compare +"
   },
   "roles": {
     "preparateur": "S&C coach",

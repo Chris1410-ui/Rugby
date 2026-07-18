@@ -34,7 +34,8 @@
     "exos": "Exercices",
     "historique": "Historique",
     "video": "Analyse vidéo",
-    "veille": "Veille"
+    "veille": "Veille",
+    "compare": "Comparaison A/B"
   },
   "nav": {
     "bilan": "Aujourd'hui",
@@ -58,7 +59,8 @@
     "exos": "Exos",
     "historique": "Historique",
     "video": "Vidéo",
-    "veille": "Veille"
+    "veille": "Veille",
+    "compare": "Comparaison"
   },
   "roles": {
     "preparateur": "Préparateur physique",
