@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { C, FONT, ROLES } from "../lib/tokens.js";
 import { displayName } from "../lib/identity.js";
-import { LogOut, Users, Search } from "../lib/icons.jsx";
+import { Users, Search } from "../lib/icons.jsx";
+import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
 import PlayerPreview from "./shared/PlayerPreview.jsx";
@@ -10,6 +11,7 @@ import { fetchTeamPlayers } from "../data/players.js";
 import { useOwnerAccounts } from "../data/accounts.js";
 
 const roleOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
+const ownerMenuItem = { width: "100%", textAlign: "left", background: "none", border: "none", borderRadius: 8, padding: "9px 10px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 };
 
 /* Espace OWNER (Head of Performance) : voit TOUS les clubs. Sélecteur de club
    dans l'en-tête → vue staff complète du club choisi (accès accordé par le
@@ -24,6 +26,7 @@ export default function OwnerApp({ profile, user, signOut }) {
   const [preview, setPreview] = useState(null); // id joueur en aperçu (lecture seule)
   const [showAccounts, setShowAccounts] = useState(false); // console « Comptes »
   const [impersonate, setImpersonate] = useState(null); // compte regardé « en tant que »
+  const [menuOpen, setMenuOpen] = useState(false); // popover « Compte » du header
 
   useEffect(() => {
     let active = true;
@@ -54,11 +57,7 @@ export default function OwnerApp({ profile, user, signOut }) {
     return () => { active = false; supabase.removeChannel(ch); };
   }, [team]);
 
-  const selectSt = {
-    background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9,
-    padding: "7px 10px", color: "#fff", fontSize: 13, fontWeight: 700, outline: "none", maxWidth: 170,
-  };
-  const previewName = teamPlayers.find((p) => p.id === preview)?.name;
+  const previewName = displayName(teamPlayers.find((p) => p.id === preview));
   const realPlayers = teamPlayers.filter((p) => !p.is_demo);
   const demoOnes = teamPlayers.filter((p) => p.is_demo);
 
@@ -70,37 +69,49 @@ export default function OwnerApp({ profile, user, signOut }) {
   return (
     <div style={{ minHeight: "100vh", background: C.navy, fontFamily: FONT, color: "#fff" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        {/* Header owner : titre = club courant (puce/sélecteur) + avatar « Compte ».
+           Toutes les commandes owner (langue, Vue joueur, Comptes, déconnexion)
+           vivent dans le popover Compte → un seul système avec la barre du bas. */}
         <header style={{ position: "sticky", top: 0, zIndex: 30, background: `${C.navy}f2`, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border2}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 900, color: C.coral, letterSpacing: 0.5 }}>PERFORMANCE</div>
-            <div style={{ fontSize: 10, color: C.amb, fontWeight: 700 }}>👑 OWNER · {profile.full_name || user?.email}</div>
+          <div style={{ minWidth: 0, flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
+            <div style={{ fontSize: 9.5, color: C.amb, fontWeight: 800, letterSpacing: 0.5 }}>👑 OWNER · Head of Performance</div>
+            {clubs.length > 0 ? (
+              <select value={team ?? ""} onChange={(e) => setTeam(e.target.value)} aria-label="Choisir un club"
+                style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 30px 6px 10px", color: "#fff", fontSize: 15, fontWeight: 800, outline: "none", maxWidth: "100%", cursor: "pointer", colorScheme: "dark" }}>
+                {clubs.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+            ) : <div style={{ fontSize: 15, fontWeight: 800 }}>—</div>}
           </div>
-          <div style={{ flex: 1 }} />
-          <button onClick={() => setShowAccounts(true)} title="Tous les comptes" style={{ background: `${C.amb}22`, border: `1px solid ${C.amb}66`, borderRadius: 9, padding: "7px 11px", color: C.amb, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800 }}>
-            <Users size={15} /> Comptes
-          </button>
-          {teamPlayers.length > 0 && (
-            <select value={preview ?? ""} onChange={(e) => setPreview(e.target.value || null)} style={{ ...selectSt, maxWidth: 150 }} aria-label="Ouvrir la vue d'un joueur (lecture seule)">
-              <option value="">👁 Vue joueur…</option>
-              {realPlayers.length > 0 && (
-                <optgroup label="Joueurs">
-                  {realPlayers.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
-                </optgroup>
-              )}
-              {demoOnes.length > 0 && (
-                <optgroup label="Démo">
-                  {demoOnes.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
-                </optgroup>
-              )}
-            </select>
-          )}
-          <select value={team ?? ""} onChange={(e) => setTeam(e.target.value)} style={selectSt} aria-label="Choisir un club">
-            {clubs.length === 0 && <option value="">—</option>}
-            {clubs.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-          </select>
-          <button onClick={signOut} title="Se déconnecter" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
-            <LogOut size={16} />
-          </button>
+
+          <div style={{ position: "relative" }}>
+            <button onClick={() => setMenuOpen((v) => !v)} title="Compte" style={{ width: 36, height: 36, borderRadius: 18, background: `${C.amb}33`, border: `1px solid ${C.amb}66`, color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer" }}>👑</button>
+            {menuOpen && (
+              <>
+                <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />
+                <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 36, width: 250, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 6, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
+                  <div style={{ padding: "8px 10px", borderBottom: `1px solid ${C.border2}`, marginBottom: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.full_name || user?.email}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.amb }}>👑 Head of Performance</div>
+                  </div>
+                  <LanguageSelector compact />
+                  {teamPlayers.length > 0 && (
+                    <div style={{ padding: "6px 8px 4px" }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.7)", letterSpacing: 0.8, padding: "0 2px 6px" }}>👁 VUE JOUEUR</div>
+                      <select value={preview ?? ""} onChange={(e) => { setPreview(e.target.value || null); setMenuOpen(false); }} aria-label="Ouvrir la vue d'un joueur (lecture seule)"
+                        style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, fontWeight: 700, outline: "none", boxSizing: "border-box", colorScheme: "dark" }}>
+                        <option value="">— Choisir un joueur —</option>
+                        {realPlayers.length > 0 && <optgroup label="Joueurs">{realPlayers.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
+                        {demoOnes.length > 0 && <optgroup label="Démo">{demoOnes.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
+                      </select>
+                    </div>
+                  )}
+                  <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
+                  <button onClick={() => { setMenuOpen(false); setShowAccounts(true); }} style={ownerMenuItem}><Users size={14} /> Comptes</button>
+                  <button onClick={() => { setMenuOpen(false); signOut(); }} style={{ ...ownerMenuItem, color: C.coral }}>Se déconnecter</button>
+                </div>
+              </>
+            )}
+          </div>
         </header>
 
         {loading ? (
