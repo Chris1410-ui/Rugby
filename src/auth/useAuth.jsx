@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- provider + hook cohabitent volontairement */
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase.js";
+import { applyProfileLocale } from "../i18n/useLocale.js";
 
 /* ────────────────────────────────────────────────────────────────
    Contexte d'authentification.
@@ -62,10 +63,12 @@ export function AuthProvider({ children }) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const { data, error } = await withTimeout(
-          supabase.from("profiles").select("id, role, full_name, team_id, player_id").eq("id", uid).maybeSingle(),
+          supabase.from("profiles").select("id, role, full_name, team_id, player_id, locale").eq("id", uid).maybeSingle(),
           9000,
         );
         if (error) throw new Error(error.message);
+        // Langue du compte prioritaire : appliquée dès le chargement du profil.
+        applyProfileLocale(data?.locale);
         setProfile(data ?? null);
         setProfileLoaded(true);
         setProfileError(false);

@@ -1,25 +1,25 @@
 import i18n, { LS_KEY, SUPPORTED } from "./config.js";
+import { supabase } from "../lib/supabase.js";
 
-/* Changement de langue : applique immédiatement (react-i18next re-rend) et
-   persiste sur l'appareil (localStorage). La synchronisation avec le PROFIL
-   (colonne `profiles.locale`, pour suivre l'utilisateur d'un appareil à l'autre)
-   arrivera avec la migration dédiée — voir adoptProfileLocale ci-dessous, prêt
-   à être branché une fois la colonne créée. */
+/* Changement de langue (sélecteur drapeaux) : applique immédiatement
+   (react-i18next re-rend, sans reload), persiste sur l'appareil (localStorage,
+   pour l'affichage instantané / hors-ligne) ET sur le PROFIL via une RPC
+   SECURITY DEFINER qui ne touche que `profiles.locale` — pas de policy UPDATE
+   ouverte sur profiles (sinon un compte pourrait changer son rôle/club). */
 export function setLanguage(code) {
   if (!SUPPORTED.includes(code)) return;
   i18n.changeLanguage(code);
   try { localStorage.setItem(LS_KEY, code); } catch { /* noop */ }
+  // Best-effort : hors-ligne ou non connecté → la préférence locale suffit.
+  supabase.rpc("set_my_locale", { p_locale: code }).then(() => {}, () => {});
 }
 
-/* Adopte la langue du profil au 1er login sur un appareil qui n'a PAS encore de
-   préférence locale explicite (le choix local prime ensuite, jamais écrasé).
-   Inerte tant que `profiles.locale` n'existe pas (locale = undefined). */
-export function adoptProfileLocale(locale) {
+/* Applique la langue DU PROFIL au login. Priorité profil > localStorage : le
+   compte fait autorité (on retrouve sa langue sur n'importe quel appareil) et on
+   aligne localStorage. Si le profil n'a pas de langue (null), on ne touche à
+   rien → repli localStorage puis FR (détection initiale de config.js). */
+export function applyProfileLocale(locale) {
   if (!locale || !SUPPORTED.includes(locale)) return;
-  let hasLocal = false;
-  try { hasLocal = Boolean(localStorage.getItem(LS_KEY)); } catch { /* noop */ }
-  if (!hasLocal && i18n.language !== locale) {
-    i18n.changeLanguage(locale);
-    try { localStorage.setItem(LS_KEY, locale); } catch { /* noop */ }
-  }
+  if (i18n.language !== locale) i18n.changeLanguage(locale);
+  try { localStorage.setItem(LS_KEY, locale); } catch { /* noop */ }
 }
