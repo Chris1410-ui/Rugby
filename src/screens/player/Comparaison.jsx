@@ -1,7 +1,7 @@
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { useTestCampaigns, useLineStats } from "../../data/tests.js";
-import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor, top14Player, withCurrentBodyweight } from "../../lib/top14.js";
+import { TOP14_TESTS, TOP14_BENCH, posToCat, datedResultsFor, top14Player, withCurrentBodyweight, currentValueForTest } from "../../lib/top14.js";
 
 /* Comparaison « Où je me situe ? » (vue joueur). Pour CHAQUE test : ma valeur,
    la moyenne de ma ligne et le repère Top 14 sur une même barre (« à droite =
@@ -46,7 +46,7 @@ export default function Comparaison({ me, players }) {
   const myPrev = myDated.length >= 2 ? myDated[myDated.length - 2] : null;
   const t14Count = cat ? top14Player(me.pos, myDated).count : 0;
 
-  const all = ORDER.map((key) => build(key, { myLast, myPrev, bench, grp: me.grp, stat: lineStats[key] })).filter(Boolean);
+  const all = ORDER.map((key) => build(key, { myDated, myLast, myPrev, bench, grp: me.grp, stat: lineStats[key] })).filter(Boolean);
   // Mesurés en haut, triés par performance relative à la ligne (mes forces d'abord).
   const measured = all.filter((c) => c.myVal != null).sort((a, b) => (b.relPct ?? -999) - (a.relPct ?? -999));
   const todo = all.filter((c) => c.myVal == null);
@@ -113,14 +113,17 @@ export default function Comparaison({ me, players }) {
   );
 }
 
-function build(key, { myLast, myPrev, bench, grp, stat }) {
+function build(key, { myDated, myPrev, bench, grp, stat }) {
   const t = testDef[key];
   const f = FRIENDLY[key];
   if (!t || !f) return null;
   const top14 = bench ? bench[key] : null;
   const dir = t.dir; // 'up' | 'down'
 
-  const myVal = myLast ? val(t, myLast) : null;
+  // Valeur courante = dernière valeur non nulle (force ÷ poids courant) → le ×PdC
+  // s'affiche dès que la charge et le poids existent, même si mesurés à des dates
+  // différentes. Le « précédent » sert uniquement au delta de progression.
+  const myVal = currentValueForTest(t, myDated);
   const prevVal = myPrev ? val(t, myPrev) : null;
   const delta = myVal != null && prevVal != null ? myVal - prevVal : null;
   const improved = delta == null ? null : dir === "down" ? delta < 0 : delta > 0;

@@ -13,7 +13,7 @@ import { useTeamChallengePoints } from "../../data/challenges.js";
 import { challengeBadges } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
 import { markKine, markTreated } from "../../data/alerts.js";
-import { top14Player, datedResultsFor } from "../../lib/top14.js";
+import { top14Player, datedResultsFor, withCurrentBodyweight } from "../../lib/top14.js";
 import { prescribedVsRealized } from "../../lib/hevy.js";
 import Conversation from "./Conversation.jsx";
 import TestsEvolution from "./TestsEvolution.jsx";
@@ -56,7 +56,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   const curSoir = soirList[0] || null;   // dernier bilan SOIR
 
   const { campaigns, results } = useTestCampaigns(player.team);
-  const t14 = top14Player(player.pos, datedResultsFor(campaigns, results, player.id));
+  const t14 = top14Player(player.pos, withCurrentBodyweight(player, datedResultsFor(campaigns, results, player.id)));
   const taskPts = useTeamTaskPoints(player.team);
   const taskEvents = (taskPts[player.id] || []).map((t) => ({ label: t.titre, date: t.date }));
   const reactEvents = useTeamReactivity(player.team)[player.id] || [];
