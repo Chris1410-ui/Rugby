@@ -80,7 +80,7 @@ export default function Defis({ teamId, players = [], openNew = false }) {
     if (ids.length === 0) {
       return <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{open ? "Personne n'a encore relevé ce défi ouvert." : "Aucun destinataire."}</div>;
     }
-    const rank = (st) => (st === "confirmee" ? 0 : st === "validee_joueur" ? 1 : 2);
+    const rank = (st) => (st === "confirmee" ? 0 : st === "validee_joueur" ? 1 : st === "refuse" || st === "manque" ? 3 : 2);
     const sorted = [...ids].sort((a, b) => rank(comps[a]?.statut) - rank(comps[b]?.statut));
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -88,6 +88,8 @@ export default function Defis({ teamId, players = [], openNew = false }) {
           const st = comps[pid]?.statut;
           const chip = st === "confirmee" ? { t: "✅ Validé", c: C.green }
             : st === "validee_joueur" ? { t: "✋ Relevé", c: C.amb }
+            : st === "refuse" ? { t: "🚫 Refusé", c: "rgba(255,255,255,0.5)" }
+            : st === "manque" ? { t: "⌛ Manqué", c: C.coral }
             : { t: "⏳ En attente", c: "rgba(255,255,255,0.45)" };
           return (
             <div key={pid} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "7px 10px" }}>
