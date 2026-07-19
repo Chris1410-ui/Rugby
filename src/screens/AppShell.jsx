@@ -109,7 +109,7 @@ export default function AppShell() {
             <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, letterSpacing: 0.4 }}>{t("header.brand")} · <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: 0 }}>{teamLabel(profile.team_id)}</span></div>
           </div>
           {!staff && (
-            <button onClick={() => setNotifOpen(true)} title="Notifications" style={{ position: "relative", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+            <button onClick={() => setNotifOpen(true)} title={t("shell.notifications")} style={{ position: "relative", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
               <Bell size={16} />
               {notifs.unread > 0 && <span style={{ position: "absolute", top: -5, right: -5, background: C.coral, color: "#fff", fontSize: 8.5, fontWeight: 800, borderRadius: 8, padding: "0 4px", minWidth: 14, textAlign: "center", lineHeight: "14px" }}>{notifs.unread > 9 ? "9+" : notifs.unread}</span>}
             </button>

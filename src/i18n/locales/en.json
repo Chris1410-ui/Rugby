@@ -83,6 +83,101 @@
     "profileIncompleteTitle": "Incomplete profile",
     "profileIncompleteBody": "Your account ({{email}}) is authenticated, but its setup is incomplete (missing role or club link). Contact the staff to finalise your access.",
     "readOnlyBanner": "Read-only mode — coach. Full club view, no editing.",
-    "playerNotLinked": "Your player profile isn't linked to the squad yet. Contact the staff."
+    "playerNotLinked": "Your player profile isn't linked to the squad yet. Contact the staff.",
+    "notifications": "Notifications"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "prev": "Back",
+    "next": "Next",
+    "start": "Get started 🎉",
+    "step": "STEP {{n}} / {{total}}",
+    "slides": {
+      "joueur": [
+        {
+          "title": "Welcome 👋",
+          "text": "This is your player space. A few screens to show you the essentials. You can skip this tour at any time."
+        },
+        {
+          "title": "Your daily check-in",
+          "text": "Every day, fill in your morning check-in (well-being, sleep, weight) and your evening one. It's the basis of your monitoring and readiness."
+        },
+        {
+          "title": "Your sessions",
+          "text": "Find your scheduled sessions, complete them and log how you felt (RPE, loads). Staff sees your progress live."
+        },
+        {
+          "title": "Challenges",
+          "text": "Take on challenges set by the staff to earn bonus points. You can also decline a challenge that doesn't suit you."
+        },
+        {
+          "title": "The leaderboard",
+          "text": "Check-ins, sessions, activities and challenges earn you points. Climb the divisions and compare yourself to your team."
+        },
+        {
+          "title": "Where I stand",
+          "text": "Compare your physical tests to your team and line averages, with the Top 14 marker. It's up to you to aim higher!"
+        }
+      ],
+      "staff": [
+        {
+          "title": "Welcome 👋",
+          "text": "This is your staff space. A quick tour of the main sections — skippable at any time."
+        },
+        {
+          "title": "Your players",
+          "text": "The squad, detailed profiles (physical tests, weight, ×BW) and adding players are all managed from the Players screen."
+        },
+        {
+          "title": "Monitoring",
+          "text": "Readiness, load, ACWR and alerts flag who to watch. Handle alerts or forward them to the physio."
+        },
+        {
+          "title": "Programs & camps",
+          "text": "Create programs, schedule camps and test campaigns, and assign it all to your players."
+        },
+        {
+          "title": "Challenges",
+          "text": "Launch configurable challenges (points, two-step validation) to motivate and energise the group."
+        },
+        {
+          "title": "Comparison",
+          "text": "Compare two players, or a player to the team / line average, across the 9 tests (table, bars, radar, Top 14 marker)."
+        }
+      ]
+    }
+  },
+  "compare": {
+    "you": "You",
+    "teamAvg": "Team average",
+    "lineAvg": "{{line}} average",
+    "selectTwo": "Select two profiles to compare.",
+    "colTest": "Test",
+    "colGap": "Gap",
+    "top14Reached": "Top 14 reached",
+    "barsTitle": "Bars · % of Top 14 threshold (100% = Top 14)",
+    "radarTitle": "Radar · physical profile (Top 14 marker)",
+    "top14": "Top 14",
+    "average_one": "average · {{count}} player",
+    "average_other": "average · {{count}} players",
+    "testedOn": "tested {{date}}",
+    "updated": "upd. {{date}}",
+    "noData": "no data",
+    "noTest": "no test",
+    "staff": {
+      "title": "A/B comparison",
+      "swap": "Swap A and B",
+      "swapDisabled": "Swap unavailable with an average",
+      "groupAverages": "Averages",
+      "lineOfA": "A's line average",
+      "groupPlayers": "Players"
+    },
+    "player": {
+      "title": "Where do I stand?",
+      "intro": "Your values per test compared to your team or line average, with the Top 14 marker. Only averages are shown — never a teammate's values.",
+      "loading": "Loading your tests…",
+      "noTestTitle": "No test recorded yet.",
+      "noTestBody": "Your results will appear here after your next physical assessment."
+    }
   }
 }

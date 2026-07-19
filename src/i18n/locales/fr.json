@@ -83,6 +83,101 @@
     "profileIncompleteTitle": "Profil incomplet",
     "profileIncompleteBody": "Ton compte ({{email}}) est bien authentifié, mais sa configuration est incomplète (rôle ou rattachement à un club manquant). Contacte le staff pour finaliser ton accès.",
     "readOnlyBanner": "Mode lecture seule — coach. Consultation complète du club, sans modification.",
-    "playerNotLinked": "Ton profil joueur n'est pas encore lié à l'effectif. Contacte le staff."
+    "playerNotLinked": "Ton profil joueur n'est pas encore lié à l'effectif. Contacte le staff.",
+    "notifications": "Notifications"
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "start": "Commencer 🎉",
+    "step": "ÉTAPE {{n}} / {{total}}",
+    "slides": {
+      "joueur": [
+        {
+          "title": "Bienvenue 👋",
+          "text": "Voici ton espace joueur. En quelques écrans, on te montre l'essentiel. Tu peux passer ce tour à tout moment."
+        },
+        {
+          "title": "Ton bilan quotidien",
+          "text": "Chaque jour, remplis ton bilan du matin (bien-être, sommeil, poids) et du soir. C'est la base de ton suivi et de ta readiness."
+        },
+        {
+          "title": "Tes séances",
+          "text": "Retrouve tes séances programmées, valide-les et note tes ressentis (RPE, charges). Le staff voit ta progression en direct."
+        },
+        {
+          "title": "Les défis",
+          "text": "Relève les défis lancés par le staff pour gagner des points bonus. Tu peux aussi refuser un défi qui ne te convient pas."
+        },
+        {
+          "title": "Le classement",
+          "text": "Bilans, séances, activités et défis te rapportent des points. Grimpe les divisions et compare-toi à ton équipe."
+        },
+        {
+          "title": "Où je me situe",
+          "text": "Compare tes tests physiques à la moyenne de ton équipe et de ta ligne, avec le repère Top 14. À toi de viser plus haut !"
+        }
+      ],
+      "staff": [
+        {
+          "title": "Bienvenue 👋",
+          "text": "Voici ton espace staff. Petit tour des sections principales — passable à tout moment."
+        },
+        {
+          "title": "Tes joueurs",
+          "text": "L'effectif, les fiches détaillées (tests physiques, poids, ×PdC) et l'ajout de joueurs se gèrent depuis l'écran Joueurs."
+        },
+        {
+          "title": "Le suivi",
+          "text": "Readiness, charge, ACWR et alertes te signalent qui surveiller. Traite les alertes ou transmets-les au kiné."
+        },
+        {
+          "title": "Programmes & camps",
+          "text": "Crée des programmes, planifie des camps et des campagnes de tests, et assigne le tout à tes joueurs."
+        },
+        {
+          "title": "Les défis",
+          "text": "Lance des défis paramétrables (points, validation en deux temps) pour motiver et animer le groupe."
+        },
+        {
+          "title": "La comparaison",
+          "text": "Compare deux joueurs, ou un joueur à la moyenne équipe / ligne, sur les 9 tests (tableau, barres, radar, repère Top 14)."
+        }
+      ]
+    }
+  },
+  "compare": {
+    "you": "Toi",
+    "teamAvg": "Moyenne équipe",
+    "lineAvg": "Moyenne {{line}}",
+    "selectTwo": "Sélectionne deux profils à comparer.",
+    "colTest": "Test",
+    "colGap": "Écart",
+    "top14Reached": "Top 14 atteint",
+    "barsTitle": "Barres · % du seuil Top 14 (100 % = Top 14)",
+    "radarTitle": "Radar · profil physique (repère Top 14)",
+    "top14": "Top 14",
+    "average_one": "moyenne · {{count}} joueur",
+    "average_other": "moyenne · {{count}} joueurs",
+    "testedOn": "test {{date}}",
+    "updated": "MàJ {{date}}",
+    "noData": "aucune donnée",
+    "noTest": "aucun test",
+    "staff": {
+      "title": "Comparaison A/B",
+      "swap": "Échanger A et B",
+      "swapDisabled": "Échange indisponible avec une moyenne",
+      "groupAverages": "Moyennes",
+      "lineOfA": "Moyenne de la ligne de A",
+      "groupPlayers": "Joueurs"
+    },
+    "player": {
+      "title": "Où je me situe ?",
+      "intro": "Tes valeurs par test comparées à la moyenne de ton équipe ou de ta ligne, avec le repère Top 14. Seules des moyennes sont affichées — jamais les valeurs d'un coéquipier.",
+      "loading": "Chargement de tes tests…",
+      "noTestTitle": "Aucun test enregistré pour l'instant.",
+      "noTestBody": "Tes résultats apparaîtront ici après ta prochaine évaluation physique."
+    }
   }
 }
