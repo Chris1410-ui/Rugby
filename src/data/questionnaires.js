@@ -128,3 +128,11 @@ export async function submitQuestionnaire(questionnaireId, reponses) {
   const { error } = await supabase.rpc("submit_questionnaire", { p_questionnaire: questionnaireId, p_reponses: reponses || {} });
   if (error) throw error;
 }
+
+/* Rappel manuel (staff) : notifie (pastille + push) les joueurs n'ayant pas
+   rempli. Renvoie le nombre de destinataires relancés (RPC SECURITY DEFINER). */
+export async function remindQuestionnaire(questionnaireId) {
+  const { data, error } = await supabase.rpc("remind_questionnaire", { p_questionnaire: questionnaireId });
+  if (error) throw error;
+  return data ?? 0;
+}
