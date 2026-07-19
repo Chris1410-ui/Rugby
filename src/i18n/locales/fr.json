@@ -8,7 +8,10 @@
     "loading": "Chargement…",
     "language": "Langue",
     "retry": "Réessayer",
-    "replayTutorial": "Revoir le tutoriel"
+    "replayTutorial": "Revoir le tutoriel",
+    "cancel": "Annuler",
+    "back": "← Retour",
+    "previewReadonly": "👁 Aperçu — lecture seule"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -396,6 +399,59 @@
           "text": "Reviens à l'instant présent. Une chose que tu vois, une que tu entends."
         }
       ]
+    }
+  },
+  "player": {
+    "activityFab": "Activité",
+    "activityFabTitle": "Déclarer une activité",
+    "messages": {
+      "staffTitle": "Staff — Préparateur physique"
+    },
+    "taches": {
+      "title": "Mes tâches",
+      "empty": "Aucune tâche pour le moment.",
+      "emptyHint": "Ton staff t'en assignera ici (chaque tâche validée = +2 points).",
+      "markDone": "Marquer comme fait (+2)",
+      "awaitingCoach": "✓ Fait — en attente de validation du coach",
+      "confirmed": "🏅 Confirmée par le coach · +2 points",
+      "doneSection": "TERMINÉES"
+    },
+    "defis": {
+      "title": "Défis",
+      "empty": "Aucun défi pour le moment.",
+      "emptyHint": "Ton staff en lancera ici — relève-les pour gagner des points et des badges.",
+      "noActive": "Aucun défi actif. 👇",
+      "join": "Rejoindre & relever ✋",
+      "take": "Défi relevé ✋",
+      "decline": "Je ne participe pas",
+      "declineConfirm": "Ne pas participer au défi « {{title}} » ?\nIl quittera tes défis actifs (aucun point perdu).",
+      "refused": "🚫 Tu ne participes pas à ce défi.",
+      "missed": "⌛ Défi manqué (non relevé à temps).",
+      "awaiting": "✓ Relevé — en attente de validation (+{{points}} en attente)",
+      "confirmed": "🏅 Validé par le coach · +{{points}} points",
+      "archivedTitle": "MANQUÉS / REFUSÉS",
+      "refusedLabel": "Refusé",
+      "missedLabel": "Manqué"
+    },
+    "quest": {
+      "title": "Questionnaires",
+      "empty": "Aucun questionnaire pour le moment.",
+      "emptyHint": "Ton staff t'en enverra ici (santé, profil…).",
+      "received_one": "{{count}} question · reçu le {{date}}",
+      "received_other": "{{count}} questions · reçu le {{date}}",
+      "filled": "✓ Rempli",
+      "fill": "Remplir",
+      "review": "Revoir / modifier",
+      "toFill": "À REMPLIR",
+      "filledSection": "REMPLIS",
+      "send": "Envoyer mes réponses",
+      "sending": "Envoi…",
+      "fail": "Échec : {{err}}",
+      "failRetry": "réessaie.",
+      "yes": "Oui",
+      "no": "Non",
+      "add": "Ajouter",
+      "answerPlaceholder": "Ta réponse…"
     }
   }
 }

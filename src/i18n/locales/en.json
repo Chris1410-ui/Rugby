@@ -8,7 +8,10 @@
     "loading": "Loading…",
     "language": "Language",
     "retry": "Retry",
-    "replayTutorial": "Replay tutorial"
+    "replayTutorial": "Replay tutorial",
+    "cancel": "Cancel",
+    "back": "← Back",
+    "previewReadonly": "👁 Preview — read-only"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -396,6 +399,59 @@
           "text": "Come back to the present moment. One thing you see, one you hear."
         }
       ]
+    }
+  },
+  "player": {
+    "activityFab": "Activity",
+    "activityFabTitle": "Log an activity",
+    "messages": {
+      "staffTitle": "Staff — Strength & conditioning"
+    },
+    "taches": {
+      "title": "My tasks",
+      "empty": "No tasks yet.",
+      "emptyHint": "Your staff will assign some here (each validated task = +2 points).",
+      "markDone": "Mark as done (+2)",
+      "awaitingCoach": "✓ Done — awaiting coach validation",
+      "confirmed": "🏅 Confirmed by the coach · +2 points",
+      "doneSection": "COMPLETED"
+    },
+    "defis": {
+      "title": "Challenges",
+      "empty": "No challenges yet.",
+      "emptyHint": "Your staff will post some here — take them on to earn points and badges.",
+      "noActive": "No active challenge. 👇",
+      "join": "Join & take on ✋",
+      "take": "Challenge taken ✋",
+      "decline": "I'm not taking part",
+      "declineConfirm": "Don't take part in the challenge “{{title}}”?\nIt will leave your active challenges (no points lost).",
+      "refused": "🚫 You're not taking part in this challenge.",
+      "missed": "⌛ Challenge missed (not taken in time).",
+      "awaiting": "✓ Taken — awaiting validation (+{{points}} pending)",
+      "confirmed": "🏅 Validated by the coach · +{{points}} points",
+      "archivedTitle": "MISSED / DECLINED",
+      "refusedLabel": "Declined",
+      "missedLabel": "Missed"
+    },
+    "quest": {
+      "title": "Questionnaires",
+      "empty": "No questionnaire yet.",
+      "emptyHint": "Your staff will send some here (health, profile…).",
+      "received_one": "{{count}} question · received {{date}}",
+      "received_other": "{{count}} questions · received {{date}}",
+      "filled": "✓ Filled in",
+      "fill": "Fill in",
+      "review": "Review / edit",
+      "toFill": "TO FILL IN",
+      "filledSection": "FILLED IN",
+      "send": "Send my answers",
+      "sending": "Sending…",
+      "fail": "Failed: {{err}}",
+      "failRetry": "try again.",
+      "yes": "Yes",
+      "no": "No",
+      "add": "Add",
+      "answerPlaceholder": "Your answer…"
     }
   }
 }
