@@ -47,7 +47,6 @@ const PENDING = new Set([
   "lib/pullToRefresh.jsx",
   "lib/ui.jsx",
   "screens/OwnerApp.jsx",
-  "screens/player/SessionPlayCard.jsx",
   "screens/shared/Calendrier.jsx",
   "screens/shared/ChallengeCard.jsx",
   "screens/shared/ChallengeDetail.jsx",
