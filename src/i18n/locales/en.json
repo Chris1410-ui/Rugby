@@ -179,5 +179,223 @@
       "noTestTitle": "No test recorded yet.",
       "noTestBody": "Your results will appear here after your next physical assessment."
     }
+  },
+  "meditation": {
+    "title": "Meditation & Relaxation",
+    "subtitle": "Take a moment for yourself: breathing, deep relaxation and short sessions to unwind and recover better.",
+    "min": "min",
+    "reward": {
+      "today": "Session done today",
+      "points": "+10 pts for a session done today",
+      "earned": "+10 pts"
+    },
+    "footer": "Find a quiet place, get comfortable, and let yourself be guided. One session a day is enough to feel the benefits.",
+    "groups": {
+      "breathing": "Breathing",
+      "deep": "Deep relaxation",
+      "short": "Short sessions"
+    },
+    "breath": {
+      "inhale": "Breathe in…",
+      "hold": "Hold…",
+      "exhale": "Breathe out…",
+      "cycle_one": "cycle",
+      "cycle_other": "cycles",
+      "withHolds": "with holds"
+    },
+    "jacobson": {
+      "contract": "TENSE",
+      "release": "RELEASE",
+      "group": "group {{n}} / {{total}}",
+      "releaseHint": "Release completely. Feel the relaxation spread through the area.",
+      "groups": {
+        "hands": {
+          "label": "Hands & forearms",
+          "hint": "Clench your fists, tense your forearms."
+        },
+        "shoulders": {
+          "label": "Shoulders & neck",
+          "hint": "Raise your shoulders towards your ears."
+        },
+        "face": {
+          "label": "Face",
+          "hint": "Close your eyes, scrunch your forehead and jaw."
+        },
+        "back": {
+          "label": "Back",
+          "hint": "Draw your shoulder blades together, arch slightly."
+        },
+        "belly": {
+          "label": "Belly",
+          "hint": "Tense your abs."
+        },
+        "legs": {
+          "label": "Legs",
+          "hint": "Tense your thighs and calves."
+        },
+        "feet": {
+          "label": "Feet",
+          "hint": "Curl your toes."
+        }
+      }
+    },
+    "player": {
+      "start": "▶ Start",
+      "pause": "❚❚ Pause",
+      "resume": "▶ Resume",
+      "stop": "■ Stop",
+      "restart": "Restart",
+      "cycles": "Cycles:",
+      "doneTag": "done ✓",
+      "doneTitle": "Session complete 🌿",
+      "doneSub": "Take a moment before getting back to your activity.",
+      "step": "step {{n}} / {{total}}"
+    },
+    "sessions": {
+      "coherence": {
+        "title": "Heart coherence",
+        "subtitle": "5-5 breathing · calms the heart rate"
+      },
+      "breath478": {
+        "title": "4-7-8 breathing",
+        "subtitle": "In 4 · hold 7 · out 8 · deep relaxation"
+      },
+      "square": {
+        "title": "Box breathing",
+        "subtitle": "4-4-4-4 · focus & control"
+      },
+      "schultz": {
+        "title": "Autogenic training (Schultz)",
+        "subtitle": "Heaviness, warmth, calm — guided steps"
+      },
+      "jacobson": {
+        "title": "Muscle relaxation (Jacobson)",
+        "subtitle": "Tense then release each muscle group"
+      },
+      "prematch": {
+        "title": "Pre-match",
+        "subtitle": "Focus & activation · 2 min"
+      },
+      "postmatch": {
+        "title": "Post-match",
+        "subtitle": "Recovery & winding down · 3 min"
+      },
+      "sleep": {
+        "title": "Sleep",
+        "subtitle": "Falling asleep · 3 min"
+      },
+      "stress": {
+        "title": "Stress management",
+        "subtitle": "Back to calm · 3 min"
+      }
+    },
+    "steps": {
+      "schultz": [
+        {
+          "label": "Settle in",
+          "text": "Get comfortable, close your eyes. Let your body become heavy and still."
+        },
+        {
+          "label": "Heaviness",
+          "text": "My right arm is heavy… my whole body becomes heavy, relaxed, let go."
+        },
+        {
+          "label": "Warmth",
+          "text": "A gentle warmth spreads through my arms and legs. My limbs are warm and heavy."
+        },
+        {
+          "label": "Calm heart",
+          "text": "My heart beats calmly and steadily. Peaceful, quiet."
+        },
+        {
+          "label": "Breathing",
+          "text": "My breathing is calm and free. It breathes within me, effortlessly."
+        },
+        {
+          "label": "Solar plexus",
+          "text": "My solar plexus is warm, my belly is relaxed and soft."
+        },
+        {
+          "label": "Cool forehead",
+          "text": "My forehead is cool and clear. My mind is calm and rested."
+        },
+        {
+          "label": "Return",
+          "text": "Become aware of your body again. Gently move your fingers, stretch, open your eyes."
+        }
+      ],
+      "prematch": [
+        {
+          "label": "Grounding",
+          "text": "Breathe deeply. Feel your footing on the ground, solid and stable."
+        },
+        {
+          "label": "Activation",
+          "text": "Breathe in energy, feel your body wake up, ready for the effort."
+        },
+        {
+          "label": "Focus",
+          "text": "Picture your first successful move. You are focused, present, confident."
+        },
+        {
+          "label": "Ready",
+          "text": "Three powerful breaths. You are ready. Let's go."
+        }
+      ],
+      "postmatch": [
+        {
+          "label": "Let go",
+          "text": "The effort is over. Release your shoulders, jaw, hands."
+        },
+        {
+          "label": "Breath",
+          "text": "Breathe slowly, let your heart rate come down."
+        },
+        {
+          "label": "Recovery",
+          "text": "Feel the relaxation reach your legs, your arms. Your body recovers."
+        },
+        {
+          "label": "Gentle review",
+          "text": "Note one positive thing about your performance. Then let go."
+        }
+      ],
+      "sleep": [
+        {
+          "label": "Slow down",
+          "text": "Close your eyes. Let the day drift away, without holding on."
+        },
+        {
+          "label": "Weight",
+          "text": "Your body sinks into the mattress, heavier and heavier."
+        },
+        {
+          "label": "Long breath",
+          "text": "Lengthen each exhale. Sleep comes on its own."
+        },
+        {
+          "label": "Drift",
+          "text": "Nothing to do, nothing to think. Let yourself drift away."
+        }
+      ],
+      "stress": [
+        {
+          "label": "Acknowledge",
+          "text": "Name what you feel, without judging it. It's just tension."
+        },
+        {
+          "label": "Breath",
+          "text": "Breathe out slowly, twice as long as the inhale."
+        },
+        {
+          "label": "Release",
+          "text": "With each exhale, release a tense area: shoulders, belly, forehead."
+        },
+        {
+          "label": "Refocus",
+          "text": "Come back to the present moment. One thing you see, one you hear."
+        }
+      ]
+    }
   }
 }

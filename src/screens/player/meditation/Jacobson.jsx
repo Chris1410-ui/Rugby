@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { useMedClock } from "./medTimer.js";
 
@@ -41,6 +42,7 @@ function Body({ zone, phase }) {
 }
 
 export default function Jacobson({ groups, contractSec, releaseSec, running, onFinish, accent }) {
+  const { t } = useTranslation();
   const G = contractSec + releaseSec;
   const total = groups.length * G;
   const ringRef = useRef(null);
@@ -90,14 +92,14 @@ export default function Jacobson({ groups, contractSec, releaseSec, running, onF
           <circle ref={ringRef} cx="60" cy="60" r={R} fill="none" stroke={col} strokeWidth="7" strokeLinecap="round"
             strokeDasharray={CIRC} strokeDashoffset={CIRC} transform="rotate(-90 60 60)" style={{ transition: "stroke .35s" }} />
           <text x="60" y="54" textAnchor="middle" fontSize="26" fontWeight="900" fill="#fff">{remain}</text>
-          <text x="60" y="76" textAnchor="middle" fontSize="11" fontWeight="700" fill={col}>{contracting ? "CONTRACTE" : "RELÂCHE"}</text>
+          <text x="60" y="76" textAnchor="middle" fontSize="11" fontWeight="700" fill={col}>{contracting ? t("meditation.jacobson.contract") : t("meditation.jacobson.release")}</text>
         </svg>
       </div>
 
       <div style={{ marginTop: 8, textAlign: "center" }}>
-        <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>{g.label}</div>
+        <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>{t(`meditation.jacobson.groups.${g.key}.label`)}</div>
         <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.65)", marginTop: 3, minHeight: 34, maxWidth: 300 }}>
-          {contracting ? g.hint : "Relâche complètement. Sens la détente se diffuser dans la zone."}
+          {contracting ? t(`meditation.jacobson.groups.${g.key}.hint`) : t("meditation.jacobson.releaseHint")}
         </div>
       </div>
 
@@ -107,7 +109,7 @@ export default function Jacobson({ groups, contractSec, releaseSec, running, onF
           <span key={gr.key} style={{ width: 9, height: 9, borderRadius: 5, background: i < idx ? accent : i === idx ? col : "rgba(255,255,255,0.15)", transition: "background .3s" }} />
         ))}
       </div>
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>groupe {Math.min(idx + 1, groups.length)} / {groups.length}</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>{t("meditation.jacobson.group", { n: Math.min(idx + 1, groups.length), total: groups.length })}</div>
     </div>
   );
 }

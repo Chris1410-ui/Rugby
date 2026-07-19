@@ -179,5 +179,223 @@
       "noTestTitle": "Nog geen test geregistreerd.",
       "noTestBody": "Je resultaten verschijnen hier na je volgende fysieke evaluatie."
     }
+  },
+  "meditation": {
+    "title": "Meditatie & Ontspanning",
+    "subtitle": "Neem een moment voor jezelf: ademhaling, diepe ontspanning en korte sessies om te ontspannen en beter te herstellen.",
+    "min": "min",
+    "reward": {
+      "today": "Sessie vandaag gedaan",
+      "points": "+10 ptn voor een sessie vandaag",
+      "earned": "+10 ptn"
+    },
+    "footer": "Zoek een rustige plek, ga comfortabel zitten en laat je begeleiden. Eén sessie per dag volstaat om de voordelen te voelen.",
+    "groups": {
+      "breathing": "Ademhaling",
+      "deep": "Diepe ontspanning",
+      "short": "Korte sessies"
+    },
+    "breath": {
+      "inhale": "Adem in…",
+      "hold": "Houd vast…",
+      "exhale": "Adem uit…",
+      "cycle_one": "cyclus",
+      "cycle_other": "cycli",
+      "withHolds": "met pauzes"
+    },
+    "jacobson": {
+      "contract": "SPAN AAN",
+      "release": "ONTSPAN",
+      "group": "groep {{n}} / {{total}}",
+      "releaseHint": "Ontspan volledig. Voel de ontspanning zich door de zone verspreiden.",
+      "groups": {
+        "hands": {
+          "label": "Handen & onderarmen",
+          "hint": "Bal je vuisten, span je onderarmen."
+        },
+        "shoulders": {
+          "label": "Schouders & nek",
+          "hint": "Trek je schouders naar je oren."
+        },
+        "face": {
+          "label": "Gezicht",
+          "hint": "Sluit je ogen, fronst voorhoofd en kaken."
+        },
+        "back": {
+          "label": "Rug",
+          "hint": "Breng je schouderbladen samen, kromt licht."
+        },
+        "belly": {
+          "label": "Buik",
+          "hint": "Span je buikspieren aan."
+        },
+        "legs": {
+          "label": "Benen",
+          "hint": "Span je dijen en kuiten aan."
+        },
+        "feet": {
+          "label": "Voeten",
+          "hint": "Krul je tenen."
+        }
+      }
+    },
+    "player": {
+      "start": "▶ Start",
+      "pause": "❚❚ Pauze",
+      "resume": "▶ Hervat",
+      "stop": "■ Stop",
+      "restart": "Opnieuw",
+      "cycles": "Cycli:",
+      "doneTag": "gedaan ✓",
+      "doneTitle": "Sessie voltooid 🌿",
+      "doneSub": "Neem even de tijd voordat je je activiteit hervat.",
+      "step": "stap {{n}} / {{total}}"
+    },
+    "sessions": {
+      "coherence": {
+        "title": "Hartcoherentie",
+        "subtitle": "5-5-ademhaling · kalmeert de hartslag"
+      },
+      "breath478": {
+        "title": "4-7-8-ademhaling",
+        "subtitle": "In 4 · houd 7 · uit 8 · diepe ontspanning"
+      },
+      "square": {
+        "title": "Vierkante ademhaling",
+        "subtitle": "4-4-4-4 · focus & controle"
+      },
+      "schultz": {
+        "title": "Autogene training (Schultz)",
+        "subtitle": "Zwaarte, warmte, rust — begeleide stappen"
+      },
+      "jacobson": {
+        "title": "Spierontspanning (Jacobson)",
+        "subtitle": "Span aan en ontspan elke spiergroep"
+      },
+      "prematch": {
+        "title": "Voor de wedstrijd",
+        "subtitle": "Focus & activatie · 2 min"
+      },
+      "postmatch": {
+        "title": "Na de wedstrijd",
+        "subtitle": "Herstel & tot rust komen · 3 min"
+      },
+      "sleep": {
+        "title": "Slaap",
+        "subtitle": "In slaap vallen · 3 min"
+      },
+      "stress": {
+        "title": "Stressbeheer",
+        "subtitle": "Terug tot rust · 3 min"
+      }
+    },
+    "steps": {
+      "schultz": [
+        {
+          "label": "Installeren",
+          "text": "Ga comfortabel zitten, sluit je ogen. Laat je lichaam zwaar en stil worden."
+        },
+        {
+          "label": "Zwaarte",
+          "text": "Mijn rechterarm is zwaar… mijn hele lichaam wordt zwaar, ontspannen, losgelaten."
+        },
+        {
+          "label": "Warmte",
+          "text": "Een zachte warmte verspreidt zich in mijn armen en benen. Mijn ledematen zijn warm en zwaar."
+        },
+        {
+          "label": "Rustig hart",
+          "text": "Mijn hart klopt rustig en regelmatig. Vredig, kalm."
+        },
+        {
+          "label": "Ademhaling",
+          "text": "Mijn ademhaling is rustig en vrij. Het ademt in mij, moeiteloos."
+        },
+        {
+          "label": "Zonnevlecht",
+          "text": "Mijn zonnevlecht is warm, mijn buik is ontspannen en soepel."
+        },
+        {
+          "label": "Koel voorhoofd",
+          "text": "Mijn voorhoofd is koel en helder. Mijn geest is kalm en uitgerust."
+        },
+        {
+          "label": "Terugkeer",
+          "text": "Word je weer bewust van je lichaam. Beweeg zachtjes je vingers, rek je uit, open je ogen."
+        }
+      ],
+      "prematch": [
+        {
+          "label": "Verankering",
+          "text": "Adem diep. Voel je steun op de grond, stevig en stabiel."
+        },
+        {
+          "label": "Activatie",
+          "text": "Adem energie in, voel je lichaam ontwaken, klaar voor de inspanning."
+        },
+        {
+          "label": "Focus",
+          "text": "Visualiseer je eerste geslaagde actie. Je bent geconcentreerd, aanwezig, zelfverzekerd."
+        },
+        {
+          "label": "Klaar",
+          "text": "Drie krachtige ademhalingen. Je bent klaar. We gaan."
+        }
+      ],
+      "postmatch": [
+        {
+          "label": "Loslaten",
+          "text": "De inspanning is voorbij. Ontspan je schouders, kaak, handen."
+        },
+        {
+          "label": "Adem",
+          "text": "Adem langzaam, laat je hartslag zakken."
+        },
+        {
+          "label": "Herstel",
+          "text": "Voel de ontspanning je benen en armen bereiken. Je lichaam herstelt."
+        },
+        {
+          "label": "Zachte balans",
+          "text": "Noteer één positief ding over je prestatie. Laat dan los."
+        }
+      ],
+      "sleep": [
+        {
+          "label": "Vertragen",
+          "text": "Sluit je ogen. Laat de dag wegdrijven, zonder je eraan vast te houden."
+        },
+        {
+          "label": "Gewicht",
+          "text": "Je lichaam zakt in het matras, zwaarder en zwaarder."
+        },
+        {
+          "label": "Lange adem",
+          "text": "Verleng elke uitademing. De slaap komt vanzelf."
+        },
+        {
+          "label": "Wegdrijven",
+          "text": "Niets te doen, niets te denken. Laat je wegglijden."
+        }
+      ],
+      "stress": [
+        {
+          "label": "Erkennen",
+          "text": "Benoem wat je voelt, zonder te oordelen. Het is gewoon spanning."
+        },
+        {
+          "label": "Adem",
+          "text": "Adem langzaam uit, twee keer zo lang als de inademing."
+        },
+        {
+          "label": "Ontspannen",
+          "text": "Ontspan bij elke uitademing een gespannen zone: schouders, buik, voorhoofd."
+        },
+        {
+          "label": "Herfocussen",
+          "text": "Kom terug naar het huidige moment. Eén ding dat je ziet, één dat je hoort."
+        }
+      ]
+    }
   }
 }

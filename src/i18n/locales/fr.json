@@ -179,5 +179,223 @@
       "noTestTitle": "Aucun test enregistré pour l'instant.",
       "noTestBody": "Tes résultats apparaîtront ici après ta prochaine évaluation physique."
     }
+  },
+  "meditation": {
+    "title": "Méditation & Relaxation",
+    "subtitle": "Prends un moment pour toi : respiration, relaxation profonde et séances courtes pour te détendre et mieux récupérer.",
+    "min": "min",
+    "reward": {
+      "today": "Séance faite aujourd'hui",
+      "points": "+10 pts pour une séance faite aujourd'hui",
+      "earned": "+10 pts"
+    },
+    "footer": "Trouve un endroit calme, installe-toi confortablement, et laisse-toi guider. Une séance par jour suffit pour en tirer les bénéfices.",
+    "groups": {
+      "breathing": "Respiration",
+      "deep": "Relaxation profonde",
+      "short": "Séances courtes"
+    },
+    "breath": {
+      "inhale": "Inspire…",
+      "hold": "Retiens…",
+      "exhale": "Expire…",
+      "cycle_one": "cycle",
+      "cycle_other": "cycles",
+      "withHolds": "avec apnées"
+    },
+    "jacobson": {
+      "contract": "CONTRACTE",
+      "release": "RELÂCHE",
+      "group": "groupe {{n}} / {{total}}",
+      "releaseHint": "Relâche complètement. Sens la détente se diffuser dans la zone.",
+      "groups": {
+        "hands": {
+          "label": "Mains & avant-bras",
+          "hint": "Serre les poings, tends les avant-bras."
+        },
+        "shoulders": {
+          "label": "Épaules & nuque",
+          "hint": "Hausse les épaules vers les oreilles."
+        },
+        "face": {
+          "label": "Visage",
+          "hint": "Ferme les yeux, plisse le front et les mâchoires."
+        },
+        "back": {
+          "label": "Dos",
+          "hint": "Rapproche les omoplates, cambre légèrement."
+        },
+        "belly": {
+          "label": "Ventre",
+          "hint": "Contracte les abdominaux."
+        },
+        "legs": {
+          "label": "Jambes",
+          "hint": "Tends les cuisses et les mollets."
+        },
+        "feet": {
+          "label": "Pieds",
+          "hint": "Recroqueville les orteils."
+        }
+      }
+    },
+    "player": {
+      "start": "▶ Démarrer",
+      "pause": "❚❚ Pause",
+      "resume": "▶ Reprendre",
+      "stop": "■ Stop",
+      "restart": "Recommencer",
+      "cycles": "Cycles :",
+      "doneTag": "fait ✓",
+      "doneTitle": "Séance terminée 🌿",
+      "doneSub": "Prends un instant avant de reprendre ton activité.",
+      "step": "étape {{n}} / {{total}}"
+    },
+    "sessions": {
+      "coherence": {
+        "title": "Cohérence cardiaque",
+        "subtitle": "Respiration 5-5 · apaise le rythme cardiaque"
+      },
+      "breath478": {
+        "title": "Respiration 4-7-8",
+        "subtitle": "Inspire 4 · retiens 7 · expire 8 · détente profonde"
+      },
+      "square": {
+        "title": "Respiration carrée",
+        "subtitle": "4-4-4-4 · focus & contrôle"
+      },
+      "schultz": {
+        "title": "Training autogène (Schultz)",
+        "subtitle": "Lourdeur, chaleur, calme — par étapes guidées"
+      },
+      "jacobson": {
+        "title": "Relaxation musculaire (Jacobson)",
+        "subtitle": "Contracte puis relâche chaque groupe musculaire"
+      },
+      "prematch": {
+        "title": "Avant-match",
+        "subtitle": "Focus & activation · 2 min"
+      },
+      "postmatch": {
+        "title": "Après-match",
+        "subtitle": "Récupération & retour au calme · 3 min"
+      },
+      "sleep": {
+        "title": "Sommeil",
+        "subtitle": "Endormissement · 3 min"
+      },
+      "stress": {
+        "title": "Gestion du stress",
+        "subtitle": "Revenir au calme · 3 min"
+      }
+    },
+    "steps": {
+      "schultz": [
+        {
+          "label": "Installation",
+          "text": "Installe-toi confortablement, ferme les yeux. Laisse ton corps devenir lourd et immobile."
+        },
+        {
+          "label": "Lourdeur",
+          "text": "Mon bras droit est lourd… tout mon corps devient lourd, détendu, abandonné."
+        },
+        {
+          "label": "Chaleur",
+          "text": "Une chaleur douce se répand dans mes bras et mes jambes. Mes membres sont chauds et lourds."
+        },
+        {
+          "label": "Cœur calme",
+          "text": "Mon cœur bat calmement et régulièrement. Paisible, tranquille."
+        },
+        {
+          "label": "Respiration",
+          "text": "Ma respiration est calme et libre. Ça respire en moi, sans effort."
+        },
+        {
+          "label": "Plexus solaire",
+          "text": "Mon plexus solaire est chaud, mon ventre est détendu et souple."
+        },
+        {
+          "label": "Front frais",
+          "text": "Mon front est frais et clair. Mon esprit est calme et reposé."
+        },
+        {
+          "label": "Retour",
+          "text": "Reprends conscience de ton corps. Bouge doucement les doigts, étire-toi, ouvre les yeux."
+        }
+      ],
+      "prematch": [
+        {
+          "label": "Ancrage",
+          "text": "Respire profondément. Sens tes appuis au sol, solide et stable."
+        },
+        {
+          "label": "Activation",
+          "text": "Inspire l'énergie, sens ton corps se réveiller, prêt à l'effort."
+        },
+        {
+          "label": "Focus",
+          "text": "Visualise ton premier geste réussi. Tu es concentré, présent, confiant."
+        },
+        {
+          "label": "Prêt",
+          "text": "Trois respirations puissantes. Tu es prêt. On y va."
+        }
+      ],
+      "postmatch": [
+        {
+          "label": "Relâche",
+          "text": "L'effort est terminé. Relâche les épaules, la mâchoire, les mains."
+        },
+        {
+          "label": "Souffle",
+          "text": "Respire lentement, laisse le rythme cardiaque redescendre."
+        },
+        {
+          "label": "Récupération",
+          "text": "Sens la détente gagner tes jambes, tes bras. Ton corps récupère."
+        },
+        {
+          "label": "Bilan doux",
+          "text": "Note une chose positive de ta performance. Puis lâche prise."
+        }
+      ],
+      "sleep": [
+        {
+          "label": "Ralentir",
+          "text": "Ferme les yeux. Laisse la journée s'éloigner, sans t'y accrocher."
+        },
+        {
+          "label": "Poids",
+          "text": "Ton corps s'enfonce dans le matelas, de plus en plus lourd."
+        },
+        {
+          "label": "Souffle long",
+          "text": "Allonge chaque expiration. Le sommeil vient tout seul."
+        },
+        {
+          "label": "Dérive",
+          "text": "Plus rien à faire, plus rien à penser. Laisse-toi glisser."
+        }
+      ],
+      "stress": [
+        {
+          "label": "Reconnaître",
+          "text": "Nomme ce que tu ressens, sans le juger. C'est juste une tension."
+        },
+        {
+          "label": "Souffle",
+          "text": "Expire lentement, deux fois plus long que l'inspiration."
+        },
+        {
+          "label": "Relâcher",
+          "text": "À chaque expiration, relâche une zone tendue : épaules, ventre, front."
+        },
+        {
+          "label": "Recentrer",
+          "text": "Reviens à l'instant présent. Une chose que tu vois, une que tu entends."
+        }
+      ]
+    }
   }
 }
