@@ -11,7 +11,9 @@
     "replayTutorial": "Replay tutorial",
     "cancel": "Cancel",
     "back": "← Back",
-    "previewReadonly": "👁 Preview — read-only"
+    "previewReadonly": "👁 Preview — read-only",
+    "actionFailed": "Failed: {{err}}",
+    "tryAgain": "try again."
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -452,6 +454,58 @@
       "no": "No",
       "add": "Add",
       "answerPlaceholder": "Your answer…"
+    },
+    "seances": {
+      "emptyTitle": "No session assigned yet.",
+      "emptyHint": "Your S&C coach will send your program here.",
+      "todo": "TO DO",
+      "history": "HISTORY",
+      "openTitle": "OPEN FOR ENROLMENT",
+      "enroll": "I'm signing up",
+      "preview": "Preview",
+      "enrolled": "Enrolment saved ✓",
+      "campLine": "Camp · {{from}} → {{to}}",
+      "sessionLine_one": "Open session · {{date}} · {{count}} enrolled",
+      "sessionLine_other": "Open session · {{date}} · {{count}} enrolled"
+    },
+    "crew": {
+      "previewReadonly": "👁 Preview — read-only (team actions disabled)",
+      "members": "MEMBERS",
+      "you": "(you)",
+      "captain": "👑 Captain",
+      "removeMember": "Remove from crew",
+      "invitedShort": "invited…",
+      "cancelInvite": "Cancel invitation",
+      "inviteTitle": "INVITE A TEAMMATE",
+      "sameClub": "same club",
+      "allInvited": "All your teammates are already in the team or invited.",
+      "invite": "Invite",
+      "dissolve": "Disband the team",
+      "leave": "Leave the team",
+      "invitations": "INVITATIONS",
+      "join": "Join",
+      "decline": "Decline",
+      "createTitle": "Create your team",
+      "createHint": "Form a team with your club friends. A banner is drawn at random, and your points add up on the team leaderboard.",
+      "namePlaceholder": "Team name (e.g. The Boars)",
+      "creating": "Creating…",
+      "create": "Create my team",
+      "fallbackName": "Player",
+      "memberCount_one": "{{count}} member",
+      "memberCount_other": "{{count}} members",
+      "invitedCount_one": "{{count}} invited",
+      "invitedCount_other": "{{count}} invited",
+      "membersParen_one": "{{count}} member",
+      "membersParen_other": "{{count}} members",
+      "msgRemoved": "Member removed.",
+      "msgInvited": "{{name}} invited.",
+      "msgDissolved": "Team disbanded.",
+      "msgLeft": "You left the team.",
+      "msgCreated": "Team created 🎉",
+      "msgWelcome": "Welcome to {{name}}!",
+      "errAlreadyTeam": "This player is already in a team.",
+      "errAlreadyInvited": "Already invited / already a member.",
+      "errNotAllowed": "Action not allowed (club isolation)."
     }
   }
 }
