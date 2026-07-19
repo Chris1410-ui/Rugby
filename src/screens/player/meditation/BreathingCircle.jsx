@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMedClock } from "./medTimer.js";
-import { BREATH_LABELS } from "./sessions.js";
 
 /* Cercle de respiration guidée. Le cercle grandit à l'inspiration et rétrécit
    à l'expiration, en synchro avec le texte (« Inspire… / Retiens… / Expire… »)
@@ -11,6 +11,7 @@ const MIN = 0.5, MAX = 1;
 const lerp = (a, b, t) => a + (b - a) * t;
 
 export default function BreathingCircle({ pattern, running, targetCycles, onCycle, onFinish, accent }) {
+  const { t } = useTranslation();
   const { inhale, hold1, exhale, hold2 } = pattern;
   const cycleLen = Math.max(0.001, inhale + hold1 + exhale + hold2);
 
@@ -59,7 +60,7 @@ export default function BreathingCircle({ pattern, running, targetCycles, onCycl
   }, []);
 
   const skipHold = hold1 === 0 && hold2 === 0;
-  const label = phase === "hold1" || phase === "hold2" ? BREATH_LABELS.hold1 : BREATH_LABELS[phase];
+  const label = t(`meditation.breath.${phase === "hold1" || phase === "hold2" ? "hold" : phase}`);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 0" }}>
@@ -78,8 +79,8 @@ export default function BreathingCircle({ pattern, running, targetCycles, onCycl
         </div>
       </div>
       <div style={{ marginTop: 10, fontSize: 12.5, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>
-        {cycles}{targetCycles ? ` / ${targetCycles}` : ""} {targetCycles === 1 ? "cycle" : "cycles"}
-        {skipHold ? "" : " · avec apnées"}
+        {cycles}{targetCycles ? ` / ${targetCycles}` : ""} {t("meditation.breath.cycle", { count: targetCycles || cycles })}
+        {skipHold ? "" : ` · ${t("meditation.breath.withHolds")}`}
       </div>
     </div>
   );

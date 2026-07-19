@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMedClock } from "./medTimer.js";
 
 /* Moteur générique de séance guidée par ÉTAPES minutées (training autogène de
@@ -6,6 +7,7 @@ import { useMedClock } from "./medTimer.js";
    Texte en fondu-enchaîné, minuteur circulaire par étape, points de progression.
    Fond qui « respire » doucement. Dérivé de l'horloge monotone. */
 export default function GuidedSteps({ steps, running, onFinish, accent }) {
+  const { t } = useTranslation();
   const bounds = useMemo(() => {
     let acc = 0;
     return steps.map((s) => { acc += s.seconds; return acc; });
@@ -67,7 +69,7 @@ export default function GuidedSteps({ steps, running, onFinish, accent }) {
           <span key={i} style={{ width: 8, height: 8, borderRadius: 4, background: i < idx ? accent : i === idx ? "#fff" : "rgba(255,255,255,0.15)", transition: "background .3s" }} />
         ))}
       </div>
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>étape {Math.min(idx + 1, steps.length)} / {steps.length}</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>{t("meditation.player.step", { n: Math.min(idx + 1, steps.length), total: steps.length })}</div>
 
       <style>{`@keyframes medFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
         @keyframes medBreathe{0%,100%{transform:scale(0.85);opacity:.5}50%{transform:scale(1.05);opacity:.9}}`}</style>
