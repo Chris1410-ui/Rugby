@@ -13,6 +13,7 @@ import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
+import PullToRefresh from "../../lib/pullToRefresh.jsx";
 import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Taches from "./Taches.jsx";
@@ -39,7 +40,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
   const setTab = onTab || setTabState;
   const today = useLocalToday(); // reset du bilan du jour à minuit local
-  const { players, sessions, logs, activities, bilans, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, activities, bilans, crews, testCampaigns, testResults, loading, refresh } = useTeamData(profile.team_id);
   const me = players.find((p) => p.id === profile.player_id) || players[0];
   const { msgs } = useThread(me?.id);
   const unread = msgs.filter((m) => m.dir === "staff" && !m.read).length;
@@ -90,6 +91,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     <PreviewContext.Provider value={preview}>
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <main style={{ flex: 1, padding: 18 }}>
+         <PullToRefresh onRefresh={refresh}>
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
@@ -103,6 +105,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "fiche" && <Fiche player={me} canEdit={false} self />}
           {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}
           {tab === "donnees" && <Confidentialite player={me} self />}
+         </PullToRefresh>
         </main>
         {/* FAB « Déclarer une activité » sur Aujourd'hui (mobile, hors aperçu) */}
         {mobile && tab === "bilan" && !preview && (

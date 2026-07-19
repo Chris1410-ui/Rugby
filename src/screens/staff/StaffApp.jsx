@@ -19,6 +19,7 @@ import { addPlayer, usePasswordResetRequests, markResetHandled } from "../../dat
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
+import PullToRefresh from "../../lib/pullToRefresh.jsx";
 import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
@@ -59,7 +60,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
   // (forceReadOnly) — dans les deux cas, toutes les commandes d'écriture masquées.
   const readOnly = forceReadOnly || profile.role === "coach";
   const [preview, setPreview] = useState(null); // joueur ouvert en aperçu (lecture seule)
-  const { players, sessions, logs, checkins, activities, bilans, crews, testCampaigns, testResults, loading } = useTeamData(profile.team_id);
+  const { players, sessions, logs, checkins, activities, bilans, crews, testCampaigns, testResults, loading, refresh } = useTeamData(profile.team_id);
   const { camps } = useTeamCamps(profile.team_id);
   const { threads } = useTeamMessages(players.map((p) => p.id));
   const unread = Object.values(threads).reduce((a, t) => a + t.unread, 0);
@@ -109,6 +110,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         </div>
       )}
       <main style={{ flex: 1, padding: 18 }}>
+       <PullToRefresh onRefresh={refresh}>
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} resetRequests={resetReqs} />}
         {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
@@ -127,6 +129,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
         {tab === "abonnements" && <Abonnements teamId={profile.team_id} players={players} />}
+       </PullToRefresh>
       </main>
       {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}
       {mobile
