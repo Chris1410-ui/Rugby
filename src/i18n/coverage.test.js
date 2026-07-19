@@ -48,8 +48,6 @@ const PENDING = new Set([
   "lib/ui.jsx",
   "screens/OwnerApp.jsx",
   "screens/player/Bilan.jsx",
-  "screens/player/Crew.jsx",
-  "screens/player/Seances.jsx",
   "screens/player/SessionPlayCard.jsx",
   "screens/shared/Calendrier.jsx",
   "screens/shared/ChallengeCard.jsx",

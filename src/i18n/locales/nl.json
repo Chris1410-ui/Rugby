@@ -11,7 +11,9 @@
     "replayTutorial": "Tutorial opnieuw bekijken",
     "cancel": "Annuleren",
     "back": "← Terug",
-    "previewReadonly": "👁 Voorbeeld — alleen-lezen"
+    "previewReadonly": "👁 Voorbeeld — alleen-lezen",
+    "actionFailed": "Mislukt: {{err}}",
+    "tryAgain": "probeer opnieuw."
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -452,6 +454,58 @@
       "no": "Nee",
       "add": "Toevoegen",
       "answerPlaceholder": "Jouw antwoord…"
+    },
+    "seances": {
+      "emptyTitle": "Nog geen sessie toegewezen.",
+      "emptyHint": "Je fysiek trainer stuurt je programma hier.",
+      "todo": "TE DOEN",
+      "history": "GESCHIEDENIS",
+      "openTitle": "OPEN VOOR INSCHRIJVING",
+      "enroll": "Ik schrijf me in",
+      "preview": "Voorbeeld",
+      "enrolled": "Inschrijving opgeslagen ✓",
+      "campLine": "Kamp · {{from}} → {{to}}",
+      "sessionLine_one": "Open sessie · {{date}} · {{count}} ingeschreven",
+      "sessionLine_other": "Open sessie · {{date}} · {{count}} ingeschreven"
+    },
+    "crew": {
+      "previewReadonly": "👁 Voorbeeld — alleen-lezen (teamacties uitgeschakeld)",
+      "members": "LEDEN",
+      "you": "(jij)",
+      "captain": "👑 Kapitein",
+      "removeMember": "Uit crew verwijderen",
+      "invitedShort": "uitgenodigd…",
+      "cancelInvite": "Uitnodiging annuleren",
+      "inviteTitle": "EEN TEAMGENOOT UITNODIGEN",
+      "sameClub": "zelfde club",
+      "allInvited": "Al je teamgenoten zitten al in het team of zijn uitgenodigd.",
+      "invite": "Uitnodigen",
+      "dissolve": "Team ontbinden",
+      "leave": "Team verlaten",
+      "invitations": "UITNODIGINGEN",
+      "join": "Deelnemen",
+      "decline": "Weigeren",
+      "createTitle": "Maak je team",
+      "createHint": "Vorm een team met je clubvrienden. Er wordt willekeurig een banner gekozen, en jullie punten tellen op in het teamklassement.",
+      "namePlaceholder": "Teamnaam (bv. De Everzwijnen)",
+      "creating": "Aanmaken…",
+      "create": "Mijn team aanmaken",
+      "fallbackName": "Speler",
+      "memberCount_one": "{{count}} lid",
+      "memberCount_other": "{{count}} leden",
+      "invitedCount_one": "{{count}} uitgenodigd",
+      "invitedCount_other": "{{count}} uitgenodigd",
+      "membersParen_one": "{{count}} lid",
+      "membersParen_other": "{{count}} leden",
+      "msgRemoved": "Lid verwijderd.",
+      "msgInvited": "{{name}} uitgenodigd.",
+      "msgDissolved": "Team ontbonden.",
+      "msgLeft": "Je hebt het team verlaten.",
+      "msgCreated": "Team aangemaakt 🎉",
+      "msgWelcome": "Welkom bij {{name}}!",
+      "errAlreadyTeam": "Deze speler zit al in een team.",
+      "errAlreadyInvited": "Al uitgenodigd / al lid.",
+      "errNotAllowed": "Actie niet toegestaan (clubisolatie)."
     }
   }
 }

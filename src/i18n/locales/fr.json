@@ -11,7 +11,9 @@
     "replayTutorial": "Revoir le tutoriel",
     "cancel": "Annuler",
     "back": "← Retour",
-    "previewReadonly": "👁 Aperçu — lecture seule"
+    "previewReadonly": "👁 Aperçu — lecture seule",
+    "actionFailed": "Échec : {{err}}",
+    "tryAgain": "réessaie."
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -452,6 +454,58 @@
       "no": "Non",
       "add": "Ajouter",
       "answerPlaceholder": "Ta réponse…"
+    },
+    "seances": {
+      "emptyTitle": "Aucune séance assignée pour le moment.",
+      "emptyHint": "Ton préparateur t'enverra ton programme ici.",
+      "todo": "À FAIRE",
+      "history": "HISTORIQUE",
+      "openTitle": "OUVERT À L'INSCRIPTION",
+      "enroll": "Je m'inscris",
+      "preview": "Aperçu",
+      "enrolled": "Inscription enregistrée ✓",
+      "campLine": "Camp · {{from}} → {{to}}",
+      "sessionLine_one": "Séance ouverte · {{date}} · {{count}} inscrit",
+      "sessionLine_other": "Séance ouverte · {{date}} · {{count}} inscrits"
+    },
+    "crew": {
+      "previewReadonly": "👁 Mode aperçu — lecture seule (actions équipe désactivées)",
+      "members": "MEMBRES",
+      "you": "(toi)",
+      "captain": "👑 Capitaine",
+      "removeMember": "Retirer du crew",
+      "invitedShort": "invité…",
+      "cancelInvite": "Annuler l'invitation",
+      "inviteTitle": "INVITER UN COÉQUIPIER",
+      "sameClub": "même club",
+      "allInvited": "Tous tes coéquipiers sont déjà dans l'équipe ou invités.",
+      "invite": "Inviter",
+      "dissolve": "Dissoudre l'équipe",
+      "leave": "Quitter l'équipe",
+      "invitations": "INVITATIONS",
+      "join": "Rejoindre",
+      "decline": "Refuser",
+      "createTitle": "Crée ton équipe",
+      "createHint": "Forme une équipe avec tes amis du club. Une bannière est tirée au hasard, et vos points s'additionnent au classement par équipe.",
+      "namePlaceholder": "Nom de l'équipe (ex. Les Sangliers)",
+      "creating": "Création…",
+      "create": "Créer mon équipe",
+      "fallbackName": "Joueur",
+      "memberCount_one": "{{count}} membre",
+      "memberCount_other": "{{count}} membres",
+      "invitedCount_one": "{{count}} invité",
+      "invitedCount_other": "{{count}} invités",
+      "membersParen_one": "{{count}} membre",
+      "membersParen_other": "{{count}} membres",
+      "msgRemoved": "Membre retiré.",
+      "msgInvited": "{{name}} invité.",
+      "msgDissolved": "Équipe dissoute.",
+      "msgLeft": "Tu as quitté l'équipe.",
+      "msgCreated": "Équipe créée 🎉",
+      "msgWelcome": "Bienvenue chez {{name}} !",
+      "errAlreadyTeam": "Ce joueur fait déjà partie d'une équipe.",
+      "errAlreadyInvited": "Déjà invité / déjà membre.",
+      "errNotAllowed": "Action non autorisée (isolation par club)."
     }
   }
 }
