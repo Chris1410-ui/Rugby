@@ -254,7 +254,10 @@ export const ACTIVITIES = [
   { key: "course", label: "Course", emoji: "🏃" },
   { key: "natation", label: "Natation", emoji: "🏊" },
 ];
-const ACTIVITY_LABEL = Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label]));
+// Libellés d'activités pour le feed de points. « meditation » n'est pas une
+// activité déclarable du bilan (pas dans ACTIVITIES) mais rapporte +10/jour via
+// la section Méditation → on lui donne un libellé lisible dans le classement.
+const ACTIVITY_LABEL = { ...Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label])), meditation: "Méditation" };
 
 // Marqueurs du bilan du SOIR (6 sliders 1–10). Le matin garde ses 6 marqueurs
 // historiques (cf. écran Bilan). Utilisé par l'écran joueur + la vue staff.

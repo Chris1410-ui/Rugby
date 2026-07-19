@@ -32,7 +32,11 @@ export function checkinMapsFromRows(rows = []) {
     if (Array.isArray(r.activities) && r.activities.length) {
       (activities[r.player_id] = activities[r.player_id] || []).push({ date, activities: r.activities });
     }
-    (bilans[r.player_id] = bilans[r.player_id] || []).push({ date, moment });
+    // La ligne « meditation » compte comme activité (+10 ci-dessus) mais N'EST PAS
+    // un bilan → exclue du décompte « bilan complété » pour éviter un double +10.
+    if (moment === "matin" || moment === "soir") {
+      (bilans[r.player_id] = bilans[r.player_id] || []).push({ date, moment });
+    }
   });
   return { activities, bilans };
 }
