@@ -6,6 +6,8 @@ import { Bell } from "../lib/icons.jsx";
 import { useNotifications } from "../data/notifications.js";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
+import Onboarding from "./shared/Onboarding.jsx";
+import { markOnboardingSeen } from "../data/onboarding.js";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import OwnerApp from "./OwnerApp.jsx";
@@ -23,6 +25,8 @@ export default function AppShell() {
   const [navTab, setNavTab] = useState(null); // onglet actif (piloté ici pour cloche/hub/avatar)
   const [notifOpen, setNotifOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [tourReplay, setTourReplay] = useState(false);   // « Revoir le tutoriel » (menu)
+  const [tourDismissed, setTourDismissed] = useState(false); // masque immédiat le temps du refresh profil
 
   // Échec de chargement du profil (timeout + retries épuisés) : écran d'erreur
   // explicite avec des issues de secours — JAMAIS un spinner infini.
@@ -85,6 +89,16 @@ export default function AppShell() {
   const name = profile.full_name || user?.email || "Moi";
   const initial = (name.trim()[0] || "?").toUpperCase();
 
+  // Tour guidé : auto au 1er lancement (par rôle) OU à la demande via le menu.
+  const showTour = tourReplay || (!profile.onboarding_seen_at && !tourDismissed);
+  const closeTour = async () => {
+    setTourReplay(false);
+    if (!profile.onboarding_seen_at) {
+      setTourDismissed(true); // persiste « vu » (une fois) — masque en attendant le refresh
+      try { await markOnboardingSeen(); refreshProfile(); } catch { /* réessai au prochain lancement */ }
+    }
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: C.navy, fontFamily: FONT, color: "#fff" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -115,6 +129,7 @@ export default function AppShell() {
                   <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
                   {/* Navigation retirée du header : « Ma fiche » / « Vue joueur » sont
                      déjà dans la barre du bas + hub « Plus » (un seul système). */}
+                  <MenuItem label={t("common.replayTutorial")} onClick={() => { setAvatarOpen(false); setTourReplay(true); }} />
                   <MenuItem label={t("common.logout")} danger onClick={() => { setAvatarOpen(false); signOut(); }} />
                 </div>
               </>
@@ -127,6 +142,7 @@ export default function AppShell() {
           : <PlayerApp profile={profile} tab={tab} onTab={goTab} />}
       </div>
       {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} playerId={profile.player_id} teamId={profile.team_id} />}
+      {showTour && <Onboarding role={staff ? "staff" : "joueur"} onClose={closeTour} />}
     </div>
   );
 }

@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const { data, error } = await withTimeout(
-          supabase.from("profiles").select("id, role, full_name, team_id, player_id, locale").eq("id", uid).maybeSingle(),
+          supabase.from("profiles").select("id, role, full_name, team_id, player_id, locale, onboarding_seen_at").eq("id", uid).maybeSingle(),
           9000,
         );
         if (error) throw new Error(error.message);

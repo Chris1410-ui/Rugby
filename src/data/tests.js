@@ -114,32 +114,44 @@ export function useTeamTop14(teamId) {
   return byPlayer;
 }
 
-/* Stats de comparaison de MA ligne (SECURITY DEFINER) : par test, moyenne de la
-   ligne, effectif et mon rang — sans aucune valeur individuelle de coéquipier.
-   Renvoie { [metric]: { avg, n, rank } }. */
-export function useLineStats(playerId) {
+/* Stats de comparaison AGRÉGÉES (SECURITY DEFINER) : par test, moyenne + % du
+   seuil Top 14 (avg_pct) + effectif + mon rang — jamais de valeur individuelle
+   d'un coéquipier. `rpc` = comparison_line_stats (ma ligne) ou comparison_team_stats
+   (toute l'équipe) ; `valueKey` = colonne de valeur renvoyée. Realtime sur
+   test_results. Renvoie { [metric]: { value, pct, n, rank } }. */
+function useComparisonStats(playerId, rpc, valueKey) {
   const [stats, setStats] = useState({});
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.rpc("comparison_line_stats");
-    if (error) { console.error("[line stats]", error.message); return; }
+    const { data, error } = await supabase.rpc(rpc);
+    if (error) { console.error(`[${rpc}]`, error.message); return; }
     const m = {};
-    (data ?? []).forEach((r) => { m[r.metric] = { avg: r.line_avg != null ? Number(r.line_avg) : null, n: r.n, rank: r.my_rank }; });
+    (data ?? []).forEach((r) => {
+      m[r.metric] = {
+        value: r[valueKey] != null ? Number(r[valueKey]) : null,
+        pct: r.avg_pct != null ? Number(r.avg_pct) : null,
+        n: r.n, rank: r.my_rank,
+      };
+    });
     setStats(m);
-  }, []);
+  }, [rpc, valueKey]);
 
   useEffect(() => {
     fetch();
     if (!playerId) return;
     const ch = supabase
-      .channel(uniqueTopic(`linestats:${playerId}`))
+      .channel(uniqueTopic(`${rpc}:${playerId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "test_results" }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [playerId, fetch]);
+  }, [playerId, fetch, rpc]);
 
   return stats;
 }
+
+// Moyenne de MA ligne (grp) / de toute mon ÉQUIPE — agrégats serveur.
+export const useLineStats = (playerId) => useComparisonStats(playerId, "comparison_line_stats", "line_avg");
+export const useTeamStats = (playerId) => useComparisonStats(playerId, "comparison_team_stats", "team_avg");
 
 export async function createCampaign(teamId, { name, date, campId = null }) {
   const { data: auth } = await supabase.auth.getUser();
