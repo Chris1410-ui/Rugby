@@ -3,10 +3,10 @@ import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { Section, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { ClipboardList, Plus, X, Trash2, Send } from "../../lib/icons.jsx";
+import { ClipboardList, Plus, X, Trash2, Send, Bell } from "../../lib/icons.jsx";
 import { QUESTION_BANK, QCATS, QTYPES, bankById, newQid } from "../../lib/questionnaires.js";
 import { resolveAssignedIds } from "../../data/sessions.js";
-import { useTeamQuestionnaires, useTeamAssignments, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire, sendQuestionnaire } from "../../data/questionnaires.js";
+import { useTeamQuestionnaires, useTeamAssignments, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire, sendQuestionnaire, remindQuestionnaire } from "../../data/questionnaires.js";
 import QuestionnaireResponses from "./QuestionnaireResponses.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
 
@@ -21,6 +21,19 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
   const [edit, setEdit] = useState(openNew && !readOnly ? "new" : null);   // 'new' | questionnaire (FAB → éditeur ouvert)
   const [send, setSend] = useState(null);   // questionnaire à envoyer
   const [responses, setResponses] = useState(null); // questionnaire dont on voit les réponses
+  const [flash, setFlash] = useState("");   // message de confirmation (rappel envoyé)
+  const [reminding, setReminding] = useState(null); // id du questionnaire en cours de relance
+
+  const remind = async (q, missing) => {
+    if (readOnly || reminding) return;
+    if (!confirm(`Relancer les ${missing} joueur${missing > 1 ? "s" : ""} manquant${missing > 1 ? "s" : ""} pour « ${q.nom} » ?\nIls recevront une notification (pastille + push).`)) return;
+    setReminding(q.id); setFlash("");
+    try {
+      const n = await remindQuestionnaire(q.id);
+      setFlash(`🔔 Rappel envoyé à ${n} joueur${n > 1 ? "s" : ""} pour « ${q.nom} ».`);
+    } catch (e) { setFlash("Échec du rappel : " + (e.message || "")); }
+    finally { setReminding(null); setTimeout(() => setFlash(""), 4000); }
+  };
 
   if (responses) return <QuestionnaireResponses questionnaire={responses} players={players} assignments={byQuestionnaire[responses.id] || {}} onBack={() => setResponses(null)} />;
   if (edit) return <QEditor teamId={teamId} initial={edit === "new" ? null : edit} onDone={() => setEdit(null)} onCancel={() => setEdit(null)} />;
@@ -33,6 +46,8 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
         {!readOnly && <button onClick={() => setEdit("new")} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Plus size={15} /> Nouveau</button>}
       </div>
 
+      {flash && <div style={{ background: flash.startsWith("🔔") ? `${C.green}18` : `${C.coral}18`, border: `1px solid ${flash.startsWith("🔔") ? C.green : C.coral}55`, borderRadius: 10, padding: "9px 12px", fontSize: 12, fontWeight: 700, color: flash.startsWith("🔔") ? C.green : C.coral, marginBottom: 10 }}>{flash}</div>}
+
       {questionnaires.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6 })}>
           Aucun questionnaire. Compose un modèle (santé, profil…) depuis la banque de questions, puis envoie-le aux joueurs.
@@ -42,6 +57,7 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
           const asg = byQuestionnaire[q.id] || {};
           const sent = Object.keys(asg).length;
           const filled = Object.values(asg).filter((a) => a.statut === "rempli").length;
+          const missing = sent - filled;
           return (
             <div key={q.id} style={sc({ marginBottom: 10, padding: 14 })}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -56,6 +72,11 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
                 {!readOnly && <button onClick={() => setSend(q)} style={{ flex: 1, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: 9, color: accent, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Send size={13} /> Envoyer</button>}
                 <button onClick={() => setResponses(q)} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.8)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Réponses{sent > 0 ? ` (${filled}/${sent})` : ""}</button>
               </div>
+              {!readOnly && missing > 0 && (
+                <button onClick={() => remind(q, missing)} disabled={reminding === q.id} style={{ width: "100%", marginTop: 8, background: `${C.amb}1c`, border: `1px solid ${C.amb}66`, borderRadius: 9, padding: 9, color: C.amb, fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: reminding === q.id ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <Bell size={13} /> {reminding === q.id ? "Envoi…" : `Envoyer un rappel · relancer les ${missing} manquant${missing > 1 ? "s" : ""}`}
+                </button>
+              )}
             </div>
           );
         })
