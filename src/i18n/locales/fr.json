@@ -7,7 +7,8 @@
     "skip": "Passer",
     "loading": "Chargement…",
     "language": "Langue",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "replayTutorial": "Revoir le tutoriel"
   },
   "header": {
     "brand": "PERFORMANCE"
