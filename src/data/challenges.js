@@ -150,6 +150,8 @@ export async function deleteChallenge(id) {
 // Joueur (RPC).
 export async function markChallengeDone(id) { const { error } = await supabase.rpc("challenge_mark_done", { p_challenge: id }); if (error) throw error; }
 export async function unmarkChallenge(id) { const { error } = await supabase.rpc("challenge_unmark", { p_challenge: id }); if (error) throw error; }
+// « Je ne participe pas » → statut refuse (RPC SECURITY DEFINER, migration 0044).
+export async function declineChallenge(id) { const { error } = await supabase.rpc("challenge_decline", { p_challenge: id }); if (error) throw error; }
 
 // Coach (écriture directe RLS staff).
 export async function confirmChallenge(challengeId, playerId, teamId) {
