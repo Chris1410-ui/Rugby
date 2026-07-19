@@ -56,12 +56,16 @@ export const broncoToSec = (s) => {
 // Les 9 tests : comment extraire la valeur joueur d'un résultat (+ poids de corps).
 // Squat/Bench/Deadlift/Hang Clean/Tractions dérivés en ×PdC depuis le kg saisi ;
 // MAS en m/s ; Bronco en secondes ; Yo-Yo en m ; CMJ en cm.
+// ×PdC = charge ÷ poids. On EXIGE une charge non nulle ET un poids > 0, sinon
+// null. (Sans le garde-fou, parseKg(null)/bw vaudrait 0 en JS — pas null — et
+// masquerait une charge mesurée lors d'une campagne antérieure.)
+const perBw = (kg, bw) => (bw > 0 && kg != null ? kg / bw : null);
 export const TOP14_TESTS = [
-  { key: "squat",     label: "Squat 5RM",      unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? parseKg(r.squat_5rm) / bw : null) },
-  { key: "bench",     label: "Bench 5RM",      unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.bench_5rm) / bw : null) },
-  { key: "deadlift",  label: "Deadlift",       unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.deadlift) / bw : null) },
-  { key: "hangclean", label: "Hang Clean 2RM", unit: "×PdC",  dir: "up",   from: (r, bw) => (bw ? numOrNull(r.hang_clean_2rm) / bw : null) },
-  { key: "tractions", label: "Tractions",      unit: "+×PdC", dir: "up",   from: (r, bw) => (bw ? numOrNull(r.tractions) / bw : null) },
+  { key: "squat",     label: "Squat 5RM",      unit: "×PdC",  dir: "up",   from: (r, bw) => perBw(parseKg(r.squat_5rm), bw) },
+  { key: "bench",     label: "Bench 5RM",      unit: "×PdC",  dir: "up",   from: (r, bw) => perBw(numOrNull(r.bench_5rm), bw) },
+  { key: "deadlift",  label: "Deadlift",       unit: "×PdC",  dir: "up",   from: (r, bw) => perBw(numOrNull(r.deadlift), bw) },
+  { key: "hangclean", label: "Hang Clean 2RM", unit: "×PdC",  dir: "up",   from: (r, bw) => perBw(numOrNull(r.hang_clean_2rm), bw) },
+  { key: "tractions", label: "Tractions",      unit: "+×PdC", dir: "up",   from: (r, bw) => perBw(numOrNull(r.tractions), bw) },
   { key: "mas",       label: "MAS",            unit: "m/s",   dir: "up",   from: (r) => numOrNull(r.mas) },
   { key: "bronco",    label: "Bronco",         unit: "",      dir: "down", from: (r) => broncoToSec(r.bronco) },
   { key: "yoyo",      label: "Yo-Yo IR1",      unit: "m",     dir: "up",   from: (r) => numOrNull(r.yoyo) },
@@ -82,24 +86,74 @@ export function evalTest(test, result, cat) {
   return { key: test.key, value: val, threshold: thr, pct, valid };
 }
 
+// Tests exprimés en ×PdC (charge ÷ poids de corps) → nécessitent un poids courant.
+const PDC_KEYS = new Set(["squat", "bench", "deadlift", "hangclean", "tractions"]);
+
+// Poids de corps « courant » porté par une liste datée (dernier poids non nul —
+// injecté par withCurrentBodyweight sur le dernier résultat). null si absent.
+function listBodyweight(list) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const b = list[i]?.bodyweight;
+    if (b != null && Number(b) > 0) return Number(b);
+  }
+  return null;
+}
+
+// Ligne effective pour évaluer un test : pour la force, on impose le poids
+// COURANT (le poids n'est pas historisé par test → charge ÷ poids courant).
+function rowForTest(t, row, curBw) {
+  return PDC_KEYS.has(t.key) && curBw != null ? { ...row, bodyweight: curBw } : row;
+}
+
+/* Valeur COURANTE d'un test = sa dernière valeur non nulle (du + récent au +
+   ancien), la force étant divisée par le poids de corps courant. Renvoie le
+   nombre (×PdC / m·s⁻¹ / s / m / cm) ou null. Garantit que le ratio charge÷poids
+   s'affiche dès que la charge ET le poids existent — même si la charge a été
+   mesurée lors d'une campagne antérieure à la dernière. */
+export function currentValueForTest(t, datedResults) {
+  const list = datedResults || [];
+  const curBw = listBodyweight(list);
+  for (let i = list.length - 1; i >= 0; i--) {
+    const bw = PDC_KEYS.has(t.key) ? curBw : null;
+    const v = t.from(list[i], bw);
+    if (v != null && Number.isFinite(v) && v > 0) return v;
+  }
+  return null;
+}
+
 /* Agrège l'historique d'un joueur (résultats DATÉS, triés du + ancien au + récent)
    pour une catégorie :
-   - byTest[key] = { latest (éval du dernier résultat), everValid, firstDate }
+   - byTest[key] = { value (dernière valeur non nulle AU POIDS COURANT), everValid,
+                     firstDate, threshold, pct, valid }
    - count  = nb de tests validés Top 14 (au moins une fois)
    - events = [{ key, label, date }] pour le crédit +30 (daté de la 1re validation)
-   Anti-double-comptage : un test validé ne produit qu'UN seul event, daté de sa
-   première campagne franchie (re-saisir un test déjà validé ne recrédite pas). */
+   La force est évaluée au POIDS COURANT (le poids n'étant pas historisé par test),
+   et chaque test prend sa dernière valeur mesurée → le ×PdC apparaît dès que la
+   charge et le poids existent. Anti-double-comptage : un test validé ne produit
+   qu'UN seul event, daté de sa première campagne franchie. */
 export function top14Player(pos, datedResults) {
   const cat = posToCat(pos);
   const byTest = {};
   const events = [];
   let count = 0;
   const list = datedResults || [];
-  const latest = list.length ? list[list.length - 1] : null;
+  const curBw = listBodyweight(list);
   TOP14_TESTS.forEach((t) => {
-    const firstValid = cat ? list.find((d) => evalTest(t, d, cat).valid) : null;
+    const thr = cat ? TOP14_BENCH[cat][t.key] : null;
+    // Dernière évaluation NON nulle (au poids courant pour la force).
+    let latestEval = { key: t.key, value: null, threshold: thr, pct: null, valid: false };
+    for (let i = list.length - 1; i >= 0; i--) {
+      const e = cat ? evalTest(t, rowForTest(t, list[i], curBw), cat) : null;
+      if (e && e.value != null && e.value > 0) { latestEval = e; break; }
+    }
+    // Première campagne franchie (au poids courant) pour le crédit +30.
+    let firstValid = null;
+    if (cat) {
+      for (let i = 0; i < list.length; i++) {
+        if (evalTest(t, rowForTest(t, list[i], curBw), cat).valid) { firstValid = list[i]; break; }
+      }
+    }
     const everValid = !!firstValid;
-    const latestEval = cat && latest ? evalTest(t, latest, cat) : { key: t.key, value: null, threshold: cat ? TOP14_BENCH[cat][t.key] : null, pct: null, valid: false };
     byTest[t.key] = { ...latestEval, everValid, firstDate: firstValid?.date || null };
     if (everValid) { count++; events.push({ key: t.key, label: t.label, date: firstValid.date }); }
   });

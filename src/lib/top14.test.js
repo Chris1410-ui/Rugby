@@ -105,6 +105,24 @@ describe("top14Player — agrégat + anti-double-comptage", () => {
     expect(t.byTest.yoyo.everValid).toBe(true);
     expect(t.count).toBeGreaterThanOrEqual(1);
   });
+
+  it("×PdC : la force se calcule au poids courant même si la charge vient d'une campagne antérieure", () => {
+    const player = { pos: "Pilier gauche", bodyweight: 100, bodyweightAt: "2026-07-19T00:00:00Z" };
+    const raw = [
+      { date: "2026-06-01", squat_5rm: "180", bench_5rm: 130, bodyweight: null }, // charge en juin
+      { date: "2026-07-18", squat_5rm: null, bench_5rm: null, cmj_overall: 35, bodyweight: null }, // juillet : pas de force
+    ];
+    const t = top14Player(player.pos, withCurrentBodyweight(player, raw));
+    expect(t.byTest.squat.value).toBeCloseTo(1.8, 5); // 180 / 100
+    expect(t.byTest.bench.value).toBeCloseTo(1.3, 5); // 130 / 100
+  });
+
+  it("×PdC : nul si la charge manque, jamais 0 (parseKg(null)/bw ne doit pas donner 0)", () => {
+    const player = { pos: "Pilier gauche", bodyweight: 100, bodyweightAt: "2026-07-19T00:00:00Z" };
+    const raw = [{ date: "2026-07-18", squat_5rm: null, bodyweight: null }];
+    const t = top14Player(player.pos, withCurrentBodyweight(player, raw));
+    expect(t.byTest.squat.value).toBeNull();
+  });
 });
 
 describe("currentBodyweight — poids courant (profil vs dernier test)", () => {
