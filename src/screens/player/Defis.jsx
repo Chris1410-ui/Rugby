@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { todayISO } from "../../lib/metrics.js";
 import { usePreview } from "../../lib/preview.js";
@@ -10,6 +11,7 @@ import ChallengeDetail from "../shared/ChallengeDetail.jsx";
 /* « Défis » (joueur) : relève les défis assignés ou ouverts, puis attend la
    validation du prépa. Lecture seule en mode aperçu owner/staff. */
 export default function Defis({ me, players = [], accent = C.green }) {
+  const { t } = useTranslation();
   const preview = usePreview();
   const { challenges } = useTeamChallenges(me.team, players);
   const { statutByChallenge } = useMyChallengeCompletions(me.id);
@@ -31,7 +33,7 @@ export default function Defis({ me, players = [], accent = C.green }) {
 
   const decline = (c) => {
     if (preview) return;
-    if (confirm(`Ne pas participer au défi « ${c.titre} » ?\nIl quittera tes défis actifs (aucun point perdu).`)) {
+    if (confirm(t("player.defis.declineConfirm", { title: c.titre }))) {
       run(c.id, () => declineChallenge(c.id));
     }
   };
@@ -45,24 +47,24 @@ export default function Defis({ me, players = [], accent = C.green }) {
         {st === "a_faire" && (
           <>
             <button onClick={() => run(c.id, () => markChallengeDone(c.id))} disabled={preview || busy === c.id} style={{ width: "100%", background: preview ? "rgba(255,255,255,0.06)" : accent, border: "none", borderRadius: 10, padding: 12, color: preview ? "rgba(255,255,255,0.5)" : "#fff", fontWeight: 800, fontSize: 13, cursor: preview ? "default" : "pointer", opacity: busy === c.id ? 0.6 : 1 }}>
-              {preview ? "👁 Aperçu — lecture seule" : open ? "Rejoindre & relever ✋" : "Défi relevé ✋"}
+              {preview ? t("common.previewReadonly") : open ? t("player.defis.join") : t("player.defis.take")}
             </button>
             {!preview && !open && (
               <button onClick={() => decline(c)} disabled={busy === c.id} style={{ width: "100%", marginTop: 7, background: "none", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.55)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                Je ne participe pas
+                {t("player.defis.decline")}
               </button>
             )}
           </>
         )}
-        {st === "refuse" && <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>🚫 Tu ne participes pas à ce défi.</div>}
-        {st === "manque" && <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>⌛ Défi manqué (non relevé à temps).</div>}
+        {st === "refuse" && <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{t("player.defis.refused")}</div>}
+        {st === "manque" && <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{t("player.defis.missed")}</div>}
         {st === "validee_joueur" && (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ flex: 1, fontSize: 12, fontWeight: 700, color: C.amb }}>✓ Relevé — en attente de validation (+{c.points} en attente)</div>
-            {!preview && <button onClick={() => run(c.id, () => unmarkChallenge(c.id))} disabled={busy === c.id} style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 11px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Annuler</button>}
+            <div style={{ flex: 1, fontSize: 12, fontWeight: 700, color: C.amb }}>{t("player.defis.awaiting", { points: c.points })}</div>
+            {!preview && <button onClick={() => run(c.id, () => unmarkChallenge(c.id))} disabled={busy === c.id} style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 11px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("common.cancel")}</button>}
           </div>
         )}
-        {st === "confirmee" && <div style={{ fontSize: 12.5, fontWeight: 800, color: C.green }}>🏅 Validé par le coach · +{c.points} points</div>}
+        {st === "confirmee" && <div style={{ fontSize: 12.5, fontWeight: 800, color: C.green }}>{t("player.defis.confirmed", { points: c.points })}</div>}
       </>
     );
   };
@@ -82,17 +84,17 @@ export default function Defis({ me, players = [], accent = C.green }) {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 18 }}>🏆</span>
-        <div style={{ fontSize: 15, fontWeight: 800 }}>Défis</div>
+        <div style={{ fontSize: 15, fontWeight: 800 }}>{t("player.defis.title")}</div>
       </div>
       {active.length === 0 && archived.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12.5, lineHeight: 1.6 })}>
-          Aucun défi pour le moment.<br />Ton staff en lancera ici — relève-les pour gagner des points et des badges.
+          {t("player.defis.empty")}<br />{t("player.defis.emptyHint")}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {featured && Card(featured)}
           {active.filter((c) => c.id !== featured?.id).map(Card)}
-          {active.length === 0 && <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.55)", fontSize: 12.5 })}>Aucun défi actif. 👇</div>}
+          {active.length === 0 && <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.55)", fontSize: 12.5 })}>{t("player.defis.noActive")}</div>}
         </div>
       )}
 
@@ -109,15 +111,16 @@ export default function Defis({ me, players = [], accent = C.green }) {
 
 /* Historique des défis refusés / manqués (repliable), hors du plateau actif. */
 function ArchivedList({ items, statutByChallenge, onOpen }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const meta = (st) => st === "refuse"
-    ? { icon: "🚫", label: "Refusé", color: "rgba(255,255,255,0.5)" }
-    : { icon: "⌛", label: "Manqué", color: C.coral };
+    ? { icon: "🚫", label: t("player.defis.refusedLabel"), color: "rgba(255,255,255,0.5)" }
+    : { icon: "⌛", label: t("player.defis.missedLabel"), color: C.coral };
   return (
     <div style={{ marginTop: 18 }}>
       <button onClick={() => setOpen((v) => !v)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 800, letterSpacing: 0.4, cursor: "pointer", padding: "4px 2px" }}>
         <span>{open ? "▾" : "▸"}</span>
-        <span>MANQUÉS / REFUSÉS · {items.length}</span>
+        <span>{t("player.defis.archivedTitle")} · {items.length}</span>
       </button>
       {open && (
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>

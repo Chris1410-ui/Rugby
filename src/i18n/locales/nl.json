@@ -8,7 +8,10 @@
     "loading": "Laden…",
     "language": "Taal",
     "retry": "Opnieuw",
-    "replayTutorial": "Tutorial opnieuw bekijken"
+    "replayTutorial": "Tutorial opnieuw bekijken",
+    "cancel": "Annuleren",
+    "back": "← Terug",
+    "previewReadonly": "👁 Voorbeeld — alleen-lezen"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -396,6 +399,59 @@
           "text": "Kom terug naar het huidige moment. Eén ding dat je ziet, één dat je hoort."
         }
       ]
+    }
+  },
+  "player": {
+    "activityFab": "Activiteit",
+    "activityFabTitle": "Een activiteit melden",
+    "messages": {
+      "staffTitle": "Staf — Fysiek trainer"
+    },
+    "taches": {
+      "title": "Mijn taken",
+      "empty": "Nog geen taken.",
+      "emptyHint": "Je staf wijst er hier toe (elke gevalideerde taak = +2 punten).",
+      "markDone": "Als gedaan markeren (+2)",
+      "awaitingCoach": "✓ Gedaan — wacht op validatie van de coach",
+      "confirmed": "🏅 Bevestigd door de coach · +2 punten",
+      "doneSection": "VOLTOOID"
+    },
+    "defis": {
+      "title": "Uitdagingen",
+      "empty": "Nog geen uitdagingen.",
+      "emptyHint": "Je staf plaatst er hier — ga ze aan om punten en badges te verdienen.",
+      "noActive": "Geen actieve uitdaging. 👇",
+      "join": "Meedoen & aangaan ✋",
+      "take": "Uitdaging aangegaan ✋",
+      "decline": "Ik doe niet mee",
+      "declineConfirm": "Niet meedoen aan de uitdaging “{{title}}”?\nDeze verlaat je actieve uitdagingen (geen punten verloren).",
+      "refused": "🚫 Je doet niet mee aan deze uitdaging.",
+      "missed": "⌛ Uitdaging gemist (niet op tijd aangegaan).",
+      "awaiting": "✓ Aangegaan — wacht op validatie (+{{points}} in behandeling)",
+      "confirmed": "🏅 Gevalideerd door de coach · +{{points}} punten",
+      "archivedTitle": "GEMIST / GEWEIGERD",
+      "refusedLabel": "Geweigerd",
+      "missedLabel": "Gemist"
+    },
+    "quest": {
+      "title": "Vragenlijsten",
+      "empty": "Nog geen vragenlijst.",
+      "emptyHint": "Je staf stuurt er hier (gezondheid, profiel…).",
+      "received_one": "{{count}} vraag · ontvangen op {{date}}",
+      "received_other": "{{count}} vragen · ontvangen op {{date}}",
+      "filled": "✓ Ingevuld",
+      "fill": "Invullen",
+      "review": "Bekijken / bewerken",
+      "toFill": "IN TE VULLEN",
+      "filledSection": "INGEVULD",
+      "send": "Mijn antwoorden versturen",
+      "sending": "Versturen…",
+      "fail": "Mislukt: {{err}}",
+      "failRetry": "probeer opnieuw.",
+      "yes": "Ja",
+      "no": "Nee",
+      "add": "Toevoegen",
+      "answerPlaceholder": "Jouw antwoord…"
     }
   }
 }
