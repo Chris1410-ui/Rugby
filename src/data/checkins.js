@@ -39,7 +39,8 @@ export function useTeamCheckinHistory(playerIds, days = 30) {
       .from("daily_checkins").select("player_id, date, moment, wb, sleep_h, activities")
       .in("player_id", playerIds).gte("date", from).order("date", { ascending: true });
     if (error) { console.error("[checkin history]", error.message); setLoading(false); return; }
-    setRows((data ?? []).map((r) => ({ playerId: r.player_id, date: r.date, moment: r.moment || "matin", wb: r.wb, sleepH: r.sleep_h != null ? Number(r.sleep_h) : null, activities: r.activities || [] })));
+    // Les lignes « meditation » (séances de relaxation) ne sont pas des bilans → exclues de l'historique.
+    setRows((data ?? []).filter((r) => r.moment !== "meditation").map((r) => ({ playerId: r.player_id, date: r.date, moment: r.moment || "matin", wb: r.wb, sleepH: r.sleep_h != null ? Number(r.sleep_h) : null, activities: r.activities || [] })));
     setLoading(false);
   }, [key, days]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -76,7 +77,8 @@ export function usePlayerCheckins(playerId, days = 21) {
       .then(({ data, error }) => {
         if (!active) return;
         if (error) console.error("[player checkins]", error.message);
-        setCheckins((data ?? []).map(dbToCheckin));
+        // Exclut les lignes « meditation » (non-bilan) : la fiche/récap ne montre que matin/soir.
+        setCheckins((data ?? []).filter((r) => r.moment !== "meditation").map(dbToCheckin));
         setLoading(false);
       });
     return () => { active = false; };
@@ -107,7 +109,10 @@ export function useMyDay(playerId, date = todayISO()) {
     const { data } = await supabase
       .from("daily_checkins").select("*").eq("player_id", playerId).eq("date", date);
     const map = { matin: null, soir: null };
-    (data ?? []).forEach((r) => { map[r.moment === "soir" ? "soir" : "matin"] = dbToCheckin(r); });
+    (data ?? []).forEach((r) => {
+      if (r.moment !== "matin" && r.moment !== "soir" && r.moment != null) return; // ignore « meditation » & co.
+      map[r.moment === "soir" ? "soir" : "matin"] = dbToCheckin(r);
+    });
     setDay(map);
     setLoading(false);
   }, [playerId, date]);
@@ -128,6 +133,7 @@ export function useMyCheckin(playerId, date = todayISO()) {
       .select("*")
       .eq("player_id", playerId)
       .eq("date", date)
+      .eq("moment", "matin")
       .maybeSingle();
     setCheckin(data ? dbToCheckin(data) : null);
     setLoading(false);
@@ -174,7 +180,12 @@ export function useTeamCheckins(playerIds) {
         (act[row.player_id] = act[row.player_id] || []).push({ date: row.date, activities: row.activities });
       }
       // Événements « bilan complété » (matin + soir) → +10 chacun dans computePoints.
-      (bil[row.player_id] = bil[row.player_id] || []).push({ date: row.date, moment });
+      // La ligne « meditation » N'EST PAS un bilan : on l'exclut ici pour ne pas
+      // créditer un +10 « bilan » en double (elle rapporte déjà +10 via l'activité
+      // du jour, cf. `act` ci-dessus).
+      if (moment === "matin" || moment === "soir") {
+        (bil[row.player_id] = bil[row.player_id] || []).push({ date: row.date, moment });
+      }
     });
     setByPlayer(latest);
     setActivities(act);
@@ -192,6 +203,42 @@ export function useTeamCheckins(playerIds) {
   }, [key, fetch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { checkins: byPlayer, activities, bilans, refresh: fetch };
+}
+
+/* ════════════ Méditation / relaxation (gamification, option A) ════════════
+   Une séance de relaxation faite AUJOURD'HUI = +10 pts, aligné sur l'« activité
+   du jour ». Stockée comme une ligne daily_checkins dédiée (moment='meditation')
+   portant l'activité 'meditation' → comptée UNE fois via computePoints (dédup par
+   la clé unique player_id,date,moment). N'écrit AUCUN autre champ (wb, sommeil…)
+   et est exclue partout du décompte « bilan » → aucun double comptage, aucun
+   impact sur readiness/bien-être. Idempotent : une ligne par jour maximum. */
+export async function markMeditationDone(playerId, date = todayISO()) {
+  if (!playerId) return;
+  const { error } = await supabase
+    .from("daily_checkins")
+    .upsert(
+      // wb est NOT NULL → jsonb vide (invisible : la ligne meditation est exclue
+      // partout du décompte bilan/readiness).
+      { player_id: playerId, date, moment: "meditation", wb: {}, activities: ["meditation"] },
+      { onConflict: "player_id,date,moment", ignoreDuplicates: true }
+    );
+  if (error) throw error;
+}
+
+/* Séance de méditation déjà faite aujourd'hui ? (état + rafraîchissement). */
+export function useMeditationToday(playerId, date = todayISO()) {
+  const [done, setDone] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!playerId) { setDone(false); return; }
+    const { data, error } = await supabase
+      .from("daily_checkins").select("id")
+      .eq("player_id", playerId).eq("date", date).eq("moment", "meditation").maybeSingle();
+    if (!error) setDone(!!data);
+  }, [playerId, date]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+  return { done, refresh };
 }
 
 /* Construit les events « bilan complété » d'un joueur pour computePoints :
