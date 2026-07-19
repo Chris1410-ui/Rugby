@@ -83,6 +83,101 @@
     "profileIncompleteTitle": "Onvolledig profiel",
     "profileIncompleteBody": "Je account ({{email}}) is geverifieerd, maar de configuratie is onvolledig (rol of clubkoppeling ontbreekt). Neem contact op met de staf om je toegang te voltooien.",
     "readOnlyBanner": "Alleen-lezen modus — coach. Volledig cluboverzicht, zonder wijzigen.",
-    "playerNotLinked": "Je spelersprofiel is nog niet aan de selectie gekoppeld. Neem contact op met de staf."
+    "playerNotLinked": "Je spelersprofiel is nog niet aan de selectie gekoppeld. Neem contact op met de staf.",
+    "notifications": "Meldingen"
+  },
+  "onboarding": {
+    "skip": "Overslaan",
+    "prev": "Vorige",
+    "next": "Volgende",
+    "start": "Beginnen 🎉",
+    "step": "STAP {{n}} / {{total}}",
+    "slides": {
+      "joueur": [
+        {
+          "title": "Welkom 👋",
+          "text": "Dit is je spelersruimte. In een paar schermen tonen we je het belangrijkste. Je kunt deze rondleiding altijd overslaan."
+        },
+        {
+          "title": "Je dagelijkse check-in",
+          "text": "Vul elke dag je ochtend-check-in in (welzijn, slaap, gewicht) en die van de avond. Dit is de basis van je opvolging en readiness."
+        },
+        {
+          "title": "Je sessies",
+          "text": "Vind je geplande sessies, voltooi ze en noteer hoe je je voelde (RPE, belasting). De staf ziet je voortgang live."
+        },
+        {
+          "title": "Uitdagingen",
+          "text": "Ga uitdagingen van de staf aan om bonuspunten te verdienen. Je kunt een uitdaging die je niet ligt ook weigeren."
+        },
+        {
+          "title": "Het klassement",
+          "text": "Check-ins, sessies, activiteiten en uitdagingen leveren je punten op. Klim in de divisies en vergelijk je met je team."
+        },
+        {
+          "title": "Waar sta ik",
+          "text": "Vergelijk je fysieke tests met het gemiddelde van je team en je lijn, met de Top 14-markering. Aan jou om hoger te mikken!"
+        }
+      ],
+      "staff": [
+        {
+          "title": "Welkom 👋",
+          "text": "Dit is je stafruimte. Een korte rondleiding langs de belangrijkste secties — altijd overslaanbaar."
+        },
+        {
+          "title": "Je spelers",
+          "text": "De selectie, gedetailleerde fiches (fysieke tests, gewicht, ×LG) en spelers toevoegen beheer je vanaf het scherm Spelers."
+        },
+        {
+          "title": "De opvolging",
+          "text": "Readiness, belasting, ACWR en meldingen tonen wie je in de gaten moet houden. Behandel meldingen of stuur ze naar de kiné."
+        },
+        {
+          "title": "Programma's & kampen",
+          "text": "Maak programma's, plan kampen en testcampagnes, en wijs alles toe aan je spelers."
+        },
+        {
+          "title": "Uitdagingen",
+          "text": "Lanceer instelbare uitdagingen (punten, validatie in twee stappen) om de groep te motiveren."
+        },
+        {
+          "title": "De vergelijking",
+          "text": "Vergelijk twee spelers, of een speler met het team-/lijngemiddelde, over de 9 tests (tabel, balken, radar, Top 14-markering)."
+        }
+      ]
+    }
+  },
+  "compare": {
+    "you": "Jij",
+    "teamAvg": "Teamgemiddelde",
+    "lineAvg": "Gemiddelde {{line}}",
+    "selectTwo": "Kies twee profielen om te vergelijken.",
+    "colTest": "Test",
+    "colGap": "Verschil",
+    "top14Reached": "Top 14 behaald",
+    "barsTitle": "Balken · % van Top 14-drempel (100% = Top 14)",
+    "radarTitle": "Radar · fysiek profiel (Top 14-markering)",
+    "top14": "Top 14",
+    "average_one": "gemiddelde · {{count}} speler",
+    "average_other": "gemiddelde · {{count}} spelers",
+    "testedOn": "test {{date}}",
+    "updated": "bijgew. {{date}}",
+    "noData": "geen gegevens",
+    "noTest": "geen test",
+    "staff": {
+      "title": "A/B-vergelijking",
+      "swap": "A en B wisselen",
+      "swapDisabled": "Wisselen niet mogelijk met een gemiddelde",
+      "groupAverages": "Gemiddelden",
+      "lineOfA": "Gemiddelde van lijn A",
+      "groupPlayers": "Spelers"
+    },
+    "player": {
+      "title": "Waar sta ik?",
+      "intro": "Je waarden per test vergeleken met het gemiddelde van je team of je lijn, met de Top 14-markering. Enkel gemiddelden worden getoond — nooit de waarden van een teamgenoot.",
+      "loading": "Je tests laden…",
+      "noTestTitle": "Nog geen test geregistreerd.",
+      "noTestBody": "Je resultaten verschijnen hier na je volgende fysieke evaluatie."
+    }
   }
 }

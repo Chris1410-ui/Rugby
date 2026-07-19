@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { Activity } from "../../lib/icons.jsx";
@@ -10,47 +11,48 @@ import CompareView from "../shared/CompareView.jsx";
    A = « Toi » (mes résultats). B = moyenne ÉQUIPE ou moyenne LIGNE, au choix.
    Confidentialité : mes valeurs viennent de mes résultats ; les moyennes de
    fonctions SECURITY DEFINER (agrégats + % Top 14) — jamais les valeurs brutes
-   des coéquipiers. */
+   des coéquipiers. Textes via i18n (namespace `compare`). */
 export default function Comparaison({ me }) {
+  const { t } = useTranslation();
   const { campaigns, results, loading } = useTestCampaigns(me.team);
   const lineStats = useLineStats(me.id);
   const teamStats = useTeamStats(me.id);
   const [scope, setScope] = useState("team"); // "team" | "line"
 
-  const A = useMemo(() => analyzeProfile(me, campaigns, results, "Toi"), [me, campaigns, results]);
-  const lineLabel = `Moyenne ${grpLabel(me.grp)?.toLowerCase() || "ligne"}`;
+  const lineName = grpLabel(me.grp)?.toLowerCase() || "ligne";
+  const A = useMemo(() => analyzeProfile(me, campaigns, results, t("compare.you")), [me, campaigns, results, t]);
   const B = useMemo(
-    () => (scope === "team" ? profileFromStats("Moyenne équipe", teamStats) : profileFromStats(lineLabel, lineStats)),
-    [scope, teamStats, lineStats, lineLabel],
+    () => (scope === "team"
+      ? profileFromStats(t("compare.teamAvg"), teamStats)
+      : profileFromStats(t("compare.lineAvg", { line: lineName }), lineStats)),
+    [scope, teamStats, lineStats, lineName, t],
   );
 
   const hasMine = A && Object.values(A.byTest).some((e) => e.value != null);
-  const tab = (key, label) => (
-    <button key={key} onClick={() => setScope(key)} style={{ flex: 1, padding: "9px 10px", borderRadius: 10, cursor: "pointer", fontSize: 12.5, fontWeight: 800,
-      background: scope === key ? C.viol : "rgba(255,255,255,0.06)", border: `1px solid ${scope === key ? C.viol : C.border}`, color: scope === key ? "#fff" : "rgba(255,255,255,0.7)" }}>{label}</button>
+  const tab = (k, label) => (
+    <button key={k} onClick={() => setScope(k)} style={{ flex: 1, padding: "9px 10px", borderRadius: 10, cursor: "pointer", fontSize: 12.5, fontWeight: 800,
+      background: scope === k ? C.viol : "rgba(255,255,255,0.06)", border: `1px solid ${scope === k ? C.viol : C.border}`, color: scope === k ? "#fff" : "rgba(255,255,255,0.7)" }}>{label}</button>
   );
 
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <Activity size={18} color={C.viol} />
-        <div style={{ fontSize: 15, fontWeight: 800 }}>Où je me situe ?</div>
+        <div style={{ fontSize: 15, fontWeight: 800 }}>{t("compare.player.title")}</div>
       </div>
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12, lineHeight: 1.5 }}>
-        Tes valeurs par test comparées à la moyenne de ton équipe ou de ta ligne, avec le repère Top 14. Seules des moyennes sont affichées — jamais les valeurs d'un coéquipier.
-      </div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12, lineHeight: 1.5 }}>{t("compare.player.intro")}</div>
 
       {/* Choix du comparatif B */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        {tab("team", "Moyenne équipe")}
-        {tab("line", `Moyenne ${grpLabel(me.grp)?.toLowerCase() || "ligne"}`)}
+        {tab("team", t("compare.teamAvg"))}
+        {tab("line", t("compare.lineAvg", { line: lineName }))}
       </div>
 
       {loading && !hasMine ? (
-        <div style={sc({ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 })}>Chargement de tes tests…</div>
+        <div style={sc({ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 })}>{t("compare.player.loading")}</div>
       ) : !hasMine ? (
         <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12.5, lineHeight: 1.6 })}>
-          Aucun test enregistré pour l'instant.<br />Tes résultats apparaîtront ici après ta prochaine évaluation physique.
+          {t("compare.player.noTestTitle")}<br />{t("compare.player.noTestBody")}
         </div>
       ) : (
         <CompareView A={A} B={B} />

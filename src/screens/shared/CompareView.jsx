@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { fmtShort } from "../../lib/metrics.js";
@@ -6,8 +7,8 @@ import { TOP14_TESTS, catLabel } from "../../lib/top14.js";
 /* Vue de comparaison PARTAGÉE (staff & joueur). Reçoit deux profils déjà
    calculés (cf. lib/compare.js) et les rend à l'identique : cartouches d'identité,
    tableau des 9 tests + écarts, barres normalisées en % du seuil Top 14, radar.
-   Aucune logique de données ici → même rendu quelle que soit la source
-   (client staff, ou agrégats serveur côté joueur). */
+   Aucune logique de données ici → même rendu quelle que soit la source. Textes
+   via i18n (namespace `compare`). */
 
 export const A_COL = C.green, B_COL = C.viol, T14_COL = "#F2C84B";
 const DEC = { squat: 2, bench: 2, deadlift: 2, hangclean: 2, tractions: 2, mas: 2, yoyo: 0, cmj: 0 };
@@ -21,8 +22,9 @@ function fmtVal(key, v) {
 const headTitle = (d) => (d.label ? d.label : d.player ? displayName(d.player) : "—");
 
 export default function CompareView({ A, B }) {
+  const { t } = useTranslation();
   if (!A || !B) {
-    return <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>Sélectionne deux profils à comparer.</div>;
+    return <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>{t("compare.selectTwo")}</div>;
   }
   return (
     <>
@@ -37,30 +39,30 @@ export default function CompareView({ A, B }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr style={{ background: "rgba(255,255,255,0.04)" }}>
-              <th style={thL}>Test</th>
+              <th style={thL}>{t("compare.colTest")}</th>
               <th style={{ ...thR, color: A_COL }}>{headTitle(A)}</th>
               <th style={{ ...thR, color: B_COL }}>{headTitle(B)}</th>
-              <th style={thR}>Écart</th>
+              <th style={thR}>{t("compare.colGap")}</th>
             </tr>
           </thead>
           <tbody>
-            {TOP14_TESTS.map((t) => {
-              const ea = A.byTest[t.key], eb = B.byTest[t.key];
+            {TOP14_TESTS.map((tst) => {
+              const ea = A.byTest[tst.key], eb = B.byTest[tst.key];
               const a = ea?.value, b = eb?.value;
               const both = a != null && b != null;
-              const aBetter = both && (t.dir === "down" ? a < b : a > b);
-              const bBetter = both && (t.dir === "down" ? b < a : b > a);
+              const aBetter = both && (tst.dir === "down" ? a < b : a > b);
+              const bBetter = both && (tst.dir === "down" ? b < a : b > a);
               const delta = both ? a - b : null;
-              const dec = DEC[t.key] ?? 1;
+              const dec = DEC[tst.key] ?? 1;
               const deltaStr = delta == null ? "—"
-                : t.key === "bronco" ? `${delta > 0 ? "+" : ""}${Math.round(delta)}s`
+                : tst.key === "bronco" ? `${delta > 0 ? "+" : ""}${Math.round(delta)}s`
                 : `${delta > 0 ? "+" : ""}${delta.toFixed(dec)}`;
               const dCol = !both ? "rgba(255,255,255,0.4)" : aBetter ? A_COL : bBetter ? B_COL : "rgba(255,255,255,0.6)";
               return (
-                <tr key={t.key} style={{ borderTop: `1px solid ${C.border2}` }}>
-                  <td style={tdL}>{t.label}<span style={{ color: "rgba(255,255,255,0.4)", fontSize: 9.5 }}>{t.unit ? ` ${t.unit}` : ""}</span></td>
-                  <td style={{ ...tdR, color: "#fff" }}>{fmtVal(t.key, a)}{ea?.valid && <span title="Top 14 atteint" style={{ color: T14_COL, marginLeft: 3 }}>★</span>}</td>
-                  <td style={{ ...tdR, color: "#fff" }}>{fmtVal(t.key, b)}{eb?.valid && <span title="Top 14 atteint" style={{ color: T14_COL, marginLeft: 3 }}>★</span>}</td>
+                <tr key={tst.key} style={{ borderTop: `1px solid ${C.border2}` }}>
+                  <td style={tdL}>{tst.label}<span style={{ color: "rgba(255,255,255,0.4)", fontSize: 9.5 }}>{tst.unit ? ` ${tst.unit}` : ""}</span></td>
+                  <td style={{ ...tdR, color: "#fff" }}>{fmtVal(tst.key, a)}{ea?.valid && <span title={t("compare.top14Reached")} style={{ color: T14_COL, marginLeft: 3 }}>★</span>}</td>
+                  <td style={{ ...tdR, color: "#fff" }}>{fmtVal(tst.key, b)}{eb?.valid && <span title={t("compare.top14Reached")} style={{ color: T14_COL, marginLeft: 3 }}>★</span>}</td>
                   <td style={{ ...tdR, color: dCol, fontWeight: 800 }}>{deltaStr}</td>
                 </tr>
               );
@@ -71,16 +73,16 @@ export default function CompareView({ A, B }) {
 
       {/* Barres comparatives (% du seuil Top 14) */}
       <div style={sc({ marginBottom: 12 })}>
-        <SectionTitle>Barres · % du seuil Top 14 (100 % = Top 14)</SectionTitle>
-        {TOP14_TESTS.map((t) => (
-          <BarRow key={t.key} label={t.label} a={A.byTest[t.key]?.pct} b={B.byTest[t.key]?.pct} />
+        <SectionTitle>{t("compare.barsTitle")}</SectionTitle>
+        {TOP14_TESTS.map((tst) => (
+          <BarRow key={tst.key} label={tst.label} a={A.byTest[tst.key]?.pct} b={B.byTest[tst.key]?.pct} />
         ))}
         <Legend aLabel={headTitle(A)} bLabel={headTitle(B)} />
       </div>
 
       {/* Radar */}
       <div style={sc({ display: "flex", flexDirection: "column", alignItems: "center" })}>
-        <SectionTitle>Radar · profil physique (repère Top 14)</SectionTitle>
+        <SectionTitle>{t("compare.radarTitle")}</SectionTitle>
         <Radar a={A} b={B} />
         <Legend aLabel={headTitle(A)} bLabel={headTitle(B)} />
       </div>
@@ -98,15 +100,19 @@ function SectionTitle({ children }) {
 }
 
 function ProfileHead({ data, color, tag }) {
+  const { t } = useTranslation();
   const title = headTitle(data);
-  const sub = data.isAverage ? `moyenne · ${data.members} joueur${data.members > 1 ? "s" : ""}` : catLabel(data.cat);
+  const sub = data.isAverage ? t("compare.average", { count: data.members }) : catLabel(data.cat);
+  const dateLabel = data.lastDate
+    ? t(data.isAverage ? "compare.updated" : "compare.testedOn", { date: fmtShort(data.lastDate) })
+    : t(data.isAverage ? "compare.noData" : "compare.noTest");
   return (
     <div style={{ background: `${color}18`, border: `1px solid ${color}55`, borderRadius: 12, padding: "10px 12px" }}>
       <div style={{ fontSize: 9, fontWeight: 800, color, letterSpacing: 1 }}>{tag}</div>
       <div style={{ fontSize: 13.5, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
       <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{sub}</div>
       <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>
-        <span style={{ color: T14_COL, fontWeight: 800 }}>{data.count}/9</span> Top 14 · {data.lastDate ? `${data.isAverage ? "MàJ" : "test"} ${fmtShort(data.lastDate)}` : (data.isAverage ? "aucune donnée" : "aucun test")}
+        <span style={{ color: T14_COL, fontWeight: 800 }}>{data.count}/9</span> {t("compare.top14")} · {dateLabel}
       </div>
     </div>
   );
@@ -132,8 +138,9 @@ function BarRow({ label, a, b }) {
 }
 
 function Legend({ aLabel = "A", bLabel = "B" }) {
+  const { t } = useTranslation();
   const dot = (c, l) => (<span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9.5, color: "rgba(255,255,255,0.6)", maxWidth: "45%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} />{l}</span>);
-  return <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>{dot(A_COL, aLabel)}{dot(B_COL, bLabel)}{dot(T14_COL, "Top 14")}</div>;
+  return <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>{dot(A_COL, aLabel)}{dot(B_COL, bLabel)}{dot(T14_COL, t("compare.top14"))}</div>;
 }
 
 function Radar({ a, b }) {
@@ -145,18 +152,18 @@ function Radar({ a, b }) {
     return [c + r * Math.cos(ang(i)), c + r * Math.sin(ang(i))];
   };
   const ring = (norm) => axes.map((_, i) => pt(norm, i).join(",")).join(" ");
-  const poly = (data) => axes.map((t, i) => pt((data.byTest[t.key]?.pct ?? 0) / 100, i).join(",")).join(" ");
+  const poly = (data) => axes.map((tst, i) => pt((data.byTest[tst.key]?.pct ?? 0) / 100, i).join(",")).join(" ");
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ maxWidth: "100%" }}>
       {[0.5, 1.5].map((n) => <polygon key={n} points={ring(n)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />)}
       <polygon points={ring(1)} fill="none" stroke={T14_COL} strokeWidth="1.5" strokeDasharray="4 4" />
-      {axes.map((t, i) => { const [x, y] = pt(MAXN, i); return <line key={t.key} x1={c} y1={c} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />; })}
+      {axes.map((tst, i) => { const [x, y] = pt(MAXN, i); return <line key={tst.key} x1={c} y1={c} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />; })}
       <polygon points={poly(a)} fill={`${A_COL}33`} stroke={A_COL} strokeWidth="2" />
       <polygon points={poly(b)} fill={`${B_COL}33`} stroke={B_COL} strokeWidth="2" />
-      {axes.map((t, i) => {
+      {axes.map((tst, i) => {
         const [x, y] = pt(MAXN + 0.18, i);
-        return <text key={t.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8.5" fill="rgba(255,255,255,0.6)" fontWeight="700">{t.label.split(" ")[0]}</text>;
+        return <text key={tst.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8.5" fill="rgba(255,255,255,0.6)" fontWeight="700">{tst.label.split(" ")[0]}</text>;
       })}
     </svg>
   );
