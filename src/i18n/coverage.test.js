@@ -39,7 +39,6 @@ const EXCLUDE = new Set([
 // Fichiers d'UI PAS ENCORE migrés (à vider lot par lot). Tout .jsx absent de
 // cette liste ET d'EXCLUDE est scanné.
 const PENDING = new Set([
-  "auth/LoginScreen.jsx",
   "auth/useAuth.jsx",
   "lib/ui.jsx",
   "screens/OwnerApp.jsx",
