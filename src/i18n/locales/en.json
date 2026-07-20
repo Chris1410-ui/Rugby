@@ -1409,6 +1409,52 @@
       "ppPlaceholder": "Goals, instructions, watch points…",
       "save": "Save",
       "chalPtsSuffix": "· +{{pts}} pts"
+    },
+    "error": {
+      "title": "An error occurred",
+      "reload": "Reload"
+    },
+    "tests": {
+      "errName": "Give the campaign a name.",
+      "errSave": "Failed: {{err}}",
+      "errSaveRetry": "try again.",
+      "errNoCampaign": "Choose or create a campaign.",
+      "saveFail": "Save failed: {{err}}",
+      "deleteFail": "Deletion failed: {{err}}",
+      "enter": "Enter",
+      "title": "TEST EVOLUTION",
+      "namePlaceholder": "Name (e.g. Camp 2 – Aug)",
+      "create": "Create",
+      "noCampaignOption": "— no campaign —",
+      "newCampBtn": "Camp.",
+      "newCampTitle": "New campaign",
+      "close": "Close",
+      "deleteCamp": "Del. camp.",
+      "deleteCampTitle": "Delete this campaign (all players)",
+      "save": "Save",
+      "emptyEdit": "No test campaign. Click “Enter” to create one and record the values.",
+      "emptyView": "No test recorded yet.",
+      "campaignsSummary_one": "{{count}} campaign · latest: {{last}}",
+      "campaignsSummary_other": "{{count}} campaigns · latest: {{last}}",
+      "prev": "prev. {{v}}"
+    }
+  },
+  "auth": {
+    "reset": {
+      "strengthWeak": "Weak",
+      "strengthMed": "Medium",
+      "strengthStrong": "Strong",
+      "errWeak": "Password too weak (10+, uppercase, lowercase, digit, special).",
+      "errMismatch": "The passwords do not match.",
+      "doneTitle": "Password updated",
+      "doneDesc": "You can now access your space with your new password.",
+      "continue": "Continue",
+      "title": "New password",
+      "newPlaceholder": "New password",
+      "valid": "✓ valid",
+      "weakHint": "10+ characters, uppercase, lowercase, digit, special",
+      "confirmPlaceholder": "Confirm the password",
+      "save": "Save the new password"
     }
   }
 }

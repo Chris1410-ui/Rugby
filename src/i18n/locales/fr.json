@@ -1409,6 +1409,52 @@
       "ppPlaceholder": "Objectifs, consignes, points de vigilance…",
       "save": "Enregistrer",
       "chalPtsSuffix": "· +{{pts}} pts"
+    },
+    "error": {
+      "title": "Une erreur est survenue",
+      "reload": "Recharger"
+    },
+    "tests": {
+      "errName": "Donne un nom à la campagne.",
+      "errSave": "Échec : {{err}}",
+      "errSaveRetry": "réessaie.",
+      "errNoCampaign": "Choisis ou crée une campagne.",
+      "saveFail": "Échec de l'enregistrement : {{err}}",
+      "deleteFail": "Échec de la suppression : {{err}}",
+      "enter": "Saisir",
+      "title": "ÉVOLUTION DES TESTS",
+      "namePlaceholder": "Nom (ex. Camp 2 – Août)",
+      "create": "Créer",
+      "noCampaignOption": "— aucune campagne —",
+      "newCampBtn": "Camp.",
+      "newCampTitle": "Nouvelle campagne",
+      "close": "Fermer",
+      "deleteCamp": "Suppr. camp.",
+      "deleteCampTitle": "Supprimer cette campagne (tous les joueurs)",
+      "save": "Enregistrer",
+      "emptyEdit": "Aucune campagne de tests. Clique « Saisir » pour en créer une et enregistrer les valeurs.",
+      "emptyView": "Aucun test enregistré pour le moment.",
+      "campaignsSummary_one": "{{count}} campagne · dernière : {{last}}",
+      "campaignsSummary_other": "{{count}} campagnes · dernière : {{last}}",
+      "prev": "préc. {{v}}"
+    }
+  },
+  "auth": {
+    "reset": {
+      "strengthWeak": "Faible",
+      "strengthMed": "Moyen",
+      "strengthStrong": "Fort",
+      "errWeak": "Mot de passe trop faible (10+, majuscule, minuscule, chiffre, spécial).",
+      "errMismatch": "Les mots de passe ne correspondent pas.",
+      "doneTitle": "Mot de passe mis à jour",
+      "doneDesc": "Tu peux maintenant accéder à ton espace avec ton nouveau mot de passe.",
+      "continue": "Continuer",
+      "title": "Nouveau mot de passe",
+      "newPlaceholder": "Nouveau mot de passe",
+      "valid": "✓ valide",
+      "weakHint": "10+ caractères, majuscule, minuscule, chiffre, spécial",
+      "confirmPlaceholder": "Confirmer le mot de passe",
+      "save": "Enregistrer le nouveau mot de passe"
     }
   }
 }
