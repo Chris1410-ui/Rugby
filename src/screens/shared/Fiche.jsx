@@ -163,15 +163,20 @@ function fmtBytes(n) {
      `canDelete` (prépa/médical/owner). Accès par URL signée (1 h). */
 function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
   const { t } = useTranslation();
+  // Dossier cible = <team_id>/<player_id>. Sans joueur valide (fiche d'un compte
+  // owner/staff sans player_id), il n'y a AUCUN dossier cible → on masque la
+  // section (l'upload se fait en ouvrant la fiche d'un vrai joueur).
+  const hasTarget = !!(player?.id && player?.team);
   const [files, setFiles] = useState([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
   const refresh = async () => {
+    if (!hasTarget) return;
     try { setFiles(await listPlayerFiles(player.team, player.id)); setErr(""); }
     catch (e) { setErr(e.message || String(e)); }
   };
-  useEffect(() => { refresh(); }, [player.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { refresh(); }, [player?.id, hasTarget]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onAdd = async (e) => {
     const file = e.target.files?.[0];
@@ -195,6 +200,8 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
   };
   const cleanName = (n) => n.replace(/^\d{8}_/, "");
   const iconBtn = { background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", flexShrink: 0 };
+
+  if (!hasTarget) return null; // pas de joueur cible → section masquée (pas de dossier valide)
 
   return (
     <div style={sc({ padding: 14, marginBottom: 12 })}>

@@ -62,8 +62,9 @@ export const PLAYER_BUCKET = "player-files";
 const playerBucket = () => supabase.storage.from(PLAYER_BUCKET);
 export const playerFilesFolder = (teamId, playerId) => `${teamId}/${playerId}`;
 
-// Upload joueur — garde PDF-only AVANT tout accès réseau ; préfixe temporel.
+// Upload joueur — gardes AVANT tout accès réseau : cible valide + PDF-only.
 export async function uploadPlayerPdf(teamId, playerId, file) {
+  if (!teamId || !playerId) throw new Error("NO_TARGET"); // dossier <team>/<player> incomplet
   if (!file || file.type !== "application/pdf") throw new Error("PDF_ONLY");
   const stamp = String(Date.now()).slice(-8);
   const path = `${playerFilesFolder(teamId, playerId)}/${stamp}_${sanitize(file.name)}`;
