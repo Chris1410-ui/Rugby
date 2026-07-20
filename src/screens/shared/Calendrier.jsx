@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { isoDate, parseISO, todayISO, statusOfLog } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
@@ -34,7 +35,7 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
   return (
     <div>
       <Section
-        title={now.toLocaleDateString("fr-BE", { month: "long", year: "numeric" }).toUpperCase()}
+        title={now.toLocaleDateString(localeTag(), { month: "long", year: "numeric" }).toUpperCase()}
         right={
           <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", display: "flex", gap: 10 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.green }} />{t("shared.calendar.legendDone")}</span>
@@ -67,7 +68,7 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
           const done = s.assignedIds.filter((id) => statusOfLog(logs, s.id, id) === "done").length;
           return (
             <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.border2}` }}>
-              <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{d.toLocaleDateString("fr-BE", { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
+              <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{d.toLocaleDateString(localeTag(), { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
               <div style={{ width: 3, height: 30, borderRadius: 2, background: CODES[s.code] || accent }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag><span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>

@@ -13,7 +13,9 @@
     "back": "← Retour",
     "previewReadonly": "👁 Aperçu — lecture seule",
     "actionFailed": "Échec : {{err}}",
-    "tryAgain": "réessaie."
+    "tryAgain": "réessaie.",
+    "yes": "Oui",
+    "no": "Non"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -1694,6 +1696,31 @@
     "badge": {
       "first": "Défi relevé",
       "count": "{{n}} défis"
+    }
+  },
+  "csv": {
+    "roster": {
+      "num": "N°",
+      "name": "Nom",
+      "pos": "Poste",
+      "line": "Ligne",
+      "acwr": "ACWR",
+      "zone": "Zone",
+      "load7d": "Charge7j (UA)",
+      "monotony": "Monotonie",
+      "strain": "Strain",
+      "wellness": "Bien-être/50",
+      "readiness": "Readiness/100",
+      "risk": "Risque/100",
+      "todayCheckin": "Bilan du jour"
+    },
+    "yes": "oui",
+    "no": "non",
+    "questionnaire": {
+      "player": "Joueur",
+      "status": "Statut",
+      "filled": "Rempli",
+      "pending": "En attente"
     }
   }
 }

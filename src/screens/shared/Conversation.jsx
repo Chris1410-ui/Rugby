@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Send, ChevronLeft } from "../../lib/icons.jsx";
@@ -46,7 +47,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
     setBusy(false);
   };
 
-  const fmt = (ts) => new Date(ts).toLocaleString("fr-BE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const fmt = (ts) => new Date(ts).toLocaleString(localeTag(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   const body = (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 380 }}>

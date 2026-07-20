@@ -13,7 +13,9 @@
     "back": "← Back",
     "previewReadonly": "👁 Preview — read-only",
     "actionFailed": "Failed: {{err}}",
-    "tryAgain": "try again."
+    "tryAgain": "try again.",
+    "yes": "Yes",
+    "no": "No"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -1694,6 +1696,31 @@
     "badge": {
       "first": "Challenge done",
       "count": "{{n}} challenges"
+    }
+  },
+  "csv": {
+    "roster": {
+      "num": "No.",
+      "name": "Name",
+      "pos": "Position",
+      "line": "Line",
+      "acwr": "ACWR",
+      "zone": "Zone",
+      "load7d": "Load7d (AU)",
+      "monotony": "Monotony",
+      "strain": "Strain",
+      "wellness": "Well-being/50",
+      "readiness": "Readiness/100",
+      "risk": "Risk/100",
+      "todayCheckin": "Today's check-in"
+    },
+    "yes": "yes",
+    "no": "no",
+    "questionnaire": {
+      "player": "Player",
+      "status": "Status",
+      "filled": "Filled in",
+      "pending": "Pending"
     }
   }
 }

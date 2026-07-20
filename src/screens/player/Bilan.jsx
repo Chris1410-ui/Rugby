@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { posDisplay } from "../../lib/positions.js";
@@ -31,7 +32,7 @@ const eveningDefaults = () => ({ quality: 6, intensity: 6, difficulty: 5, fatigu
 
 const hhmm = (iso) => {
   if (!iso) return "";
-  try { return new Date(iso).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" }).replace(":", "h"); }
+  try { return new Date(iso).toLocaleTimeString(localeTag(), { hour: "2-digit", minute: "2-digit" }).replace(":", "h"); }
   catch { return ""; }
 };
 
@@ -159,7 +160,7 @@ export default function Bilan({ me, accent }) {
         <Ring val={readiness} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
-            {t("player.bilan.today")} · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
+            {t("player.bilan.today")} · {new Date().toLocaleDateString(localeTag(), { weekday: "long", day: "numeric", month: "long" })}
           </div>
           <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{displayName(me)}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, me.pos)}</div>

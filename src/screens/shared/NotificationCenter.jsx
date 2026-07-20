@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Bell, ClipboardList, Dumbbell, MessageSquare, FileText, Flag, Flame, Shield, Film } from "../../lib/icons.jsx";
@@ -16,7 +17,7 @@ const fmtWhen = (iso, t) => {
     if (diff < 1) return t("shared.notif.justNow");
     if (diff < 60) return t("shared.notif.minAgo", { n: diff });
     if (diff < 1440) return t("shared.notif.hoursAgo", { n: Math.round(diff / 60) });
-    return d.toLocaleDateString("fr-BE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString(localeTag(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   } catch { return ""; }
 };
 

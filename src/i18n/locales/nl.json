@@ -13,7 +13,9 @@
     "back": "← Terug",
     "previewReadonly": "👁 Voorbeeld — alleen-lezen",
     "actionFailed": "Mislukt: {{err}}",
-    "tryAgain": "probeer opnieuw."
+    "tryAgain": "probeer opnieuw.",
+    "yes": "Ja",
+    "no": "Nee"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -1694,6 +1696,31 @@
     "badge": {
       "first": "Uitdaging behaald",
       "count": "{{n}} uitdagingen"
+    }
+  },
+  "csv": {
+    "roster": {
+      "num": "Nr.",
+      "name": "Naam",
+      "pos": "Positie",
+      "line": "Linie",
+      "acwr": "ACWR",
+      "zone": "Zone",
+      "load7d": "Belasting7d (AU)",
+      "monotony": "Monotonie",
+      "strain": "Strain",
+      "wellness": "Welzijn/50",
+      "readiness": "Readiness/100",
+      "risk": "Risico/100",
+      "todayCheckin": "Check-in van vandaag"
+    },
+    "yes": "ja",
+    "no": "nee",
+    "questionnaire": {
+      "player": "Speler",
+      "status": "Status",
+      "filled": "Ingevuld",
+      "pending": "In afwachting"
     }
   }
 }
