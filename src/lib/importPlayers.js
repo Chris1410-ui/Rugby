@@ -3,7 +3,7 @@
    toute écriture (cf. data/importer.js). Réutilise postes (positions.js) et
    l'unicité des totems (totems.js / migration 0027). */
 
-import { RUGBY_POS } from "./positions.js";
+import { RUGBY_POS, posDisplay } from "./positions.js";
 import { freeTotem } from "./totems.js";
 import { normalizeInitials } from "./identity.js";
 import fr from "../i18n/locales/fr.json";
@@ -171,11 +171,23 @@ export function importTemplate(t) {
   return [headers, IMPORT_COLUMNS.map((c) => ex[c.key] ?? "")];
 }
 
+/* Résout un message d'aperçu { key, params } → texte traduit (t = i18next).
+   Le moteur n'émet que des clés (import.msg.*) : aucune prose stockée. */
+export function importMsg(t, m) {
+  if (!m) return "";
+  if (typeof m === "string") return m; // repli défensif (ancien format)
+  const p = m.params || {};
+  if (m.key === "posKept") return t("import.msg.posKept", { pos: posDisplay(t, p.pos) });
+  if (m.key === "numberIgnored") return t("import.msg.numberIgnored", { col: t(`import.col.${p.col}`), value: p.value });
+  return t(`import.msg.${m.key}`, p);
+}
+
 /* Construit le plan d'import (create/update) à partir des lignes brutes du
    fichier (objets en-tête→valeur, cf. SheetJS) et de l'effectif existant.
    NE FAIT AUCUNE ÉCRITURE. Renvoie { rows, counts, columnMap }.
    Chaque row : { index, action, matchId, name(résolu), num, pos, grp, club,
-   metrics, warnings[], errors[], hasData }. */
+   metrics, warnings[], errors[], hasData }. warnings/errors = [{ key, params }]
+   traduits à l'affichage via importMsg. */
 export function buildPreview(rawRows = [], roster = []) {
   const headers = rawRows.length ? Object.keys(rawRows[0]) : [];
   const columnMap = mapHeaders(headers);
@@ -214,8 +226,8 @@ export function buildPreview(rawRows = [], roster = []) {
     // RÈGLE : à l'import, le poste/ligne d'un joueur EXISTANT n'est JAMAIS touché
     // (cf. branche `match` plus bas). On n'avertit donc du poste/ligne « non
     // reconnu » que pour les CRÉATIONS (pas d'appariement).
-    if (!match && cell(raw, "pos") && !posMatch) warnings.push(`Poste « ${cell(raw, "pos")} » non reconnu`);
-    if (!match && cell(raw, "grp") && !grpOverride) warnings.push(`Ligne « ${cell(raw, "grp")} » non reconnue`);
+    if (!match && cell(raw, "pos") && !posMatch) warnings.push({ key: "posUnrecognized", params: { value: cell(raw, "pos") } });
+    if (!match && cell(raw, "grp") && !grpOverride) warnings.push({ key: "grpUnrecognized", params: { value: cell(raw, "grp") } });
 
     // Métriques fournies (colonnes optionnelles absentes = ignorées).
     const metrics = {};
@@ -225,7 +237,7 @@ export function buildPreview(rawRows = [], roster = []) {
       if (rawv === "") return;
       if (c.type === "num") {
         const v = parseDecimal(rawv);
-        if (v == null) { warnings.push(`${c.header} : « ${rawv} » ignoré (nombre attendu)`); return; }
+        if (v == null) { warnings.push({ key: "numberIgnored", params: { col: c.key, value: rawv } }); return; }
         metrics[c.key] = v;
       } else {
         metrics[c.key] = rawv;
@@ -237,31 +249,31 @@ export function buildPreview(rawRows = [], roster = []) {
 
     // Ligne vide (ni totem, ni numéro) → erreur.
     if (!wantedName && num == null) {
-      errors.push("Ni totem ni numéro — ligne ignorée");
+      errors.push({ key: "emptyRow" });
       return { index, action: "error", matchId: null, name: wantedName, num, pos, grp, club, initials, metrics, warnings, errors, hasData: false };
     }
 
     if (match) {
       // Doublon intra-fichier ciblant le même joueur.
       const nk = `id:${match.id}`;
-      if (seenNameKeys.has(nk)) warnings.push("Doublon dans le fichier (même joueur)");
+      if (seenNameKeys.has(nk)) warnings.push({ key: "duplicate" });
       seenNameKeys.add(nk);
       // POSTE CONSERVÉ : on garde TOUJOURS le poste/ligne déjà saisi par le joueur
       // (reconnu, non reconnu ou vide dans le fichier n'a aucune importance) →
       // jamais d'écrasement, jamais de blocage pour motif de poste.
-      warnings.push(`Poste conservé (${match.pos || "valeur du joueur"})`);
+      warnings.push(match.pos ? { key: "posKept", params: { pos: match.pos } } : { key: "posKeptGeneric" });
       return { index, action: "update", matchId: match.id, name: match.name, num, pos: match.pos ?? null, grp: match.grp ?? null, club, initials, metrics, warnings, errors, hasData, posKept: true };
     }
 
     // Création : il faut un totem ET un poste résolu (sinon erreur).
-    if (!wantedName) { errors.push("Création impossible sans totem (numéro seul non trouvé)"); }
-    if (!pos || !grp) { errors.push("Création impossible sans poste valide"); }
+    if (!wantedName) { errors.push({ key: "noTotem" }); }
+    if (!pos || !grp) { errors.push({ key: "noPos" }); }
     if (errors.length) {
       return { index, action: "error", matchId: null, name: wantedName, num, pos, grp, club, initials, metrics, warnings, errors, hasData: false };
     }
     // Totem unique par club (propose un alternatif si déjà pris).
     const resolved = freeTotem([...taken], wantedName);
-    if (resolved.toLowerCase() !== wantedName.toLowerCase()) warnings.push(`Totem « ${wantedName} » déjà pris → « ${resolved} »`);
+    if (resolved.toLowerCase() !== wantedName.toLowerCase()) warnings.push({ key: "totemTaken", params: { wanted: wantedName, resolved } });
     taken.push(resolved);
     return { index, action: "create", matchId: null, name: resolved, num, pos, grp, club, initials, metrics, warnings, errors, hasData };
   });

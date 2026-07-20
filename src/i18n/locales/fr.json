@@ -1742,6 +1742,18 @@
       "grp": "Ligne",
       "tractions": "Tractions (+kg)",
       "bodyweight": "Poids (kg)"
+    },
+    "msg": {
+      "posUnrecognized": "Poste « {{value}} » non reconnu",
+      "grpUnrecognized": "Ligne « {{value}} » non reconnue",
+      "numberIgnored": "{{col}} : « {{value}} » ignoré (nombre attendu)",
+      "emptyRow": "Ni totem ni numéro — ligne ignorée",
+      "duplicate": "Doublon dans le fichier (même joueur)",
+      "posKept": "Poste conservé ({{pos}})",
+      "posKeptGeneric": "Poste conservé (valeur du joueur)",
+      "noTotem": "Création impossible sans totem (numéro seul non trouvé)",
+      "noPos": "Création impossible sans poste valide",
+      "totemTaken": "Totem « {{wanted}} » déjà pris → « {{resolved}} »"
     }
   }
 }
