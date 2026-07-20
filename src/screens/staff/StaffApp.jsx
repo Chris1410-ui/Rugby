@@ -143,6 +143,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
 /* FAB « ＋ » contextuel (écran Aujourd'hui) : création rapide. Séance / Joueur
    naviguent vers l'écran ; Tâche / Questionnaire ouvrent directement le formulaire. */
 function StaffFab({ go }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const item = (label, onClick) => (
     <button onClick={() => { onClick(); setOpen(false); }} style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 22, padding: "9px 14px", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(0,0,0,0.4)" }}>{label}</button>
@@ -153,14 +154,14 @@ function StaffFab({ go }) {
       <div style={{ position: "fixed", right: 16, bottom: 76, zIndex: 25, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
         {open && (
           <>
-            {item("＋ Séance", () => go("programmes"))}
-            {item("＋ Défi", () => go("defis", "defis"))}
-            {item("＋ Tâche", () => go("taches", "taches"))}
-            {item("＋ Questionnaire", () => go("questionnaires", "questionnaires"))}
-            {item("＋ Joueur", () => go("effectif"))}
+            {item(t("staff.app.fabSeance"), () => go("programmes"))}
+            {item(t("staff.app.fabDefi"), () => go("defis", "defis"))}
+            {item(t("staff.app.fabTache"), () => go("taches", "taches"))}
+            {item(t("staff.app.fabQuestionnaire"), () => go("questionnaires", "questionnaires"))}
+            {item(t("staff.app.fabJoueur"), () => go("effectif"))}
           </>
         )}
-        <button onClick={() => setOpen((v) => !v)} title="Créer" style={{ background: ACCENT, border: "none", borderRadius: 28, width: 52, height: 52, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(0,0,0,0.45)", transform: open ? "rotate(45deg)" : "none", transition: "transform .15s" }}>
+        <button onClick={() => setOpen((v) => !v)} title={t("staff.app.fabCreate")} style={{ background: ACCENT, border: "none", borderRadius: 28, width: 52, height: 52, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(0,0,0,0.45)", transform: open ? "rotate(45deg)" : "none", transition: "transform .15s" }}>
           <Plus size={24} />
         </button>
       </div>
@@ -170,6 +171,7 @@ function StaffFab({ go }) {
 
 /* ── Effectif enrichi ── */
 function Effectif({ teamId, players, sessions, logs, activities = {}, loading, onPreview, resetRequests = [] }) {
+  const { t } = useTranslation();
   const readOnly = useReadOnly();
   const [adding, setAdding] = useState(false);
   const [fiche, setFiche] = useState(null);
@@ -182,14 +184,14 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
 
   const genDemo = async () => {
     setDemoBusy(true); setDemoNote("");
-    try { const r = await generateDemoPlayers(teamId); setDemoNote(`${r.players} joueurs de démo générés ✓`); }
-    catch (e) { setDemoNote("Échec de la génération : " + (e.message || "")); }
+    try { const r = await generateDemoPlayers(teamId); setDemoNote(t("staff.app.demoGenerated", { count: r.players })); }
+    catch (e) { setDemoNote(t("staff.app.demoGenFail", { err: e.message || "" })); }
     setDemoBusy(false);
   };
   const delDemo = async () => {
     setDemoBusy(true); setDemoNote("");
-    try { await deleteDemoPlayers(teamId); setDemoNote("Joueurs de démo supprimés ✓"); }
-    catch (e) { setDemoNote("Échec de la suppression : " + (e.message || "")); }
+    try { await deleteDemoPlayers(teamId); setDemoNote(t("staff.app.demoDeleted")); }
+    catch (e) { setDemoNote(t("staff.app.demoDelFail", { err: e.message || "" })); }
     setDemoBusy(false);
   };
 
@@ -197,25 +199,25 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Users size={18} color={ACCENT} />
-        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Effectif · {players.length}</div>
+        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>{t("staff.app.title", { count: players.length })}</div>
         {!readOnly && players.length > 0 && (
-          <button onClick={() => setBatch(true)} title="Saisie groupée des tests" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+          <button onClick={() => setBatch(true)} title={t("staff.app.batchTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <Activity size={16} />
           </button>
         )}
         {players.length > 0 && (
-          <button onClick={() => downloadCSV(`effectif_${todayISO()}.csv`, rosterCSV(players))} title="Exporter en CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+          <button onClick={() => downloadCSV(`effectif_${todayISO()}.csv`, rosterCSV(players))} title={t("staff.app.exportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <Download size={16} />
           </button>
         )}
         {!readOnly && (
-          <button onClick={() => setImporting(true)} title="Importer depuis Excel / CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+          <button onClick={() => setImporting(true)} title={t("staff.app.importTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <Upload size={16} />
           </button>
         )}
         {!readOnly && (
           <button onClick={() => setAdding(true)} style={{ background: ACCENT, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-            <Plus size={15} /> Ajouter
+            <Plus size={15} /> {t("staff.app.add")}
           </button>
         )}
       </div>
@@ -223,7 +225,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       {/* Demandes de réinitialisation de mot de passe (joueur → staff) */}
       {!readOnly && resetRequests.length > 0 && (
         <div style={{ background: `${C.amb}14`, border: `1px solid ${C.amb}55`, borderRadius: 12, padding: 12, marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: C.amb, letterSpacing: 0.5, marginBottom: 8 }}>🔑 DEMANDES DE MOT DE PASSE · {resetRequests.length}</div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.amb, letterSpacing: 0.5, marginBottom: 8 }}>{t("staff.app.resetRequests", { count: resetRequests.length })}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {resetRequests.map((r) => {
               const pl = players.find((p) => p.id === r.player_id);
@@ -233,8 +235,8 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
                     <div style={{ fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name || pl?.name || r.email}</div>
                     <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.email}{r.note ? ` · « ${r.note} »` : ""}</div>
                   </div>
-                  {pl && <button onClick={() => setFiche(pl)} title="Ouvrir la fiche pour réinitialiser" style={{ background: `${C.green}1f`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: "6px 10px", color: C.green, fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>Réinitialiser</button>}
-                  <button onClick={() => markResetHandled(r.id).catch((e) => console.error(e.message))} title="Marquer traité" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>Traité</button>
+                  {pl && <button onClick={() => setFiche(pl)} title={t("staff.app.resetTitle")} style={{ background: `${C.green}1f`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: "6px 10px", color: C.green, fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>{t("staff.app.reset")}</button>}
+                  <button onClick={() => markResetHandled(r.id).catch((e) => console.error(e.message))} title={t("staff.app.handledTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>{t("staff.app.handled")}</button>
                 </div>
               );
             })}
@@ -246,18 +248,18 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       {!readOnly && (
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
         {demoCount === 0 ? (
-          <button onClick={genDemo} disabled={demoBusy} style={{ background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 9, padding: "8px 12px", color: C.viol, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🎭 {demoBusy ? "Génération…" : "Générer des joueurs de démo"}</button>
+          <button onClick={genDemo} disabled={demoBusy} style={{ background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 9, padding: "8px 12px", color: C.viol, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🎭 {demoBusy ? t("staff.app.demoGenerating") : t("staff.app.demoGenBtn")}</button>
         ) : (
-          <button onClick={delDemo} disabled={demoBusy} style={{ background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 9, padding: "8px 12px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🗑 {demoBusy ? "Suppression…" : `Supprimer les joueurs de démo (${demoCount})`}</button>
+          <button onClick={delDemo} disabled={demoBusy} style={{ background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 9, padding: "8px 12px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: demoBusy ? 0.6 : 1 }}>🗑 {demoBusy ? t("staff.app.demoDeleting") : t("staff.app.demoDelBtn", { count: demoCount })}</button>
         )}
-        {demoNote && <span style={{ fontSize: 11, color: demoNote.includes("Échec") ? C.coral : C.green }}>{demoNote}</span>}
+        {demoNote && <span style={{ fontSize: 11, color: demoNote.includes("✓") ? C.green : C.coral }}>{demoNote}</span>}
       </div>
       )}
       {loading && !players.length ? (
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Chargement…</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{t("staff.app.loading")}</div>
       ) : players.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
-          Aucun joueur. Ajoute le premier membre — il apparaîtra en direct sur tous les appareils du staff.
+          {t("staff.app.empty")}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -266,19 +268,19 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
               <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)", width: 30, textAlign: "center" }}>{p.num ?? "—"}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-                  {displayName(p)}{p._live && <span title="Bilan du jour encodé" style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
-                  {p.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>DÉMO</span>}
+                  {displayName(p)}{p._live && <span title={t("staff.app.liveTitle")} style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
+                  {p.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>{t("staff.app.demoBadge")}</span>}
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{p.pos} · {grpLabel(p.grp)}</div>
               </div>
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
-                <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>READY</div>
+                <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>{t("staff.app.ready")}</div>
               </div>
-              <button onClick={(e) => { e.stopPropagation(); onPreview?.(p); }} title="Vue joueur (lecture seule)" style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
+              <button onClick={(e) => { e.stopPropagation(); onPreview?.(p); }} title={t("staff.app.previewTitle")} style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
                 <Eye size={15} />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title="Récap détaillé" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
+              <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title={t("staff.app.reportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
                 <Activity size={15} />
               </button>
               <Pill v={p.acwr} />
@@ -296,6 +298,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
 }
 
 function AddPlayerModal({ teamId, players = [], onClose }) {
+  const { t } = useTranslation();
   useModalClose(onClose);
   const [name, setName] = useState("");
   const [posIdx, setPosIdx] = useState(0);
@@ -304,9 +307,9 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
   const [err, setErr] = useState("");
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10 };
   const save = async () => {
-    if (!name.trim()) return setErr("Choisis un totem pour le joueur.");
+    if (!name.trim()) return setErr(t("staff.app.errTotem"));
     // Totem unique par club : refuse un doublon (l'index DB reste le garde-fou).
-    if (isTotemTaken(players.map((p) => p.name), name)) return setErr("Ce totem est déjà pris dans l'effectif. Choisis-en un autre (bouton 🎲).");
+    if (isTotemTaken(players.map((p) => p.name), name)) return setErr(t("staff.app.errTaken"));
     setBusy(true); setErr("");
     const { name: pos, grp } = RUGBY_POS[posIdx];
     try {
@@ -314,7 +317,7 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
       onClose();
     } catch (e) {
       const dup = e?.code === "23505" || /players_team_name_uq|duplicate key/i.test(e?.message || "");
-      setErr(dup ? "Ce totem est déjà pris dans l'effectif. Choisis-en un autre." : (e.message || "Échec de l'ajout."));
+      setErr(dup ? t("staff.app.errTakenShort") : (e.message || t("staff.app.errAddFail")));
       setBusy(false);
     }
   };
@@ -322,10 +325,10 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: C.panel, borderRadius: 18, padding: 20 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Ajouter un joueur</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("staff.app.addTitle")}</div>
           <CloseX onClose={onClose} />
         </div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12 }}>Le joueur est identifié par un <b>totem</b> (pseudo), affiché partout.</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12 }}>{t("staff.app.totemHint1")}<b>{t("staff.app.totemHintBold")}</b>{t("staff.app.totemHint2")}</div>
         <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} />
         <div style={{ display: "flex", gap: 8 }}>
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
@@ -338,7 +341,7 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
           <input value={num} onChange={(e) => setNum(e.target.value.replace(/\D/g, ""))} placeholder="N°" inputMode="numeric" style={{ ...inp, flex: 1, textAlign: "center" }} />
         </div>
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
-        <button onClick={save} disabled={busy} style={{ width: "100%", background: C.coral, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "Ajout…" : "Ajouter à l'effectif"}</button>
+        <button onClick={save} disabled={busy} style={{ width: "100%", background: C.coral, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? t("staff.app.adding") : t("staff.app.addToRoster")}</button>
       </div>
     </div>
   );
@@ -346,8 +349,9 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
 
 /* ── Aujourd'hui : synthèse readiness/bien-être + aperçu alertes (effectif enrichi) ── */
 function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
+  const { t } = useTranslation();
   const [report, setReport] = useState(null); // { player, reason }
-  if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>Aucune donnée. Ajoute des joueurs et attends les premiers bilans.</div>;
+  if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>{t("staff.app.noData")}</div>;
   const avg = (k) => Math.round(players.reduce((a, p) => a + (p[k] || 0), 0) / players.length);
   const live = players.filter((p) => p._live).length;
   const alerts = buildAlerts(players, sessions, logs, checkins);
@@ -355,19 +359,19 @@ function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
   const byId = (pid) => players.find((p) => p.id === pid);
   return (
     <section>
-      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>Aujourd'hui · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}</div>
+      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{t("staff.app.today", { date: new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" }) })}</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
-        <KPI label="READINESS MOY." value={avg("readiness")} color={avg("readiness") > 70 ? C.green : avg("readiness") > 50 ? C.amb : C.coral} />
-        <KPI label="BIEN-ÊTRE MOY." value={`${avg("wellness")}/50`} color={C.blue} />
-        <KPI label="BILANS DU JOUR" value={`${live}/${players.length}`} sub="encodés" color={C.viol} />
+        <KPI label={t("staff.app.kpiReadiness")} value={avg("readiness")} color={avg("readiness") > 70 ? C.green : avg("readiness") > 50 ? C.amb : C.coral} />
+        <KPI label={t("staff.app.kpiWellness")} value={`${avg("wellness")}/50`} color={C.blue} />
+        <KPI label={t("staff.app.kpiBilans")} value={`${live}/${players.length}`} sub={t("staff.app.kpiBilansSub")} color={C.viol} />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <AlertOctagon size={16} color={C.coral} />
-        <div style={{ fontSize: 13, fontWeight: 800, flex: 1 }}>Alertes · {alerts.length}</div>
-        {alerts.length > top.length && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>→ onglet Alertes</span>}
+        <div style={{ fontSize: 13, fontWeight: 800, flex: 1 }}>{t("staff.app.alertsTitle", { count: alerts.length })}</div>
+        {alerts.length > top.length && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("staff.app.alertsTab")}</span>}
       </div>
       {alerts.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>Aucune alerte. 👌</div>
+        <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>{t("staff.app.noAlerts")}</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {top.map((a, i) => (
