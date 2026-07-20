@@ -590,5 +590,68 @@
       "notEnoughHistory": "Not enough history yet to plot a progression. Validate at least two sessions with this exercise.",
       "rpeShort": "RPE"
     }
+  },
+  "staff": {
+    "messages": {
+      "title": "Messages",
+      "search": "Search for a player…",
+      "emptyRoster": "No players in the squad. Add players to message them.",
+      "youPrefix": "You: ",
+      "start": "Start the conversation"
+    },
+    "camp": {
+      "participation_one": "PARTICIPATION · {{count}} enrolled",
+      "participation_other": "PARTICIPATION · {{count}} enrolled",
+      "present_one": "{{count}} present",
+      "present_other": "{{count}} present",
+      "emptyRoster": "No players in the squad.",
+      "sessionsValidated_one": "{{count}} session completed",
+      "sessionsValidated_other": "{{count}} sessions completed",
+      "notEnrolled": "Not enrolled",
+      "enrolled": "Enrolled",
+      "enroll": "Enrol",
+      "toggleTitle": "Toggle enrolled / present",
+      "removeTitle": "Remove",
+      "presentBadge": "✓ Present"
+    },
+    "subs": {
+      "title": "Notification subscriptions",
+      "filterAll": "All",
+      "filterOff": "Not subscribed",
+      "filterOn": "Subscribed",
+      "statOn": "SUBSCRIBED",
+      "statOff": "NOT SUBSCRIBED",
+      "statDevices": "DEVICES",
+      "loading": "Loading…",
+      "emptyFilter": "No players for this filter.",
+      "devices_one": "{{count}} device",
+      "devices_other": "{{count}} devices",
+      "lastSuffix": " · last {{date}}",
+      "noDevice": "No device — will not receive push notifications",
+      "badgeOn": "Subscribed",
+      "badgeOff": "Not subscribed"
+    },
+    "programFiles": {
+      "title": "Files · {{title}}",
+      "bucketNote": "Private bucket · access via signed link (1 h)",
+      "sending": "Uploading…",
+      "add": "Add a PDF or a video",
+      "uploadFail": "Upload failed.",
+      "loading": "Loading…",
+      "empty": "No files. Add the program PDF or an analysis video.",
+      "openTitle": "Open (signed link)",
+      "deleteTitle": "Delete"
+    },
+    "library": {
+      "search": "Search for an exercise…",
+      "create": "Create",
+      "namePlaceholder": "Exercise name",
+      "cuesPlaceholder": "Execution cues",
+      "adding": "Adding…",
+      "addToLibrary": "Add to library",
+      "empty": "No exercise. Change your search or create a custom exercise.",
+      "customBadge": "custom",
+      "cuesTitle": "EXECUTION CUES"
+    }
   }
 }

@@ -590,5 +590,68 @@
       "notEnoughHistory": "Nog niet genoeg geschiedenis om een progressie te tekenen. Valideer minstens twee sessies met deze oefening.",
       "rpeShort": "RPE"
     }
+  },
+  "staff": {
+    "messages": {
+      "title": "Berichten",
+      "search": "Zoek een speler…",
+      "emptyRoster": "Geen spelers in de selectie. Voeg spelers toe om ze te berichten.",
+      "youPrefix": "Jij: ",
+      "start": "Start het gesprek"
+    },
+    "camp": {
+      "participation_one": "DEELNAME · {{count}} ingeschreven",
+      "participation_other": "DEELNAME · {{count}} ingeschreven",
+      "present_one": "{{count}} aanwezig",
+      "present_other": "{{count}} aanwezig",
+      "emptyRoster": "Geen spelers in de selectie.",
+      "sessionsValidated_one": "{{count}} sessie voltooid",
+      "sessionsValidated_other": "{{count}} sessies voltooid",
+      "notEnrolled": "Niet ingeschreven",
+      "enrolled": "Ingeschreven",
+      "enroll": "Inschrijven",
+      "toggleTitle": "Wissel ingeschreven / aanwezig",
+      "removeTitle": "Verwijderen",
+      "presentBadge": "✓ Aanwezig"
+    },
+    "subs": {
+      "title": "Notificatie-abonnementen",
+      "filterAll": "Alle",
+      "filterOff": "Niet geabonneerd",
+      "filterOn": "Geabonneerd",
+      "statOn": "GEABONNEERD",
+      "statOff": "NIET GEABONNEERD",
+      "statDevices": "APPARATEN",
+      "loading": "Laden…",
+      "emptyFilter": "Geen spelers voor dit filter.",
+      "devices_one": "{{count}} apparaat",
+      "devices_other": "{{count}} apparaten",
+      "lastSuffix": " · laatste {{date}}",
+      "noDevice": "Geen apparaat — ontvangt geen pushmeldingen",
+      "badgeOn": "Geabonneerd",
+      "badgeOff": "Niet geabonneerd"
+    },
+    "programFiles": {
+      "title": "Bestanden · {{title}}",
+      "bucketNote": "Privé-bucket · toegang via ondertekende link (1 u)",
+      "sending": "Uploaden…",
+      "add": "Voeg een PDF of video toe",
+      "uploadFail": "Uploaden mislukt.",
+      "loading": "Laden…",
+      "empty": "Geen bestanden. Voeg de programma-PDF of een analysevideo toe.",
+      "openTitle": "Openen (ondertekende link)",
+      "deleteTitle": "Verwijderen"
+    },
+    "library": {
+      "search": "Zoek een oefening…",
+      "create": "Aanmaken",
+      "namePlaceholder": "Naam van de oefening",
+      "cuesPlaceholder": "Uitvoeringstips (cues)",
+      "adding": "Toevoegen…",
+      "addToLibrary": "Toevoegen aan bibliotheek",
+      "empty": "Geen oefening. Pas je zoekopdracht aan of maak een eigen oefening.",
+      "customBadge": "eigen",
+      "cuesTitle": "UITVOERINGSTIPS"
+    }
   }
 }

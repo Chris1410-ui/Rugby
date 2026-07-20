@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { X, Upload, FileText, Video, ExternalLink } from "../../lib/icons.jsx";
@@ -12,6 +13,7 @@ const isVideo = (name) => /\.(mp4|mov|webm|m4v|avi)$/i.test(name);
 /* Pièces jointes d'un programme (PDF, vidéos d'analyse) stockées dans le bucket
    privé `team-files`. Ouverture via URL signée (jamais d'URL publique). */
 export default function ProgramFiles({ teamId, program, onClose }) {
+  const { t } = useTranslation();
   useModalClose(onClose);
   const readOnly = useReadOnly();
   const folder = programFolder(teamId, program.id);
@@ -35,7 +37,7 @@ export default function ProgramFiles({ teamId, program, onClose }) {
     try {
       await uploadFile(folder, file);
       await refresh();
-    } catch (e) { setErr(e.message || "Échec de l'envoi."); }
+    } catch (e) { setErr(e.message || t("staff.programFiles.uploadFail")); }
     setBusy(false);
   };
 
@@ -57,14 +59,14 @@ export default function ProgramFiles({ teamId, program, onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "82vh", overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Fichiers · {program.title}</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("staff.programFiles.title", { title: program.title })}</div>
           <CloseX onClose={onClose} />
         </div>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 14 }}>Bucket privé · accès par lien signé (1 h)</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 14 }}>{t("staff.programFiles.bucketNote")}</div>
 
         {!readOnly && (
         <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 10, padding: 12, color: accent, fontWeight: 700, fontSize: 13, cursor: "pointer", marginBottom: 14 }}>
-          <Upload size={15} />{busy ? "Envoi…" : "Ajouter un PDF ou une vidéo"}
+          <Upload size={15} />{busy ? t("staff.programFiles.sending") : t("staff.programFiles.add")}
           <input type="file" accept="application/pdf,video/*" style={{ display: "none" }} onChange={(e) => onUpload(e.target.files[0])} />
         </label>
         )}
@@ -72,10 +74,10 @@ export default function ProgramFiles({ teamId, program, onClose }) {
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 10 }}>{err}</div>}
 
         {loading ? (
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: 16, textAlign: "center" }}>Chargement…</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: 16, textAlign: "center" }}>{t("staff.programFiles.loading")}</div>
         ) : files.length === 0 ? (
           <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
-            Aucun fichier. Ajoute le PDF du programme ou une vidéo d'analyse.
+            {t("staff.programFiles.empty")}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -88,10 +90,10 @@ export default function ProgramFiles({ teamId, program, onClose }) {
                   <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name.replace(/^\d{8}_/, "")}</div>
                   <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{kb(f.size)}</div>
                 </div>
-                <button onClick={() => open(f.path)} title="Ouvrir (lien signé)" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
+                <button onClick={() => open(f.path)} title={t("staff.programFiles.openTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
                   <ExternalLink size={14} />
                 </button>
-                <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}>
+                <button onClick={() => del(f.path)} disabled={busy} title={t("staff.programFiles.deleteTitle")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}>
                   <X size={15} />
                 </button>
               </div>

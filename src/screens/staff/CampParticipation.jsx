@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { statusOfLog } from "../../lib/metrics.js";
@@ -11,6 +12,7 @@ import { useReadOnly } from "../../lib/readonly.js";
    manuellement, marque « présent », ou retire. « Séances validées » est dérivé
    des session_logs (aucun stockage). */
 export default function CampParticipation({ camp, teamId, players = [], sessions = [], logs = {} }) {
+  const { t } = useTranslation();
   const readOnly = useReadOnly();
   const { participants } = useCampParticipants(camp.id);
 
@@ -31,9 +33,9 @@ export default function CampParticipation({ camp, teamId, players = [], sessions
   const remove = (pid) => removeParticipant(camp.id, pid).catch((e) => console.error("[remove]", e.message));
 
   return (
-    <Section title={`PARTICIPATION · ${inscrits.length} inscrit${inscrits.length > 1 ? "s" : ""}`} right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{present} présent{present > 1 ? "s" : ""}</span>}>
+    <Section title={t("staff.camp.participation", { count: inscrits.length })} right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{t("staff.camp.present", { count: present })}</span>}>
       {players.length === 0 ? (
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Aucun joueur dans l'effectif.</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{t("staff.camp.emptyRoster")}</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {players.map((p) => {
@@ -43,18 +45,18 @@ export default function CampParticipation({ camp, teamId, players = [], sessions
               <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{displayName(p)}</div>
-                  <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{done} séance{done > 1 ? "s" : ""} validée{done > 1 ? "s" : ""}</div>
+                  <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{t("staff.camp.sessionsValidated", { count: done })}</div>
                 </div>
                 {readOnly ? (
-                  <span style={{ fontSize: 11, fontWeight: 800, color: !st ? "rgba(255,255,255,0.4)" : st === "present" ? C.green : C.viol }}>{!st ? "Non inscrit" : st === "present" ? "✓ Présent" : "Inscrit"}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: !st ? "rgba(255,255,255,0.4)" : st === "present" ? C.green : C.viol }}>{!st ? t("staff.camp.notEnrolled") : st === "present" ? t("staff.camp.presentBadge") : t("staff.camp.enrolled")}</span>
                 ) : !st ? (
-                  <button onClick={() => enroll(p.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 11px", color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Inscrire</button>
+                  <button onClick={() => enroll(p.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 11px", color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("staff.camp.enroll")}</button>
                 ) : (
                   <>
-                    <button onClick={() => toggle(p.id, st)} title="Basculer inscrit / présent" style={{ background: st === "present" ? C.green : `${C.viol}22`, border: `1px solid ${st === "present" ? C.green : `${C.viol}66`}`, borderRadius: 8, padding: "5px 10px", color: st === "present" ? "#fff" : C.viol, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
-                      {st === "present" ? "✓ Présent" : "Inscrit"}
+                    <button onClick={() => toggle(p.id, st)} title={t("staff.camp.toggleTitle")} style={{ background: st === "present" ? C.green : `${C.viol}22`, border: `1px solid ${st === "present" ? C.green : `${C.viol}66`}`, borderRadius: 8, padding: "5px 10px", color: st === "present" ? "#fff" : C.viol, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
+                      {st === "present" ? t("staff.camp.presentBadge") : t("staff.camp.enrolled")}
                     </button>
-                    <button onClick={() => remove(p.id)} title="Retirer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", fontSize: 16, cursor: "pointer", lineHeight: 1 }}>×</button>
+                    <button onClick={() => remove(p.id)} title={t("staff.camp.removeTitle")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", fontSize: 16, cursor: "pointer", lineHeight: 1 }}>×</button>
                   </>
                 )}
               </div>

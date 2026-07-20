@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { fmtShort } from "../../lib/metrics.js";
@@ -11,12 +12,13 @@ import { Bell } from "../../lib/icons.jsx";
    Scopé au club courant (RLS push_staff_read). */
 
 const FILTERS = [
-  { key: "all", label: "Tous" },
-  { key: "off", label: "Non abonnés" },
-  { key: "on", label: "Abonnés" },
+  { key: "all", labelKey: "staff.subs.filterAll" },
+  { key: "off", labelKey: "staff.subs.filterOff" },
+  { key: "on", labelKey: "staff.subs.filterOn" },
 ];
 
 export default function Abonnements({ teamId, players }) {
+  const { t } = useTranslation();
   const { subs, loading } = useTeamPushSubscriptions(teamId);
   const [filter, setFilter] = useState("all");
 
@@ -49,29 +51,29 @@ export default function Abonnements({ teamId, players }) {
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Bell size={18} color={C.coral} />
-        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Abonnements notifications</div>
+        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>{t("staff.subs.title")}</div>
       </div>
 
       {/* Résumé */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-        <Stat label="ABONNÉS" value={onCount} color={C.green} />
-        <Stat label="NON ABONNÉS" value={total - onCount} color={C.amb} />
-        <Stat label="APPAREILS" value={subs.length} color={C.teal} />
+        <Stat label={t("staff.subs.statOn")} value={onCount} color={C.green} />
+        <Stat label={t("staff.subs.statOff")} value={total - onCount} color={C.amb} />
+        <Stat label={t("staff.subs.statDevices")} value={subs.length} color={C.teal} />
       </div>
 
       {/* Filtre */}
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
         {FILTERS.map((f) => (
           <button key={f.key} onClick={() => setFilter(f.key)} style={{ padding: "6px 12px", borderRadius: 8, border: "none", fontSize: 11.5, fontWeight: 700, cursor: "pointer", background: filter === f.key ? C.coral : "rgba(255,255,255,0.07)", color: "#fff" }}>
-            {f.label}
+            {t(f.labelKey)}
           </button>
         ))}
       </div>
 
       {loading && !subs.length ? (
-        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.55)", fontSize: 12 })}>Chargement…</div>
+        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.55)", fontSize: 12 })}>{t("staff.subs.loading")}</div>
       ) : shown.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>Aucun joueur pour ce filtre.</div>
+        <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>{t("staff.subs.emptyFilter")}</div>
       ) : (
         <div style={sc({ padding: 0, overflow: "hidden" })}>
           {shown.map((r, i) => (
@@ -81,12 +83,12 @@ export default function Abonnements({ teamId, players }) {
                 <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(r.p)}</div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 1 }}>
                   {r.on
-                    ? `${r.count} appareil${r.count > 1 ? "s" : ""}${r.last ? ` · dernier ${fmtShort(r.last)}` : ""}`
-                    : "Aucun appareil — ne recevra pas les push"}
+                    ? t("staff.subs.devices", { count: r.count }) + (r.last ? t("staff.subs.lastSuffix", { date: fmtShort(r.last) }) : "")
+                    : t("staff.subs.noDevice")}
                 </div>
               </div>
               <span style={{ fontSize: 10, fontWeight: 800, color: r.on ? C.green : C.amb, background: `${r.on ? C.green : C.amb}1e`, border: `1px solid ${(r.on ? C.green : C.amb)}55`, borderRadius: 6, padding: "3px 8px", flexShrink: 0 }}>
-                {r.on ? "Abonné" : "Non abonné"}
+                {r.on ? t("staff.subs.badgeOn") : t("staff.subs.badgeOff")}
               </span>
             </div>
           ))}

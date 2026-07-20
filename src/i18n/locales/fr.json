@@ -590,5 +590,68 @@
       "notEnoughHistory": "Pas encore assez d'historique pour tracer une progression. Valide au moins deux séances avec cet exercice.",
       "rpeShort": "RPE"
     }
+  },
+  "staff": {
+    "messages": {
+      "title": "Messagerie",
+      "search": "Rechercher un joueur…",
+      "emptyRoster": "Aucun joueur dans l'effectif. Ajoute des joueurs pour leur écrire.",
+      "youPrefix": "Vous : ",
+      "start": "Démarrer la conversation"
+    },
+    "camp": {
+      "participation_one": "PARTICIPATION · {{count}} inscrit",
+      "participation_other": "PARTICIPATION · {{count}} inscrits",
+      "present_one": "{{count}} présent",
+      "present_other": "{{count}} présents",
+      "emptyRoster": "Aucun joueur dans l'effectif.",
+      "sessionsValidated_one": "{{count}} séance validée",
+      "sessionsValidated_other": "{{count}} séances validées",
+      "notEnrolled": "Non inscrit",
+      "enrolled": "Inscrit",
+      "enroll": "Inscrire",
+      "toggleTitle": "Basculer inscrit / présent",
+      "removeTitle": "Retirer",
+      "presentBadge": "✓ Présent"
+    },
+    "subs": {
+      "title": "Abonnements notifications",
+      "filterAll": "Tous",
+      "filterOff": "Non abonnés",
+      "filterOn": "Abonnés",
+      "statOn": "ABONNÉS",
+      "statOff": "NON ABONNÉS",
+      "statDevices": "APPAREILS",
+      "loading": "Chargement…",
+      "emptyFilter": "Aucun joueur pour ce filtre.",
+      "devices_one": "{{count}} appareil",
+      "devices_other": "{{count}} appareils",
+      "lastSuffix": " · dernier {{date}}",
+      "noDevice": "Aucun appareil — ne recevra pas les push",
+      "badgeOn": "Abonné",
+      "badgeOff": "Non abonné"
+    },
+    "programFiles": {
+      "title": "Fichiers · {{title}}",
+      "bucketNote": "Bucket privé · accès par lien signé (1 h)",
+      "sending": "Envoi…",
+      "add": "Ajouter un PDF ou une vidéo",
+      "uploadFail": "Échec de l'envoi.",
+      "loading": "Chargement…",
+      "empty": "Aucun fichier. Ajoute le PDF du programme ou une vidéo d'analyse.",
+      "openTitle": "Ouvrir (lien signé)",
+      "deleteTitle": "Supprimer"
+    },
+    "library": {
+      "search": "Rechercher un exercice…",
+      "create": "Créer",
+      "namePlaceholder": "Nom de l'exercice",
+      "cuesPlaceholder": "Repères d'exécution (cues)",
+      "adding": "Ajout…",
+      "addToLibrary": "Ajouter à la bibliothèque",
+      "empty": "Aucun exercice. Modifie ta recherche ou crée un exercice personnalisé.",
+      "customBadge": "perso",
+      "cuesTitle": "REPÈRES D'EXÉCUTION"
+    }
   }
 }
