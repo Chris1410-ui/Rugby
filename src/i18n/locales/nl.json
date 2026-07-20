@@ -548,7 +548,9 @@
       "remarksPlaceholder": "Pijn, aandachtspunten, notitie voor de staf…",
       "blockDoneAt": "voltooid ✓ om {{at}}",
       "blockDone": "voltooid ✓",
-      "blockTodo": "in te vullen"
+      "blockTodo": "in te vullen",
+      "activityOn": "✓ +10 pts",
+      "activityDeclare": "aangeven"
     },
     "session": {
       "testHint": "Fysieke tests — de staf voert je resultaten in (fiche + Top 14-vergelijking).",
@@ -1537,5 +1539,70 @@
     "viewAs": "👁 Bekijk als",
     "impersonateBanner": "👁 Ownerweergave — je bekijkt als {{name}} · {{role}}{{team}} · alleen-lezen",
     "backToOwner": "Terug naar owner"
+  },
+  "data": {
+    "lines": {
+      "avants": "Voorwaartsen",
+      "arrieres": "Achterspelers"
+    },
+    "roles": {
+      "preparateur": {
+        "l": "S&C-coach",
+        "s": "Volledige staf · belasting · sessies"
+      },
+      "joueur": {
+        "l": "Speler",
+        "s": "Mijn ruimte · check · feedback"
+      },
+      "medical": {
+        "l": "Medisch",
+        "s": "Kiné / revalidatie · beschikbaarheid"
+      },
+      "coach": {
+        "l": "Coach (alleen-lezen)",
+        "s": "Volledige clubweergave · raadpleging"
+      }
+    },
+    "activities": {
+      "salle": "Zaal",
+      "course": "Lopen",
+      "natation": "Zwemmen"
+    },
+    "evening": {
+      "quality": "Kwaliteit",
+      "intensity": "Intensiteit",
+      "difficulty": "Moeilijkheid",
+      "fatigue": "Ervaren vermoeidheid",
+      "moral": "Moraal",
+      "motivation": "Plezier / Motivatie"
+    },
+    "top14cat": {
+      "premiere": "1e linie (1,2,3)",
+      "deuxieme": "2e linie (4,5)",
+      "troisieme": "3e linie (6,7,8)",
+      "charniere": "Scharnier (9,10)",
+      "centres": "Centers (12,13)",
+      "triangle": "Achterhoede (11,14,15)"
+    },
+    "top14test": {
+      "squat": "Squat 5RM",
+      "bench": "Bench 5RM",
+      "deadlift": "Deadlift",
+      "hangclean": "Hang Clean 2RM",
+      "tractions": "Optrekken",
+      "mas": "MAS",
+      "bronco": "Bronco",
+      "yoyo": "Yo-Yo IR1",
+      "cmj": "CMJ"
+    },
+    "weekday": {
+      "wd1": "Ma",
+      "wd2": "Di",
+      "wd3": "Wo",
+      "wd4": "Do",
+      "wd5": "Vr",
+      "wd6": "Za",
+      "wd0": "Zo"
+    }
   }
 }

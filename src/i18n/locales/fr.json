@@ -548,7 +548,9 @@
       "remarksPlaceholder": "Douleurs, points de vigilance, note pour le staff…",
       "blockDoneAt": "complété ✓ à {{at}}",
       "blockDone": "complété ✓",
-      "blockTodo": "à remplir"
+      "blockTodo": "à remplir",
+      "activityOn": "✓ +10 pts",
+      "activityDeclare": "déclarer"
     },
     "session": {
       "testHint": "Tests physiques — le staff saisit tes résultats (fiche + comparaison Top 14).",
@@ -1537,5 +1539,70 @@
     "viewAs": "👁 Voir comme",
     "impersonateBanner": "👁 Vue owner — tu regardes en tant que {{name}} · {{role}}{{team}} · lecture seule",
     "backToOwner": "Revenir à l'owner"
+  },
+  "data": {
+    "lines": {
+      "avants": "Avants",
+      "arrieres": "Arrières"
+    },
+    "roles": {
+      "preparateur": {
+        "l": "Préparateur physique",
+        "s": "Staff complet · charge · séances"
+      },
+      "joueur": {
+        "l": "Joueur",
+        "s": "Mon espace · bilan · feedback"
+      },
+      "medical": {
+        "l": "Médical",
+        "s": "Kiné / réathlé · disponibilité"
+      },
+      "coach": {
+        "l": "Coach (lecture seule)",
+        "s": "Vue complète du club · consultation"
+      }
+    },
+    "activities": {
+      "salle": "Salle",
+      "course": "Course",
+      "natation": "Natation"
+    },
+    "evening": {
+      "quality": "Qualité",
+      "intensity": "Intensité",
+      "difficulty": "Difficulté",
+      "fatigue": "Fatigue perçue",
+      "moral": "Moral",
+      "motivation": "Plaisir / Motivation"
+    },
+    "top14cat": {
+      "premiere": "1re ligne (1,2,3)",
+      "deuxieme": "2e ligne (4,5)",
+      "troisieme": "3e ligne (6,7,8)",
+      "charniere": "Charnière (9,10)",
+      "centres": "Centres (12,13)",
+      "triangle": "Triangle arrière (11,14,15)"
+    },
+    "top14test": {
+      "squat": "Squat 5RM",
+      "bench": "Bench 5RM",
+      "deadlift": "Deadlift",
+      "hangclean": "Hang Clean 2RM",
+      "tractions": "Tractions",
+      "mas": "MAS",
+      "bronco": "Bronco",
+      "yoyo": "Yo-Yo IR1",
+      "cmj": "CMJ"
+    },
+    "weekday": {
+      "wd1": "Lun",
+      "wd2": "Mar",
+      "wd3": "Mer",
+      "wd4": "Jeu",
+      "wd5": "Ven",
+      "wd6": "Sam",
+      "wd0": "Dim"
+    }
   }
 }

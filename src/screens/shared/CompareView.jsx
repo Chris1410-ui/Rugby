@@ -60,7 +60,7 @@ export default function CompareView({ A, B }) {
               const dCol = !both ? "rgba(255,255,255,0.4)" : aBetter ? A_COL : bBetter ? B_COL : "rgba(255,255,255,0.6)";
               return (
                 <tr key={tst.key} style={{ borderTop: `1px solid ${C.border2}` }}>
-                  <td style={tdL}>{tst.label}<span style={{ color: "rgba(255,255,255,0.4)", fontSize: 9.5 }}>{tst.unit ? ` ${tst.unit}` : ""}</span></td>
+                  <td style={tdL}>{t("data.top14test." + tst.key)}<span style={{ color: "rgba(255,255,255,0.4)", fontSize: 9.5 }}>{tst.unit ? ` ${tst.unit}` : ""}</span></td>
                   <td style={{ ...tdR, color: "#fff" }}>{fmtVal(tst.key, a)}{ea?.valid && <span title={t("compare.top14Reached")} style={{ color: T14_COL, marginLeft: 3 }}>★</span>}</td>
                   <td style={{ ...tdR, color: "#fff" }}>{fmtVal(tst.key, b)}{eb?.valid && <span title={t("compare.top14Reached")} style={{ color: T14_COL, marginLeft: 3 }}>★</span>}</td>
                   <td style={{ ...tdR, color: dCol, fontWeight: 800 }}>{deltaStr}</td>
@@ -75,7 +75,7 @@ export default function CompareView({ A, B }) {
       <div style={sc({ marginBottom: 12 })}>
         <SectionTitle>{t("compare.barsTitle")}</SectionTitle>
         {TOP14_TESTS.map((tst) => (
-          <BarRow key={tst.key} label={tst.label} a={A.byTest[tst.key]?.pct} b={B.byTest[tst.key]?.pct} />
+          <BarRow key={tst.key} label={t("data.top14test." + tst.key)} a={A.byTest[tst.key]?.pct} b={B.byTest[tst.key]?.pct} />
         ))}
         <Legend aLabel={headTitle(A)} bLabel={headTitle(B)} />
       </div>
@@ -144,6 +144,7 @@ function Legend({ aLabel = "A", bLabel = "B" }) {
 }
 
 function Radar({ a, b }) {
+  const { t } = useTranslation();
   const size = 280, c = size / 2, R = c - 34, MAXN = 1.5;
   const axes = TOP14_TESTS;
   const ang = (i) => (-90 + i * (360 / axes.length)) * (Math.PI / 180);
@@ -163,7 +164,7 @@ function Radar({ a, b }) {
       <polygon points={poly(b)} fill={`${B_COL}33`} stroke={B_COL} strokeWidth="2" />
       {axes.map((tst, i) => {
         const [x, y] = pt(MAXN + 0.18, i);
-        return <text key={tst.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8.5" fill="rgba(255,255,255,0.6)" fontWeight="700">{tst.label.split(" ")[0]}</text>;
+        return <text key={tst.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="8.5" fill="rgba(255,255,255,0.6)" fontWeight="700">{t("data.top14test." + tst.key).split(" ")[0]}</text>;
       })}
     </svg>
   );

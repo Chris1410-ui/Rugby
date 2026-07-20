@@ -34,18 +34,18 @@ export default function Top14Panel({ t14 }) {
       right={<span style={{ fontSize: 9.5, fontWeight: 800, color: count ? C.amb : "rgba(255,255,255,0.5)" }}>{catLabel(t14.cat)} · {count > 0 ? `🏆 ×${count}` : t("shared.top14.noTest")}</span>}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {TOP14_TESTS.map((t) => {
-          const b = t14.byTest[t.key] || {};
+        {TOP14_TESTS.map((tst) => {
+          const b = t14.byTest[tst.key] || {};
           const done = !!b.everValid;
           const pct = b.pct != null ? Math.max(0, Math.min(140, b.pct)) : null;
           const barW = pct != null ? Math.min(100, pct) : 0;
           const barC = done ? C.green : pct == null ? "rgba(255,255,255,0.2)" : pct >= 90 ? C.amb : C.coral;
           return (
-            <div key={t.key} style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
+            <div key={tst.key} style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{t.label} {t.unit ? <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}>{t.unit}</span> : null}</span>
-                <span style={{ fontSize: 13, fontWeight: 800 }}>{fmt(t, b.value)}</span>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>/ {fmt(t, b.threshold)}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{t("data.top14test." + tst.key)} {tst.unit ? <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}>{tst.unit}</span> : null}</span>
+                <span style={{ fontSize: 13, fontWeight: 800 }}>{fmt(tst, b.value)}</span>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>/ {fmt(tst, b.threshold)}</span>
                 {done && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.3, color: "#0c2b2b", background: C.amb, borderRadius: 5, padding: "1px 5px" }}>TOP 14</span>}{/* i18n-ok: nom de ligue */}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

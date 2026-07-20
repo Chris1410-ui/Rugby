@@ -32,8 +32,6 @@ const WB = [
   { k: "soreness", better: "down" },
   { k: "stress", better: "down" },
 ];
-const actLabel = Object.fromEntries(ACTIVITIES.map((a) => [a.key, `${a.emoji} ${a.label}`]));
-
 const fmtDateTime = (iso) => {
   if (!iso) return "—";
   try { return new Date(iso).toLocaleString("fr-BE", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
@@ -45,6 +43,8 @@ const fmtDateTime = (iso) => {
    depuis une alerte (avec `reason`) ou l'effectif. */
 export default function PlayerReport({ player, sessions, logs, activities = [], reason, onClose, onEditFiche }) {
   const { t } = useTranslation();
+  // Libellés d'activités « emoji + nom traduit », recalculés dans la langue courante.
+  const actLabel = Object.fromEntries(ACTIVITIES.map((a) => [a.key, `${a.emoji} ${t("data.activities." + a.key)}`]));
   const [thread, setThread] = useState(false);
   const [aNote, setANote] = useState("");
   const [openSess, setOpenSess] = useState(null); // séance dépliée (détail prescrit vs réalisé)
@@ -154,7 +154,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 10 }}>
                 {EVENING_MARKERS.map((m) => (
                   <div key={m.k} style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
-                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{m.l}</div>
+                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{t("data.evening." + m.k)}</div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
                       <span style={{ fontSize: 17, fontWeight: 800 }}>{curSoir.wb?.[m.k] ?? "—"}</span><span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>/10</span>
                     </div>
