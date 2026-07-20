@@ -1566,7 +1566,8 @@
     "activities": {
       "salle": "Salle",
       "course": "Course",
-      "natation": "Natation"
+      "natation": "Natation",
+      "meditation": "Méditation"
     },
     "evening": {
       "quality": "Qualité",
@@ -1603,6 +1604,48 @@
       "wd5": "Ven",
       "wd6": "Sam",
       "wd0": "Dim"
+    },
+    "div": {
+      "elite": "Élite",
+      "diamant": "Diamant",
+      "or": "Or",
+      "argent": "Argent",
+      "bronze": "Bronze"
+    },
+    "acwr": {
+      "under": "Sous-charge",
+      "target": "Cible",
+      "watch": "Vigilance",
+      "over": "Surcharge"
     }
+  },
+  "points": {
+    "session": {
+      "done": "Séance validée",
+      "punctual": "Ponctualité",
+      "filled": "Valeurs renseignées",
+      "missed": "Séance manquée",
+      "missedRun": "Manquées consécutives",
+      "postponed": "Séance reportée",
+      "overdue": "Séance non validée"
+    },
+    "streak5": "Série de 5 séances 🔥",
+    "streak3": "Série de 3 séances",
+    "acwrTarget": "ACWR en cible",
+    "acwrOver": "ACWR surcharge",
+    "acwrUnder": "ACWR sous-charge",
+    "activity": "Activité : {{act}}",
+    "top14": "Top 14 : {{test}}",
+    "task": "Tâche : {{title}}",
+    "challenge": "Défi : {{title}}",
+    "reactivity": "⚡ Top 2 réactivité",
+    "bilanMorning": "Bilan du matin complété",
+    "bilanEvening": "Bilan du soir complété"
+  },
+  "badges": {
+    "assidu": "Assidu",
+    "sansFaute": "Sans faute",
+    "enForme": "En forme",
+    "rigoureux": "Rigoureux"
   }
 }

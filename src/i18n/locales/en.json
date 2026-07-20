@@ -1566,7 +1566,8 @@
     "activities": {
       "salle": "Gym",
       "course": "Running",
-      "natation": "Swimming"
+      "natation": "Swimming",
+      "meditation": "Meditation"
     },
     "evening": {
       "quality": "Quality",
@@ -1603,6 +1604,48 @@
       "wd5": "Fri",
       "wd6": "Sat",
       "wd0": "Sun"
+    },
+    "div": {
+      "elite": "Elite",
+      "diamant": "Diamond",
+      "or": "Gold",
+      "argent": "Silver",
+      "bronze": "Bronze"
+    },
+    "acwr": {
+      "under": "Underload",
+      "target": "Target",
+      "watch": "Watch",
+      "over": "Overload"
     }
+  },
+  "points": {
+    "session": {
+      "done": "Session completed",
+      "punctual": "Punctuality",
+      "filled": "Values filled in",
+      "missed": "Session missed",
+      "missedRun": "Consecutive misses",
+      "postponed": "Session postponed",
+      "overdue": "Session not completed"
+    },
+    "streak5": "5-session streak 🔥",
+    "streak3": "3-session streak",
+    "acwrTarget": "ACWR on target",
+    "acwrOver": "ACWR overload",
+    "acwrUnder": "ACWR underload",
+    "activity": "Activity: {{act}}",
+    "top14": "Top 14: {{test}}",
+    "task": "Task: {{title}}",
+    "challenge": "Challenge: {{title}}",
+    "reactivity": "⚡ Top 2 responsiveness",
+    "bilanMorning": "Morning check-in completed",
+    "bilanEvening": "Evening check-in completed"
+  },
+  "badges": {
+    "assidu": "Regular",
+    "sansFaute": "Flawless",
+    "enForme": "In shape",
+    "rigoureux": "Thorough"
   }
 }

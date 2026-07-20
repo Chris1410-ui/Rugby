@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
-import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS } from "../../lib/metrics.js";
+import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins, bilanEventsOf } from "../../data/checkins.js";
@@ -91,7 +91,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 20, fontWeight: 900, fontStyle: "italic", color: pts.div.c }}>{pts.pts}</div>
-            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{pts.div.e} {pts.div.l}</div>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{pts.div.e} {divLabel(t, pts.div)}</div>
           </div>
           <CloseX onClose={onClose} />
         </div>
@@ -192,7 +192,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
         {/* Charge */}
         <Section title={t("shared.report.loadTitle")}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
-            <KPI label={t("shared.report.kpiAcwr")} value={player.acwr?.toFixed?.(2) ?? player.acwr} color={zone.c} sub={zone.l} />
+            <KPI label={t("shared.report.kpiAcwr")} value={player.acwr?.toFixed?.(2) ?? player.acwr} color={zone.c} sub={zoneLabel(t, zone)} />
             <KPI label={t("shared.report.kpiLoad7d")} value={player.charge7j} sub={t("shared.report.subUa")} color={C.coral} />
             <KPI label={t("shared.report.kpiMonotony")} value={player.monotonie} color={player.monotonie > 2 ? C.amb : C.green} />
             <KPI label={t("shared.report.kpiStrain")} value={player.strain} color={C.viol} />
@@ -267,12 +267,12 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
         <Section title={t("shared.report.pointsTitle")} right={<span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{pts.streak >= 3 ? t("shared.report.streakLabel", { n: pts.streak }) : ""}</span>}>
           {pts.badges.length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-              {pts.badges.map((b) => <Tag key={b.l} c={C.amb}>{b.e} {b.l}</Tag>)}
+              {pts.badges.map((b) => <Tag key={b.key} c={C.amb}>{b.e} {badgeLabel(t, b)}</Tag>)}
             </div>
           )}
           {pts.ev.slice(0, 6).map((e, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px solid ${C.border2}` }}>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>{e.label}</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>{pointLabel(t, e)}</span>
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{fmtShort(e.date)}</span>
                 <span style={{ fontSize: 12, fontWeight: 800, color: e.v >= 0 ? C.green : C.coral }}>{e.v >= 0 ? "+" : ""}{e.v}</span>

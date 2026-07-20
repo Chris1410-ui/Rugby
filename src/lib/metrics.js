@@ -67,15 +67,18 @@ export const seasonSeed = (id) => {
   return h >>> 0;
 };
 
-/* ── Zones ACWR (échelle réutilisée partout) ── */
+/* ── Zones ACWR (échelle réutilisée partout) ── Le libellé n'est PAS stocké :
+   on renvoie une clé stable (data.acwr.*) résolue par l'UI dans sa langue. */
 export const acwrZ = (v) =>
   v < 0.8
-    ? { l: "Sous-charge", c: C.teal }
+    ? { key: "under", c: C.teal }
     : v <= 1.3
-    ? { l: "Cible", c: C.green }
+    ? { key: "target", c: C.green }
     : v <= 1.5
-    ? { l: "Vigilance", c: C.amb }
-    : { l: "Surcharge", c: C.coral };
+    ? { key: "watch", c: C.amb }
+    : { key: "over", c: C.coral };
+// Libellé traduit d'une zone ACWR (t = fonction i18next).
+export const zoneLabel = (t, z) => t(`data.acwr.${z?.key || "target"}`);
 
 export const statusOfLog = (logs, sid, pid) => logs?.[sid]?.[pid]?.status || "pending";
 
@@ -235,13 +238,16 @@ export function enrichPlayers(players, sessions, logs, daily) {
 }
 
 /* ════════════ POINTS / DIVISIONS ════════════ */
+// `key` stable (data.div.*) au lieu du libellé stocké → traduit à l'affichage.
 export const DIVS = [
-  { min: 220, l: "Élite", c: "#27E8D6", e: "💎" },
-  { min: 170, l: "Diamant", c: "#8AB4F8", e: "🔷" },
-  { min: 120, l: "Or", c: "#F2C84B", e: "🥇" },
-  { min: 70, l: "Argent", c: "#C8D2E0", e: "🥈" },
-  { min: 0, l: "Bronze", c: "#C07A45", e: "🥉" },
+  { min: 220, key: "elite", c: "#27E8D6", e: "💎" },
+  { min: 170, key: "diamant", c: "#8AB4F8", e: "🔷" },
+  { min: 120, key: "or", c: "#F2C84B", e: "🥇" },
+  { min: 70, key: "argent", c: "#C8D2E0", e: "🥈" },
+  { min: 0, key: "bronze", c: "#C07A45", e: "🥉" },
 ];
+// Libellé traduit d'une division (t = fonction i18next).
+export const divLabel = (t, d) => t(`data.div.${d?.key || "bronze"}`);
 export const divOf = (p) => DIVS.find((d) => p >= d.min) || DIVS[DIVS.length - 1];
 export const nextDiv = (p) => {
   const i = DIVS.findIndex((d) => p >= d.min);
@@ -254,11 +260,6 @@ export const ACTIVITIES = [
   { key: "course", label: "Course", emoji: "🏃" },
   { key: "natation", label: "Natation", emoji: "🏊" },
 ];
-// Libellés d'activités pour le feed de points. « meditation » n'est pas une
-// activité déclarable du bilan (pas dans ACTIVITIES) mais rapporte +10/jour via
-// la section Méditation → on lui donne un libellé lisible dans le classement.
-const ACTIVITY_LABEL = { ...Object.fromEntries(ACTIVITIES.map((a) => [a.key, a.label])), meditation: "Méditation" };
-
 // Marqueurs du bilan du SOIR (6 sliders 1–10). Le matin garde ses 6 marqueurs
 // historiques (cf. écran Bilan). Utilisé par l'écran joueur + la vue staff.
 export const EVENING_MARKERS = [
@@ -270,10 +271,29 @@ export const EVENING_MARKERS = [
   { k: "motivation", l: "Plaisir / Motivation" },
 ];
 
+/* ── Résolution i18n des libellés de points / badges (t = fonction i18next) ──
+   Le moteur ne stocke que des clés ; l'UI les traduit ici. Deux cas résolvent
+   une clé imbriquée (nom d'activité / de test) ; `title` est une donnée brute. */
+export function pointLabel(t, ev) {
+  if (!ev) return "";
+  const p = ev.params || {};
+  switch (ev.key) {
+    case "activity": return t("points.activity", { act: t(`data.activities.${p.actKey}`) });
+    case "top14":    return t("points.top14", { test: t(`data.top14test.${p.testKey}`) });
+    case "task":     return t("points.task", { title: p.title });
+    case "challenge":return t("points.challenge", { title: p.title });
+    default:         return ev.key ? t(`points.${ev.key}`, p) : (ev.label || "");
+  }
+}
+export const badgeLabel = (t, b) => t(`badges.${b.key}`);
+
+/* Chaque event de points porte une CLÉ stable (+ params), jamais une chaîne
+   traduite → l'UI résout via pointLabel(t, ev). `params.title` reste une donnée
+   utilisateur (titre de tâche / défi), non traduisible. */
 // `dailyActivities` : historique d'activités déclarées du joueur → [{ date, activities:[keys] }].
-// `top14Events` : tests validés Top 14 → [{ label, date }] (calculés en amont via
-//   lib/top14.js). +30 pts par test, DATÉS de la 1re validation → un seul crédit
-//   par test (pas de double comptage aux re-saisies).
+// `top14Events` : tests validés Top 14 → [{ key, date }] (calculés en amont via
+//   lib/top14.js, `key` = clé du test). +30 pts par test, DATÉS de la 1re validation
+//   → un seul crédit par test (pas de double comptage aux re-saisies).
 export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
@@ -285,9 +305,10 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
     filledAll = true;
   const today = todayISO(),
     wkAgo = isoDate(new Date(Date.now() - 7 * 864e5));
-  function add(v, label, date, inWeek) {
+  // `key` = sous-clé de points.* ; `params` = interpolations éventuelles.
+  function add(v, key, date, inWeek, params) {
     pts += v;
-    ev.push({ v, label, date });
+    ev.push({ v, key, params, date });
     if (inWeek) weekDelta += v;
   }
   const mine = sessions
@@ -303,76 +324,76 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
       doneCount++;
       streak++;
       missedRun = 0;
-      add(10, "Séance validée", s.date, inWk);
-      add(5, "Ponctualité", s.date, inWk);
+      add(10, "session.done", s.date, inWk);
+      add(5, "session.punctual", s.date, inWk);
       const filled = Object.values(lg.perExercise || {}).some((v) => v.charge || v.reps || v.rpe);
-      if (filled) add(2, "Valeurs renseignées", s.date, inWk);
+      if (filled) add(2, "session.filled", s.date, inWk);
       else filledAll = false;
     } else if (lg && lg.status === "missed") {
       missedCount++;
       missedRun++;
       streak = 0;
-      add(-15, "Séance manquée", s.date, inWk);
-      if (missedRun >= 2) add(-10, "Manquées consécutives", s.date, inWk);
+      add(-15, "session.missed", s.date, inWk);
+      if (missedRun >= 2) add(-10, "session.missedRun", s.date, inWk);
     } else if (lg && lg.status === "postponed") {
       // Séance remise/reportée : ni gain ni pénalité, ne casse pas la série.
-      add(0, "Séance reportée", s.date, inWk);
+      add(0, "session.postponed", s.date, inWk);
     } else if (overdue) {
       missedCount++;
       missedRun++;
       streak = 0;
-      add(-15, "Séance non validée", s.date, inWk);
+      add(-15, "session.overdue", s.date, inWk);
     }
   });
-  // Activité du jour déclarée (salle / course / natation) : +10 par thématique.
+  // Activité du jour déclarée (salle / course / natation / meditation) : +10 par thématique.
   (dailyActivities || []).forEach((d) => {
     const inWk = d.date >= wkAgo && d.date <= today;
-    (d.activities || []).forEach((a) => add(10, `Activité : ${ACTIVITY_LABEL[a] || a}`, d.date, inWk));
+    (d.activities || []).forEach((a) => add(10, "activity", d.date, inWk, { actKey: a }));
   });
   // Tests atteignant le niveau Top 14 du poste : +30 par test (une seule fois,
   // daté de la 1re validation → compte dans le total ET le delta de la semaine).
   (top14Events || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
-    add(30, `Top 14 : ${e.label}`, e.date, inWk);
+    add(30, "top14", e.date, inWk, { testKey: e.key });
   });
   // Tâches validées par le joueur (staff peut refuser → retrait auto) : +2 chacune,
   // datées de la validation. N'affecte aucun barème séance/ACWR/Top 14.
   (taskEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
-    add(2, `Tâche : ${e.label}`, e.date, inWk);
+    add(2, "task", e.date, inWk, { title: e.label });
   });
   // Bonus « top 2 réactivité » : +15 aux 2 premiers à compléter un input du staff
   // (tâche / séance / questionnaire / camp). Event daté additionnel, idempotent
   // (rang figé sur la 1re complétion, cf. reactivity_events / migration 0026).
   (reactivityEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
-    add(15, e.label || "⚡ Top 2 réactivité", e.date, inWk);
+    add(15, "reactivity", e.date, inWk);
   });
   // Bilans complétés : +10 par bilan (matin / soir), DATÉS. Source = existence de
   // la ligne daily_checkins du moment → un seul crédit par (date, moment). Distinct
   // de l'« activité du jour » (activities[]) → aucun double comptage.
   (bilanEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
-    add(10, e.label || "Bilan complété", e.date, inWk);
+    add(10, e.moment === "soir" ? "bilanEvening" : "bilanMorning", e.date, inWk);
   });
   // Défis validés par le prépa (confirmee) : +N points PARAMÉTRABLES, datés de la
   // confirmation. Barèmes séance/ACWR/Top 14 inchangés. Pas de double comptage
   // (un seul crédit par défi confirmé).
   (challengeEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
-    add(e.points || 0, `Défi : ${e.label}`, e.date, inWk);
+    add(e.points || 0, "challenge", e.date, inWk, { title: e.label });
   });
-  if (streak >= 5) add(15, "Série de 5 séances 🔥", today, true);
-  else if (streak >= 3) add(5, "Série de 3 séances", today, true);
-  if (player.acwr >= 0.8 && player.acwr <= 1.3) add(8, "ACWR en cible", today, true);
-  else if (player.acwr > 1.5) add(-8, "ACWR surcharge", today, true);
-  else if (player.acwr < 0.8) add(-8, "ACWR sous-charge", today, true);
+  if (streak >= 5) add(15, "streak5", today, true);
+  else if (streak >= 3) add(5, "streak3", today, true);
+  if (player.acwr >= 0.8 && player.acwr <= 1.3) add(8, "acwrTarget", today, true);
+  else if (player.acwr > 1.5) add(-8, "acwrOver", today, true);
+  else if (player.acwr < 0.8) add(-8, "acwrUnder", today, true);
   pts = Math.max(0, Math.round(pts));
   const badges = [];
-  if (streak >= 3) badges.push({ l: "Assidu", e: "🔥" });
-  if (missedCount === 0 && doneCount > 0) badges.push({ l: "Sans faute", e: "✅" });
-  if (player.acwr >= 0.8 && player.acwr <= 1.3) badges.push({ l: "En forme", e: "💪" });
-  if (filledAll && doneCount > 0) badges.push({ l: "Rigoureux", e: "📊" });
+  if (streak >= 3) badges.push({ key: "assidu", e: "🔥" });
+  if (missedCount === 0 && doneCount > 0) badges.push({ key: "sansFaute", e: "✅" });
+  if (player.acwr >= 0.8 && player.acwr <= 1.3) badges.push({ key: "enForme", e: "💪" });
+  if (filledAll && doneCount > 0) badges.push({ key: "rigoureux", e: "📊" });
   return {
     pts,
     weekDelta: Math.round(weekDelta),

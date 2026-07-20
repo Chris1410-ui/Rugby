@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
-import { computePoints, nextDiv, fmtShort, rankLeaderboard } from "../../lib/metrics.js";
+import { computePoints, nextDiv, fmtShort, rankLeaderboard, pointLabel, badgeLabel, divLabel } from "../../lib/metrics.js";
 import { bilanEventsOf } from "../../data/checkins.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
@@ -147,7 +147,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
                   {d.top14 > 0 && <span title={t("shared.leaderboard.top14Title", { count: d.top14 })} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
                   {d.chalBadge && <span title={t("shared.leaderboard.chalTitle", { count: d.chalCount, badge: d.chalBadge.label })} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
                 </div>
-                <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {d.div.l}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
+                <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {divLabel(t, d.div)}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Move m={d.move} />
@@ -193,8 +193,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <span style={{ fontSize: 26 }}>{cur.e}</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: cur.c }}>{t("shared.leaderboard.division", { level: cur.l })}</div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{nx ? t("shared.leaderboard.toNext", { pts: hi - mine.pts, next: nx.l }) : t("shared.leaderboard.maxDiv")}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: cur.c }}>{t("shared.leaderboard.division", { level: divLabel(t, cur) })}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{nx ? t("shared.leaderboard.toNext", { pts: hi - mine.pts, next: divLabel(t, nx) }) : t("shared.leaderboard.maxDiv")}</div>
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: mine.weekDelta >= 0 ? C.green : C.coral }}>{t("shared.leaderboard.weekPts", { delta: `${mine.weekDelta >= 0 ? "+" : ""}${mine.weekDelta}` })}</div>
@@ -206,7 +206,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
             </div>
             {mine.badges.length > 0 && (
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-                {mine.badges.map((b) => <span key={b.l} style={{ fontSize: 10, fontWeight: 700, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 20, padding: "3px 9px" }}>{b.e} {b.l}</span>)}
+                {mine.badges.map((b) => <span key={b.key} style={{ fontSize: 10, fontWeight: 700, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 20, padding: "3px 9px" }}>{b.e} {badgeLabel(t, b)}</span>)}
               </div>
             )}
             <button onClick={() => setSel(mine)} style={{ marginTop: 10, width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 8, color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("shared.leaderboard.seeGains")}</button>
@@ -227,7 +227,7 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 24 }}>{sel.div.e}</span><div><div style={{ fontSize: 16, fontWeight: 800 }}>{displayName(sel.p)}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("shared.leaderboard.detailSub", { rank: sel.rank, div: sel.div.l, pts: sel.pts })}</div></div></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 24 }}>{sel.div.e}</span><div><div style={{ fontSize: 16, fontWeight: 800 }}>{displayName(sel.p)}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("shared.leaderboard.detailSub", { rank: sel.rank, div: divLabel(t, sel.div), pts: sel.pts })}</div></div></div>
           <CloseX onClose={onClose} />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
@@ -240,7 +240,7 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
             <div style={{ fontSize: 10, fontWeight: 700, color: C.amb, letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.top14Section", { count: sel.top14Tests.length })}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {sel.top14Tests.map((e) => (
-                <span key={e.key} style={{ fontSize: 10.5, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 6, padding: "3px 9px" }}>{e.label}</span>
+                <span key={e.key} style={{ fontSize: 10.5, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 6, padding: "3px 9px" }}>{t("data.top14test." + e.key)}</span>
               ))}
             </div>
           </div>
@@ -259,7 +259,7 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
         {sel.ev.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{t("shared.leaderboard.noMovement")}</div>}
         {sel.ev.map((e, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 7, height: 7, borderRadius: 4, background: e.v >= 0 ? C.green : C.coral }} /><span style={{ fontSize: 12 }}>{e.label}</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 7, height: 7, borderRadius: 4, background: e.v >= 0 ? C.green : C.coral }} /><span style={{ fontSize: 12 }}>{pointLabel(t, e)}</span></div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)" }}>{fmtShort(e.date)}</span><span style={{ fontSize: 13, fontWeight: 800, color: e.v >= 0 ? C.green : C.coral }}>{e.v >= 0 ? "+" : ""}{e.v}</span></div>
           </div>
         ))}

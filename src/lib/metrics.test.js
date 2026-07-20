@@ -88,12 +88,12 @@ const basePlayer = (over = {}) => ({
 
 describe("acwrZ — zones ACWR", () => {
   it("classe les 4 zones aux bons seuils", () => {
-    expect(acwrZ(0.7).l).toBe("Sous-charge");
-    expect(acwrZ(0.8).l).toBe("Cible");
-    expect(acwrZ(1.3).l).toBe("Cible");
-    expect(acwrZ(1.4).l).toBe("Vigilance");
-    expect(acwrZ(1.5).l).toBe("Vigilance");
-    expect(acwrZ(1.6).l).toBe("Surcharge");
+    expect(acwrZ(0.7).key).toBe("under");
+    expect(acwrZ(0.8).key).toBe("target");
+    expect(acwrZ(1.3).key).toBe("target");
+    expect(acwrZ(1.4).key).toBe("watch");
+    expect(acwrZ(1.5).key).toBe("watch");
+    expect(acwrZ(1.6).key).toBe("over");
   });
 });
 
@@ -174,8 +174,8 @@ describe("computePoints — gamification", () => {
     const r = computePoints(p, sessions, logs);
     expect(r.pts).toBeGreaterThanOrEqual(0);
     expect(r.doneCount).toBe(1);
-    expect(r.ev.some((e) => e.label === "Séance validée")).toBe(true);
-    expect(r.div).toHaveProperty("l");
+    expect(r.ev.some((e) => e.key === "session.done")).toBe(true);
+    expect(r.div).toHaveProperty("key");
   });
   it("une séance passée non validée compte comme manquée", () => {
     const p = basePlayer();
@@ -208,7 +208,7 @@ describe("computePoints — gamification", () => {
     const r = computePoints(p, sessions, logs);
     expect(r.missedCount).toBe(0);
     expect(r.pts).toBe(108); // aucune pénalité
-    expect(r.ev.some((e) => e.label === "Séance reportée")).toBe(true);
+    expect(r.ev.some((e) => e.key === "session.postponed")).toBe(true);
   });
 
   it("activité déclarée : +10 par thématique", () => {
@@ -216,26 +216,26 @@ describe("computePoints — gamification", () => {
     const acts = [{ date: todayISO(), activities: ["salle", "course"] }];
     const r = computePoints(p, [], {}, acts);
     expect(r.pts).toBe(108 + 20); // 2 thématiques × 10
-    expect(r.ev.some((e) => e.label === "Activité : Salle")).toBe(true);
+    expect(r.ev.some((e) => e.key === "activity" && e.params?.actKey === "salle")).toBe(true);
   });
   it("test Top 14 validé : +30 (crédité une fois)", () => {
     const p = basePlayer({ acwr: 1.0 });
-    const r = computePoints(p, [], {}, [], [{ label: "Yo-Yo IR1", date: todayISO() }]);
+    const r = computePoints(p, [], {}, [], [{ key: "yoyo", date: todayISO() }]);
     expect(r.pts).toBe(108 + 30);
-    expect(r.ev.some((e) => e.label === "Top 14 : Yo-Yo IR1")).toBe(true);
+    expect(r.ev.some((e) => e.key === "top14" && e.params?.testKey === "yoyo")).toBe(true);
   });
   it("tâche validée : +2 par tâche", () => {
     const p = basePlayer({ acwr: 1.0 });
     const r = computePoints(p, [], {}, [], [], [{ label: "Amener ses crampons", date: todayISO() }, { label: "RDV kiné", date: todayISO() }]);
     expect(r.pts).toBe(108 + 4); // 2 tâches × 2
-    expect(r.ev.some((e) => e.label === "Tâche : Amener ses crampons")).toBe(true);
+    expect(r.ev.some((e) => e.key === "task" && e.params?.title === "Amener ses crampons")).toBe(true);
   });
   it("bilans complétés : +10 par bilan (matin/soir), sans double comptage activité", () => {
     const p = basePlayer({ acwr: 1.0 });
     const acts = [{ date: todayISO(), activities: ["salle"] }]; // +10 activité
     const bilans = [
-      { date: todayISO(), label: "Bilan du matin complété" }, // +10
-      { date: todayISO(), label: "Bilan du soir complété" },  // +10
+      { date: todayISO(), moment: "matin" }, // +10
+      { date: todayISO(), moment: "soir" },  // +10
     ];
     const r = computePoints(p, [], {}, acts, [], [], [], bilans);
     expect(r.pts).toBe(108 + 10 + 20); // activité (10) + matin (10) + soir (10)
@@ -251,9 +251,9 @@ describe("computePoints — gamification", () => {
   });
   it("bonus top 2 réactivité : +15 par event", () => {
     const p = basePlayer({ acwr: 1.0 });
-    const r = computePoints(p, [], {}, [], [], [], [{ label: "⚡ Top 2 réactivité (tâche)", date: todayISO() }]);
+    const r = computePoints(p, [], {}, [], [], [], [{ date: todayISO() }]);
     expect(r.pts).toBe(108 + 15);
-    expect(r.ev.some((e) => e.label === "⚡ Top 2 réactivité (tâche)")).toBe(true);
+    expect(r.ev.some((e) => e.key === "reactivity")).toBe(true);
   });
 });
 
