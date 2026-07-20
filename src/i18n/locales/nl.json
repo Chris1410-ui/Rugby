@@ -1409,6 +1409,52 @@
       "ppPlaceholder": "Doelen, instructies, aandachtspunten…",
       "save": "Opslaan",
       "chalPtsSuffix": "· +{{pts}} ptn"
+    },
+    "error": {
+      "title": "Er is een fout opgetreden",
+      "reload": "Herladen"
+    },
+    "tests": {
+      "errName": "Geef de campagne een naam.",
+      "errSave": "Mislukt: {{err}}",
+      "errSaveRetry": "probeer opnieuw.",
+      "errNoCampaign": "Kies of maak een campagne.",
+      "saveFail": "Opslaan mislukt: {{err}}",
+      "deleteFail": "Verwijderen mislukt: {{err}}",
+      "enter": "Invoeren",
+      "title": "TESTEVOLUTIE",
+      "namePlaceholder": "Naam (bijv. Kamp 2 – Aug)",
+      "create": "Aanmaken",
+      "noCampaignOption": "— geen campagne —",
+      "newCampBtn": "Camp.",
+      "newCampTitle": "Nieuwe campagne",
+      "close": "Sluiten",
+      "deleteCamp": "Verw. camp.",
+      "deleteCampTitle": "Deze campagne verwijderen (alle spelers)",
+      "save": "Opslaan",
+      "emptyEdit": "Geen testcampagne. Klik op “Invoeren” om er een te maken en de waarden op te slaan.",
+      "emptyView": "Nog geen test geregistreerd.",
+      "campaignsSummary_one": "{{count}} campagne · laatste: {{last}}",
+      "campaignsSummary_other": "{{count}} campagnes · laatste: {{last}}",
+      "prev": "vorig. {{v}}"
+    }
+  },
+  "auth": {
+    "reset": {
+      "strengthWeak": "Zwak",
+      "strengthMed": "Gemiddeld",
+      "strengthStrong": "Sterk",
+      "errWeak": "Wachtwoord te zwak (10+, hoofdletter, kleine letter, cijfer, speciaal).",
+      "errMismatch": "De wachtwoorden komen niet overeen.",
+      "doneTitle": "Wachtwoord bijgewerkt",
+      "doneDesc": "Je hebt nu toegang tot je ruimte met je nieuwe wachtwoord.",
+      "continue": "Doorgaan",
+      "title": "Nieuw wachtwoord",
+      "newPlaceholder": "Nieuw wachtwoord",
+      "valid": "✓ geldig",
+      "weakHint": "10+ tekens, hoofdletter, kleine letter, cijfer, speciaal",
+      "confirmPlaceholder": "Bevestig het wachtwoord",
+      "save": "Nieuw wachtwoord opslaan"
     }
   }
 }

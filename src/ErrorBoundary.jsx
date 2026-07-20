@@ -1,4 +1,5 @@
 import { Component } from "react";
+import i18n from "./i18n/config.js";
 import { C, FONT } from "./lib/tokens.js";
 
 /* Error boundary GLOBAL : toute exception non catchée pendant un rendu React
@@ -26,9 +27,9 @@ export default class ErrorBoundary extends Component {
     return (
       <div style={{ minHeight: "100vh", background: C.navy, color: "#fff", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 420, textAlign: "center", lineHeight: 1.6 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: C.coral, marginBottom: 8 }}>Une erreur est survenue</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: C.coral, marginBottom: 8 }}>{i18n.t("shared.error.title")}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", wordBreak: "break-word", marginBottom: 14 }}>{msg}</div>
-          <button onClick={() => window.location.reload()} style={{ background: C.coral, border: "none", borderRadius: 10, padding: "11px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>Recharger</button>
+          <button onClick={() => window.location.reload()} style={{ background: C.coral, border: "none", borderRadius: 10, padding: "11px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>{i18n.t("shared.error.reload")}</button>
         </div>
       </div>
     );
