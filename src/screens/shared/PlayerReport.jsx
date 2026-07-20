@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
-import { grpLabel } from "../../lib/positions.js";
+import { grpLabel, posDisplay } from "../../lib/positions.js";
 import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel, alertText, alertCat } from "../../lib/metrics.js";
 import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
@@ -87,7 +87,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
           <Ring val={player.readiness} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label={t("shared.report.ready")} size={58} sw={5} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>{displayName(player)}{player.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>{t("shared.report.demoBadge")}</span>}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>#{player.num ?? "—"} · {player.pos} · {grpLabel(player.grp)}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>#{player.num ?? "—"} · {posDisplay(t, player.pos)} · {grpLabel(player.grp)}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 20, fontWeight: 900, fontStyle: "italic", color: pts.div.c }}>{pts.pts}</div>

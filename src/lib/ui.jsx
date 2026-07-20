@@ -106,8 +106,8 @@ export const KPI = ({ label, value, sub, color }) => (
   </div>
 );
 
-export const Tag = ({ c, children }) => (
-  <span style={{ background: `${c}22`, color: c, padding: "2px 9px", borderRadius: 6, fontSize: 10, fontWeight: 700, border: `1px solid ${c}44` }}>{children}</span>
+export const Tag = ({ c, children, title }) => (
+  <span title={title} style={{ background: `${c}22`, color: c, padding: "2px 9px", borderRadius: 6, fontSize: 10, fontWeight: 700, border: `1px solid ${c}44` }}>{children}</span>
 );
 
 export const Pill = ({ v }) => {

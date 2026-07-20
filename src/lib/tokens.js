@@ -98,12 +98,28 @@ export function isProfileComplete(profile) {
   return false; // rôle non reconnu → à corriger côté staff
 }
 
-// Codes de séance (couleur de pastille)
+/* Codes de séance (couleur de pastille). Le CODE reste la valeur stockée ; son
+   libellé d'affichage est traduit via data.sessionCode.* (sessionCodeLabel).
+   « CDD » est l'ANCIEN code de « COD » (Changement de Direction) : conservé ici
+   comme alias couleur pour que les séances déjà enregistrées restent lisibles,
+   sans le proposer à la saisie. */
 export const CODES = {
-  RS: C.coral,   // Renforcement / force
-  CDD: C.blue,   // Conditioning demi-distance
-  CSB: C.teal,   // Conditioning spécifique
-  CASB: C.green,
-  AC: C.viol,    // Accélérations
-  BLI: C.gray,   // Blessé / individualisé
+  RS: C.coral,    // Renforcement en Salle
+  COD: C.blue,    // Changement de Direction
+  CSB: C.teal,    // Course Sans Ballon
+  CASB: C.green,  // Course Avec Ballon
+  AC: C.viol,     // Activité Combattue
+  BLI: C.gray,    // Bloc Liaison Intermédiaire
+  CDD: C.blue,    // legacy → COD (séances antérieures)
 };
+
+// Codes proposés à la saisie (COD canonique ; CDD legacy exclu du sélecteur).
+export const SESSION_CODES = ["RS", "COD", "CSB", "CASB", "AC", "BLI"];
+
+// Ancien code → code canonique (pour retrouver le bon libellé traduit).
+const CODE_CANON = { CDD: "COD" };
+
+// Libellé d'affichage traduit d'un code de séance (t = i18next). Repli sur le
+// code brut si aucune traduction (code personnalisé).
+export const sessionCodeLabel = (t, code) =>
+  t(`data.sessionCode.${CODE_CANON[code] || code}`, { defaultValue: code || "" });

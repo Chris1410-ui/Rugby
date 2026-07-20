@@ -1617,6 +1617,27 @@
       "target": "Cible",
       "watch": "Vigilance",
       "over": "Surcharge"
+    },
+    "pos": {
+      "pilierGauche": "Pilier gauche",
+      "talonneur": "Talonneur",
+      "pilierDroit": "Pilier droit",
+      "deuxiemeLigne": "Deuxième ligne",
+      "troisiemeLigneAile": "Troisième ligne aile (flanker)",
+      "troisiemeLigneCentre": "Troisième ligne centre (n°8)",
+      "demiMelee": "Demi de mêlée",
+      "demiOuverture": "Demi d'ouverture",
+      "ailier": "Ailier",
+      "troisQuartCentre": "Trois-quarts centre",
+      "arriere": "Arrière"
+    },
+    "sessionCode": {
+      "RS": "Renforcement en Salle",
+      "COD": "Changement de Direction",
+      "CSB": "Course Sans Ballon",
+      "CASB": "Course Avec Ballon",
+      "AC": "Activité Combattue",
+      "BLI": "Bloc Liaison Intermédiaire"
     }
   },
   "points": {

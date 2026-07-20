@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
-import { grpLabel } from "../../lib/positions.js";
+import { grpLabel, posDisplay } from "../../lib/positions.js";
 import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Eye, EyeOff, Lock } from "../../lib/icons.jsx";
@@ -237,7 +237,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
                   ? <input value={d.initials ?? ""} onChange={(e) => setD((p) => ({ ...p, initials: e.target.value }))} placeholder="I.F." maxLength={8} style={{ ...inp, width: 60, textAlign: "left" }} />
                   : (player.initials && <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.6)" }}>({player.initials})</span>)}
               </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{player.pos} · {grpLabel(player.grp)}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, player.pos)} · {grpLabel(player.grp)}</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>

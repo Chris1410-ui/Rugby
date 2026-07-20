@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
-import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
+import { grpLabel, RUGBY_POS, POS_GROUPS, posDisplay, posOptionLabel } from "../../lib/positions.js";
 import { isTotemTaken } from "../../lib/totems.js";
 import { buildAlerts, SEVC, alertText, alertCat } from "../../lib/metrics.js";
 import { rosterCSV, downloadCSV } from "../../lib/csv.js";
@@ -271,7 +271,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
                   {displayName(p)}{p._live && <span title={t("staff.app.liveTitle")} style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
                   {p.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>{t("staff.app.demoBadge")}</span>}
                 </div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{p.pos} · {grpLabel(p.grp)}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, p.pos)} · {grpLabel(p.grp)}</div>
               </div>
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
@@ -334,7 +334,7 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
             {POS_GROUPS.map((grp) => (
               <optgroup key={grp.grp} label={grp.label}>
-                {grp.items.map((p) => <option key={p.i} value={p.i}>{p.num} — {displayName(p)}</option>)}
+                {grp.items.map((p) => <option key={p.i} value={p.i}>{posOptionLabel(t, p)}</option>)}
               </optgroup>
             ))}
           </select>

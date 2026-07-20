@@ -1617,6 +1617,27 @@
       "target": "Doel",
       "watch": "Waakzaamheid",
       "over": "Overbelasting"
+    },
+    "pos": {
+      "pilierGauche": "Loshoofdpilier",
+      "talonneur": "Hoeker",
+      "pilierDroit": "Vasthoofdpilier",
+      "deuxiemeLigne": "Tweede rij",
+      "troisiemeLigneAile": "Flanker",
+      "troisiemeLigneCentre": "Nummer 8",
+      "demiMelee": "Scrumhalf",
+      "demiOuverture": "Flyhalf",
+      "ailier": "Vleugel",
+      "troisQuartCentre": "Center",
+      "arriere": "Fullback"
+    },
+    "sessionCode": {
+      "RS": "Krachttraining",
+      "COD": "Richtingsverandering",
+      "CSB": "Lopen zonder bal",
+      "CASB": "Lopen met bal",
+      "AC": "Contactwerk",
+      "BLI": "Tussenblok"
     }
   },
   "points": {
