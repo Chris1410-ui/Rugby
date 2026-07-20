@@ -38,12 +38,7 @@ const EXCLUDE = new Set([
 
 // Fichiers d'UI PAS ENCORE migrés (à vider lot par lot). Tout .jsx absent de
 // cette liste ET d'EXCLUDE est scanné.
-const PENDING = new Set([
-  "auth/useAuth.jsx",
-  "lib/ui.jsx",
-  "screens/OwnerApp.jsx",
-  "screens/shared/Calendrier.jsx",
-]);
+const PENDING = new Set([]);
 
 // Props d'UI dont la valeur littérale doit passer par t().
 const TEXT_PROPS = new Set(["placeholder", "title", "alt", "label", "aria-label"]);

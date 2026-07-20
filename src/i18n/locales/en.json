@@ -1503,6 +1503,39 @@
       "forgot": "Forgot password?",
       "askStaff": "Ask the staff",
       "createAccount": "Create an account"
+    },
+    "link": {
+      "expired": "The reset link has expired. Request a new email below.",
+      "invalid": "Invalid or already-used link. Request a new email below."
     }
+  },
+  "owner": {
+    "badge": "👑 OWNER · Head of Performance",
+    "chooseClub": "Choose a club",
+    "accountTitle": "Account",
+    "headOfPerf": "👑 Head of Performance",
+    "playerView": "👁 PLAYER VIEW",
+    "openPlayerView": "Open a player's view (read-only)",
+    "choosePlayer": "— Choose a player —",
+    "optPlayers": "Players",
+    "optDemo": "Demo",
+    "accounts": "Accounts",
+    "signOut": "Sign out",
+    "loadingClubs": "Loading clubs…",
+    "noClub": "No rugby club found.",
+    "accountsTitle": "Accounts",
+    "close": "Close",
+    "searchPlaceholder": "Name or email…",
+    "filterClub": "Filter by club",
+    "allClubs": "All clubs",
+    "filterRole": "Filter by role",
+    "allRoles": "All roles",
+    "loading": "Loading…",
+    "error": "Error: {{err}}",
+    "noAccount": "No account for these filters.",
+    "viewAsTitle": "Open their view (read-only)",
+    "viewAs": "👁 View as",
+    "impersonateBanner": "👁 Owner view — you are viewing as {{name}} · {{role}}{{team}} · read-only",
+    "backToOwner": "Back to owner"
   }
 }

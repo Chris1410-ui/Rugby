@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- provider + hook cohabitent volontairement */
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase.js";
+import i18n from "../i18n/config.js";
 import { applyProfileLocale } from "../i18n/useLocale.js";
 
 /* ────────────────────────────────────────────────────────────────
@@ -21,9 +22,9 @@ function readUrlAuthError() {
   const q = new URLSearchParams(raw);
   const code = q.get("error_code") || q.get("error");
   if (!code) return "";
-  if (/expired/i.test(code)) return "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.";
+  if (/expired/i.test(code)) return i18n.t("auth.link.expired");
   const desc = q.get("error_description");
-  return desc ? desc.replace(/\+/g, " ") : "Lien invalide ou déjà utilisé. Redemande un email ci-dessous.";
+  return desc ? desc.replace(/\+/g, " ") : i18n.t("auth.link.invalid");
 }
 const INITIAL_LINK_ERROR = readUrlAuthError();
 

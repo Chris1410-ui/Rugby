@@ -1503,6 +1503,39 @@
       "forgot": "Wachtwoord vergeten?",
       "askStaff": "Vraag de staf",
       "createAccount": "Een account aanmaken"
+    },
+    "link": {
+      "expired": "De reset-link is verlopen. Vraag hieronder een nieuwe e-mail aan.",
+      "invalid": "Ongeldige of reeds gebruikte link. Vraag hieronder een nieuwe e-mail aan."
     }
+  },
+  "owner": {
+    "badge": "👑 OWNER · Head of Performance",
+    "chooseClub": "Kies een club",
+    "accountTitle": "Account",
+    "headOfPerf": "👑 Head of Performance",
+    "playerView": "👁 SPELERSWEERGAVE",
+    "openPlayerView": "Open de weergave van een speler (alleen-lezen)",
+    "choosePlayer": "— Kies een speler —",
+    "optPlayers": "Spelers",
+    "optDemo": "Demo",
+    "accounts": "Accounts",
+    "signOut": "Uitloggen",
+    "loadingClubs": "Clubs laden…",
+    "noClub": "Geen rugbyclub gevonden.",
+    "accountsTitle": "Accounts",
+    "close": "Sluiten",
+    "searchPlaceholder": "Naam of e-mail…",
+    "filterClub": "Filter op club",
+    "allClubs": "Alle clubs",
+    "filterRole": "Filter op rol",
+    "allRoles": "Alle rollen",
+    "loading": "Laden…",
+    "error": "Fout: {{err}}",
+    "noAccount": "Geen account voor deze filters.",
+    "viewAsTitle": "Open zijn weergave (alleen-lezen)",
+    "viewAs": "👁 Bekijk als",
+    "impersonateBanner": "👁 Ownerweergave — je bekijkt als {{name}} · {{role}}{{team}} · alleen-lezen",
+    "backToOwner": "Terug naar owner"
   }
 }
