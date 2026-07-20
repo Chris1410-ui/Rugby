@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Send, ChevronLeft } from "../../lib/icons.jsx";
@@ -14,6 +15,7 @@ import { useReadOnly } from "../../lib/readonly.js";
    À l'ouverture et à chaque nouveau message, marque comme lus ceux de l'autre
    partie (accusé de réception). Toujours possible d'écrire, même fil vide. */
 export default function Conversation({ playerId, title, who, accent = C.coral, selfName, onBack, onClose }) {
+  const { t } = useTranslation();
   const inPreview = usePreview();
   const readOnly = useReadOnly();
   const preview = inPreview || readOnly; // aperçu owner/staff OU coach → lecture seule (aucun envoi)
@@ -31,15 +33,15 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
 
   const send = async () => {
     if (preview) return; // lecture seule : aucun envoi sous l'identité du joueur
-    const t = txt.trim();
-    if (!t || busy) return;
+    const trimmed = txt.trim();
+    if (!trimmed || busy) return;
     setBusy(true);
     setTxt("");
     try {
-      await sendMessage(playerId, { dir: who, text: t, author: who === "staff" ? "Staff" : (selfName || "Joueur") });
+      await sendMessage(playerId, { dir: who, text: trimmed, author: who === "staff" ? "Staff" : (selfName || "Joueur") });
     } catch (e) {
       console.error("[send]", e.message);
-      setTxt(t); // restaure en cas d'échec
+      setTxt(trimmed); // restaure en cas d'échec
     }
     setBusy(false);
   };
@@ -51,7 +53,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
       {/* en-tête */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 12, borderBottom: `1px solid ${C.border2}`, marginBottom: 10 }}>
         {onBack && (
-          <button onClick={onBack} title="Retour" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+          <button onClick={onBack} title={t("shared.conversation.backTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <ChevronLeft size={16} />
           </button>
         )}
@@ -60,7 +62,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{who === "staff" ? "Conversation avec le joueur" : "Conversation avec le staff"}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{who === "staff" ? t("shared.conversation.withPlayer") : t("shared.conversation.withStaff")}</div>
         </div>
         {onClose && <CloseX onClose={onClose} />}
       </div>
@@ -70,7 +72,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
         {msgs.length === 0 ? (
           <div style={{ margin: "auto", textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6, padding: "24px 12px" }}>
             <div style={{ fontSize: 30, marginBottom: 8, opacity: 0.8 }}>💬</div>
-            {who === "staff" ? "Aucun message. Écris le premier message à ce joueur." : "Aucun message. Écris au staff — ils te répondront ici."}
+            {who === "staff" ? t("shared.conversation.emptyStaff") : t("shared.conversation.emptyPlayer")}
           </div>
         ) : (
           msgs.map((m) => {
@@ -79,7 +81,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
               <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%" }}>
                 <div style={{ background: mine ? accent : "rgba(255,255,255,0.08)", color: "#fff", borderRadius: mine ? "13px 13px 3px 13px" : "13px 13px 13px 3px", padding: "9px 12px", fontSize: 13, lineHeight: 1.45, wordBreak: "break-word" }}>{m.text}</div>
                 <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.56)", marginTop: 3, textAlign: mine ? "right" : "left" }}>
-                  {fmt(m.ts)}{mine && (m.read ? " · Lu" : " · Envoyé")}
+                  {fmt(m.ts)}{mine && (m.read ? t("shared.conversation.readSuffix") : t("shared.conversation.sentSuffix"))}
                 </div>
               </div>
             );
@@ -91,7 +93,7 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
       {/* saisie */}
       {preview ? (
         <div style={{ textAlign: "center", padding: "11px 13px", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700 }}>
-          👁 Mode aperçu — lecture seule (envoi désactivé)
+          {t("shared.conversation.previewReadonly")}
         </div>
       ) : (
         <div style={{ display: "flex", gap: 8 }}>
@@ -99,10 +101,10 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
             value={txt}
             onChange={(e) => setTxt(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="Écrire un message…"
+            placeholder={t("shared.conversation.inputPlaceholder")}
             style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 13px", color: "#fff", fontSize: 13, outline: "none" }}
           />
-          <button onClick={send} disabled={busy || !txt.trim()} title="Envoyer" style={{ background: txt.trim() ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "0 16px", color: "#fff", cursor: txt.trim() ? "pointer" : "default", display: "flex", alignItems: "center", opacity: busy ? 0.6 : 1 }}>
+          <button onClick={send} disabled={busy || !txt.trim()} title={t("shared.conversation.sendTitle")} style={{ background: txt.trim() ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "0 16px", color: "#fff", cursor: txt.trim() ? "pointer" : "default", display: "flex", alignItems: "center", opacity: busy ? 0.6 : 1 }}>
             <Send size={16} />
           </button>
         </div>
