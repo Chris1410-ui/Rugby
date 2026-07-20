@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
@@ -12,6 +13,7 @@ const accent = C.coral;
    Tous les joueurs sont listés pour pouvoir démarrer une conversation même
    sans historique. Tri : non-lus d'abord, puis message le plus récent. */
 export default function StaffMessages({ players }) {
+  const { t } = useTranslation();
   const [selId, setSelId] = useState(null);
   const [q, setQ] = useState("");
   const { threads } = useTeamMessages(players.map((p) => p.id));
@@ -51,38 +53,38 @@ export default function StaffMessages({ players }) {
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <MessageSquare size={18} color={accent} />
-        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Messagerie</div>
+        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>{t("staff.messages.title")}</div>
       </div>
 
       {players.length > 6 && (
         <div style={{ position: "relative", marginBottom: 12 }}>
           <Search size={15} color="rgba(255,255,255,0.35)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un joueur…" style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px 10px 34px", color: "#fff", fontSize: 13, outline: "none" }} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("staff.messages.search")} style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px 10px 34px", color: "#fff", fontSize: 13, outline: "none" }} />
         </div>
       )}
 
       {players.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 26, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
-          Aucun joueur dans l'effectif. Ajoute des joueurs pour leur écrire.
+          {t("staff.messages.emptyRoster")}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {filtered.map(({ p, t }) => (
-            <div key={p.id} onClick={() => setSelId(p.id)} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer", borderLeft: `3px solid ${t.unread ? C.coral : "transparent"}` })}>
+          {filtered.map(({ p, t: th }) => (
+            <div key={p.id} onClick={() => setSelId(p.id)} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer", borderLeft: `3px solid ${th.unread ? C.coral : "transparent"}` })}>
               <div style={{ width: 38, height: 38, borderRadius: 19, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{p.num ?? "—"}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(p)}</span>
                   <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)", flexShrink: 0 }}>{grpLabel(p.grp)}</span>
                 </div>
-                <div style={{ fontSize: 11, color: t.unread ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: t.unread ? 600 : 400 }}>
-                  {t.last ? (t.lastDir === "staff" ? "Vous : " : "") + t.last : "Démarrer la conversation"}
+                <div style={{ fontSize: 11, color: th.unread ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: th.unread ? 600 : 400 }}>
+                  {th.last ? (th.lastDir === "staff" ? t("staff.messages.youPrefix") : "") + th.last : t("staff.messages.start")}
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)" }}>{fmt(t.lastTs)}</span>
-                {t.unread > 0
-                  ? <span style={{ background: C.coral, color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 9, padding: "1px 6px", minWidth: 16, textAlign: "center" }}>{t.unread}</span>
+                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.56)" }}>{fmt(th.lastTs)}</span>
+                {th.unread > 0
+                  ? <span style={{ background: C.coral, color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 9, padding: "1px 6px", minWidth: 16, textAlign: "center" }}>{th.unread}</span>
                   : <ChevronRight size={15} color="rgba(255,255,255,0.25)" />}
               </div>
             </div>
