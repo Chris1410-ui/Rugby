@@ -63,7 +63,6 @@ const PENDING = new Set([
   "screens/shared/Top14Panel.jsx",
   "screens/shared/TotemPicker.jsx",
   "screens/shared/Veille.jsx",
-  "screens/staff/Defis.jsx",
   "screens/staff/Programmes.jsx",
   "screens/staff/StaffApp.jsx",
 ]);
