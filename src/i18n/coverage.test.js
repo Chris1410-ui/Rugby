@@ -64,16 +64,12 @@ const PENDING = new Set([
   "screens/shared/TotemPicker.jsx",
   "screens/shared/Veille.jsx",
   "screens/staff/Alertes.jsx",
-  "screens/staff/AnalyseVideo.jsx",
   "screens/staff/Camps.jsx",
   "screens/staff/Defis.jsx",
   "screens/staff/Historique.jsx",
-  "screens/staff/ImportPlayers.jsx",
   "screens/staff/Programmes.jsx",
-  "screens/staff/QuestionnaireResponses.jsx",
   "screens/staff/Questionnaires.jsx",
   "screens/staff/StaffApp.jsx",
-  "screens/staff/Taches.jsx",
   "screens/staff/TestsBatch.jsx",
 ]);
 

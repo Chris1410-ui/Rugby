@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
@@ -12,6 +13,7 @@ import { formatAnswer, questionnaireCSV } from "../../lib/questionnaires.js";
    + détail par joueur, filtres (ligne / statut) + export CSV. Données santé :
    staff du club uniquement (RLS), jamais au classement/comparaison. */
 export default function QuestionnaireResponses({ questionnaire, players, assignments, onBack }) {
+  const { t } = useTranslation();
   const [grp, setGrp] = useState("all");
   const [statut, setStatut] = useState("all");
   const [detail, setDetail] = useState(null); // player
@@ -38,34 +40,34 @@ export default function QuestionnaireResponses({ questionnaire, players, assignm
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <button onClick={onBack} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>← Questionnaires</button>
+        <button onClick={onBack} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>← {t("staff.qresp.back")}</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{questionnaire.nom}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{filled}/{total} rempli(s)</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("staff.qresp.filledCount", { filled, total })}</div>
         </div>
-        <button onClick={exportCSV} title="Export CSV" style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}><Download size={16} /></button>
+        <button onClick={exportCSV} title={t("staff.qresp.exportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}><Download size={16} /></button>
       </div>
 
       {/* Filtres */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-        {[["all", "Toutes lignes"], ...grps.map((g) => [g, grpLabel(g)])].map(([v, l]) => (
+        {[["all", t("staff.qresp.filterAllLines")], ...grps.map((g) => [g, grpLabel(g)])].map(([v, l]) => (
           <button key={v} onClick={() => setGrp(v)} style={btn(grp === v)}>{l}</button>
         ))}
         <span style={{ width: 8 }} />
-        {[["all", "Tous"], ["rempli", "Remplis"], ["a_remplir", "En attente"]].map(([v, l]) => (
+        {[["all", t("staff.qresp.filterAll")], ["rempli", t("staff.qresp.filterFilled")], ["a_remplir", t("staff.qresp.filterPending")]].map(([v, l]) => (
           <button key={v} onClick={() => setStatut(v)} style={btn(statut === v)}>{l}</button>
         ))}
       </div>
 
       {total === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>Questionnaire pas encore envoyé.</div>
+        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>{t("staff.qresp.notSent")}</div>
       ) : (
         <div style={{ overflowX: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
           <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 520 }}>
             <thead>
               <tr>
-                <th style={{ ...th, ...nameCol }}>Joueur</th>
-                <th style={th}>Statut</th>
+                <th style={{ ...th, ...nameCol }}>{t("staff.qresp.colPlayer")}</th>
+                <th style={th}>{t("staff.qresp.colStatus")}</th>
                 {questionnaire.questions.map((q) => <th key={q.id} style={th}>{q.label}</th>)}
               </tr>
             </thead>
@@ -74,7 +76,7 @@ export default function QuestionnaireResponses({ questionnaire, players, assignm
                 <tr key={p.id} onClick={() => setDetail(p)} style={{ cursor: "pointer" }}>
                   <td style={{ ...nameCol, fontSize: 12, fontWeight: 700, borderBottom: `1px solid ${C.border2}` }}>{displayName(p)}</td>
                   <td style={{ padding: "6px 8px", borderBottom: `1px solid ${C.border2}` }}>
-                    {a.statut === "rempli" ? <Tag c={C.green}>rempli</Tag> : <Tag c={C.amb}>en attente</Tag>}
+                    {a.statut === "rempli" ? <Tag c={C.green}>{t("staff.qresp.tagFilled")}</Tag> : <Tag c={C.amb}>{t("staff.qresp.tagPending")}</Tag>}
                   </td>
                   {questionnaire.questions.map((q) => (
                     <td key={q.id} style={{ padding: "6px 8px", fontSize: 11.5, color: "rgba(255,255,255,0.85)", borderBottom: `1px solid ${C.border2}`, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -83,7 +85,7 @@ export default function QuestionnaireResponses({ questionnaire, players, assignm
                   ))}
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={questionnaire.questions.length + 2} style={{ padding: 16, textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Aucun joueur pour ce filtre.</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={questionnaire.questions.length + 2} style={{ padding: 16, textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("staff.qresp.emptyFilter")}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -98,6 +100,7 @@ const btn = (active) => ({ padding: "6px 11px", borderRadius: 8, border: "none",
 
 /* Détail complet des réponses d'un joueur (modal). Réutilisable depuis la fiche. */
 export function PlayerAnswers({ questionnaire, player, assignment, onClose }) {
+  const { t } = useTranslation();
   const a = assignment;
   useModalClose(onClose);
   return (
@@ -106,12 +109,12 @@ export function PlayerAnswers({ questionnaire, player, assignment, onClose }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }}>{displayName(player)}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{questionnaire.nom}{a?.filledAt ? ` · rempli le ${fmtShort(a.filledAt)}` : ""}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{questionnaire.nom}{a?.filledAt ? t("staff.qresp.filledOn", { date: fmtShort(a.filledAt) }) : ""}</div>
           </div>
           <CloseX onClose={onClose} />
         </div>
         {!a || a.statut !== "rempli" ? (
-          <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>Pas encore rempli.</div>
+          <div style={sc({ textAlign: "center", padding: 22, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>{t("staff.qresp.notFilled")}</div>
         ) : (
           questionnaire.questions.map((q) => (
             <div key={q.id} style={{ padding: "9px 0", borderBottom: `1px solid ${C.border2}` }}>
