@@ -1742,6 +1742,18 @@
       "grp": "Line",
       "tractions": "Pull-ups (+kg)",
       "bodyweight": "Weight (kg)"
+    },
+    "msg": {
+      "posUnrecognized": "Position “{{value}}” not recognized",
+      "grpUnrecognized": "Line “{{value}}” not recognized",
+      "numberIgnored": "{{col}}: “{{value}}” ignored (number expected)",
+      "emptyRow": "No totem or number — row ignored",
+      "duplicate": "Duplicate in file (same player)",
+      "posKept": "Position kept ({{pos}})",
+      "posKeptGeneric": "Position kept (player's value)",
+      "noTotem": "Cannot create without a totem (number alone not found)",
+      "noPos": "Cannot create without a valid position",
+      "totemTaken": "Totem “{{wanted}}” already taken → “{{resolved}}”"
     }
   }
 }

@@ -1742,6 +1742,18 @@
       "grp": "Linie",
       "tractions": "Optrekken (+kg)",
       "bodyweight": "Gewicht (kg)"
+    },
+    "msg": {
+      "posUnrecognized": "Positie “{{value}}” niet herkend",
+      "grpUnrecognized": "Linie “{{value}}” niet herkend",
+      "numberIgnored": "{{col}}: “{{value}}” genegeerd (getal verwacht)",
+      "emptyRow": "Geen totem of nummer — rij genegeerd",
+      "duplicate": "Duplicaat in bestand (zelfde speler)",
+      "posKept": "Positie behouden ({{pos}})",
+      "posKeptGeneric": "Positie behouden (waarde van speler)",
+      "noTotem": "Aanmaken onmogelijk zonder totem (nummer alleen niet gevonden)",
+      "noPos": "Aanmaken onmogelijk zonder geldige positie",
+      "totemTaken": "Totem “{{wanted}}” al bezet → “{{resolved}}”"
     }
   }
 }

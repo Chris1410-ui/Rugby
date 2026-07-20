@@ -4,7 +4,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { CloseX, useModalClose, Tag } from "../../lib/ui.jsx";
 import { Download, Upload, CheckCircle } from "../../lib/icons.jsx";
 import { downloadCSV } from "../../lib/csv.js";
-import { buildPreview, importTemplate } from "../../lib/importPlayers.js";
+import { buildPreview, importTemplate, importMsg } from "../../lib/importPlayers.js";
 import { commitImport } from "../../data/importer.js";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
 
@@ -123,7 +123,7 @@ export default function ImportPlayers({ teamId, players = [], onClose }) {
                       <td style={td}>{r.grp === "avants" ? t("staff.import.lineAvants") : r.grp === "arrieres" ? t("staff.import.lineArrieres") : "—"}</td>
                       <td style={td}>{Object.keys(r.metrics || {}).length || "—"}</td>
                       <td style={{ ...td, color: r.errors.length ? C.coral : "rgba(255,255,255,0.6)", fontSize: 10.5 }}>
-                        {[...r.errors, ...r.warnings].join(" · ") || "—"}
+                        {[...r.errors, ...r.warnings].map((m) => importMsg(t, m)).join(" · ") || "—"}
                       </td>
                     </tr>
                   ))}

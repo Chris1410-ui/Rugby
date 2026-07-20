@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { mapHeaders, parseDecimal, matchPoste, matchGrp, buildPreview } from "./importPlayers.js";
+import { describe, it, expect, beforeAll } from "vitest";
+import i18n from "../i18n/config.js";
+import { mapHeaders, parseDecimal, matchPoste, matchGrp, buildPreview, importMsg } from "./importPlayers.js";
 
 describe("mapHeaders — matching tolérant (accents / unités / variantes)", () => {
   it("reconnaît en-têtes avec unités et ponctuation", () => {
@@ -68,7 +69,7 @@ describe("buildPreview — plan create/update sans écriture", () => {
     ], roster);
     expect(rows[0].name).toBe("Faucon");
     expect(rows[1].name).not.toBe("Faucon");
-    expect(rows[1].warnings.join()).toMatch(/déjà pris/);
+    expect(rows[1].warnings.some((w) => w.key === "totemTaken")).toBe(true);
   });
 
   it("erreur si ligne vide ou création sans poste", () => {
@@ -86,6 +87,26 @@ describe("buildPreview — plan create/update sans écriture", () => {
     expect(rows[0].action).toBe("update");
     expect(rows[0].matchId).toBe("p1");
     expect(rows[0].metrics).toEqual({ cmj_overall: 42 });
+  });
+});
+
+describe("importMsg — messages d'aperçu traduits (clés → texte, FR)", () => {
+  const t = i18n.t.bind(i18n);
+  beforeAll(async () => { await i18n.changeLanguage("fr"); });
+  it("interpole les params", () => {
+    expect(importMsg(t, { key: "posUnrecognized", params: { value: "ZZZ" } })).toBe("Poste « ZZZ » non reconnu");
+    expect(importMsg(t, { key: "totemTaken", params: { wanted: "Faucon", resolved: "Faucon 2" } }))
+      .toBe("Totem « Faucon » déjà pris → « Faucon 2 »");
+  });
+  it("posKept traduit le poste (nom canonique → libellé)", () => {
+    expect(importMsg(t, { key: "posKept", params: { pos: "Demi de mêlée" } })).toBe("Poste conservé (Demi de mêlée)");
+  });
+  it("numberIgnored résout le libellé de colonne", () => {
+    expect(importMsg(t, { key: "numberIgnored", params: { col: "bodyweight", value: "abc" } }))
+      .toBe("Poids (kg) : « abc » ignoré (nombre attendu)");
+  });
+  it("clé sans params", () => {
+    expect(importMsg(t, { key: "duplicate" })).toBe("Doublon dans le fichier (même joueur)");
   });
 });
 
@@ -134,7 +155,7 @@ describe("import — POSTE CONSERVÉ (joueur existant jamais écrasé)", () => {
     expect(r.pos).toBe("Pilier gauche");   // valeur du joueur, PAS « Ailier »
     expect(r.grp).toBe("avants");           // pas « arrieres »
     expect(r.posKept).toBe(true);
-    expect(r.warnings.some((w) => /Poste conservé/.test(w))).toBe(true);
+    expect(r.warnings.some((w) => w.key === "posKept" || w.key === "posKeptGeneric")).toBe(true);
   });
 
   it("update : poste fichier NON reconnu ou vide → toujours conservé, aucun blocage/alerte", () => {
@@ -142,7 +163,7 @@ describe("import — POSTE CONSERVÉ (joueur existant jamais écrasé)", () => {
     expect(bad.action).toBe("update");
     expect(bad.pos).toBe("Pilier gauche");
     expect(bad.errors).toEqual([]);                       // jamais bloqué pour motif de poste
-    expect(bad.warnings.some((w) => /non reconnu/.test(w))).toBe(false); // pas d'alerte poste sur un existant
+    expect(bad.warnings.some((w) => w.key === "posUnrecognized")).toBe(false); // pas d'alerte poste sur un existant
 
     const empty = buildPreview([{ Totem: "Lion" }], roster).rows[0];
     expect(empty.action).toBe("update");
