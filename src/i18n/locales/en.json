@@ -1617,6 +1617,27 @@
       "target": "Target",
       "watch": "Watch",
       "over": "Overload"
+    },
+    "pos": {
+      "pilierGauche": "Loosehead prop",
+      "talonneur": "Hooker",
+      "pilierDroit": "Tighthead prop",
+      "deuxiemeLigne": "Second row (lock)",
+      "troisiemeLigneAile": "Flanker",
+      "troisiemeLigneCentre": "Number 8",
+      "demiMelee": "Scrum-half",
+      "demiOuverture": "Fly-half",
+      "ailier": "Wing",
+      "troisQuartCentre": "Centre",
+      "arriere": "Fullback"
+    },
+    "sessionCode": {
+      "RS": "Strength",
+      "COD": "Change of Direction",
+      "CSB": "Running without ball",
+      "CASB": "Running with ball",
+      "AC": "Contact work",
+      "BLI": "Intermediate transition block"
     }
   },
   "points": {

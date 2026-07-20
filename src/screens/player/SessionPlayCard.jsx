@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { C, CODES } from "../../lib/tokens.js";
+import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink } from "../../lib/icons.jsx";
@@ -133,7 +133,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, fontWeight: 800 }}>{fmtShort(s.date)}</span>
-            <Tag c={CODES[s.code] || accent}>{s.code}</Tag>
+            <Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag>
             <span style={{ fontSize: 12, fontWeight: 600 }}>{s.titre}</span>
           </div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("player.session.exercisesSeries", { ex: s.exercises.length, sets: totSets })}</div>

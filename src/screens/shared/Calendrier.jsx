@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { C, CODES } from "../../lib/tokens.js";
+import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { isoDate, parseISO, todayISO, statusOfLog } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { ChevronRight } from "../../lib/icons.jsx";
@@ -70,7 +70,7 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
               <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{d.toLocaleDateString("fr-BE", { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
               <div style={{ width: 3, height: 30, borderRadius: 2, background: CODES[s.code] || accent }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent}>{s.code}</Tag><span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag><span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("shared.calendar.exercisesCount", { count: s.exercises.length })}</div>
               </div>
               {isJoueur ? (

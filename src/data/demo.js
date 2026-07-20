@@ -65,7 +65,7 @@ export async function generateDemoPlayers(teamId, { count = 12 } = {}) {
   catch (e) { console.warn("[demo] check-ins ignorés:", e.message); }
 
   // ── 3) Séances démo (assignées AUX SEULS joueurs démo) + logs ──
-  const codes = ["RS", "CDD", "CSB", "AC"];
+  const codes = ["RS", "COD", "CSB", "AC"];
   const sessRows = Array.from({ length: 6 }, (_, w) => ({
     team_id: teamId, date: dayISO(w * 2 + 1), code: pick(codes), titre: "Séance démo", duration_min: 60,
     exercises: [
