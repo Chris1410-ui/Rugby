@@ -1,8 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+import i18n from "../i18n/config.js";
 import {
   acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
-  SLEEP_OPTIONS, sleepLabel, rankLeaderboard,
+  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, alertText, alertCat,
 } from "./metrics.js";
+
+beforeAll(async () => { await i18n.changeLanguage("fr"); });
 
 describe("rankLeaderboard — ex æquo (rang partagé + départage stable)", () => {
   const opts = { pointsOf: (r) => r.pts, labelOf: (r) => r.name, rankKey: "rank" };
@@ -264,5 +267,31 @@ describe("buildAlerts — clés stables (file de traitement)", () => {
     expect(alerts.length).toBeGreaterThan(0);
     expect(alerts.every((a) => !!a.key)).toBe(true);
     expect(alerts.some((a) => a.key === "acwr-high")).toBe(true);
+  });
+  it("porte des params structurés, jamais de prose", () => {
+    const p = { ...basePlayer(), _load: { acwr: 1.7, monotony: 1 } };
+    const a = buildAlerts([p], [], {}, {}).find((x) => x.key === "acwr-high");
+    expect(a.txt).toBeUndefined();
+    expect(a.params).toEqual({ acwr: 1.7 });
+  });
+});
+
+describe("alertText / alertCat — résolution i18n (FR)", () => {
+  const t = i18n.t.bind(i18n);
+  it("interpole une alerte live", () => {
+    expect(alertText(t, { key: "acwr-high", params: { acwr: 1.7 } })).toBe("ACWR 1.7 — zone de surcharge");
+  });
+  it("gère le pluriel (séance/séances non validée·s)", () => {
+    expect(alertText(t, { key: "overdue", params: { count: 1 } })).toBe("1 séance non validée");
+    expect(alertText(t, { key: "overdue", params: { count: 3 } })).toBe("3 séances non validées");
+  });
+  it("résout une ligne persistée (akey + params)", () => {
+    expect(alertText(t, { akey: "fatigue", params: { v: 9 } })).toBe("Fatigue déclarée 9/10");
+  });
+  it("repli sur la prose legacy si pas de params", () => {
+    expect(alertText(t, { akey: "x", txt: "ancienne prose" })).toBe("ancienne prose");
+  });
+  it("traduit la catégorie", () => {
+    expect(alertCat(t, "wellbeing")).toBe("Bien-être");
   });
 });

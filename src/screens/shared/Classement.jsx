@@ -9,7 +9,7 @@ import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
-import { challengeBadges, topChallengeBadge } from "../../lib/challenges.js";
+import { challengeBadges, topChallengeBadge, challengeBadgeLabel } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
 import { useTeamSessionLogs, useTeamCheckinEvents } from "../../data/leaderboard.js";
 import { KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
@@ -145,7 +145,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + displayName(d.p) : displayName(d.p)}</span>
                   {d.top14 > 0 && <span title={t("shared.leaderboard.top14Title", { count: d.top14 })} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
-                  {d.chalBadge && <span title={t("shared.leaderboard.chalTitle", { count: d.chalCount, badge: d.chalBadge.label })} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
+                  {d.chalBadge && <span title={t("shared.leaderboard.chalTitle", { count: d.chalCount, badge: challengeBadgeLabel(t, d.chalBadge) })} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
                 </div>
                 <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {divLabel(t, d.div)}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
               </div>
@@ -250,7 +250,7 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
             <div style={{ fontSize: 10, fontWeight: 700, color: C.viol, letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.chalSection", { count: sel.chalCount })}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {challengeBadges(sel.chalCount).map((b) => (
-                <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
+                <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {challengeBadgeLabel(t, b)}</span>
               ))}
             </div>
           </div>

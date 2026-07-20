@@ -1647,5 +1647,32 @@
     "sansFaute": "Flawless",
     "enForme": "In shape",
     "rigoureux": "Thorough"
+  },
+  "alerts": {
+    "acwr-high": "ACWR {{acwr}} — overload zone",
+    "acwr-low": "ACWR {{acwr}} — underload (detraining)",
+    "monotony": "Monotony {{monotony}} — lack of load variety",
+    "fatigue": "Reported fatigue {{v}}/10",
+    "soreness": "Soreness {{v}}/10",
+    "sleep": "Insufficient sleep ({{v}})",
+    "overdue_one": "{{count}} session not completed",
+    "overdue_other": "{{count}} sessions not completed",
+    "cat": {
+      "charge": "Load",
+      "wellbeing": "Well-being",
+      "compliance": "Compliance"
+    }
+  },
+  "challenges": {
+    "assigned": {
+      "all": "Whole team",
+      "open": "Open to all",
+      "group": "Line · {{line}}",
+      "players": "Selected players · {{count}}"
+    },
+    "badge": {
+      "first": "Challenge done",
+      "count": "{{n}} challenges"
+    }
   }
 }

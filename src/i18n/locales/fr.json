@@ -1647,5 +1647,32 @@
     "sansFaute": "Sans faute",
     "enForme": "En forme",
     "rigoureux": "Rigoureux"
+  },
+  "alerts": {
+    "acwr-high": "ACWR {{acwr}} — zone de surcharge",
+    "acwr-low": "ACWR {{acwr}} — sous-charge (désentraînement)",
+    "monotony": "Monotonie {{monotony}} — manque de variété de charge",
+    "fatigue": "Fatigue déclarée {{v}}/10",
+    "soreness": "Courbatures {{v}}/10",
+    "sleep": "Sommeil insuffisant ({{v}})",
+    "overdue_one": "{{count}} séance non validée",
+    "overdue_other": "{{count}} séances non validées",
+    "cat": {
+      "charge": "Charge",
+      "wellbeing": "Bien-être",
+      "compliance": "Assiduité"
+    }
+  },
+  "challenges": {
+    "assigned": {
+      "all": "Toute l'équipe",
+      "open": "Ouvert à tous",
+      "group": "Ligne · {{line}}",
+      "players": "Joueurs choisis · {{count}}"
+    },
+    "badge": {
+      "first": "Défi relevé",
+      "count": "{{n}} défis"
+    }
   }
 }

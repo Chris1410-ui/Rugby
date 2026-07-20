@@ -43,14 +43,15 @@ describe("bannières réutilisées des équipes", () => {
 });
 
 describe("assignedLabel (destinataires lisibles)", () => {
+  const t = i18n.t.bind(i18n);
   it("mappe chaque mode d'assignation", () => {
-    expect(assignedLabel({ mode: "all" })).toBe("Toute l'équipe");
-    expect(assignedLabel({ mode: "open" })).toBe("Ouvert à tous");
-    expect(assignedLabel({ mode: "group", group: "avants" })).toBe("Ligne · Avants");
-    expect(assignedLabel({ mode: "players", ids: ["a", "b", "c"] })).toBe("Joueurs choisis · 3");
+    expect(assignedLabel(t, { mode: "all" })).toBe("Toute l'équipe");
+    expect(assignedLabel(t, { mode: "open" })).toBe("Ouvert à tous");
+    expect(assignedLabel(t, { mode: "group", group: "avants" })).toBe("Ligne · Avants");
+    expect(assignedLabel(t, { mode: "players", ids: ["a", "b", "c"] })).toBe("Joueurs choisis · 3");
   });
   it("valeurs par défaut robustes", () => {
-    expect(assignedLabel()).toBe("Toute l'équipe");
-    expect(assignedLabel({ mode: "players" })).toBe("Joueurs choisis · 0");
+    expect(assignedLabel(t)).toBe("Toute l'équipe");
+    expect(assignedLabel(t, { mode: "players" })).toBe("Joueurs choisis · 0");
   });
 });

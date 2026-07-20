@@ -44,7 +44,7 @@ export default function ChallengeDetail({ c, onClose, topRight, children }) {
             <Info label={t("shared.challengeDetail.infoHeure")} value={c.heure || "—"} />
             <Info label={t("shared.challengeDetail.infoLieu")} value={c.lieu || "—"} />
             <Info label={t("shared.challengeDetail.infoEcheance")} value={c.echeance ? fmtShort(c.echeance) : "—"} />
-            <Info label={t("shared.challengeDetail.infoDest")} value={assignedLabel(c.assigned)} />
+            <Info label={t("shared.challengeDetail.infoDest")} value={assignedLabel(t, c.assigned)} />
           </div>
 
           {/* Matériel */}

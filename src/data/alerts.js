@@ -8,9 +8,16 @@ import { todayISO } from "../lib/metrics.js";
    (transmise kiné / traitée) avec un snapshot → historique auto-suffisant.
    RLS : staff de l'équipe + owner. */
 
+// La colonne `txt` porte désormais les PARAMS de l'alerte (JSON), plus aucune
+// prose : le libellé est reconstruit dans la langue du lecteur via alertText.
+// Les lignes antérieures (prose FR) sont détectées et servies telles quelles.
+const parseParams = (s) => {
+  if (typeof s !== "string" || s[0] !== "{") return null;
+  try { return JSON.parse(s); } catch { return null; }
+};
 const dbRow = (r) => ({
   id: r.id, teamId: r.team_id, playerId: r.player_id, date: r.date,
-  cat: r.cat, akey: r.akey, txt: r.txt, sev: r.sev, icon: r.icon,
+  cat: r.cat, akey: r.akey, txt: r.txt, params: parseParams(r.txt), sev: r.sev, icon: r.icon,
   kineAt: r.kine_at, treatedAt: r.treated_at,
 });
 
@@ -44,7 +51,8 @@ async function upsertStatus(teamId, alert, patch) {
   const { data: auth } = await supabase.auth.getUser();
   const row = {
     team_id: teamId, player_id: alert.pid, date: todayISO(),
-    cat: alert.cat, akey: alert.key, txt: alert.txt, sev: alert.sev, icon: alert.icon,
+    // `txt` stocke les params (JSON), pas de prose → snapshot i18n-neutre.
+    cat: alert.cat, akey: alert.key, txt: JSON.stringify(alert.params || {}), sev: alert.sev, icon: alert.icon,
     created_by: auth?.user?.id, ...patch,
   };
   const { error } = await supabase.from("alert_status").upsert(row, { onConflict: "player_id,akey,date" });

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
-import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel } from "../../lib/metrics.js";
+import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel, alertText, alertCat } from "../../lib/metrics.js";
 import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins, bilanEventsOf } from "../../data/checkins.js";
@@ -11,7 +11,7 @@ import { useReadOnly } from "../../lib/readonly.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useTeamTaskPoints } from "../../data/tasks.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
-import { challengeBadges } from "../../lib/challenges.js";
+import { challengeBadges, challengeBadgeLabel } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
 import { markKine, markTreated } from "../../data/alerts.js";
 import { top14Player, datedResultsFor, withCurrentBodyweight } from "../../lib/top14.js";
@@ -99,8 +99,8 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
         {/* Raison de l'alerte (si ouvert depuis une alerte) */}
         {reason && (
           <div style={sc({ marginBottom: 12, borderLeft: `4px solid ${reason.color || C.coral}`, background: `${reason.color || C.coral}1a` })}>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.5, color: reason.color || C.coral, marginBottom: 3 }}>{t("shared.report.alert", { cat: reason.cat })}</div>
-            <div style={{ fontSize: 13, fontWeight: 700 }}>{reason.icon} {reason.txt}</div>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.5, color: reason.color || C.coral, marginBottom: 3 }}>{t("shared.report.alert", { cat: alertCat(t, reason.cat) })}</div>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>{reason.icon} {alertText(t, reason)}</div>
           </div>
         )}
 
@@ -182,7 +182,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
           <Section title={t("shared.report.chalSection", { count: chalPts.length })}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
               {challengeBadges(chalPts.length).map((b) => (
-                <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
+                <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {challengeBadgeLabel(t, b)}</span>
               ))}
             </div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.65)" }}>{t("shared.report.chalPts", { pts: chalPts.reduce((a, c) => a + (c.points || 0), 0) })}</div>
