@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
-import { buildAlerts, SEVC, playerLoad, isoDate, todayISO, statusOfLog, fmtShort } from "../../lib/metrics.js";
+import { buildAlerts, SEVC, playerLoad, isoDate, todayISO, statusOfLog, fmtShort, alertText, alertCat } from "../../lib/metrics.js";
 import { KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { MessageSquare, Sparkles, CheckCircle } from "../../lib/icons.jsx";
 import { getRecommendation } from "../../data/recommendations.js";
@@ -69,7 +69,7 @@ export default function Alertes({ teamId, players, sessions, logs, checkins, act
         <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
           {cats.map((c) => (
             <button key={c} onClick={() => setCatf(c)} style={{ padding: "5px 11px", borderRadius: 7, border: "none", fontSize: 10, fontWeight: 700, cursor: "pointer", textTransform: "capitalize", background: catf === c ? accent : "rgba(255,255,255,0.07)", color: "#fff" }}>
-              {c === "all" ? t("staff.alerts.filterAll") : c}
+              {c === "all" ? t("staff.alerts.filterAll") : alertCat(t, c)}
             </button>
           ))}
         </div>
@@ -85,7 +85,7 @@ export default function Alertes({ teamId, players, sessions, logs, checkins, act
               <div style={{ width: 30, height: 30, borderRadius: 15, background: SEVC[a.sev] + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{a.icon}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>{a.name}{transmis && <span style={{ fontSize: 8.5, fontWeight: 800, color: C.teal, background: `${C.teal}22`, border: `1px solid ${C.teal}66`, borderRadius: 5, padding: "1px 5px" }}>{t("staff.alerts.kineBadge")}</span>}</div>
-                <div style={{ fontSize: 11, color: SEVC[a.sev] }}>{a.txt}</div>
+                <div style={{ fontSize: 11, color: SEVC[a.sev] }}>{alertText(t, a)}</div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); setReco(byId(a.pid)); }} title={t("staff.alerts.recoTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
                 <Sparkles size={15} />
@@ -118,7 +118,7 @@ export default function Alertes({ teamId, players, sessions, logs, checkins, act
                   <span style={{ fontSize: 14 }}>{s.icon}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{byId(s.playerId)?.name || t("staff.alerts.playerFallback")}</div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{s.txt} · {fmtShort(s.date)}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{alertText(t, s)} · {fmtShort(s.date)}</div>
                   </div>
                   {s.kineAt && <Tag c={C.teal}>{t("staff.alerts.kineTag")}</Tag>}
                   {s.treatedAt ? <Tag c={C.green}>{t("staff.alerts.treatedTag")}</Tag> : <Tag c={C.amb}>{t("staff.alerts.inQueueTag")}</Tag>}

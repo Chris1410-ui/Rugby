@@ -406,35 +406,52 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
   };
 }
 
-/* ════════════ ALERTES AUTO ════════════ */
+/* ════════════ ALERTES AUTO ════════════
+   Chaque alerte porte une `key` stable + `params` (valeurs dynamiques) et une
+   `cat` (clé de catégorie), JAMAIS de prose. L'UI résout via alertText(t, a).
+   `cat` ∈ { charge, wellbeing, compliance } → traduit via alerts.cat.*. */
 export function buildAlerts(players, sessions, logs, daily) {
   const out = [];
   const today = todayISO();
+  const mk = (p, sev, icon, key, cat, params) =>
+    ({ pid: p.id, name: displayName(p), grp: p.grp, sev, icon, key, cat, params });
   players.forEach((p) => {
     const L = p._load || playerLoad(p, sessions, logs);
     if (L.acwr > 1.5)
-      out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "high", icon: "⚡", txt: `ACWR ${L.acwr} — zone de surcharge`, cat: "charge", key: "acwr-high" });
+      out.push(mk(p, "high", "⚡", "acwr-high", "charge", { acwr: L.acwr }));
     else if (L.acwr > 0 && L.acwr < 0.8)
-      out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "low", icon: "📉", txt: `ACWR ${L.acwr} — sous-charge (désentraînement)`, cat: "charge", key: "acwr-low" });
+      out.push(mk(p, "low", "📉", "acwr-low", "charge", { acwr: L.acwr }));
     if (L.monotony > 2)
-      out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "med", icon: "🔁", txt: `Monotonie ${L.monotony} — manque de variété de charge`, cat: "charge", key: "monotony" });
+      out.push(mk(p, "med", "🔁", "monotony", "charge", { monotony: L.monotony }));
     const dd = daily?.[p.id];
     if (dd?.wb) {
       if (dd.wb.fatigue >= 8)
-        out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "high", icon: "🥵", txt: `Fatigue déclarée ${dd.wb.fatigue}/10`, cat: "bien-être", key: "fatigue" });
+        out.push(mk(p, "high", "🥵", "fatigue", "wellbeing", { v: dd.wb.fatigue }));
       if (dd.wb.soreness >= 8)
-        out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "med", icon: "💢", txt: `Courbatures ${dd.wb.soreness}/10`, cat: "bien-être", key: "soreness" });
+        out.push(mk(p, "med", "💢", "soreness", "wellbeing", { v: dd.wb.soreness }));
       if (dd.wb.sleep <= 4 || dd.sleepH <= 5)
-        out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "med", icon: "😴", txt: `Sommeil insuffisant (${dd.sleepH || dd.wb.sleep}${dd.sleepH ? "h" : "/10"})`, cat: "bien-être", key: "sleep" });
+        out.push(mk(p, "med", "😴", "sleep", "wellbeing", { v: `${dd.sleepH || dd.wb.sleep}${dd.sleepH ? "h" : "/10"}` }));
     }
     const overdue = sessions.filter(
       (s) => s.assignedIds?.includes(p.id) && s.date < today && statusOfLog(logs, s.id, p.id) === "pending"
     ).length;
     if (overdue > 0)
-      out.push({ pid: p.id, name: displayName(p), grp: p.grp, sev: "med", icon: "⏳", txt: `${overdue} séance${overdue > 1 ? "s" : ""} non validée${overdue > 1 ? "s" : ""}`, cat: "compliance", key: "overdue" });
+      out.push(mk(p, "med", "⏳", "overdue", "compliance", { count: overdue }));
   });
   const order = { high: 0, med: 1, low: 2 };
   return out.sort((a, b) => order[a.sev] - order[b.sev]);
 }
+
+/* Résout le libellé d'une alerte (t = i18next). Accepte une alerte live
+   ({ key, params }) ou une ligne persistée ({ akey, params }). Repli sur `txt`
+   pour les lignes historiques écrites avant l'i18n des alertes (prose FR). */
+export function alertText(t, a) {
+  if (!a) return "";
+  const key = a.key || a.akey;
+  if (key && a.params != null) return t(`alerts.${key}`, a.params);
+  return a.txt || (key ? t(`alerts.${key}`) : "");
+}
+// Libellé de catégorie d'alerte (alerts.cat.*).
+export const alertCat = (t, cat) => (cat ? t(`alerts.cat.${cat}`) : "");
 
 export const SEVC = { high: C.coral, med: C.amb, low: C.teal };

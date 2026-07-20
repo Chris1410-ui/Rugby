@@ -5,7 +5,7 @@ import { displayName } from "../../lib/identity.js";
 import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
 import { grpLabel, RUGBY_POS, POS_GROUPS } from "../../lib/positions.js";
 import { isTotemTaken } from "../../lib/totems.js";
-import { buildAlerts, SEVC } from "../../lib/metrics.js";
+import { buildAlerts, SEVC, alertText, alertCat } from "../../lib/metrics.js";
 import { rosterCSV, downloadCSV } from "../../lib/csv.js";
 import { todayISO } from "../../lib/metrics.js";
 import { useTeamData } from "../../data/useTeamData.js";
@@ -379,9 +379,9 @@ function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
               <span style={{ fontSize: 16 }}>{a.icon}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700 }}>{a.name}</div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{a.txt}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{alertText(t, a)}</div>
               </div>
-              <Tag c={SEVC[a.sev]}>{a.cat}</Tag>
+              <Tag c={SEVC[a.sev]}>{alertCat(t, a.cat)}</Tag>
             </div>
           ))}
         </div>

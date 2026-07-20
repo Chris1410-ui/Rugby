@@ -4,26 +4,32 @@ import { grpLabel } from "./positions.js";
 
 export { CREW_BANNERS as CHALLENGE_BANNERS, bannerOf, bannerGradient, randomBannerKey } from "./crews.js";
 
-/* Libellé lisible des destinataires d'un défi (pour la vue détail). */
-export function assignedLabel(assigned = { mode: "all" }) {
+/* Libellé lisible des destinataires d'un défi (pour la vue détail). Traduit via
+   challenges.assigned.* — `t` = fonction i18next. */
+export function assignedLabel(t, assigned = { mode: "all" }) {
   switch (assigned?.mode) {
-    case "open": return "Ouvert à tous";
-    case "group": return `Ligne · ${grpLabel(assigned.group)}`;
-    case "players": return `Joueurs choisis · ${(assigned.ids || []).length}`;
-    default: return "Toute l'équipe";
+    case "open": return t("challenges.assigned.open");
+    case "group": return t("challenges.assigned.group", { line: grpLabel(assigned.group) });
+    case "players": return t("challenges.assigned.players", { count: (assigned.ids || []).length });
+    default: return t("challenges.assigned.all");
   }
 }
 
 // Emojis proposés pour le badge d'un défi (le staff peut aussi taper le sien).
 export const CHALLENGE_EMOJIS = ["🏆", "🔥", "⚡", "💪", "🎯", "🚀", "🥇", "⭐", "🦁", "🏉"];
 
-// Paliers de badges gagnés selon le nombre de défis CONFIRMÉS.
+// Paliers de badges gagnés selon le nombre de défis CONFIRMÉS. `key` stable →
+// libellé traduit via challengeBadgeLabel (plus de libellé stocké).
 export const CHALLENGE_BADGE_TIERS = [
-  { n: 1, label: "Défi relevé", emoji: "🎯" },
-  { n: 5, label: "5 défis", emoji: "🥉" },
-  { n: 10, label: "10 défis", emoji: "🥈" },
-  { n: 25, label: "25 défis", emoji: "🏅" },
+  { n: 1, key: "first", emoji: "🎯" },
+  { n: 5, key: "count", emoji: "🥉" },
+  { n: 10, key: "count", emoji: "🥈" },
+  { n: 25, key: "count", emoji: "🏅" },
 ];
+// Libellé traduit d'un palier de badge (t = i18next). n=1 → « Défi relevé »,
+// sinon « {{n}} défis ».
+export const challengeBadgeLabel = (t, b) =>
+  b.n === 1 ? t("challenges.badge.first") : t("challenges.badge.count", { n: b.n });
 
 // Badges obtenus pour un nombre de défis confirmés (du plus haut au plus bas).
 export function challengeBadges(confirmedCount = 0) {

@@ -1647,5 +1647,32 @@
     "sansFaute": "Foutloos",
     "enForme": "In vorm",
     "rigoureux": "Nauwgezet"
+  },
+  "alerts": {
+    "acwr-high": "ACWR {{acwr}} — overbelastingszone",
+    "acwr-low": "ACWR {{acwr}} — onderbelasting (detraining)",
+    "monotony": "Monotonie {{monotony}} — te weinig belastingsvariatie",
+    "fatigue": "Gemelde vermoeidheid {{v}}/10",
+    "soreness": "Spierpijn {{v}}/10",
+    "sleep": "Onvoldoende slaap ({{v}})",
+    "overdue_one": "{{count}} sessie niet voltooid",
+    "overdue_other": "{{count}} sessies niet voltooid",
+    "cat": {
+      "charge": "Belasting",
+      "wellbeing": "Welzijn",
+      "compliance": "Naleving"
+    }
+  },
+  "challenges": {
+    "assigned": {
+      "all": "Hele team",
+      "open": "Open voor iedereen",
+      "group": "Linie · {{line}}",
+      "players": "Gekozen spelers · {{count}}"
+    },
+    "badge": {
+      "first": "Uitdaging behaald",
+      "count": "{{n}} uitdagingen"
+    }
   }
 }

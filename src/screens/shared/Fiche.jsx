@@ -11,7 +11,7 @@ import { updatePlayer, resetPlayerPassword, setMyInitials } from "../../data/pla
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
-import { challengeBadges } from "../../lib/challenges.js";
+import { challengeBadges, challengeBadgeLabel } from "../../lib/challenges.js";
 import { top14Player, datedResultsFor, currentBodyweight, withCurrentBodyweight } from "../../lib/top14.js";
 import TestsEvolution from "./TestsEvolution.jsx";
 import Top14Panel from "./Top14Panel.jsx";
@@ -333,7 +333,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
         <Section title={t("shared.report.chalSection", { count: chalPts.length })}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {challengeBadges(chalPts.length).map((b) => (
-              <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
+              <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {challengeBadgeLabel(t, b)}</span>
             ))}
             <span style={{ fontSize: 10.5, fontWeight: 700, color: C.viol, alignSelf: "center" }}>{t("shared.fiche.chalPtsSuffix", { pts: chalPts.reduce((a, c) => a + (c.points || 0), 0) })}</span>
           </div>
