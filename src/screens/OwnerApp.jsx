@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase.js";
 import { C, FONT, ROLES } from "../lib/tokens.js";
 import { displayName } from "../lib/identity.js";
@@ -19,6 +20,7 @@ const ownerMenuItem = { width: "100%", textAlign: "left", background: "none", bo
    joueur du club (réel ou démo) en LECTURE SEULE — pour tester l'expérience
    joueur sans se déconnecter (cf. PlayerPreview + usePreview). */
 export default function OwnerApp({ profile, user, signOut }) {
+  const { t } = useTranslation();
   const [clubs, setClubs] = useState([]);
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,9 +76,9 @@ export default function OwnerApp({ profile, user, signOut }) {
            vivent dans le popover Compte → un seul système avec la barre du bas. */}
         <header style={{ position: "sticky", top: 0, zIndex: 30, background: `${C.navy}f2`, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border2}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ minWidth: 0, flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-            <div style={{ fontSize: 9.5, color: C.amb, fontWeight: 800, letterSpacing: 0.5 }}>👑 OWNER · Head of Performance</div>
+            <div style={{ fontSize: 9.5, color: C.amb, fontWeight: 800, letterSpacing: 0.5 }}>{t("owner.badge")}</div>
             {clubs.length > 0 ? (
-              <select value={team ?? ""} onChange={(e) => setTeam(e.target.value)} aria-label="Choisir un club"
+              <select value={team ?? ""} onChange={(e) => setTeam(e.target.value)} aria-label={t("owner.chooseClub")}
                 style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 30px 6px 10px", color: "#fff", fontSize: 15, fontWeight: 800, outline: "none", maxWidth: "100%", cursor: "pointer", colorScheme: "dark" }}>
                 {clubs.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
@@ -84,30 +86,30 @@ export default function OwnerApp({ profile, user, signOut }) {
           </div>
 
           <div style={{ position: "relative" }}>
-            <button onClick={() => setMenuOpen((v) => !v)} title="Compte" style={{ width: 36, height: 36, borderRadius: 18, background: `${C.amb}33`, border: `1px solid ${C.amb}66`, color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer" }}>👑</button>
+            <button onClick={() => setMenuOpen((v) => !v)} title={t("owner.accountTitle")} style={{ width: 36, height: 36, borderRadius: 18, background: `${C.amb}33`, border: `1px solid ${C.amb}66`, color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer" }}>👑</button>
             {menuOpen && (
               <>
                 <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 35 }} />
                 <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 36, width: 250, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 6, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
                   <div style={{ padding: "8px 10px", borderBottom: `1px solid ${C.border2}`, marginBottom: 4 }}>
                     <div style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{profile.full_name || user?.email}</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: C.amb }}>👑 Head of Performance</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.amb }}>{t("owner.headOfPerf")}</div>
                   </div>
                   <LanguageSelector compact />
                   {teamPlayers.length > 0 && (
                     <div style={{ padding: "6px 8px 4px" }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.7)", letterSpacing: 0.8, padding: "0 2px 6px" }}>👁 VUE JOUEUR</div>
-                      <select value={preview ?? ""} onChange={(e) => { setPreview(e.target.value || null); setMenuOpen(false); }} aria-label="Ouvrir la vue d'un joueur (lecture seule)"
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.7)", letterSpacing: 0.8, padding: "0 2px 6px" }}>{t("owner.playerView")}</div>
+                      <select value={preview ?? ""} onChange={(e) => { setPreview(e.target.value || null); setMenuOpen(false); }} aria-label={t("owner.openPlayerView")}
                         style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, fontWeight: 700, outline: "none", boxSizing: "border-box", colorScheme: "dark" }}>
-                        <option value="">— Choisir un joueur —</option>
-                        {realPlayers.length > 0 && <optgroup label="Joueurs">{realPlayers.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
-                        {demoOnes.length > 0 && <optgroup label="Démo">{demoOnes.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
+                        <option value="">{t("owner.choosePlayer")}</option>
+                        {realPlayers.length > 0 && <optgroup label={t("owner.optPlayers")}>{realPlayers.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
+                        {demoOnes.length > 0 && <optgroup label={t("owner.optDemo")}>{demoOnes.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
                       </select>
                     </div>
                   )}
                   <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
-                  <button onClick={() => { setMenuOpen(false); setShowAccounts(true); }} style={ownerMenuItem}><Users size={14} /> Comptes</button>
-                  <button onClick={() => { setMenuOpen(false); signOut(); }} style={{ ...ownerMenuItem, color: C.coral }}>Se déconnecter</button>
+                  <button onClick={() => { setMenuOpen(false); setShowAccounts(true); }} style={ownerMenuItem}><Users size={14} /> {t("owner.accounts")}</button>
+                  <button onClick={() => { setMenuOpen(false); signOut(); }} style={{ ...ownerMenuItem, color: C.coral }}>{t("owner.signOut")}</button>
                 </div>
               </>
             )}
@@ -115,9 +117,9 @@ export default function OwnerApp({ profile, user, signOut }) {
         </header>
 
         {loading ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement des clubs…</div>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("owner.loadingClubs")}</div>
         ) : !team ? (
-          <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Aucun club rugby trouvé.</div>
+          <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>{t("owner.noClub")}</div>
         ) : preview ? (
           <PlayerPreview profile={profile} teamId={team} playerId={preview} playerName={previewName} onExit={() => setPreview(null)} />
         ) : (
@@ -138,6 +140,7 @@ export default function OwnerApp({ profile, user, signOut }) {
 /* Console « Comptes » : tous les comptes tous clubs, filtrables par club et par
    rôle, avec « Voir comme ». Modal plein écran. */
 function AccountsConsole({ onClose, onImpersonate }) {
+  const { t } = useTranslation();
   const { accounts, loading, error } = useOwnerAccounts();
   const [club, setClub] = useState("all");
   const [role, setRole] = useState("all");
@@ -162,32 +165,32 @@ function AccountsConsole({ onClose, onImpersonate }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, background: C.navy, borderRadius: 18, maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 18px", borderBottom: `1px solid ${C.border2}` }}>
           <Users size={18} color={C.amb} />
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>Comptes{accounts.length ? ` · ${filtered.length}/${accounts.length}` : ""}</div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Fermer</button>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("owner.accountsTitle")}{accounts.length ? ` · ${filtered.length}/${accounts.length}` : ""}</div>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{t("owner.close")}</button>
         </div>
 
         <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.border2}`, display: "flex", gap: 8, flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 160px", position: "relative" }}>
             <Search size={14} color="rgba(255,255,255,0.35)" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom ou email…" style={{ ...sel, width: "100%", padding: "8px 10px 8px 30px", boxSizing: "border-box" }} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("owner.searchPlaceholder")} style={{ ...sel, width: "100%", padding: "8px 10px 8px 30px", boxSizing: "border-box" }} />
           </div>
-          <select value={club} onChange={(e) => setClub(e.target.value)} style={sel} aria-label="Filtrer par club">
-            <option value="all">Tous les clubs</option>
+          <select value={club} onChange={(e) => setClub(e.target.value)} style={sel} aria-label={t("owner.filterClub")}>
+            <option value="all">{t("owner.allClubs")}</option>
             {clubs.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
           </select>
-          <select value={role} onChange={(e) => setRole(e.target.value)} style={sel} aria-label="Filtrer par rôle">
-            <option value="all">Tous les rôles</option>
+          <select value={role} onChange={(e) => setRole(e.target.value)} style={sel} aria-label={t("owner.filterRole")}>
+            <option value="all">{t("owner.allRoles")}</option>
             {roles.map((r) => <option key={r} value={r}>{roleOf(r).l}</option>)}
           </select>
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
           {loading ? (
-            <div style={{ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.6)", fontSize: 13 }}>Chargement…</div>
+            <div style={{ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("owner.loading")}</div>
           ) : error ? (
-            <div style={{ textAlign: "center", padding: 24, color: C.coral, fontSize: 12.5 }}>Erreur : {error}</div>
+            <div style={{ textAlign: "center", padding: 24, color: C.coral, fontSize: 12.5 }}>{t("owner.error", { err: error })}</div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Aucun compte pour ces filtres.</div>
+            <div style={{ textAlign: "center", padding: 30, color: "rgba(255,255,255,0.5)", fontSize: 13 }}>{t("owner.noAccount")}</div>
           ) : filtered.map((a) => {
             const ro = roleOf(a.role);
             return (
@@ -200,7 +203,7 @@ function AccountsConsole({ onClose, onImpersonate }) {
                   </div>
                 </div>
                 {a.role !== "owner" && (
-                  <button onClick={() => onImpersonate(a)} title="Ouvrir sa vue (lecture seule)" style={{ background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 8, padding: "7px 11px", color: C.viol, fontSize: 11.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>👁 Voir comme</button>
+                  <button onClick={() => onImpersonate(a)} title={t("owner.viewAsTitle")} style={{ background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 8, padding: "7px 11px", color: C.viol, fontSize: 11.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>{t("owner.viewAs")}</button>
                 )}
               </div>
             );
@@ -214,6 +217,7 @@ function AccountsConsole({ onClose, onImpersonate }) {
 /* « Voir comme » : rend l'app dans la vue EXACTE du compte (son club, son rôle)
    en LECTURE SEULE, avec un bandeau owner + retour. */
 function OwnerImpersonate({ account, ownerProfile, onExit }) {
+  const { t } = useTranslation();
   const ro = roleOf(account.role);
   const target = {
     ...ownerProfile,
@@ -223,10 +227,10 @@ function OwnerImpersonate({ account, ownerProfile, onExit }) {
   const banner = (
     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", background: `${C.amb}22`, borderBottom: `1px solid ${C.amb}66` }}>
       <span style={{ fontSize: 11, fontWeight: 800, color: C.amb, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        👁 Vue owner — tu regardes en tant que {account.fullName || account.email} · {ro.l}{account.teamLabel ? ` · ${account.teamLabel}` : ""} · lecture seule
+        {t("owner.impersonateBanner", { name: account.fullName || account.email, role: ro.l, team: account.teamLabel ? ` · ${account.teamLabel}` : "" })}
       </span>
       <div style={{ flex: 1 }} />
-      <button onClick={onExit} style={{ background: "rgba(255,255,255,0.1)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 11px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>← Revenir à l'owner</button>
+      <button onClick={onExit} style={{ background: "rgba(255,255,255,0.1)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 11px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>← {t("owner.backToOwner")}</button>
     </div>
   );
 
