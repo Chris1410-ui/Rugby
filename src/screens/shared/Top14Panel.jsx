@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { TOP14_TESTS, catLabel } from "../../lib/top14.js";
@@ -17,19 +18,20 @@ const fmt = (test, v) => {
    `t14` = sortie de top14Player(pos, datedResults). Jauge « % du niveau Top 14 »
    + badge TOP 14 sur les tests atteints. */
 export default function Top14Panel({ t14 }) {
+  const { t } = useTranslation();
   if (!t14) return null;
   if (!t14.cat) {
     return (
-      <Section title="COMPARAISON TOP 14">
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Poste non reconnu pour la comparaison Top 14.</div>
+      <Section title={t("shared.top14.title")}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{t("shared.top14.posUnknown")}</div>
       </Section>
     );
   }
   const count = t14.count || 0;
   return (
     <Section
-      title="COMPARAISON TOP 14"
-      right={<span style={{ fontSize: 9.5, fontWeight: 800, color: count ? C.amb : "rgba(255,255,255,0.5)" }}>{catLabel(t14.cat)} · {count > 0 ? `🏆 ×${count}` : "0 test"}</span>}
+      title={t("shared.top14.title")}
+      right={<span style={{ fontSize: 9.5, fontWeight: 800, color: count ? C.amb : "rgba(255,255,255,0.5)" }}>{catLabel(t14.cat)} · {count > 0 ? `🏆 ×${count}` : t("shared.top14.noTest")}</span>}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {TOP14_TESTS.map((t) => {
@@ -44,7 +46,7 @@ export default function Top14Panel({ t14 }) {
                 <span style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{t.label} {t.unit ? <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}>{t.unit}</span> : null}</span>
                 <span style={{ fontSize: 13, fontWeight: 800 }}>{fmt(t, b.value)}</span>
                 <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>/ {fmt(t, b.threshold)}</span>
-                {done && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.3, color: "#0c2b2b", background: C.amb, borderRadius: 5, padding: "1px 5px" }}>TOP 14</span>}
+                {done && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.3, color: "#0c2b2b", background: C.amb, borderRadius: 5, padding: "1px 5px" }}>TOP 14</span>}{/* i18n-ok: nom de ligue */}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
@@ -57,7 +59,7 @@ export default function Top14Panel({ t14 }) {
         })}
       </div>
       <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", marginTop: 8, lineHeight: 1.5 }}>
-        Normes seniors Top 14 (borne basse), par poste. Force en ×PdC (poids de corps requis). +30 pts par test atteint.
+        {t("shared.top14.footer")}
       </div>
     </Section>
   );

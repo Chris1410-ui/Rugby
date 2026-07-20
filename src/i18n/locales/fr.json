@@ -1101,5 +1101,43 @@
       "alertsTab": "→ onglet Alertes",
       "noAlerts": "Aucune alerte. 👌"
     }
+  },
+  "shared": {
+    "preview": {
+      "banner": "👁 MODE APERÇU JOUEUR{{suffix}} · lecture seule",
+      "back": "Retour"
+    },
+    "totem": {
+      "placeholder": "Ton totem (ex. Minotaure)",
+      "randomTitle": "Totem aléatoire"
+    },
+    "veille": {
+      "byTheme": "VEILLE PAR THÈME",
+      "biblioTitle": "BIBLIOGRAPHIE · RUGBY"
+    },
+    "top14": {
+      "title": "COMPARAISON TOP 14",
+      "posUnknown": "Poste non reconnu pour la comparaison Top 14.",
+      "noTest": "0 test",
+      "footer": "Normes seniors Top 14 (borne basse), par poste. Force en ×PdC (poids de corps requis). +30 pts par test atteint."
+    },
+    "challengeCard": {
+      "detailTitle": "Voir le détail",
+      "weekChallenge": "🔥 DÉFI DE LA SEMAINE",
+      "pts": "PTS",
+      "open": "Ouvert",
+      "claimed_one": "{{count}} joueur a relevé",
+      "claimed_other": "{{count}} joueurs ont relevé",
+      "releves": "Relevés"
+    },
+    "challengeDetail": {
+      "infoHeure": "🕒 HEURE",
+      "infoLieu": "📍 LIEU",
+      "infoEcheance": "📅 ÉCHÉANCE",
+      "infoDest": "👥 DESTINATAIRES",
+      "materiel": "🎒 MATÉRIEL",
+      "none": "Aucun",
+      "pts": "PTS"
+    }
   }
 }

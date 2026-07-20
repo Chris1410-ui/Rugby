@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { ExternalLink } from "../../lib/icons.jsx";
@@ -5,9 +6,10 @@ import { BIBLIO, VEILLE_THEMES, getRef } from "../../lib/biblio.js";
 
 /* Veille scientifique — contenu de référence (rugby). Pas de données joueur. */
 export default function Veille({ accent = C.coral }) {
+  const { t } = useTranslation();
   return (
     <div>
-      <Section title="VEILLE PAR THÈME">
+      <Section title={t("shared.veille.byTheme")}>
         {VEILLE_THEMES.map((th, i) => (
           <div key={i} style={{ padding: "10px 0", borderBottom: `1px solid ${C.border2}` }}>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{th.t}</div>
@@ -27,7 +29,7 @@ export default function Veille({ accent = C.coral }) {
         ))}
       </Section>
 
-      <Section title="BIBLIOGRAPHIE · RUGBY">
+      <Section title={t("shared.veille.biblioTitle")}>
         {BIBLIO.rugby.map((r, i) => (
           <a key={i} href={r.q} target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "10px 0", borderBottom: `1px solid ${C.border2}`, textDecoration: "none", color: "#fff" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>

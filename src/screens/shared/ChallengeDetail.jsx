@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { bannerGradient, bannerOf, assignedLabel } from "../../lib/challenges.js";
@@ -9,6 +10,7 @@ import { fmtShort } from "../../lib/metrics.js";
    staff) ; `children` = zone d'action/participants selon le rôle.
    Fermeture cohérente : croix 44px, backdrop, RETOUR/Échap (useModalClose). */
 export default function ChallengeDetail({ c, onClose, topRight, children }) {
+  const { t } = useTranslation();
   useModalClose(onClose);
   const grad = bannerGradient(c.banner);
 
@@ -24,7 +26,7 @@ export default function ChallengeDetail({ c, onClose, topRight, children }) {
               <div style={{ fontSize: 19, fontWeight: 900, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.3)", lineHeight: 1.2 }}>{c.titre}</div>
               <div style={{ marginTop: 7, display: "inline-flex", alignItems: "baseline", gap: 5, background: "rgba(0,0,0,0.25)", borderRadius: 9, padding: "3px 10px" }}>
                 <span style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1 }}>+{c.points}</span>
-                <span style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>PTS</span>
+                <span style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>{t("shared.challengeDetail.pts")}</span>
               </div>
             </div>
           </div>
@@ -39,17 +41,17 @@ export default function ChallengeDetail({ c, onClose, topRight, children }) {
 
           {/* Détails clés */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-            <Info label="🕒 HEURE" value={c.heure || "—"} />
-            <Info label="📍 LIEU" value={c.lieu || "—"} />
-            <Info label="📅 ÉCHÉANCE" value={c.echeance ? fmtShort(c.echeance) : "—"} />
-            <Info label="👥 DESTINATAIRES" value={assignedLabel(c.assigned)} />
+            <Info label={t("shared.challengeDetail.infoHeure")} value={c.heure || "—"} />
+            <Info label={t("shared.challengeDetail.infoLieu")} value={c.lieu || "—"} />
+            <Info label={t("shared.challengeDetail.infoEcheance")} value={c.echeance ? fmtShort(c.echeance) : "—"} />
+            <Info label={t("shared.challengeDetail.infoDest")} value={assignedLabel(c.assigned)} />
           </div>
 
           {/* Matériel */}
           <div style={{ marginBottom: 14 }}>
-            <div style={lbl}>🎒 MATÉRIEL</div>
+            <div style={lbl}>{t("shared.challengeDetail.materiel")}</div>
             {(c.materiel || []).length === 0 ? (
-              <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>Aucun</div>
+              <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>{t("shared.challengeDetail.none")}</div>
             ) : (
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {c.materiel.map((m, i) => <span key={i} style={{ fontSize: 11.5, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 10px" }}>{m}</span>)}

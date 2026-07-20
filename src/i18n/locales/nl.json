@@ -1101,5 +1101,43 @@
       "alertsTab": "→ tabblad Meldingen",
       "noAlerts": "Geen melding. 👌"
     }
+  },
+  "shared": {
+    "preview": {
+      "banner": "👁 SPELERSVOORBEELDMODUS{{suffix}} · alleen-lezen",
+      "back": "Terug"
+    },
+    "totem": {
+      "placeholder": "Jouw totem (bijv. Minotaurus)",
+      "randomTitle": "Willekeurige totem"
+    },
+    "veille": {
+      "byTheme": "MONITORING PER THEMA",
+      "biblioTitle": "BIBLIOGRAFIE · RUGBY"
+    },
+    "top14": {
+      "title": "TOP 14-VERGELIJKING",
+      "posUnknown": "Positie niet herkend voor de Top 14-vergelijking.",
+      "noTest": "0 test",
+      "footer": "Senior Top 14-normen (ondergrens), per positie. Kracht in ×LG (lichaamsgewicht vereist). +30 ptn per behaalde test."
+    },
+    "challengeCard": {
+      "detailTitle": "Details bekijken",
+      "weekChallenge": "🔥 UITDAGING VAN DE WEEK",
+      "pts": "PTN",
+      "open": "Open",
+      "claimed_one": "{{count}} speler geclaimd",
+      "claimed_other": "{{count}} spelers geclaimd",
+      "releves": "Claims"
+    },
+    "challengeDetail": {
+      "infoHeure": "🕒 UUR",
+      "infoLieu": "📍 PLAATS",
+      "infoEcheance": "📅 VERVALDATUM",
+      "infoDest": "👥 ONTVANGERS",
+      "materiel": "🎒 MATERIAAL",
+      "none": "Geen",
+      "pts": "PTN"
+    }
   }
 }
