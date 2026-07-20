@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
 import { acwrZ, fmtShort } from "../../lib/metrics.js";
@@ -20,18 +21,19 @@ import Confidentialite from "./Confidentialite.jsx";
 /* Réponses aux questionnaires du joueur (vue staff, lien croisé depuis la fiche).
    Données santé : staff du club uniquement (RLS). */
 function FicheQuestionnaires({ player }) {
+  const { t } = useTranslation();
   const { list } = useMyQuestionnaires(player.id);
   const [sel, setSel] = useState(null);
   if (!list.length) return null;
   return (
-    <Section title={`QUESTIONNAIRES · ${list.length}`}>
+    <Section title={t("shared.fiche.qTitle", { count: list.length })}>
       {list.map((a) => (
         <div key={a.questionnaire.id} onClick={() => setSel(a)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: `1px solid ${C.border2}`, cursor: "pointer" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12.5, fontWeight: 700 }}>{a.questionnaire.nom}</div>
-            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{a.questionnaire.questions.length} question(s)</div>
+            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.questions", { count: a.questionnaire.questions.length })}</div>
           </div>
-          {a.statut === "rempli" ? <Tag c={C.green}>rempli</Tag> : <Tag c={C.amb}>en attente</Tag>}
+          {a.statut === "rempli" ? <Tag c={C.green}>{t("shared.fiche.tagFilled")}</Tag> : <Tag c={C.amb}>{t("shared.fiche.tagPending")}</Tag>}
         </div>
       ))}
       {sel && <PlayerAnswers questionnaire={sel.questionnaire} player={player} assignment={sel} onClose={() => setSel(null)} />}
@@ -45,6 +47,7 @@ function FicheQuestionnaires({ player }) {
    joueur a un compte (auto-inscrit → owner_uid). Mêmes règles de robustesse
    qu'à l'inscription + confirmation. */
 function PasswordReset({ playerId }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [pwd, setPwd] = useState("");
   const [pwd2, setPwd2] = useState("");
@@ -57,30 +60,30 @@ function PasswordReset({ playerId }) {
 
   const submit = async () => {
     setMsg(null);
-    if (!st.valid) return setMsg({ ok: false, text: "Mot de passe trop faible (10+, majuscule, minuscule, chiffre, spécial)." });
-    if (pwd !== pwd2) return setMsg({ ok: false, text: "Les mots de passe ne correspondent pas." });
+    if (!st.valid) return setMsg({ ok: false, text: t("shared.fiche.pwErrWeak") });
+    if (pwd !== pwd2) return setMsg({ ok: false, text: t("shared.fiche.pwErrMismatch") });
     setBusy(true);
     try {
       await resetPlayerPassword(playerId, pwd);
-      setMsg({ ok: true, text: "Mot de passe réinitialisé ✓ — communique-le au joueur." });
+      setMsg({ ok: true, text: t("shared.fiche.pwDone") });
       setPwd(""); setPwd2("");
-    } catch (e) { setMsg({ ok: false, text: e.message || "Échec de la réinitialisation." }); }
+    } catch (e) { setMsg({ ok: false, text: e.message || t("shared.fiche.pwErrFail") }); }
     setBusy(false);
   };
 
   return (
-    <Section title="COMPTE">
+    <Section title={t("shared.fiche.accountTitle")}>
       {!open ? (
         <button onClick={() => { setOpen(true); setMsg(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 12px", color: "rgba(255,255,255,0.85)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-          <Lock size={14} /> Réinitialiser le mot de passe
+          <Lock size={14} /> {t("shared.fiche.pwResetBtn")}
         </button>
       ) : (
         <div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, marginBottom: 10 }}>
-            Définis un nouveau mot de passe pour ce joueur, puis communique-le-lui. Aucun email n'est envoyé.
+            {t("shared.fiche.pwIntro")}
           </div>
           <div style={{ position: "relative" }}>
-            <input type={show ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setMsg(null); }} placeholder="Nouveau mot de passe" autoComplete="new-password" style={inp} />
+            <input type={show ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setMsg(null); }} placeholder={t("shared.fiche.pwNewPlaceholder")} autoComplete="new-password" style={inp} />
             <button onClick={() => setShow((v) => !v)} style={{ position: "absolute", right: 8, top: 8, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>{show ? <EyeOff size={16} /> : <Eye size={16} />}</button>
           </div>
           {pwd && (
@@ -88,14 +91,14 @@ function PasswordReset({ playerId }) {
               <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
                 <div style={{ height: 4, width: `${(st.score / 7) * 100}%`, background: sCol, transition: "width .3s" }} />
               </div>
-              <div style={{ fontSize: 9.5, color: sCol, marginTop: 3 }}>{st.valid ? "✓ valide" : "10+ caractères, majuscule, minuscule, chiffre, spécial"}</div>
+              <div style={{ fontSize: 9.5, color: sCol, marginTop: 3 }}>{st.valid ? t("shared.fiche.pwValid") : t("shared.fiche.pwWeakHint")}</div>
             </div>
           )}
-          <input type={show ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setMsg(null); }} placeholder="Confirmer le mot de passe" autoComplete="new-password" style={{ ...inp, borderColor: pwd2 && pwd !== pwd2 ? C.coral : C.border }} />
+          <input type={show ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setMsg(null); }} placeholder={t("shared.fiche.pwConfirmPlaceholder")} autoComplete="new-password" style={{ ...inp, borderColor: pwd2 && pwd !== pwd2 ? C.coral : C.border }} />
           {msg && <div style={{ fontSize: 11.5, color: msg.ok ? C.green : C.coral, margin: "2px 0 8px", lineHeight: 1.4 }}>{msg.text}</div>}
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => { setOpen(false); setPwd(""); setPwd2(""); setMsg(null); }} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Fermer</button>
-            <button onClick={submit} disabled={busy} style={{ flex: 2, background: C.green, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : "Enregistrer le mot de passe"}</button>
+            <button onClick={() => { setOpen(false); setPwd(""); setPwd2(""); setMsg(null); }} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("shared.fiche.pwClose")}</button>
+            <button onClick={submit} disabled={busy} style={{ flex: 2, background: C.green, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("shared.fiche.pwSave")}</button>
           </div>
         </div>
       )}
@@ -103,8 +106,8 @@ function PasswordReset({ playerId }) {
   );
 }
 
-// Étiquette de charge hebdo (UA).
-const chargeLabel = (v) => (v == null ? { l: "—", c: C.gray } : v < 1500 ? { l: "Faible", c: C.amb } : v <= 2400 ? { l: "Normale", c: C.green } : { l: "Élevée", c: C.coral });
+// Étiquette de charge hebdo (UA). Libellé résolu via t(lk) au rendu.
+const chargeLabel = (v) => (v == null ? { lk: null, c: C.gray } : v < 1500 ? { lk: "shared.fiche.chargeLow", c: C.amb } : v <= 2400 ? { lk: "shared.fiche.chargeNormal", c: C.green } : { lk: "shared.fiche.chargeHigh", c: C.coral });
 const triC = (v, good, mid) => (v >= good ? C.green : v >= mid ? C.amb : C.coral);
 
 const num = (v) => (v == null || v === "" ? null : Number(v));
@@ -114,6 +117,7 @@ const fmt = (v, unit = "") => (v == null ? "—" : `${v}${unit}`);
    (SECURITY DEFINER) → ne modifie QUE `initials`. Realtime rafraîchit l'effectif,
    donc l'affichage « Totem (I.F.) » se met à jour partout après enregistrement. */
 function SelfInitials({ player }) {
+  const { t } = useTranslation();
   const [val, setVal] = useState(player.initials ?? "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -123,23 +127,23 @@ function SelfInitials({ player }) {
 
   const save = async () => {
     setBusy(true); setMsg("");
-    try { await setMyInitials(preview); setMsg("Initiales enregistrées."); }
-    catch (e) { setMsg(e.message || "Échec."); }
+    try { await setMyInitials(preview); setMsg(t("shared.fiche.selfSaved")); }
+    catch (e) { setMsg(e.message || t("shared.fiche.selfFail")); }
     setBusy(false);
   };
 
   return (
     <div style={sc({ padding: 14, marginBottom: 12 })}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>MES INITIALES</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>{t("shared.fiche.selfTitle")}</div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.5, marginBottom: 10 }}>
-        Elles s'affichent partout dans l'app sous la forme <b style={{ color: "#fff" }}>{player.name} ({preview || "I.F."})</b>. Ton nom complet n'est jamais affiché.
+        {t("shared.fiche.selfDescBefore")}<b style={{ color: "#fff" }}>{player.name} ({preview || "I.F."})</b>{t("shared.fiche.selfDescAfter")}
       </div>
       <div style={{ display: "flex", gap: 8 }}>
         <input value={val} onChange={(e) => { setVal(e.target.value); setMsg(""); }} placeholder="I.F." maxLength={8}
           style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px", color: "#fff", fontSize: 14, outline: "none" }} />
-        <button onClick={save} disabled={busy || !dirty} style={{ background: dirty ? C.green : "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "10px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : "Enregistrer"}</button>
+        <button onClick={save} disabled={busy || !dirty} style={{ background: dirty ? C.green : "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "10px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("shared.fiche.selfSave")}</button>
       </div>
-      {msg && <div style={{ fontSize: 11, color: msg.includes("enregistr") ? C.green : C.coral, marginTop: 8 }}>{msg}</div>}
+      {msg && <div style={{ fontSize: 11, color: msg === t("shared.fiche.selfSaved") ? C.green : C.coral, marginTop: 8 }}>{msg}</div>}
     </div>
   );
 }
@@ -147,6 +151,7 @@ function SelfInitials({ player }) {
 /* Fiche joueur détaillée. Lit l'effectif enrichi (aucun recalcul). Éditable par
    le staff (tests physiques). `onClose` → rendu en modal. */
 export default function Fiche({ player, canEdit = false, self = false, onClose }) {
+  const { t } = useTranslation();
   const [edit, setEdit] = useState(false);
   const [d, setD] = useState({});
   const [busy, setBusy] = useState(false);
@@ -201,7 +206,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
         pp_notes: (d.pp_notes ?? "").trim() || null,
       });
       setEdit(false); // Realtime rafraîchit l'effectif
-    } catch (e) { setErr(e.message || "Échec de l'enregistrement."); }
+    } catch (e) { setErr(e.message || t("shared.fiche.errSave")); }
     setBusy(false);
   };
 
@@ -221,7 +226,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
     <div>
       {/* identité + readiness */}
       <div style={sc({ display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 12 })}>
-        <Ring val={player.readiness} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label="readiness" size={72} sw={6} />
+        <Ring val={player.readiness} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label={t("shared.fiche.readinessLabel")} size={72} sw={6} />
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)" }}>{edit ? <input value={d.num ?? ""} onChange={(e) => setD((p) => ({ ...p, num: e.target.value }))} style={{ ...inp, width: 44, textAlign: "center" }} /> : (player.num ?? "—")}</span>
@@ -237,7 +242,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <Pill v={player.acwr} /><Tag c={acwrZ(player.acwr).c}>{acwrZ(player.acwr).l}</Tag>
-            {player._live && <Tag c={C.green}>bilan du jour</Tag>}
+            {player._live && <Tag c={C.green}>{t("shared.fiche.todayCheckin")}</Tag>}
           </div>
         </div>
       </div>
@@ -253,56 +258,56 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
         const live = player._live; // bilan du jour encodé ?
         return (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-            <KPI label="READINESS" value={live ? player.readiness : "—"} sub={live ? "/100" : "pas encore encodé"} color={live ? triC(player.readiness, 71, 51) : C.gray} />
-            <KPI label="BIEN-ÊTRE" value={live ? `${player.wellness}/50` : "—"} sub={live ? "" : "pas encore encodé"} color={live ? triC(player.wellness, 35, 25) : C.gray} />
-            <KPI label="SOMMEIL" value={live ? player.sleep : "—"} sub={live ? "h · dernier bilan" : "pas encore encodé"} color={live ? triC(player.sleep, 7.5, 6.5) : C.gray} />
-            <KPI label="CHARGE 7J" value={player.charge7j} sub={`UA · ${ch.l}`} color={ch.c} />
-            <KPI label="ACWR" value={player.acwr.toFixed(2)} sub={z.l} color={z.c} />
-            <KPI label="DISPONIBILITÉ" value={`${player.dispo}%`} color={triC(player.dispo, 85, 70)} />
+            <KPI label={t("shared.fiche.kpiReadiness")} value={live ? player.readiness : "—"} sub={live ? "/100" : t("shared.fiche.notEncoded")} color={live ? triC(player.readiness, 71, 51) : C.gray} />
+            <KPI label={t("shared.fiche.kpiWellness")} value={live ? `${player.wellness}/50` : "—"} sub={live ? "" : t("shared.fiche.notEncoded")} color={live ? triC(player.wellness, 35, 25) : C.gray} />
+            <KPI label={t("shared.fiche.kpiSleep")} value={live ? player.sleep : "—"} sub={live ? t("shared.fiche.sleepSub") : t("shared.fiche.notEncoded")} color={live ? triC(player.sleep, 7.5, 6.5) : C.gray} />
+            <KPI label={t("shared.fiche.kpiLoad7d")} value={player.charge7j} sub={t("shared.fiche.loadSub", { label: ch.lk ? t(ch.lk) : "—" })} color={ch.c} />
+            <KPI label={t("shared.fiche.kpiAcwr")} value={player.acwr.toFixed(2)} sub={z.l} color={z.c} />
+            <KPI label={t("shared.fiche.kpiDispo")} value={`${player.dispo}%`} color={triC(player.dispo, 85, 70)} />
           </div>
         );
       })()}
 
       {/* Détails avancés — repli (monotonie / strain / risque) */}
       <button onClick={() => setAdv((a) => !a)} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 12px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer", marginBottom: 12, textAlign: "left" }}>
-        {adv ? "▾" : "▸"} Détails avancés
+        {adv ? "▾" : "▸"} {t("shared.fiche.advDetails")}
       </button>
       {adv && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-          <KPI label="MONOTONIE" value={player.monotonie} color={player.monotonie > 2 ? C.amb : C.green} />
-          <KPI label="STRAIN" value={player.strain} color={C.viol} />
-          <KPI label="RISQUE" value={player.risque} sub="/100" color={player.risque >= 60 ? C.coral : player.risque >= 40 ? C.amb : C.green} />
+          <KPI label={t("shared.fiche.kpiMonotony")} value={player.monotonie} color={player.monotonie > 2 ? C.amb : C.green} />
+          <KPI label={t("shared.fiche.kpiStrain")} value={player.strain} color={C.viol} />
+          <KPI label={t("shared.fiche.kpiRisk")} value={player.risque} sub="/100" color={player.risque >= 60 ? C.coral : player.risque >= 40 ? C.amb : C.green} />
         </div>
       )}
 
       {/* tests physiques */}
-      <Section title="TESTS PHYSIQUES" right={canEdit && !edit ? <button onClick={() => setEdit(true)} style={{ background: "none", border: "none", color: C.viol, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Éditer</button> : null}>
+      <Section title={t("shared.fiche.testsTitle")} right={canEdit && !edit ? <button onClick={() => setEdit(true)} style={{ background: "none", border: "none", color: C.viol, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("shared.fiche.edit")}</button> : null}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${C.border2}` }}>
           <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
-            Poids de corps
-            {bw?.at && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}> · {fmtShort(bw.at)}{bw.source === "profil" ? " (questionnaire)" : ""}</span>}
+            {t("shared.fiche.bodyweight")}
+            {bw?.at && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}> · {fmtShort(bw.at)}{bw.source === "profil" ? t("shared.fiche.questionnaireSource") : ""}</span>}
           </span>
           {edit ? (
-            <input value={d.bodyweight ?? ""} onChange={(e) => setD((p) => ({ ...p, bodyweight: e.target.value }))} inputMode="decimal" placeholder="kg" style={inp} />
+            <input value={d.bodyweight ?? ""} onChange={(e) => setD((p) => ({ ...p, bodyweight: e.target.value }))} inputMode="decimal" placeholder={t("shared.fiche.kgPlaceholder")} style={inp} />
           ) : (
             <span style={{ fontSize: 14, fontWeight: 800 }}>{bw?.value != null ? `${bw.value} kg` : "—"}</span>
           )}
         </div>
-        <Row label="MAS (m/min)" k="mas" value={player.mas} />
-        <Row label="Back Squat (×PDC)" k="back_squat" value={player.backSquat} />
-        <Row label="CMJ gauche (cm)" k="cmj_g" value={player.cmjG} />
-        <Row label="CMJ droit (cm)" k="cmj_d" value={player.cmjD} />
-        <Row label="Ischios G (N)" k="ischios_g" value={player.ischiosG} />
-        <Row label="Ischios D (N)" k="ischios_d" value={player.ischiosD} />
+        <Row label={t("shared.fiche.rowMas")} k="mas" value={player.mas} />
+        <Row label={t("shared.fiche.rowSquat")} k="back_squat" value={player.backSquat} />
+        <Row label={t("shared.fiche.rowCmjG")} k="cmj_g" value={player.cmjG} />
+        <Row label={t("shared.fiche.rowCmjD")} k="cmj_d" value={player.cmjD} />
+        <Row label={t("shared.fiche.rowIschiosG")} k="ischios_g" value={player.ischiosG} />
+        <Row label={t("shared.fiche.rowIschiosD")} k="ischios_d" value={player.ischiosD} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0" }}>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Asymétrie ischios</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{t("shared.fiche.asym")}</span>
           <Tag c={asym == null ? C.gray : asym >= 10 ? C.coral : asym >= 6 ? C.amb : C.green}>{asym == null ? "—" : `${asym}%`}</Tag>
         </div>
 
         <div style={{ paddingTop: 10 }}>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 6 }}>Remarques PP <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>(objectifs / consignes)</span></div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 6 }}>{t("shared.fiche.ppNotes")} <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.ppNotesHint")}</span></div>
           {edit ? (
-            <textarea value={d.pp_notes ?? ""} onChange={(e) => setD((p) => ({ ...p, pp_notes: e.target.value }))} placeholder="Objectifs, consignes, points de vigilance…" style={{ width: "100%", minHeight: 70, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.viol}66`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+            <textarea value={d.pp_notes ?? ""} onChange={(e) => setD((p) => ({ ...p, pp_notes: e.target.value }))} placeholder={t("shared.fiche.ppPlaceholder")} style={{ width: "100%", minHeight: 70, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.viol}66`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
           ) : (
             <div style={{ fontSize: 13, color: player.ppNotes ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{player.ppNotes || "—"}</div>
           )}
@@ -311,8 +316,8 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
         {err && <div style={{ fontSize: 11, color: C.coral, marginTop: 8 }}>{err}</div>}
         {edit && (
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            <button onClick={() => setEdit(false)} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Annuler</button>
-            <button onClick={save} disabled={busy} style={{ flex: 2, background: C.green, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1 }}><CheckCircle size={13} /> Enregistrer</button>
+            <button onClick={() => setEdit(false)} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
+            <button onClick={save} disabled={busy} style={{ flex: 2, background: C.green, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1 }}><CheckCircle size={13} /> {t("shared.fiche.save")}</button>
           </div>
         )}
       </Section>
@@ -325,12 +330,12 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
 
       {/* Badges défis gagnés (visibles joueur + staff) */}
       {chalPts.length > 0 && (
-        <Section title={`🎯 DÉFIS · ${chalPts.length} relevé${chalPts.length > 1 ? "s" : ""}`}>
+        <Section title={t("shared.report.chalSection", { count: chalPts.length })}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {challengeBadges(chalPts.length).map((b) => (
               <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {b.label}</span>
             ))}
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.viol, alignSelf: "center" }}>· +{chalPts.reduce((a, c) => a + (c.points || 0), 0)} pts</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.viol, alignSelf: "center" }}>{t("shared.fiche.chalPtsSuffix", { pts: chalPts.reduce((a, c) => a + (c.points || 0), 0) })}</span>
           </div>
         </Section>
       )}
