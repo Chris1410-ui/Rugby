@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
@@ -17,6 +18,7 @@ const daysBetween = (fromIso) => Math.max(1, Math.round((Date.now() - parseISO(f
    des bilans (wbToWellness / computeReadiness — source unique, aucun nouveau
    calcul). Readiness historique = wellness du jour + risque courant (approx). */
 export default function Historique({ players, testCampaigns = [], camps = [] }) {
+  const { t } = useTranslation();
   const [scope, setScope] = useState("all"); // all | <grp> | <playerId>
   const [period, setPeriod] = useState("30"); // 7 | 30 | camp | all | custom
   const [custom, setCustom] = useState({ debut: isoDate(new Date(Date.now() - 30 * 864e5)), fin: todayISO() });
@@ -122,9 +124,9 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
   const zoneCounts = { green: 0, amber: 0, red: 0, none: 0 };
   filtered.forEach((p) => { const z = zoneOfReadiness(readinessAt(p.id, refDate)); zoneCounts[z || "none"]++; });
   const donutSlices = [
-    { label: "Zone verte", value: zoneCounts.green, color: C.green },
-    { label: "Ambre", value: zoneCounts.amber, color: C.amb },
-    { label: "Rouge", value: zoneCounts.red, color: C.coral },
+    { label: t("staff.hist.zoneGreen"), value: zoneCounts.green, color: C.green },
+    { label: t("staff.hist.zoneAmber"), value: zoneCounts.amber, color: C.amb },
+    { label: t("staff.hist.zoneRed"), value: zoneCounts.red, color: C.coral },
   ];
   const filledRef = filtered.filter((p) => hist[p.id]?.[refDate]).length;
   const completion = filtered.length ? Math.round((filledRef / filtered.length) * 100) : 0;
@@ -141,79 +143,79 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
 
   return (
     <section>
-      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>Historique des bilans</div>
+      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{t("staff.hist.title")}</div>
 
       {/* Filtres */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-        <button onClick={() => setScope("all")} style={btn(scope === "all")}>Équipe</button>
+        <button onClick={() => setScope("all")} style={btn(scope === "all")}>{t("staff.hist.team")}</button>
         {grps.map((g) => <button key={g} onClick={() => setScope(g)} style={btn(scope === g)}>{grpLabel(g)}</button>)}
         <select value={fIds.size === 1 && !grps.includes(scope) && scope !== "all" ? scope : ""} onChange={(e) => e.target.value && setScope(e.target.value)} style={{ ...btn(false), background: "rgba(255,255,255,0.07)", appearance: "auto", colorScheme: "dark" }}>
-          <option value="">Un joueur…</option>
+          <option value="">{t("staff.hist.onePlayer")}</option>
           {players.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
         </select>
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: period === "custom" ? 8 : 14 }}>
-        {[["7", "7 jours"], ["30", "30 jours"], ["camp", "Depuis le camp"], ["all", "Tout"]].map(([v, l]) => (
+        {[["7", t("staff.hist.p7")], ["30", t("staff.hist.p30")], ["camp", t("staff.hist.pCamp")], ["all", t("staff.hist.pAll")]].map(([v, l]) => (
           <button key={v} onClick={() => setPeriod(v)} style={btn(period === v)} disabled={v === "camp" && !campFrom} title={v === "camp" && camp ? camp.nom : undefined}>{l}</button>
         ))}
-        <button onClick={() => setPeriod("custom")} style={btn(period === "custom")}>Personnalisé</button>
+        <button onClick={() => setPeriod("custom")} style={btn(period === "custom")}>{t("staff.hist.pCustom")}</button>
       </div>
       {period === "custom" && (
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>du</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("staff.hist.from")}</span>
           <input type="date" value={custom.debut} max={custom.fin} onChange={(e) => setCustom((c) => ({ ...c, debut: e.target.value }))} style={dateInp} />
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>au</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("staff.hist.to")}</span>
           <input type="date" value={custom.fin} min={custom.debut} max={todayISO()} onChange={(e) => setCustom((c) => ({ ...c, fin: e.target.value }))} style={dateInp} />
         </div>
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
-        <KPI label="BILANS (RÉF.)" value={`${filledRef}/${filtered.length}`} sub={fmtShort(refDate)} color={C.viol} />
-        <KPI label="COMPLÉTION" value={`${completion}%`} color={completion > 80 ? C.green : completion > 50 ? C.amb : C.coral} />
-        <KPI label="JOUEURS" value={filtered.length} color={C.blue} />
+        <KPI label={t("staff.hist.kpiBilans")} value={`${filledRef}/${filtered.length}`} sub={fmtShort(refDate)} color={C.viol} />
+        <KPI label={t("staff.hist.kpiCompletion")} value={`${completion}%`} color={completion > 80 ? C.green : completion > 50 ? C.amb : C.coral} />
+        <KPI label={t("staff.hist.kpiPlayers")} value={filtered.length} color={C.blue} />
       </div>
 
       {loading && rows.length === 0 ? (
-        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.55)", fontSize: 12 })}>Chargement de l'historique…</div>
+        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.55)", fontSize: 12 })}>{t("staff.hist.loading")}</div>
       ) : (
         <>
-          <Section title="TENDANCES (MOYENNE)">
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>☀️ Matin — Readiness /100 · Bien-être /50 · Sommeil (h) &nbsp;·&nbsp; 🌙 Soir — Ressenti /10</div>
+          <Section title={t("staff.hist.trendsTitle")}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>{t("staff.hist.trendsLegend")}</div>
             <MultiLine
               labels={axisLabels}
               series={[
-                { name: "Readiness", color: C.green, pts: series.readiness },
-                { name: "Bien-être", color: C.blue, pts: series.wellness },
-                { name: "Sommeil", color: C.viol, pts: series.sleep },
-                { name: "Ressenti soir", color: C.amb, pts: series.soir },
+                { name: t("staff.hist.serReadiness"), color: C.green, pts: series.readiness },
+                { name: t("staff.hist.serWellness"), color: C.blue, pts: series.wellness },
+                { name: t("staff.hist.serSleep"), color: C.viol, pts: series.sleep },
+                { name: t("staff.hist.serEvening"), color: C.amb, pts: series.soir },
               ]}
             />
           </Section>
 
-          <Section title="CHARGE MOYENNE (UA / JOUR)">
-            <MultiLine labels={axisLabels} series={[{ name: "Charge (UA)", color: C.coral, pts: series.charge }]} height={120} />
+          <Section title={t("staff.hist.chargeTitle")}>
+            <MultiLine labels={axisLabels} series={[{ name: t("staff.hist.serCharge"), color: C.coral, pts: series.charge }]} height={120} />
           </Section>
 
-          <Section title="COMPARAISON JOUEURS" right={
+          <Section title={t("staff.hist.compareTitle")} right={
             <div style={{ display: "flex", gap: 4 }}>
-              {[["wellness", "Bien-être"], ["readiness", "Readiness"], ["sleep", "Sommeil"]].map(([v, l]) => (
+              {[["wellness", t("staff.hist.mWellness")], ["readiness", t("staff.hist.mReadiness")], ["sleep", t("staff.hist.mSleep")]].map(([v, l]) => (
                 <button key={v} onClick={() => setBarMetric(v)} style={{ padding: "3px 8px", borderRadius: 6, border: "none", fontSize: 9.5, fontWeight: 700, cursor: "pointer", background: barMetric === v ? C.coral : "rgba(255,255,255,0.08)", color: "#fff" }}>{l}</button>
               ))}
             </div>
           }>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginBottom: 8 }}>Au {fmtShort(refDate)}</div>
-            {barData.length ? <Bars data={barData} unit={barUnit} max={barMax} /> : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Aucune donnée.</div>}
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginBottom: 8 }}>{t("staff.hist.atDate", { date: fmtShort(refDate) })}</div>
+            {barData.length ? <Bars data={barData} unit={barUnit} max={barMax} /> : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("staff.hist.noData")}</div>}
           </Section>
 
-          <Section title="RÉPARTITION READINESS">
+          <Section title={t("staff.hist.distribTitle")}>
             <Donut slices={donutSlices} centerLabel={`${completion}%`} />
-            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: 6 }}>Zones au {fmtShort(refDate)} · centre = complétion des bilans</div>
+            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: 6 }}>{t("staff.hist.zonesCaption", { date: fmtShort(refDate) })}</div>
           </Section>
 
-          <Section title="HEATMAP READINESS (JOUEURS × JOURS)">
-            {heatRows.length ? <Heatmap rows={heatRows} colLabels={heatCols.map((d) => fmtShort(d).replace(/\.$/, ""))} /> : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Aucune donnée.</div>}
+          <Section title={t("staff.hist.heatTitle")}>
+            {heatRows.length ? <Heatmap rows={heatRows} colLabels={heatCols.map((d) => fmtShort(d).replace(/\.$/, ""))} /> : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("staff.hist.noData")}</div>}
             <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 8, fontSize: 9.5, color: "rgba(255,255,255,0.6)" }}>
-              <span>🟩 &gt; 70</span><span>🟧 51–70</span><span>🟥 ≤ 50</span><span style={{ color: "rgba(255,255,255,0.35)" }}>▫︎ pas de bilan</span>
+              <span>🟩 &gt; 70</span><span>🟧 51–70</span><span>🟥 ≤ 50</span><span style={{ color: "rgba(255,255,255,0.35)" }}>{t("staff.hist.legendNoData")}</span>
             </div>
           </Section>
         </>
