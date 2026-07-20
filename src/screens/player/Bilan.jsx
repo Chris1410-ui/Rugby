@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { wbToWellness, computeReadiness, acwrZ, ACTIVITIES, EVENING_MARKERS, SLEEP_OPTIONS, sleepLabel } from "../../lib/metrics.js";
@@ -34,11 +35,14 @@ const hhmm = (iso) => {
 };
 
 // Bandeau d'état d'un bloc (à remplir / complété ✓ à HHhMM).
-const BlockState = ({ done, at }) => (
+const BlockState = ({ done, at }) => {
+  const { t } = useTranslation();
+  return (
   <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 7, background: done ? `${C.green}22` : "rgba(255,255,255,0.06)", border: `1px solid ${done ? C.green + "66" : C.border}`, color: done ? C.green : "rgba(255,255,255,0.6)" }}>
-    {done ? `complété ✓${at ? ` à ${at}` : ""}` : "à remplir"}
+    {done ? (at ? t("player.bilan.blockDoneAt", { at }) : t("player.bilan.blockDone")) : t("player.bilan.blockTodo")}
   </span>
-);
+  );
+};
 
 const Slider = ({ label, value, color, onChange }) => (
   <div style={{ marginBottom: 12 }}>
@@ -81,6 +85,7 @@ const SleepPicker = ({ value, onChange, disabled }) => (
 );
 
 export default function Bilan({ me, accent }) {
+  const { t } = useTranslation();
   const preview = usePreview(); // aperçu owner/staff → lecture seule
   const { day, refresh } = useMyDay(me.id);
 
@@ -131,14 +136,14 @@ export default function Bilan({ me, accent }) {
     if (preview) return;
     setBusyM(true); setErrM("");
     try { await saveCheckin(me.id, d, undefined, "matin"); setSavedM(true); refresh(); }
-    catch (e) { setErrM(e.message || "Échec de l'enregistrement."); }
+    catch (e) { setErrM(e.message || t("player.bilan.saveFail")); }
     setBusyM(false);
   };
   const saveEvening = async () => {
     if (preview) return;
     setBusyS(true); setErrS("");
     try { await saveCheckin(me.id, { wb: s }, undefined, "soir"); setSavedS(true); refresh(); }
-    catch (e) { setErrS(e.message || "Échec de l'enregistrement."); }
+    catch (e) { setErrS(e.message || t("player.bilan.saveFail")); }
     setBusyS(false);
   };
 
@@ -150,10 +155,10 @@ export default function Bilan({ me, accent }) {
     <div>
       {/* readiness + identité (matin) */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 12 }}>
-        <Ring val={readiness} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label="readiness" size={78} sw={6} />
+        <Ring val={readiness} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
-            AUJOURD'HUI · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
+            {t("player.bilan.today")} · {new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" })}
           </div>
           <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{displayName(me)}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{me.pos}</div>
@@ -162,37 +167,37 @@ export default function Bilan({ me, accent }) {
 
       {/* anneaux synthèse (matin) */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", justifyContent: "space-around", padding: 14, marginBottom: 16 }}>
-        <Ring val={Math.round(me.acwr * 100)} max={200} color={acwrZ(me.acwr).c} label="Charge" size={62} />
-        <Ring val={wbScore} max={50} color={C.blue} label="Bien-être" size={62} />
-        <Ring val={Math.round((d.sleepH || 0) * 12.5)} max={100} color={C.viol} label="Sommeil" size={62} />
-        <Ring val={Math.round(((d.hydra || 0) / 3.5) * 100)} max={100} color={C.teal} label="Hydrat." size={62} />
+        <Ring val={Math.round(me.acwr * 100)} max={200} color={acwrZ(me.acwr).c} label={t("player.bilan.ringCharge")} size={62} />
+        <Ring val={wbScore} max={50} color={C.blue} label={t("player.bilan.ringWellbeing")} size={62} />
+        <Ring val={Math.round((d.sleepH || 0) * 12.5)} max={100} color={C.viol} label={t("player.bilan.ringSleep")} size={62} />
+        <Ring val={Math.round(((d.hydra || 0) / 3.5) * 100)} max={100} color={C.teal} label={t("player.bilan.ringHydration")} size={62} />
       </div>
 
       {/* ═══════════ BLOC MATIN ═══════════ */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <div style={{ fontSize: 16, fontWeight: 900, flex: 1 }}>☀️ Matin</div>
+        <div style={{ fontSize: 16, fontWeight: 900, flex: 1 }}>{t("player.bilan.morning")}</div>
         <BlockState done={!!day.matin} at={hhmm(day.matin?.createdAt)} />
       </div>
 
-      <Section title="BIEN-ÊTRE — 6 MARQUEURS">
-        {WELL_KEYS.map(([k, l, c]) => <Slider key={k} label={l} value={d.wb[k]} color={c} onChange={(v) => setWb(k, v)} />)}
+      <Section title={t("player.bilan.secWellbeing")}>
+        {WELL_KEYS.map(([k, , c]) => <Slider key={k} label={t(`player.bilan.markers.${k}`)} value={d.wb[k]} color={c} onChange={(v) => setWb(k, v)} />)}
       </Section>
 
-      <Section title="SOMMEIL & HYDRATATION">
+      <Section title={t("player.bilan.secSleepHydration")}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
-          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>Sommeil</span>
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("player.bilan.sleep")}</span>
           <span style={{ fontSize: 14, fontWeight: 800, color: C.viol }}>{sleepLabel(d.sleepH)}</span>
         </div>
         <SleepPicker value={d.sleepH} onChange={(v) => setM({ sleepH: v })} disabled={preview} />
         <div style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>Hydratation (L)</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>{t("player.bilan.hydration")}</div>
           <input type="number" step="0.1" value={d.hydra ?? ""} onChange={(e) => setM({ hydra: parseFloat(e.target.value) || 0 })} style={numInp(C.teal)} />
         </div>
       </Section>
 
-      <Section title="RÉCUPÉRATION (optionnel)">
+      <Section title={t("player.bilan.secRecovery")}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          {[["FC repos", "fc", "bpm", C.coral], ["HRV", "hrv", "ms", C.green], ["Poids matin", "poids", "kg", C.blue]].map(([l, k, u, c]) => (
+          {[[t("player.bilan.recFc"), "fc", "bpm", C.coral], [t("player.bilan.recHrv"), "hrv", "ms", C.green], [t("player.bilan.recWeight"), "poids", "kg", C.blue]].map(([l, k, u, c]) => (
             <div key={k}>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 5 }}>{l}</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
@@ -205,9 +210,9 @@ export default function Bilan({ me, accent }) {
       </Section>
 
       <span id="activite-jour" />
-      <Section title="ACTIVITÉ DU JOUR" right={<span style={{ fontSize: 9, color: C.green, fontWeight: 700 }}>+10 pts / thématique</span>}>
+      <Section title={t("player.bilan.secActivity")} right={<span style={{ fontSize: 9, color: C.green, fontWeight: 700 }}>{t("player.bilan.activityPts")}</span>}>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 10, lineHeight: 1.5 }}>
-          Déclare ce que tu as fait aujourd'hui — chaque thématique déclarée te rapporte 10 points au classement.
+          {t("player.bilan.activityHint")}
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {ACTIVITIES.map((a) => {
@@ -225,32 +230,32 @@ export default function Bilan({ me, accent }) {
 
       {errM && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8, textAlign: "center" }}>{errM}</div>}
       <button {...saveBtn(savedM, busyM, saveMorning, accent || C.green)}>
-        {preview ? "👁 Mode aperçu — lecture seule" : savedM ? (<><CheckCircle size={16} /> Bilan du matin enregistré (+10)</>) : busyM ? "Enregistrement…" : (<><Send size={16} /> Enregistrer le bilan du matin</>)}
+        {preview ? t("common.previewReadonly") : savedM ? (<><CheckCircle size={16} /> {t("player.bilan.savedMorning")}</>) : busyM ? t("player.bilan.saving") : (<><Send size={16} /> {t("player.bilan.saveMorning")}</>)}
       </button>
 
       {/* ═══════════ BLOC SOIR ═══════════ */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "6px 0 10px" }}>
-        <div style={{ fontSize: 16, fontWeight: 900, flex: 1 }}>🌙 Soir</div>
+        <div style={{ fontSize: 16, fontWeight: 900, flex: 1 }}>{t("player.bilan.evening")}</div>
         <BlockState done={!!day.soir} at={hhmm(day.soir?.createdAt)} />
       </div>
 
-      <Section title="RESSENTI DE LA JOURNÉE / DU MATCH — 6 MARQUEURS">
+      <Section title={t("player.bilan.secEveningMarkers")}>
         {EVENING_MARKERS.map((m, i) => {
           const col = [C.blue, C.amb, C.viol, C.coral, C.green, C.teal][i % 6];
           return <Slider key={m.k} label={m.l} value={s[m.k]} color={col} onChange={(v) => setSoir(m.k, v)} />;
         })}
       </Section>
 
-      <Section title="RESSENTI DU MATCH">
-        <textarea value={s.ressentiMatch} onChange={(e) => setSoir("ressentiMatch", e.target.value)} placeholder="Comment s'est passé ton match / ta séance ?" style={txtInp} />
+      <Section title={t("player.bilan.secMatchFeeling")}>
+        <textarea value={s.ressentiMatch} onChange={(e) => setSoir("ressentiMatch", e.target.value)} placeholder={t("player.bilan.matchPlaceholder")} style={txtInp} />
       </Section>
-      <Section title="REMARQUES">
-        <textarea value={s.remarques} onChange={(e) => setSoir("remarques", e.target.value)} placeholder="Douleurs, points de vigilance, note pour le staff…" style={txtInp} />
+      <Section title={t("player.bilan.secRemarks")}>
+        <textarea value={s.remarques} onChange={(e) => setSoir("remarques", e.target.value)} placeholder={t("player.bilan.remarksPlaceholder")} style={txtInp} />
       </Section>
 
       {errS && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8, textAlign: "center" }}>{errS}</div>}
       <button {...saveBtn(savedS, busyS, saveEvening, accent || C.green)}>
-        {preview ? "👁 Mode aperçu — lecture seule" : savedS ? (<><CheckCircle size={16} /> Bilan du soir enregistré (+10)</>) : busyS ? "Enregistrement…" : (<><Send size={16} /> Enregistrer le bilan du soir</>)}
+        {preview ? t("common.previewReadonly") : savedS ? (<><CheckCircle size={16} /> {t("player.bilan.savedEvening")}</>) : busyS ? t("player.bilan.saving") : (<><Send size={16} /> {t("player.bilan.saveEvening")}</>)}
       </button>
       <div style={{ height: 8 }} />
     </div>

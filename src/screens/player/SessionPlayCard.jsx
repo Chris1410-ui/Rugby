@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, CODES } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
@@ -15,6 +16,7 @@ const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", bo
 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
 export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved }) {
+  const { t } = useTranslation();
   const preview = usePreview(); // aperçu owner/staff → lecture seule
   const past = s.date <= todayISO();
   const [open, setOpen] = useState(false);
@@ -117,9 +119,9 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
         <span style={{ fontSize: 20 }}>🧪</span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 800 }}>{fmtShort(s.date)} · {s.titre}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>Tests physiques — le staff saisit tes résultats (fiche + comparaison Top 14).</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("player.session.testHint")}</div>
         </div>
-        <Tag c={C.blue}>Test</Tag>
+        <Tag c={C.blue}>{t("player.session.testTag")}</Tag>
       </div>
     );
   }
@@ -134,12 +136,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             <Tag c={CODES[s.code] || accent}>{s.code}</Tag>
             <span style={{ fontSize: 12, fontWeight: 600 }}>{s.titre}</span>
           </div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{s.exercises.length} exercices · {totSets} séries</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("player.session.exercisesSeries", { ex: s.exercises.length, sets: totSets })}</div>
         </div>
-        {st === "done" && rpe && <span style={{ fontSize: 14, fontWeight: 800, color: C.green }}>RPE {rpe}</span>}
-        {st === "pending" && past && <Tag c={C.amb}>À valider</Tag>}
-        {st === "pending" && !past && <Tag c={accent}>À venir</Tag>}
-        {st === "postponed" && <Tag c={C.gray}>Reportée</Tag>}
+        {st === "done" && rpe && <span style={{ fontSize: 14, fontWeight: 800, color: C.green }}>{t("player.session.rpeShort")} {rpe}</span>}
+        {st === "pending" && past && <Tag c={C.amb}>{t("player.session.toValidate")}</Tag>}
+        {st === "pending" && !past && <Tag c={accent}>{t("player.session.upcoming")}</Tag>}
+        {st === "postponed" && <Tag c={C.gray}>{t("player.session.postponed")}</Tag>}
       </div>
 
       {open && (
@@ -147,12 +149,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           {justPR && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: `${C.amb}22`, border: `1px solid ${C.amb}66`, borderRadius: 9, padding: "8px 12px", marginBottom: 10 }}>
               <Trophy size={15} color={C.amb} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.amb }}>Record ! {justPR.ex} — {justPR.w}kg (1RM ~{justPR.orm})</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.amb }}>{t("player.session.record", { ex: justPR.ex, w: justPR.w, orm: justPR.orm })}</span>
             </div>
           )}
           {rest && <RestTimer key={rest.k} seconds={rest.sec} accent={accent} onDone={() => setRest(null)} />}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 1 }}>SÉRIES — COCHE POUR VALIDER</span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 1 }}>{t("player.session.setsHeader")}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: doneSets === totSets && totSets ? C.green : "rgba(255,255,255,0.5)" }}>{doneSets}/{totSets}</span>
           </div>
 
@@ -161,26 +163,26 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
             const ecart = cmp.diff
-              ? [cmp.setsDiff ? `${cmp.doneSets}/${cmp.prescSets} séries` : null,
-                 cmp.chargeDiff ? `${cmp.realTop} kg au lieu de ${cmp.prescCharge} kg` : null]
+              ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
+                 cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
                 .filter(Boolean).join(" · ")
               : "";
             return (
               <div key={e.id} style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
                   <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</span>
-                  <button onClick={() => setGraphEx(e.name)} title="Progression" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 3, fontSize: 10 }}>
+                  <button onClick={() => setGraphEx(e.name)} title={t("player.session.progressTitle")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 3, fontSize: 10 }}>
                     <TrendingUp size={13} />
                   </button>
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>Prescrit {e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</span>
-                  <span>Préc. : {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
-                  {rec.top > 0 && <span style={{ color: C.amb }}>🏆 {rec.top}kg · 1RM {rec.oneRM}</span>}
+                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</span>
+                  <span>{t("player.session.prev")} {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
+                  {rec.top > 0 && <span style={{ color: C.amb }}>{t("player.session.recBadge", { top: rec.top, orm: rec.oneRM })}</span>}
                 </div>
                 {ecart && (
                   <div style={{ fontSize: 10, color: C.amb, marginBottom: 6, display: "flex", alignItems: "center", gap: 5, fontWeight: 700 }}>
-                    <span>≠ Écart :</span><span style={{ fontWeight: 600 }}>{ecart}</span>
+                    <span>{t("player.session.gap")}</span><span style={{ fontWeight: 600 }}>{ecart}</span>
                   </div>
                 )}
                 <ExerciseVideo url={e.video} accent={accent} />
@@ -199,38 +201,38 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   );
                 })}
                 <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
-                  <button onClick={() => addSet(e.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 10px", color: "rgba(255,255,255,0.6)", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>+ série</button>
-                  {ex[e.id].sets.length > 1 && <button onClick={() => delSet(e.id, ex[e.id].sets.length - 1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", fontSize: 10, cursor: "pointer" }}>− retirer</button>}
+                  <button onClick={() => addSet(e.id)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 10px", color: "rgba(255,255,255,0.6)", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>{t("player.session.addSet")}</button>
+                  {ex[e.id].sets.length > 1 && <button onClick={() => delSet(e.id, ex[e.id].sets.length - 1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", fontSize: 10, cursor: "pointer" }}>{t("player.session.removeSet")}</button>}
                 </div>
                 <textarea
                   value={ex[e.id].note || ""}
                   onChange={(ev) => setExNote(e.id, ev.target.value)}
-                  placeholder={ecart ? "Pourquoi cet écart ? (ex. douleur épaule)" : "Remarque sur l'exercice (optionnel)"}
+                  placeholder={ecart ? t("player.session.exNoteGap") : t("player.session.exNote")}
                   style={{ width: "100%", marginTop: 6, background: "rgba(255,255,255,0.05)", border: `1px solid ${ecart ? `${C.amb}55` : C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34 }}
                 />
               </div>
             );
           })}
 
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "12px 0 8px" }}>RPE global de la séance (1–10)</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "12px 0 8px" }}>{t("player.session.rpeLabel")}</div>
           <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
               <div key={n} onClick={() => { setDirty(true); setRpe(n); }} style={{ flex: 1, height: 32, borderRadius: 6, background: rpe === n ? (n <= 3 ? C.green : n <= 6 ? C.amb : C.coral) : "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, cursor: "pointer", border: rpe === n ? "2px solid rgba(255,255,255,0.4)" : "2px solid transparent" }}>{n}</div>
             ))}
           </div>
-          <textarea value={fb} onChange={(e) => { setDirty(true); setFb(e.target.value); }} placeholder="Commentaire (douleur, ressenti…)" style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", resize: "none", height: 50, marginBottom: 10 }} />
+          <textarea value={fb} onChange={(e) => { setDirty(true); setFb(e.target.value); }} placeholder={t("player.session.feedbackPlaceholder")} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", resize: "none", height: 50, marginBottom: 10 }} />
           {preview ? (
             <div style={{ textAlign: "center", padding: "10px", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 8, color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 700 }}>
-              👁 Mode aperçu — lecture seule (validation désactivée)
+              {t("player.session.previewSession")}
             </div>
           ) : (
             <>
               <button onClick={() => valider("done")} disabled={busy} style={{ width: "100%", background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1, marginBottom: 8 }}>
-                <CheckCircle size={13} />{st === "done" ? "Mettre à jour" : "Terminer la séance"}
+                <CheckCircle size={13} />{st === "done" ? t("player.session.update") : t("player.session.finish")}
               </button>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => valider("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Séance manquée</button>
-                <button onClick={() => valider("postponed")} disabled={busy} title="Reporter / remettre la séance (sans pénalité)" style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Reporter</button>
+                <button onClick={() => valider("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.missed")}</button>
+                <button onClick={() => valider("postponed")} disabled={busy} title={t("player.session.postponeTitle")} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.postpone")}</button>
               </div>
             </>
           )}
@@ -246,6 +248,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
    demande (iframe) ; sinon lien cliquable brut (autre hébergeur). Rien à
    afficher si l'exercice n'a pas de lien exploitable. */
 function ExerciseVideo({ url, accent }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const embed = youtubeEmbed(url);
   const href = safeVideoUrl(url);
@@ -255,15 +258,15 @@ function ExerciseVideo({ url, accent }) {
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         {embed ? (
           <button onClick={() => setOpen((o) => !o)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 7, padding: "5px 10px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-            <Video size={13} /> {open ? "Masquer la vidéo" : "Voir la démo"}
+            <Video size={13} /> {open ? t("player.session.hideVideo") : t("player.session.showDemo")}
           </button>
         ) : (
           <a href={href} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 7, padding: "5px 10px", color: accent, fontSize: 11, fontWeight: 700, textDecoration: "none" }}>
-            <ExternalLink size={13} /> Voir la vidéo
+            <ExternalLink size={13} /> {t("player.session.seeVideo")}
           </a>
         )}
         {embed && (
-          <a href={href} target="_blank" rel="noopener noreferrer" title="Ouvrir sur YouTube" style={{ display: "inline-flex", alignItems: "center", color: "rgba(255,255,255,0.5)" }}>
+          <a href={href} target="_blank" rel="noopener noreferrer" title={t("player.session.openYoutube")} style={{ display: "inline-flex", alignItems: "center", color: "rgba(255,255,255,0.5)" }}>
             <ExternalLink size={13} />
           </a>
         )}
@@ -272,7 +275,7 @@ function ExerciseVideo({ url, accent }) {
         <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%", marginTop: 8, borderRadius: 10, overflow: "hidden", background: "#000" }}>
           <iframe
             src={embed}
-            title="Démonstration de l'exercice"
+            title={t("player.session.videoTitle")}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
@@ -284,6 +287,7 @@ function ExerciseVideo({ url, accent }) {
 }
 
 function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
+  const { t } = useTranslation();
   useModalClose(onClose);
   const hist = exerciseHistory(logs, sessions, pid, exName);
   const pts = hist.map((h) => h.best1rm || h.top);
@@ -292,19 +296,19 @@ function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "80vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div><div style={{ fontSize: 15, fontWeight: 800 }}>{exName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Progression · 1RM estimé</div></div>
+          <div><div style={{ fontSize: 15, fontWeight: 800 }}>{exName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("player.session.progressSub")}</div></div>
           <CloseX onClose={onClose} />
         </div>
         {pts.length >= 2 ? (
           <>
             <LineChart pts={pts} color={accent} height={130} />
             <div style={{ display: "flex", justifyContent: "space-around", marginTop: 14 }}>
-              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: C.amb }}>{rec.top}<span style={{ fontSize: 11 }}>kg</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>RECORD CHARGE</div></div>
-              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: accent }}>{rec.oneRM}<span style={{ fontSize: 11 }}>kg</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>1RM ESTIMÉ</div></div>
+              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: C.amb }}>{rec.top}<span style={{ fontSize: 11 }}>{t("player.session.kg")}</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{t("player.session.recordLoad")}</div></div>
+              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: accent }}>{rec.oneRM}<span style={{ fontSize: 11 }}>{t("player.session.kg")}</span></div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{t("player.session.estimated1rm")}</div></div>
             </div>
           </>
         ) : (
-          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Pas encore assez d'historique pour tracer une progression. Valide au moins deux séances avec cet exercice.</div>
+          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>{t("player.session.notEnoughHistory")}</div>
         )}
       </div>
     </div>
