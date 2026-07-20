@@ -161,7 +161,7 @@ function fmtBytes(n) {
    - le JOUEUR sur sa fiche (`canAdd`) : ajouter / supprimer / ouvrir ses PDF
    - le STAFF/OWNER du club : consulter (ouvrir/télécharger) ; supprimer si
      `canDelete` (prépa/médical/owner). Accès par URL signée (1 h). */
-function PlayerProgramFiles({ player, canAdd, canDelete }) {
+function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
   const [busy, setBusy] = useState(false);
@@ -199,7 +199,7 @@ function PlayerProgramFiles({ player, canAdd, canDelete }) {
   return (
     <div style={sc({ padding: 14, marginBottom: 12 })}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <div style={{ flex: 1, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, display: "flex", alignItems: "center", gap: 6 }}><FileText size={13} /> {t("shared.fiche.pdfTitle")}</div>
+        <div style={{ flex: 1, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, display: "flex", alignItems: "center", gap: 6 }}><FileText size={13} /> {self ? t("shared.fiche.pdfTitleSelf") : t("shared.fiche.pdfTitle")}</div>
         {canAdd && (
           <label style={{ display: "flex", alignItems: "center", gap: 6, background: C.viol, borderRadius: 8, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
             <Upload size={13} /> {busy ? t("shared.fiche.pdfSending") : t("shared.fiche.pdfAdd")}
@@ -334,7 +334,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
       {self && <SelfInitials player={player} />}
 
       {/* PDF de programme du joueur : gérés par le joueur, consultés par le staff/owner. */}
-      <PlayerProgramFiles player={player} canAdd={self} canDelete={self || canEdit} />
+      <PlayerProgramFiles player={player} self={self} canAdd={self || canEdit} canDelete={self || canEdit} />
 
       {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
       {(() => {

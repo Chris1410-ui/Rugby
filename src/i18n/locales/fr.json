@@ -1414,8 +1414,8 @@
       "ppPlaceholder": "Objectifs, consignes, points de vigilance…",
       "save": "Enregistrer",
       "chalPtsSuffix": "· +{{pts}} pts",
-      "pdfTitle": "MES PDF DE PROGRAMME",
-      "pdfNote": "PDF privés · lien signé (1 h). Visibles par toi et le staff de ton club.",
+      "pdfTitle": "PDF DE PROGRAMME",
+      "pdfNote": "PDF privés · lien signé (1 h). Accès : le joueur et le staff du club.",
       "pdfAdd": "Ajouter un PDF",
       "pdfSending": "Envoi…",
       "pdfEmpty": "Aucun PDF pour l'instant.",
@@ -1425,7 +1425,8 @@
       "pdfAddedOn": "Ajouté le {{date}}",
       "pdfOpenTitle": "Ouvrir",
       "pdfDownloadTitle": "Télécharger",
-      "pdfDeleteTitle": "Supprimer"
+      "pdfDeleteTitle": "Supprimer",
+      "pdfTitleSelf": "MES PDF DE PROGRAMME"
     },
     "error": {
       "title": "Une erreur est survenue",
