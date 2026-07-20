@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { Video, Upload, X, ExternalLink } from "../../lib/icons.jsx";
@@ -12,6 +13,7 @@ const mb = (n) => (n == null ? "" : n < 1048576 ? `${Math.round(n / 1024)} Ko` :
    stockées dans le bucket privé `team-files` (dossier <team_id>/videos).
    Lecture par lien signé (jamais d'URL publique). Upload réservé au staff. */
 export default function AnalyseVideo({ teamId }) {
+  const { t } = useTranslation();
   const readOnly = useReadOnly();
   const folder = teamVideosFolder(teamId);
   const [files, setFiles] = useState([]);
@@ -30,10 +32,10 @@ export default function AnalyseVideo({ teamId }) {
 
   const onUpload = async (file) => {
     if (!file) return;
-    if (!/^video\//.test(file.type)) { setErr("Choisis un fichier vidéo."); return; }
+    if (!/^video\//.test(file.type)) { setErr(t("staff.video.chooseVideo")); return; }
     setBusy(true); setErr("");
     try { await uploadFile(folder, file); await refresh(); }
-    catch (e) { setErr(e.message || "Échec de l'envoi."); }
+    catch (e) { setErr(e.message || t("staff.video.uploadFail")); }
     setBusy(false);
   };
 
@@ -57,14 +59,13 @@ export default function AnalyseVideo({ teamId }) {
 
   return (
     <section>
-      <Section title="ANALYSE VIDÉO">
+      <Section title={t("staff.video.sectionTitle")}>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, marginBottom: 12 }}>
-          Vidéos de match/entraînement stockées dans le <strong style={{ color: "#fff" }}>bucket privé</strong> de
-          l'équipe. Lecture par lien signé temporaire — jamais d'URL publique (données de mineurs, RGPD).
+          {t("staff.video.intro1")}<strong style={{ color: "#fff" }}>{t("staff.video.bucketPrivate")}</strong>{t("staff.video.intro2")}
         </div>
         {!readOnly && (
         <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 10, padding: 13, color: accent, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-          <Upload size={16} />{busy ? "Envoi…" : "Téléverser une vidéo"}
+          <Upload size={16} />{busy ? t("staff.video.sending") : t("staff.video.upload")}
           <input type="file" accept="video/*" style={{ display: "none" }} onChange={(e) => onUpload(e.target.files[0])} />
         </label>
         )}
@@ -76,16 +77,16 @@ export default function AnalyseVideo({ teamId }) {
           <video key={active.url} src={active.url} controls playsInline style={{ width: "100%", borderRadius: 10, background: "#000", maxHeight: 360 }} />
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <div style={{ flex: 1, fontSize: 11, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{active.name.replace(/^\d{8}_/, "")}</div>
-            <a href={active.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>Plein écran <ExternalLink size={12} /></a>
+            <a href={active.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>{t("staff.video.fullscreen")} <ExternalLink size={12} /></a>
           </div>
         </div>
       )}
 
-      <Section title={`BIBLIOTHÈQUE · ${files.length}`}>
+      <Section title={t("staff.video.library", { count: files.length })}>
         {loading ? (
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: 12 }}>Chargement…</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: 12 }}>{t("staff.video.loading")}</div>
         ) : files.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>Aucune vidéo. Téléverse un match ou une séquence à analyser.</div>
+          <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>{t("staff.video.empty")}</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {files.map((f) => (
@@ -97,7 +98,7 @@ export default function AnalyseVideo({ teamId }) {
                   <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name.replace(/^\d{8}_/, "")}</div>
                   <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{mb(f.size)}</div>
                 </div>
-                {!readOnly && <button onClick={() => del(f.path)} disabled={busy} title="Supprimer" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}><X size={15} /></button>}
+                {!readOnly && <button onClick={() => del(f.path)} disabled={busy} title={t("staff.video.deleteTitle")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.56)", cursor: "pointer", padding: 4 }}><X size={15} /></button>}
               </div>
             ))}
           </div>
