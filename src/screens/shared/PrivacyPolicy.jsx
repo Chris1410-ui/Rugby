@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { POLICY, CONTROLLER } from "../../lib/policy.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
@@ -6,15 +7,16 @@ import { Shield } from "../../lib/icons.jsx";
 /* Politique de confidentialité. Rendu inline, ou en modal si `onClose` fourni
    (lien depuis l'inscription, la connexion ou l'écran « Mes données »). */
 export default function PrivacyPolicy({ onClose }) {
+  const { t } = useTranslation();
   useModalClose(onClose);
   const body = (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <Shield size={20} color={C.green} />
         <div>
-          <div style={{ fontSize: 16, fontWeight: 800 }}>Politique de confidentialité</div>
+          <div style={{ fontSize: 16, fontWeight: 800 }}>{t("shared.privacyPolicy.title")}</div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>
-            Version {POLICY.version} · {POLICY.updated} · hébergement UE (RGPD)
+            {t("shared.privacyPolicy.version", { version: POLICY.version, updated: POLICY.updated })}
           </div>
         </div>
       </div>
@@ -28,8 +30,7 @@ export default function PrivacyPolicy({ onClose }) {
         </div>
       ))}
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", borderTop: `1px solid ${C.border2}`, paddingTop: 10, marginTop: 4, lineHeight: 1.5 }}>
-        Responsable de traitement : {CONTROLLER.name}
-        {CONTROLLER.address ? `, ${CONTROLLER.address}` : ""} — {CONTROLLER.contact}
+        {t("shared.privacyPolicy.controller", { name: CONTROLLER.name, addr: CONTROLLER.address ? `, ${CONTROLLER.address}` : "", contact: CONTROLLER.contact })}
       </div>
     </div>
   );
@@ -43,7 +44,7 @@ export default function PrivacyPolicy({ onClose }) {
         </div>
         {body}
         <button onClick={onClose} style={{ width: "100%", marginTop: 14, background: C.green, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-          Fermer
+          {t("shared.privacyPolicy.close")}
         </button>
       </div>
     </div>

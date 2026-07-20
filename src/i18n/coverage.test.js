@@ -50,9 +50,7 @@ const PENDING = new Set([
   "screens/shared/Calendrier.jsx",
   "screens/shared/Classement.jsx",
   "screens/shared/Fiche.jsx",
-  "screens/shared/Mediatheque.jsx",
   "screens/shared/PlayerReport.jsx",
-  "screens/shared/PrivacyPolicy.jsx",
   "screens/shared/TestsEvolution.jsx",
 ]);
 
