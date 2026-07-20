@@ -53,3 +53,42 @@ export async function removeFile(path) {
   const { error } = await bucket().remove([path]);
   if (error) throw error;
 }
+
+/* ── PDF de programme du JOUEUR (bucket privé `player-files`) ──
+   Chemin <team_id>/<player_id>/<timestamp>_<fichier>.pdf → 1er segment = team_id
+   (isolation club), 2e = player_id (propriété). PDF uniquement (doublé par
+   `allowed_mime_types` côté bucket) ; lecture par URL signée. Cf. migration 0051. */
+export const PLAYER_BUCKET = "player-files";
+const playerBucket = () => supabase.storage.from(PLAYER_BUCKET);
+export const playerFilesFolder = (teamId, playerId) => `${teamId}/${playerId}`;
+
+// Upload joueur — garde PDF-only AVANT tout accès réseau ; préfixe temporel.
+export async function uploadPlayerPdf(teamId, playerId, file) {
+  if (!file || file.type !== "application/pdf") throw new Error("PDF_ONLY");
+  const stamp = String(Date.now()).slice(-8);
+  const path = `${playerFilesFolder(teamId, playerId)}/${stamp}_${sanitize(file.name)}`;
+  const { error } = await playerBucket().upload(path, file, { upsert: false, contentType: "application/pdf" });
+  if (error) throw error;
+  return path;
+}
+
+export async function listPlayerFiles(teamId, playerId) {
+  const folder = playerFilesFolder(teamId, playerId);
+  const { data, error } = await playerBucket().list(folder, { sortBy: { column: "created_at", order: "desc" } });
+  if (error) throw error;
+  return (data ?? [])
+    .filter((o) => o.id)
+    .map((o) => ({ name: o.name, path: `${folder}/${o.name}`, size: o.metadata?.size, created: o.created_at }));
+}
+
+// URL signée (1 h). `download:true` force le téléchargement plutôt que l'ouverture.
+export async function playerFileUrl(path, { download = false } = {}) {
+  const { data, error } = await playerBucket().createSignedUrl(path, 3600, download ? { download: true } : undefined);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+export async function removePlayerFile(path) {
+  const { error } = await playerBucket().remove([path]);
+  if (error) throw error;
+}

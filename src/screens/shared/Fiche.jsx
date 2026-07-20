@@ -4,7 +4,8 @@ import { C, sc } from "../../lib/tokens.js";
 import { grpLabel, posDisplay } from "../../lib/positions.js";
 import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Eye, EyeOff, Lock } from "../../lib/icons.jsx";
+import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload } from "../../lib/icons.jsx";
+import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } from "../../data/storage.js";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
 import { updatePlayer, resetPlayerPassword, setMyInitials } from "../../data/players.js";
@@ -148,6 +149,87 @@ function SelfInitials({ player }) {
   );
 }
 
+// Taille lisible d'un fichier (unités internationales — pas de traduction).
+function fmtBytes(n) {
+  if (n == null) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/* PDF de programme du joueur (bucket privé `player-files`, cf. migration 0051).
+   - le JOUEUR sur sa fiche (`canAdd`) : ajouter / supprimer / ouvrir ses PDF
+   - le STAFF/OWNER du club : consulter (ouvrir/télécharger) ; supprimer si
+     `canDelete` (prépa/médical/owner). Accès par URL signée (1 h). */
+function PlayerProgramFiles({ player, canAdd, canDelete }) {
+  const { t } = useTranslation();
+  const [files, setFiles] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const refresh = async () => {
+    try { setFiles(await listPlayerFiles(player.team, player.id)); setErr(""); }
+    catch (e) { setErr(e.message || String(e)); }
+  };
+  useEffect(() => { refresh(); }, [player.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onAdd = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permet de re-sélectionner le même fichier
+    if (!file) return;
+    if (file.type !== "application/pdf") { setErr(t("shared.fiche.pdfOnly")); return; }
+    setBusy(true); setErr("");
+    try { await uploadPlayerPdf(player.team, player.id, file); await refresh(); }
+    catch (ex) { setErr(ex.message === "PDF_ONLY" ? t("shared.fiche.pdfOnly") : t("shared.fiche.pdfUploadFail", { err: ex.message || "" })); }
+    setBusy(false);
+  };
+  const openFile = async (path, download) => {
+    try { const url = await playerFileUrl(path, { download }); window.open(url, "_blank", "noopener"); }
+    catch (ex) { setErr(ex.message || String(ex)); }
+  };
+  const del = async (path) => {
+    setBusy(true); setErr("");
+    try { await removePlayerFile(path); await refresh(); }
+    catch (ex) { setErr(t("shared.fiche.pdfDeleteFail", { err: ex.message || "" })); }
+    setBusy(false);
+  };
+  const cleanName = (n) => n.replace(/^\d{8}_/, "");
+  const iconBtn = { background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", flexShrink: 0 };
+
+  return (
+    <div style={sc({ padding: 14, marginBottom: 12 })}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <div style={{ flex: 1, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, display: "flex", alignItems: "center", gap: 6 }}><FileText size={13} /> {t("shared.fiche.pdfTitle")}</div>
+        {canAdd && (
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: C.viol, borderRadius: 8, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+            <Upload size={13} /> {busy ? t("shared.fiche.pdfSending") : t("shared.fiche.pdfAdd")}
+            <input type="file" accept="application/pdf" onChange={onAdd} disabled={busy} style={{ display: "none" }} />
+          </label>
+        )}
+      </div>
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginBottom: 10, lineHeight: 1.5 }}>{t("shared.fiche.pdfNote")}</div>
+      {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
+      {files.length === 0 ? (
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.pdfEmpty")}</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {files.map((f) => (
+            <div key={f.path} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 10px" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cleanName(f.name)}</div>
+                <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.pdfAddedOn", { date: fmtShort(f.created) })}{f.size ? ` · ${fmtBytes(f.size)}` : ""}</div>
+              </div>
+              <button onClick={() => openFile(f.path, false)} title={t("shared.fiche.pdfOpenTitle")} style={iconBtn}><ExternalLink size={15} /></button>
+              <button onClick={() => openFile(f.path, true)} title={t("shared.fiche.pdfDownloadTitle")} style={iconBtn}><Download size={15} /></button>
+              {canDelete && <button onClick={() => del(f.path)} disabled={busy} title={t("shared.fiche.pdfDeleteTitle")} style={{ ...iconBtn, color: C.coral }}><Trash2 size={15} /></button>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* Fiche joueur détaillée. Lit l'effectif enrichi (aucun recalcul). Éditable par
    le staff (tests physiques). `onClose` → rendu en modal. */
 export default function Fiche({ player, canEdit = false, self = false, onClose }) {
@@ -250,6 +332,9 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
       {/* Le joueur saisit / modifie SES initiales (affichées « Totem (I.F.) »
           partout). Réservé à sa propre fiche. */}
       {self && <SelfInitials player={player} />}
+
+      {/* PDF de programme du joueur : gérés par le joueur, consultés par le staff/owner. */}
+      <PlayerProgramFiles player={player} canAdd={self} canDelete={self || canEdit} />
 
       {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
       {(() => {

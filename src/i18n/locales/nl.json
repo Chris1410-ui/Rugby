@@ -1413,7 +1413,19 @@
       "ppNotesHint": "(doelen / instructies)",
       "ppPlaceholder": "Doelen, instructies, aandachtspunten…",
       "save": "Opslaan",
-      "chalPtsSuffix": "· +{{pts}} ptn"
+      "chalPtsSuffix": "· +{{pts}} ptn",
+      "pdfTitle": "MIJN PROGRAMMA-PDF'S",
+      "pdfNote": "Privé-PDF's · ondertekende link (1 u). Zichtbaar voor jou en de staf van je club.",
+      "pdfAdd": "PDF toevoegen",
+      "pdfSending": "Uploaden…",
+      "pdfEmpty": "Nog geen PDF.",
+      "pdfOnly": "Alleen PDF-formaat.",
+      "pdfUploadFail": "Uploaden mislukt: {{err}}",
+      "pdfDeleteFail": "Verwijderen mislukt: {{err}}",
+      "pdfAddedOn": "Toegevoegd op {{date}}",
+      "pdfOpenTitle": "Openen",
+      "pdfDownloadTitle": "Downloaden",
+      "pdfDeleteTitle": "Verwijderen"
     },
     "error": {
       "title": "Er is een fout opgetreden",

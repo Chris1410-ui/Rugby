@@ -1413,7 +1413,19 @@
       "ppNotesHint": "(objectifs / consignes)",
       "ppPlaceholder": "Objectifs, consignes, points de vigilance…",
       "save": "Enregistrer",
-      "chalPtsSuffix": "· +{{pts}} pts"
+      "chalPtsSuffix": "· +{{pts}} pts",
+      "pdfTitle": "MES PDF DE PROGRAMME",
+      "pdfNote": "PDF privés · lien signé (1 h). Visibles par toi et le staff de ton club.",
+      "pdfAdd": "Ajouter un PDF",
+      "pdfSending": "Envoi…",
+      "pdfEmpty": "Aucun PDF pour l'instant.",
+      "pdfOnly": "Format PDF uniquement.",
+      "pdfUploadFail": "Échec de l'envoi : {{err}}",
+      "pdfDeleteFail": "Échec de la suppression : {{err}}",
+      "pdfAddedOn": "Ajouté le {{date}}",
+      "pdfOpenTitle": "Ouvrir",
+      "pdfDownloadTitle": "Télécharger",
+      "pdfDeleteTitle": "Supprimer"
     },
     "error": {
       "title": "Une erreur est survenue",
