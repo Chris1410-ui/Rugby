@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
@@ -17,6 +18,7 @@ const period = (c) => `${fmtShort(c.dateDebut)} → ${fmtShort(c.dateFin)}`;
    résultats de tests (datés par camp) et inscriptions. Ne duplique rien —
    les séances « du camp » sont celles dont la date tombe dans la fenêtre. */
 export default function Camps({ teamId, players = [], sessions = [], logs = {} }) {
+  const { t } = useTranslation();
   const readOnly = useReadOnly();
   const { camps } = useTeamCamps(teamId);
   const counts = useCampCounts(teamId, camps.map((c) => c.id));
@@ -33,10 +35,10 @@ export default function Camps({ teamId, players = [], sessions = [], logs = {} }
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Flag size={18} color={accent} />
-        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>Camps · {camps.length}</div>
+        <div style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>{t("staff.camps.title", { count: camps.length })}</div>
         {!readOnly && (
           <button onClick={() => setCreating((v) => !v)} style={{ background: accent, border: "none", borderRadius: 10, padding: "9px 13px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-            <Plus size={15} /> Nouveau camp
+            <Plus size={15} /> {t("staff.camps.new")}
           </button>
         )}
       </div>
@@ -45,7 +47,7 @@ export default function Camps({ teamId, players = [], sessions = [], logs = {} }
 
       {camps.length === 0 ? (
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12, lineHeight: 1.6 })}>
-          Aucun camp. Crée une période nommée (ex. « Camp été – 21-28 juil ») pour regrouper séances, tests et inscriptions.
+          {t("staff.camps.empty")}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -55,12 +57,12 @@ export default function Camps({ teamId, players = [], sessions = [], logs = {} }
               <div key={c.id} onClick={() => setSel(c.id)} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", cursor: "pointer", borderLeft: `3px solid ${active ? C.green : C.border}` })}>
                 <Flag size={18} color={active ? C.green : "rgba(255,255,255,0.5)"} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>{c.nom}{active && <Tag c={C.green}>en cours</Tag>}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>{c.nom}{active && <Tag c={C.green}>{t("staff.camps.active")}</Tag>}</div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{period(c)}</div>
                 </div>
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: C.viol }}>{counts[c.id] || 0}</div>
-                  <div style={{ fontSize: 8, color: "rgba(255,255,255,0.55)" }}>INSCRITS</div>
+                  <div style={{ fontSize: 8, color: "rgba(255,255,255,0.55)" }}>{t("staff.camps.enrolled")}</div>
                 </div>
               </div>
             );
@@ -72,6 +74,7 @@ export default function Camps({ teamId, players = [], sessions = [], logs = {} }
 }
 
 function CampForm({ teamId, camp, onDone, onCancel }) {
+  const { t } = useTranslation();
   const [nom, setNom] = useState(camp?.nom || "");
   const [dd, setDd] = useState(camp?.dateDebut || todayISO());
   const [df, setDf] = useState(camp?.dateFin || todayISO());
@@ -80,35 +83,36 @@ function CampForm({ teamId, camp, onDone, onCancel }) {
   const inp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" };
 
   const save = async () => {
-    if (!nom.trim()) return setErr("Donne un nom au camp.");
-    if (df < dd) return setErr("La date de fin doit suivre la date de début.");
+    if (!nom.trim()) return setErr(t("staff.camps.errName"));
+    if (df < dd) return setErr(t("staff.camps.errDate"));
     setBusy(true); setErr("");
     try {
       if (camp) await updateCamp(camp.id, { nom, dateDebut: dd, dateFin: df });
       else await createCamp(teamId, { nom, dateDebut: dd, dateFin: df });
       onDone();
-    } catch (e) { setErr("Échec : " + (e.message || "réessaie.")); setBusy(false); }
+    } catch (e) { setErr(t("staff.camps.errSave", { err: e.message || t("staff.camps.errSaveRetry") })); setBusy(false); }
   };
 
   return (
     <div style={sc({ padding: 14, marginBottom: 12 })}>
-      <input value={nom} onChange={(e) => { setNom(e.target.value); setErr(""); }} placeholder="Nom du camp (ex. Camp été)" maxLength={60} style={{ ...inp, width: "100%", marginBottom: 8 }} />
+      <input value={nom} onChange={(e) => { setNom(e.target.value); setErr(""); }} placeholder={t("staff.camps.namePlaceholder")} maxLength={60} style={{ ...inp, width: "100%", marginBottom: 8 }} />
       <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
-        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>du</span>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("staff.camps.from")}</span>
         <input type="date" value={dd} onChange={(e) => setDd(e.target.value)} style={inp} />
-        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>au</span>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("staff.camps.to")}</span>
         <input type="date" value={df} onChange={(e) => setDf(e.target.value)} style={inp} />
       </div>
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={save} disabled={busy} style={{ flex: 1, background: accent, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : camp ? "Enregistrer" : "Créer le camp"}</button>
-        <button onClick={onCancel} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "10px 14px", color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Annuler</button>
+        <button onClick={save} disabled={busy} style={{ flex: 1, background: accent, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : camp ? t("staff.camps.saveEdit") : t("staff.camps.saveNew")}</button>
+        <button onClick={onCancel} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "10px 14px", color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
       </div>
     </div>
   );
 }
 
 function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }) {
+  const { t } = useTranslation();
   const readOnly = useReadOnly();
   const [edit, setEdit] = useState(false);
   const [results, setResults] = useState(false);
@@ -131,27 +135,27 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
   return (
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <button onClick={onBack} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>← Camps</button>
+        <button onClick={onBack} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>← {t("staff.camps.back")}</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 16, fontWeight: 900 }}>{camp.nom}</div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{period(camp)}</div>
         </div>
-        {!readOnly && <button onClick={() => setEdit((v) => !v)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 8, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>Modifier</button>}
+        {!readOnly && <button onClick={() => setEdit((v) => !v)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 8, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>{t("staff.camps.edit")}</button>}
       </div>
 
       {!readOnly && edit && <CampForm teamId={teamId} camp={camp} onDone={() => setEdit(false)} onCancel={() => setEdit(false)} />}
 
       {/* Résultats de tests datés par camp (baseline début vs fin) */}
-      <Section title="RÉSULTATS DU CAMP" right={readOnly ? null : <button onClick={() => setResults(true)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>}>
+      <Section title={t("staff.camps.resultsTitle")} right={readOnly ? null : <button onClick={() => setResults(true)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> {t("staff.camps.enter")}</button>}>
         {campCampaigns.length === 0 ? (
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
-            Aucune campagne rattachée. « Saisir » crée une campagne (ex. « Début » puis « Fin ») datée du camp — les valeurs se reportent dans la fiche joueur + comparaison Top 14 + points.
+            {t("staff.camps.noCampaign")}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {campCampaigns.map((c, i) => (
               <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${C.border2}` }}>
-                <Tag c={i === 0 ? C.blue : C.viol}>{i === 0 ? "baseline" : i === campCampaigns.length - 1 ? "fin" : "intermédiaire"}</Tag>
+                <Tag c={i === 0 ? C.blue : C.viol}>{i === 0 ? t("staff.camps.tagBaseline") : i === campCampaigns.length - 1 ? t("staff.camps.tagEnd") : t("staff.camps.tagMid")}</Tag>
                 <span style={{ flex: 1, fontSize: 12, fontWeight: 700 }}>{c.name}</span>
                 <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{fmtShort(c.date)}</span>
               </div>
@@ -168,13 +172,13 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
 
       {/* Suppression */}
       {readOnly ? null : !confirmDel ? (
-        <button onClick={() => setConfirmDel(true)} style={{ marginTop: 6, width: "100%", background: "transparent", border: `1px solid ${C.coral}55`, borderRadius: 10, padding: 11, color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Trash2 size={14} /> Supprimer le camp</button>
+        <button onClick={() => setConfirmDel(true)} style={{ marginTop: 6, width: "100%", background: "transparent", border: `1px solid ${C.coral}55`, borderRadius: 10, padding: 11, color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Trash2 size={14} /> {t("staff.camps.deleteCamp")}</button>
       ) : (
         <div style={{ marginTop: 6, border: `1px solid ${C.coral}55`, borderRadius: 10, padding: 12, background: `${C.coral}11` }}>
-          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.75)", marginBottom: 8 }}>Supprimer « {camp.nom} » ? Les inscriptions sont supprimées ; les campagnes de tests sont conservées (détachées).</div>
+          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.75)", marginBottom: 8 }}>{t("staff.camps.deleteConfirm", { name: camp.nom })}</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => setConfirmDel(false)} disabled={busy} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Annuler</button>
-            <button onClick={del} disabled={busy} style={{ flex: 1, background: C.coral, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>Supprimer</button>
+            <button onClick={() => setConfirmDel(false)} disabled={busy} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
+            <button onClick={del} disabled={busy} style={{ flex: 1, background: C.coral, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{t("staff.camps.delete")}</button>
           </div>
         </div>
       )}
@@ -188,6 +192,7 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
    Une séance-test (code TEST) ouvre l'écran unique de saisie des résultats,
    lié à la campagne de tests du camp. */
 function CampSessions({ camp, teamId, sessions, players = [] }) {
+  const { t } = useTranslation();
   const readOnly = useReadOnly();
   const [adding, setAdding] = useState(false);
   const [f, setF] = useState({ date: camp.dateDebut, code: "RS", titre: "Séance", mode: "all" });
@@ -200,7 +205,7 @@ function CampSessions({ camp, teamId, sessions, players = [] }) {
   const isTest = (s) => s.code === "TEST";
 
   const add = async () => {
-    if (f.date < camp.dateDebut || f.date > camp.dateFin) return setErr("La date doit être dans la période du camp.");
+    if (f.date < camp.dateDebut || f.date > camp.dateFin) return setErr(t("staff.camps.errDateRange"));
     setBusy(true); setErr("");
     const test = f.mode === "test";
     // Séance-test → assignée aux joueurs du camp (participants ; à défaut toute l'équipe).
@@ -214,33 +219,33 @@ function CampSessions({ camp, teamId, sessions, players = [] }) {
         durationMin: 60, exercises: [], assigned,
       });
       setAdding(false); setF({ date: camp.dateDebut, code: "RS", titre: "Séance", mode: "all" });
-    } catch (e) { setErr("Échec : " + (e.message || "")); }
+    } catch (e) { setErr(t("staff.camps.errSave", { err: e.message || "" })); }
     setBusy(false);
   };
 
   return (
-    <Section title={`SÉANCES DU CAMP · ${sessions.length}`} right={readOnly ? null : <button onClick={() => setAdding((v) => !v)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={13} /> Séance</button>}>
+    <Section title={t("staff.camps.sessionsTitle", { count: sessions.length })} right={readOnly ? null : <button onClick={() => setAdding((v) => !v)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 8, padding: "5px 10px", color: accent, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Plus size={13} /> {t("staff.camps.addSession")}</button>}>
       {adding && (
         <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}` }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
             <input type="date" value={f.date} min={camp.dateDebut} max={camp.dateFin} onChange={(e) => setF((p) => ({ ...p, date: e.target.value }))} style={{ ...inp, flex: "0 0 140px" }} />
-            <input value={f.titre} onChange={(e) => setF((p) => ({ ...p, titre: e.target.value }))} placeholder="Titre" style={{ ...inp, flex: "1 1 120px" }} />
-            {f.mode !== "test" && <input value={f.code} onChange={(e) => setF((p) => ({ ...p, code: e.target.value.toUpperCase().slice(0, 4) }))} placeholder="Code" style={{ ...inp, flex: "0 0 70px", textAlign: "center" }} />}
+            <input value={f.titre} onChange={(e) => setF((p) => ({ ...p, titre: e.target.value }))} placeholder={t("staff.camps.titlePlaceholder")} style={{ ...inp, flex: "1 1 120px" }} />
+            {f.mode !== "test" && <input value={f.code} onChange={(e) => setF((p) => ({ ...p, code: e.target.value.toUpperCase().slice(0, 4) }))} placeholder={t("staff.camps.codePlaceholder")} style={{ ...inp, flex: "0 0 70px", textAlign: "center" }} />}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <select value={f.mode} onChange={(e) => setF((p) => ({ ...p, mode: e.target.value }))} style={{ ...inp, flex: "1 1 160px" }}>
-              <option value="all">Toute l'équipe</option>
-              <option value="open">Inscription libre (les joueurs s'inscrivent)</option>
-              <option value="test">Tests physiques (saisie des résultats)</option>
+              <option value="all">{t("staff.camps.modeAll")}</option>
+              <option value="open">{t("staff.camps.modeOpen")}</option>
+              <option value="test">{t("staff.camps.modeTest")}</option>
             </select>
-            <button onClick={add} disabled={busy} style={{ background: accent, border: "none", borderRadius: 8, padding: "8px 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>Créer</button>
+            <button onClick={add} disabled={busy} style={{ background: accent, border: "none", borderRadius: 8, padding: "8px 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{t("staff.camps.create")}</button>
           </div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>{f.mode === "test" ? "Séance-test assignée aux joueurs du camp — tu saisiras leurs valeurs le jour dit." : "Séance vierge — complète les exercices ensuite dans Programmes."}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>{f.mode === "test" ? t("staff.camps.hintTest") : t("staff.camps.hintNormal")}</div>
           {err && <div style={{ fontSize: 11, color: C.coral, marginTop: 6 }}>{err}</div>}
         </div>
       )}
       {sessions.length === 0 ? (
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>Aucune séance dans la période.</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{t("staff.camps.emptySessions")}</div>
       ) : sessions.map((s) => {
         const open = s.assigned?.mode === "open";
         const test = isTest(s);
@@ -249,11 +254,11 @@ function CampSessions({ camp, teamId, sessions, players = [] }) {
             <span style={{ fontSize: 11, fontWeight: 700, width: 54 }}>{fmtShort(s.date)}</span>
             <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{test ? "🧪 " : `${s.code} · `}{s.titre}</span>
             {test ? (
-              !readOnly && <button onClick={() => setSaisie(s)} style={{ background: `${C.blue}22`, border: `1px solid ${C.blue}66`, borderRadius: 8, padding: "5px 10px", color: C.blue, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> Saisir</button>
+              !readOnly && <button onClick={() => setSaisie(s)} style={{ background: `${C.blue}22`, border: `1px solid ${C.blue}66`, borderRadius: 8, padding: "5px 10px", color: C.blue, fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Activity size={13} /> {t("staff.camps.enter")}</button>
             ) : (
               <>
-                {open && <Tag c={C.teal}>{s.assignedIds.length} inscrit{s.assignedIds.length > 1 ? "s" : ""}</Tag>}
-                {open ? <Tag c={C.viol}>ouverte</Tag> : <Tag c="rgba(255,255,255,0.4)">équipe</Tag>}
+                {open && <Tag c={C.teal}>{t("staff.camps.enrolledCount", { count: s.assignedIds.length })}</Tag>}
+                {open ? <Tag c={C.viol}>{t("staff.camps.tagOpen")}</Tag> : <Tag c="rgba(255,255,255,0.4)">{t("staff.camps.tagTeam")}</Tag>}
               </>
             )}
           </div>
