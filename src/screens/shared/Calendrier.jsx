@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C, CODES } from "../../lib/tokens.js";
 import { isoDate, parseISO, todayISO, statusOfLog } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
@@ -6,6 +7,7 @@ import { ChevronRight } from "../../lib/icons.jsx";
 /* Calendrier : pastille sur les jours avec séance (verte = faite, ambre = prévue)
    + agenda. `meId` → vue joueur (ses séances) ; sinon vue staff (toutes). */
 export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.coral }) {
+  const { t } = useTranslation();
   const isJoueur = !!meId;
   const mySessions = isJoueur ? sessions.filter((s) => s.assignedIds.includes(meId)) : sessions;
   const today = todayISO();
@@ -35,8 +37,8 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
         title={now.toLocaleDateString("fr-BE", { month: "long", year: "numeric" }).toUpperCase()}
         right={
           <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", display: "flex", gap: 10 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.green }} />fait</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.amb }} />prévu</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.green }} />{t("shared.calendar.legendDone")}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: C.amb }} />{t("shared.calendar.legendPlanned")}</span>
           </span>
         }
       >
@@ -57,8 +59,8 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
         </div>
       </Section>
 
-      <Section title={isJoueur ? "MES SÉANCES" : "AGENDA · SÉANCES"}>
-        {agenda.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: "6px 0" }}>Aucune séance planifiée.</div>}
+      <Section title={isJoueur ? t("shared.calendar.mySessions") : t("shared.calendar.agenda")}>
+        {agenda.length === 0 && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", padding: "6px 0" }}>{t("shared.calendar.empty")}</div>}
         {agenda.map((s) => {
           const d = parseISO(s.date);
           const st = isJoueur ? statusOfLog(logs, s.id, meId) : null;
@@ -69,10 +71,10 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
               <div style={{ width: 3, height: 30, borderRadius: 2, background: CODES[s.code] || accent }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent}>{s.code}</Tag><span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{s.exercises.length} exercices</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("shared.calendar.exercisesCount", { count: s.exercises.length })}</div>
               </div>
               {isJoueur ? (
-                st === "done" ? <Tag c={C.green}>Fait</Tag> : st === "missed" ? <Tag c={C.coral}>Manqué</Tag> : s.date <= today ? <Tag c={C.amb}>À valider</Tag> : <Tag c={accent}>À venir</Tag>
+                st === "done" ? <Tag c={C.green}>{t("shared.calendar.tagDone")}</Tag> : st === "missed" ? <Tag c={C.coral}>{t("shared.calendar.tagMissed")}</Tag> : s.date <= today ? <Tag c={C.amb}>{t("shared.calendar.tagToValidate")}</Tag> : <Tag c={accent}>{t("shared.calendar.tagUpcoming")}</Tag>
               ) : (
                 <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>{done}/{s.assignedIds.length}</span>
               )}
