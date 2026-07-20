@@ -1101,5 +1101,43 @@
       "alertsTab": "→ Alerts tab",
       "noAlerts": "No alert. 👌"
     }
+  },
+  "shared": {
+    "preview": {
+      "banner": "👁 PLAYER PREVIEW MODE{{suffix}} · read-only",
+      "back": "Back"
+    },
+    "totem": {
+      "placeholder": "Your totem (e.g. Minotaur)",
+      "randomTitle": "Random totem"
+    },
+    "veille": {
+      "byTheme": "WATCH BY THEME",
+      "biblioTitle": "BIBLIOGRAPHY · RUGBY"
+    },
+    "top14": {
+      "title": "TOP 14 COMPARISON",
+      "posUnknown": "Position not recognised for the Top 14 comparison.",
+      "noTest": "0 test",
+      "footer": "Senior Top 14 norms (lower bound), by position. Strength in ×BW (bodyweight required). +30 pts per test reached."
+    },
+    "challengeCard": {
+      "detailTitle": "View details",
+      "weekChallenge": "🔥 CHALLENGE OF THE WEEK",
+      "pts": "PTS",
+      "open": "Open",
+      "claimed_one": "{{count}} player claimed",
+      "claimed_other": "{{count}} players claimed",
+      "releves": "Claims"
+    },
+    "challengeDetail": {
+      "infoHeure": "🕒 TIME",
+      "infoLieu": "📍 PLACE",
+      "infoEcheance": "📅 DUE DATE",
+      "infoDest": "👥 RECIPIENTS",
+      "materiel": "🎒 GEAR",
+      "none": "None",
+      "pts": "PTS"
+    }
   }
 }

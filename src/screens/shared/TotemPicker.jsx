@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { TOTEMS, randomTotem } from "../../lib/totems.js";
 
 /* Sélecteur de totem (pseudo joueur). Champ libre + suggestions cliquables +
    tirage aléatoire. `value`/`onChange` contrôlés par le parent. */
 export default function TotemPicker({ value, onChange, accent = C.green }) {
+  const { t } = useTranslation();
   const set = (v) => onChange(v);
   const input = {
     flex: 1, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`,
@@ -15,11 +17,11 @@ export default function TotemPicker({ value, onChange, accent = C.green }) {
         <input
           value={value}
           onChange={(e) => set(e.target.value)}
-          placeholder="Ton totem (ex. Minotaure)"
+          placeholder={t("shared.totem.placeholder")}
           maxLength={24}
           style={input}
         />
-        <button type="button" onClick={() => set(randomTotem())} title="Totem aléatoire"
+        <button type="button" onClick={() => set(randomTotem())} title={t("shared.totem.randomTitle")}
           style={{ flexShrink: 0, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 10, padding: "0 14px", color: accent, fontWeight: 700, fontSize: 16, cursor: "pointer" }}>
           🎲
         </button>

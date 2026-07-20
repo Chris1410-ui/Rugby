@@ -48,21 +48,15 @@ const PENDING = new Set([
   "lib/ui.jsx",
   "screens/OwnerApp.jsx",
   "screens/shared/Calendrier.jsx",
-  "screens/shared/ChallengeCard.jsx",
-  "screens/shared/ChallengeDetail.jsx",
   "screens/shared/Classement.jsx",
   "screens/shared/Confidentialite.jsx",
   "screens/shared/Conversation.jsx",
   "screens/shared/Fiche.jsx",
   "screens/shared/Mediatheque.jsx",
   "screens/shared/NotificationCenter.jsx",
-  "screens/shared/PlayerPreview.jsx",
   "screens/shared/PlayerReport.jsx",
   "screens/shared/PrivacyPolicy.jsx",
   "screens/shared/TestsEvolution.jsx",
-  "screens/shared/Top14Panel.jsx",
-  "screens/shared/TotemPicker.jsx",
-  "screens/shared/Veille.jsx",
 ]);
 
 // Props d'UI dont la valeur littérale doit passer par t().

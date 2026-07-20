@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { bannerGradient, bannerOf } from "../../lib/challenges.js";
 import { fmtShort } from "../../lib/metrics.js";
@@ -9,6 +10,7 @@ import { ChevronRight } from "../../lib/icons.jsx";
    `highlight` → mise en avant « Défi de la semaine ». `onOpen` → la bannière
    devient cliquable (ouvre la vue détail plein écran). */
 export default function ChallengeCard({ c, releves = 0, participants = 0, open = false, highlight = false, onOpen, children }) {
+  const { t } = useTranslation();
   const grad = bannerGradient(c.banner);
   const pct = participants > 0 ? Math.min(100, Math.round((releves / participants) * 100)) : 0;
 
@@ -18,17 +20,17 @@ export default function ChallengeCard({ c, releves = 0, participants = 0, open =
       <div
         onClick={onOpen}
         role={onOpen ? "button" : undefined}
-        title={onOpen ? "Voir le détail" : undefined}
+        title={onOpen ? t("shared.challengeCard.detailTitle") : undefined}
         style={{ background: grad, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, cursor: onOpen ? "pointer" : "default" }}
       >
         <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(0,0,0,0.22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0, boxShadow: "inset 0 0 12px rgba(0,0,0,0.25)" }}>{c.badge || bannerOf(c.banner).emoji}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {highlight && <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: 1, color: "rgba(255,255,255,0.9)", marginBottom: 2 }}>🔥 DÉFI DE LA SEMAINE</div>}
+          {highlight && <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: 1, color: "rgba(255,255,255,0.9)", marginBottom: 2 }}>{t("shared.challengeCard.weekChallenge")}</div>}
           <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.titre}</div>
         </div>
         <div style={{ textAlign: "center", flexShrink: 0 }}>
           <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1, textShadow: "0 1px 3px rgba(0,0,0,0.35)" }}>+{c.points}</div>
-          <div style={{ fontSize: 8, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>PTS</div>
+          <div style={{ fontSize: 8, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>{t("shared.challengeCard.pts")}</div>
         </div>
         {onOpen && <ChevronRight size={18} color="rgba(255,255,255,0.85)" />}
       </div>
@@ -42,13 +44,13 @@ export default function ChallengeCard({ c, releves = 0, participants = 0, open =
           {c.lieu && <span style={tag(C.blue)}>📍 {c.lieu}</span>}
           {c.echeance && <span style={tag(C.amb)}>📅 {fmtShort(c.echeance)}</span>}
           {(c.materiel || []).map((m, i) => <span key={i} style={tag(C.gray)}>🎒 {m}</span>)}
-          {open && <span style={tag(C.viol)}>Ouvert</span>}
+          {open && <span style={tag(C.viol)}>{t("shared.challengeCard.open")}</span>}
         </div>
 
         {/* Progression */}
         <div style={{ marginBottom: children ? 12 : 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>
-            <span>{open ? `${releves} joueur${releves > 1 ? "s" : ""} ont relevé` : "Relevés"}</span>
+            <span>{open ? t("shared.challengeCard.claimed", { count: releves }) : t("shared.challengeCard.releves")}</span>
             {!open && <span>{releves}/{participants}</span>}
           </div>
           {!open && (
