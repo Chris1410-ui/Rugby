@@ -1414,8 +1414,8 @@
       "ppPlaceholder": "Goals, instructions, watch points…",
       "save": "Save",
       "chalPtsSuffix": "· +{{pts}} pts",
-      "pdfTitle": "MY PROGRAM PDFS",
-      "pdfNote": "Private PDFs · signed link (1 h). Visible to you and your club's staff.",
+      "pdfTitle": "PROGRAM PDFS",
+      "pdfNote": "Private PDFs · signed link (1 h). Access: the player and the club's staff.",
       "pdfAdd": "Add a PDF",
       "pdfSending": "Uploading…",
       "pdfEmpty": "No PDF yet.",
@@ -1425,7 +1425,8 @@
       "pdfAddedOn": "Added on {{date}}",
       "pdfOpenTitle": "Open",
       "pdfDownloadTitle": "Download",
-      "pdfDeleteTitle": "Delete"
+      "pdfDeleteTitle": "Delete",
+      "pdfTitleSelf": "MY PROGRAM PDFS"
     },
     "error": {
       "title": "An error occurred",

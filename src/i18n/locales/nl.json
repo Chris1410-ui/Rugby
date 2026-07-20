@@ -1414,8 +1414,8 @@
       "ppPlaceholder": "Doelen, instructies, aandachtspunten…",
       "save": "Opslaan",
       "chalPtsSuffix": "· +{{pts}} ptn",
-      "pdfTitle": "MIJN PROGRAMMA-PDF'S",
-      "pdfNote": "Privé-PDF's · ondertekende link (1 u). Zichtbaar voor jou en de staf van je club.",
+      "pdfTitle": "PROGRAMMA-PDF'S",
+      "pdfNote": "Privé-PDF's · ondertekende link (1 u). Toegang: de speler en de staf van de club.",
       "pdfAdd": "PDF toevoegen",
       "pdfSending": "Uploaden…",
       "pdfEmpty": "Nog geen PDF.",
@@ -1425,7 +1425,8 @@
       "pdfAddedOn": "Toegevoegd op {{date}}",
       "pdfOpenTitle": "Openen",
       "pdfDownloadTitle": "Downloaden",
-      "pdfDeleteTitle": "Verwijderen"
+      "pdfDeleteTitle": "Verwijderen",
+      "pdfTitleSelf": "MIJN PROGRAMMA-PDF'S"
     },
     "error": {
       "title": "Er is een fout opgetreden",
