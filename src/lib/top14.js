@@ -128,7 +128,8 @@ export function currentValueForTest(t, datedResults) {
    - byTest[key] = { value (dernière valeur non nulle AU POIDS COURANT), everValid,
                      firstDate, threshold, pct, valid }
    - count  = nb de tests validés Top 14 (au moins une fois)
-   - events = [{ key, label, date }] pour le crédit +30 (daté de la 1re validation)
+   - events = [{ key, date }] pour le crédit +30 (daté de la 1re validation ;
+     `key` = clé du test → l'UI traduit via data.top14test.*)
    La force est évaluée au POIDS COURANT (le poids n'étant pas historisé par test),
    et chaque test prend sa dernière valeur mesurée → le ×PdC apparaît dès que la
    charge et le poids existent. Anti-double-comptage : un test validé ne produit
@@ -157,7 +158,7 @@ export function top14Player(pos, datedResults) {
     }
     const everValid = !!firstValid;
     byTest[t.key] = { ...latestEval, everValid, firstDate: firstValid?.date || null };
-    if (everValid) { count++; events.push({ key: t.key, label: t.label, date: firstValid.date }); }
+    if (everValid) { count++; events.push({ key: t.key, date: firstValid.date }); }
   });
   return { cat, byTest, count, events };
 }

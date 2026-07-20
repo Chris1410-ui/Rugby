@@ -242,10 +242,9 @@ export function useMeditationToday(playerId, date = todayISO()) {
 }
 
 /* Construit les events « bilan complété » d'un joueur pour computePoints :
-   +10 par bilan (matin/soir), datés. `days` = [{date, moment}]. */
+   +10 par bilan (matin/soir), datés. `days` = [{date, moment}]. On transmet le
+   `moment` (pas un libellé) → computePoints choisit la clé i18n (bilanMorning/
+   bilanEvening) et l'UI traduit. */
 export function bilanEventsOf(days = []) {
-  return (days || []).map((b) => ({
-    date: b.date,
-    label: b.moment === "soir" ? "Bilan du soir complété" : "Bilan du matin complété",
-  }));
+  return (days || []).map((b) => ({ date: b.date, moment: b.moment }));
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel } from "../../lib/positions.js";
-import { acwrZ, fmtShort } from "../../lib/metrics.js";
+import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Eye, EyeOff, Lock } from "../../lib/icons.jsx";
 import { pwdStrength } from "../../lib/password.js";
@@ -241,7 +241,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-            <Pill v={player.acwr} /><Tag c={acwrZ(player.acwr).c}>{acwrZ(player.acwr).l}</Tag>
+            <Pill v={player.acwr} /><Tag c={acwrZ(player.acwr).c}>{zoneLabel(t, acwrZ(player.acwr))}</Tag>
             {player._live && <Tag c={C.green}>{t("shared.fiche.todayCheckin")}</Tag>}
           </div>
         </div>

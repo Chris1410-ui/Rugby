@@ -1566,7 +1566,8 @@
     "activities": {
       "salle": "Zaal",
       "course": "Lopen",
-      "natation": "Zwemmen"
+      "natation": "Zwemmen",
+      "meditation": "Meditatie"
     },
     "evening": {
       "quality": "Kwaliteit",
@@ -1603,6 +1604,48 @@
       "wd5": "Vr",
       "wd6": "Za",
       "wd0": "Zo"
+    },
+    "div": {
+      "elite": "Elite",
+      "diamant": "Diamant",
+      "or": "Goud",
+      "argent": "Zilver",
+      "bronze": "Brons"
+    },
+    "acwr": {
+      "under": "Onderbelasting",
+      "target": "Doel",
+      "watch": "Waakzaamheid",
+      "over": "Overbelasting"
     }
+  },
+  "points": {
+    "session": {
+      "done": "Sessie voltooid",
+      "punctual": "Stiptheid",
+      "filled": "Waarden ingevuld",
+      "missed": "Sessie gemist",
+      "missedRun": "Opeenvolgend gemist",
+      "postponed": "Sessie uitgesteld",
+      "overdue": "Sessie niet voltooid"
+    },
+    "streak5": "Reeks van 5 sessies 🔥",
+    "streak3": "Reeks van 3 sessies",
+    "acwrTarget": "ACWR op doel",
+    "acwrOver": "ACWR overbelasting",
+    "acwrUnder": "ACWR onderbelasting",
+    "activity": "Activiteit: {{act}}",
+    "top14": "Top 14: {{test}}",
+    "task": "Taak: {{title}}",
+    "challenge": "Uitdaging: {{title}}",
+    "reactivity": "⚡ Top 2 reactiviteit",
+    "bilanMorning": "Ochtendcheck voltooid",
+    "bilanEvening": "Avondcheck voltooid"
+  },
+  "badges": {
+    "assidu": "Volhardend",
+    "sansFaute": "Foutloos",
+    "enForme": "In vorm",
+    "rigoureux": "Nauwgezet"
   }
 }
