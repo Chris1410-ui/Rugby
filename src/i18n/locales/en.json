@@ -1214,6 +1214,42 @@
       "confirmPrompt2": " below.",
       "eraseFinal": "Delete permanently",
       "eraseFail": "Deletion failed."
+    },
+    "privacyPolicy": {
+      "title": "Privacy policy",
+      "version": "Version {{version}} · {{updated}} · EU hosting (GDPR)",
+      "controller": "Data controller: {{name}}{{addr}} — {{contact}}",
+      "close": "Close"
+    },
+    "media": {
+      "delConfirm": "Delete this video?",
+      "title": "Media library · {{count}}",
+      "add": "Add",
+      "filterAll": "All",
+      "loading": "Loading…",
+      "emptyBase": "No video{{scope}}.",
+      "emptyScope": " for this theme",
+      "emptyHint": " Add a YouTube / Instagram link by theme.",
+      "editTitle": "Edit",
+      "deleteTitle": "Delete",
+      "noEmbed": "Embedded playback unavailable for this link.",
+      "openNewTab": "Open in a new tab",
+      "errUrl": "Paste a valid URL (http/https).",
+      "errTitle": "Give the video a title.",
+      "errTheme": "Choose or enter a theme.",
+      "errSave": "Failed: {{err}}",
+      "modalEdit": "Edit the video",
+      "modalAdd": "Add a video",
+      "urlPlaceholder": "URL (YouTube, Instagram, other…)",
+      "platformDetected": "Detected platform: ",
+      "thumbGenericEdit": " — generic thumbnail.",
+      "thumbGenericAdd": " — generic thumbnail (add an image below if you want)",
+      "titrePlaceholder": "Title",
+      "themePlaceholder": "Theme (e.g. Technique, Prevention…)",
+      "thumbPlaceholder": "Thumbnail URL (optional)",
+      "saveEdit": "Save changes",
+      "saveAdd": "Add to the library",
+      "linkLabel": "Link"
     }
   }
 }

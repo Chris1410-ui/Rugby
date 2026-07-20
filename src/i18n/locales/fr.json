@@ -1214,6 +1214,42 @@
       "confirmPrompt2": " ci-dessous.",
       "eraseFinal": "Supprimer définitivement",
       "eraseFail": "Échec de la suppression."
+    },
+    "privacyPolicy": {
+      "title": "Politique de confidentialité",
+      "version": "Version {{version}} · {{updated}} · hébergement UE (RGPD)",
+      "controller": "Responsable de traitement : {{name}}{{addr}} — {{contact}}",
+      "close": "Fermer"
+    },
+    "media": {
+      "delConfirm": "Supprimer cette vidéo ?",
+      "title": "Médiathèque · {{count}}",
+      "add": "Ajouter",
+      "filterAll": "Tout",
+      "loading": "Chargement…",
+      "emptyBase": "Aucune vidéo{{scope}}.",
+      "emptyScope": " pour ce thème",
+      "emptyHint": " Ajoute un lien YouTube / Instagram par thème.",
+      "editTitle": "Modifier",
+      "deleteTitle": "Supprimer",
+      "noEmbed": "Lecture intégrée indisponible pour ce lien.",
+      "openNewTab": "Ouvrir dans un nouvel onglet",
+      "errUrl": "Colle une URL valide (http/https).",
+      "errTitle": "Donne un titre à la vidéo.",
+      "errTheme": "Choisis ou saisis un thème.",
+      "errSave": "Échec : {{err}}",
+      "modalEdit": "Modifier la vidéo",
+      "modalAdd": "Ajouter une vidéo",
+      "urlPlaceholder": "URL (YouTube, Instagram, autre…)",
+      "platformDetected": "Plateforme détectée : ",
+      "thumbGenericEdit": " — vignette générique.",
+      "thumbGenericAdd": " — vignette générique (ajoute une image ci-dessous si tu veux)",
+      "titrePlaceholder": "Titre",
+      "themePlaceholder": "Thème (ex. Technique, Prévention…)",
+      "thumbPlaceholder": "URL vignette (optionnel)",
+      "saveEdit": "Enregistrer les modifications",
+      "saveAdd": "Ajouter à la médiathèque",
+      "linkLabel": "Lien"
     }
   }
 }

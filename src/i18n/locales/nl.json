@@ -1214,6 +1214,42 @@
       "confirmPrompt2": " hieronder.",
       "eraseFinal": "Definitief verwijderen",
       "eraseFail": "Verwijderen mislukt."
+    },
+    "privacyPolicy": {
+      "title": "Privacybeleid",
+      "version": "Versie {{version}} · {{updated}} · EU-hosting (AVG)",
+      "controller": "Verwerkingsverantwoordelijke: {{name}}{{addr}} — {{contact}}",
+      "close": "Sluiten"
+    },
+    "media": {
+      "delConfirm": "Deze video verwijderen?",
+      "title": "Mediatheek · {{count}}",
+      "add": "Toevoegen",
+      "filterAll": "Alles",
+      "loading": "Laden…",
+      "emptyBase": "Geen video{{scope}}.",
+      "emptyScope": " voor dit thema",
+      "emptyHint": " Voeg een YouTube- / Instagram-link toe per thema.",
+      "editTitle": "Bewerken",
+      "deleteTitle": "Verwijderen",
+      "noEmbed": "Ingesloten weergave niet beschikbaar voor deze link.",
+      "openNewTab": "In een nieuw tabblad openen",
+      "errUrl": "Plak een geldige URL (http/https).",
+      "errTitle": "Geef de video een titel.",
+      "errTheme": "Kies of voer een thema in.",
+      "errSave": "Mislukt: {{err}}",
+      "modalEdit": "Video bewerken",
+      "modalAdd": "Video toevoegen",
+      "urlPlaceholder": "URL (YouTube, Instagram, andere…)",
+      "platformDetected": "Gedetecteerd platform: ",
+      "thumbGenericEdit": " — generieke thumbnail.",
+      "thumbGenericAdd": " — generieke thumbnail (voeg hieronder een afbeelding toe indien gewenst)",
+      "titrePlaceholder": "Titel",
+      "themePlaceholder": "Thema (bijv. Techniek, Preventie…)",
+      "thumbPlaceholder": "Thumbnail-URL (optioneel)",
+      "saveEdit": "Wijzigingen opslaan",
+      "saveAdd": "Toevoegen aan de mediatheek",
+      "linkLabel": "Link"
     }
   }
 }
