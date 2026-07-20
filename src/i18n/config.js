@@ -31,9 +31,16 @@ function detectInitial() {
   return "fr";
 }
 
+// Reflète la langue courante sur <html lang> (lecteurs d'écran + invite
+// « traduire cette page » du navigateur). Sans effet côté Node (tests).
+function applyHtmlLang(lng) {
+  try { if (typeof document !== "undefined") document.documentElement.lang = lng; } catch { /* noop */ }
+}
+
 const initial = detectInitial();
 setLocaleTag(initial);
-i18n.on("languageChanged", (lng) => setLocaleTag(lng));
+applyHtmlLang(initial);
+i18n.on("languageChanged", (lng) => { setLocaleTag(lng); applyHtmlLang(lng); });
 
 i18n.use(initReactI18next).init({
   resources: {
