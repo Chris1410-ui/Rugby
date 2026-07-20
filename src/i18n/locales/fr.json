@@ -725,7 +725,8 @@
       "summaryLine1": "{{created}} joueur(s) créé(s) · {{updated}} mis à jour",
       "summaryTests": "{{count}} série(s) de tests enregistrée(s) — campagne « Import du {{date}} »",
       "summaryNoTests": "Aucun résultat de test importé",
-      "close": "Fermer"
+      "close": "Fermer",
+      "sheetName": "Joueurs"
     },
     "tasks": {
       "modeGroup": "Ligne · {{group}}",
@@ -1721,6 +1722,26 @@
       "status": "Statut",
       "filled": "Rempli",
       "pending": "En attente"
+    }
+  },
+  "import": {
+    "col": {
+      "name": "Totem",
+      "club": "Club",
+      "mas": "MAS (m/s)",
+      "bronco": "Bronco",
+      "yoyo": "Yo-Yo IR (m)",
+      "squat_5rm": "Squat 5RM",
+      "bench_5rm": "Bench 5RM (kg)",
+      "deadlift": "Deadlift (kg)",
+      "hang_clean_2rm": "Hang Clean 2RM (kg)",
+      "cmj_overall": "CMJ (cm)",
+      "initials": "Initiales",
+      "num": "Numéro",
+      "pos": "Poste",
+      "grp": "Ligne",
+      "tractions": "Tractions (+kg)",
+      "bodyweight": "Poids (kg)"
     }
   }
 }

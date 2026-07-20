@@ -89,6 +89,41 @@ describe("buildPreview — plan create/update sans écriture", () => {
   });
 });
 
+describe("i18n — en-têtes & valeurs traduits (EN/NL) reconnus", () => {
+  it("mapHeaders reconnaît les en-têtes EN du modèle", () => {
+    const m = mapHeaders(["Totem", "Number", "Position", "Line", "Weight (kg)", "Pull-ups (+kg)"]);
+    expect(m.num).toBe("Number");
+    expect(m.pos).toBe("Position");
+    expect(m.grp).toBe("Line");
+    expect(m.bodyweight).toBe("Weight (kg)");
+    expect(m.tractions).toBe("Pull-ups (+kg)");
+  });
+  it("mapHeaders reconnaît les en-têtes NL du modèle", () => {
+    const m = mapHeaders(["Nummer", "Positie", "Linie", "Gewicht (kg)"]);
+    expect(m.num).toBe("Nummer");
+    expect(m.pos).toBe("Positie");
+    expect(m.grp).toBe("Linie");
+    expect(m.bodyweight).toBe("Gewicht (kg)");
+  });
+  it("matchPoste résout les noms EN/NL → nom canonique FR (valeur stockée)", () => {
+    expect(matchPoste("Number 8").pos).toBe("Troisième ligne centre (n°8)");
+    expect(matchPoste("Fullback").pos).toBe("Arrière");
+    expect(matchPoste("Vleugel").pos).toBe("Ailier");   // NL
+    expect(matchPoste("Hoeker").pos).toBe("Talonneur"); // NL
+  });
+  it("matchGrp résout les lignes EN/NL", () => {
+    expect(matchGrp("Forwards")).toBe("avants");
+    expect(matchGrp("Backs")).toBe("arrieres");
+    expect(matchGrp("Voorwaartsen")).toBe("avants");     // NL
+    expect(matchGrp("Achterspelers")).toBe("arrieres");  // NL
+  });
+  it("buildPreview : modèle EN rempli → poste canonique FR stocké", () => {
+    const { rows, counts } = buildPreview([{ Totem: "NouvelEN", Position: "Fly-half", Line: "Backs" }], []);
+    expect(counts.create).toBe(1);
+    expect(rows[0]).toMatchObject({ action: "create", pos: "Demi d'ouverture", grp: "arrieres" });
+  });
+});
+
 describe("import — POSTE CONSERVÉ (joueur existant jamais écrasé)", () => {
   const roster = [{ id: "p1", name: "Lion", num: 5, pos: "Pilier gauche", grp: "avants" }];
 

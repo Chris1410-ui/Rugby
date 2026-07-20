@@ -4,13 +4,9 @@ import { C, sc } from "../../lib/tokens.js";
 import { CloseX, useModalClose, Tag } from "../../lib/ui.jsx";
 import { Download, Upload, CheckCircle } from "../../lib/icons.jsx";
 import { downloadCSV } from "../../lib/csv.js";
-import { IMPORT_COLUMNS, buildPreview } from "../../lib/importPlayers.js";
+import { buildPreview, importTemplate } from "../../lib/importPlayers.js";
 import { commitImport } from "../../data/importer.js";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
-
-const HEADERS = IMPORT_COLUMNS.map((c) => c.header);
-// Exemple pédagogique (une ligne) pour le modèle téléchargeable.
-const EXAMPLE = ["Minotaure", "8", "Troisième ligne centre", "Avants", "RC Namur", "4,72", "5'15", "1840", "3x150", "110", "180", "95", "18", "42", "98"];
 
 const ACTION_C = { create: C.green, update: C.blue, error: C.coral };
 const ACTION_LK = { create: "staff.import.actionCreate", update: "staff.import.actionUpdate", error: "staff.import.actionError" };
@@ -29,11 +25,12 @@ export default function ImportPlayers({ teamId, players = [], onClose }) {
   const [summary, setSummary] = useState(null);
 
   const downloadTemplate = async (kind) => {
-    if (kind === "csv") { downloadCSV("modele_import_joueurs.csv", [HEADERS, EXAMPLE]); return; }
+    const rows = importTemplate(t); // [en-têtes traduits, ligne exemple]
+    if (kind === "csv") { downloadCSV("modele_import_joueurs.csv", rows); return; }
     const XLSX = await import("xlsx");
-    const ws = XLSX.utils.aoa_to_sheet([HEADERS, EXAMPLE]);
+    const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Joueurs");
+    XLSX.utils.book_append_sheet(wb, ws, t("staff.import.sheetName"));
     XLSX.writeFile(wb, "modele_import_joueurs.xlsx");
   };
 
