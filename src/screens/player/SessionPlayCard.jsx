@@ -192,8 +192,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   return (
                     <div key={i} style={{ display: "grid", gridTemplateColumns: "26px 1fr 1fr 34px", gap: 6, alignItems: "center", marginBottom: 5 }}>
                       <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
-                      <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph ? `${ph.w || "–"}` : "kg"} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />
-                      <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph ? `${ph.reps || "–"} reps` : "reps"} inputMode="numeric" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />
+                      <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph ? `${ph.w || "–"}` : "kg"} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
+                      <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph ? `${ph.reps || "–"} reps` : "reps"} inputMode="numeric" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité reps */}
                       <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                         <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
                       </button>

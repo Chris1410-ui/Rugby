@@ -142,7 +142,7 @@ function Spinner({ spinning, angle, ready }) {
       width="18" height="18" viewBox="0 0 24 24" fill="none"
       style={spinning ? { animation: "ptrspin 0.7s linear infinite" } : { transform: `rotate(${angle}deg)`, transition: "transform .05s linear" }}
     >
-      <style>{"@keyframes ptrspin{to{transform:rotate(360deg)}}"}</style>
+      <style>{/* i18n-ok: CSS keyframes */}{"@keyframes ptrspin{to{transform:rotate(360deg)}}"}</style>
       <path d="M21 12a9 9 0 1 1-6.2-8.56" stroke={color} strokeWidth="2.4" strokeLinecap="round" />
     </svg>
   );
