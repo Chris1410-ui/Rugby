@@ -31,7 +31,7 @@ export default function QuestionnaireResponses({ questionnaire, players, assignm
 
   const exportCSV = () => {
     const csvRows = players.filter((p) => assignments[p.id]).map((p) => ({ name: p.name, statut: assignments[p.id].statut, reponses: assignments[p.id].reponses }));
-    downloadCSV(`reponses_${questionnaire.nom.replace(/[^a-z0-9]+/gi, "_")}.csv`, questionnaireCSV(questionnaire, csvRows));
+    downloadCSV(`reponses_${questionnaire.nom.replace(/[^a-z0-9]+/gi, "_")}.csv`, questionnaireCSV(questionnaire, csvRows, t));
   };
 
   const th = { fontSize: 9.5, fontWeight: 800, color: "rgba(255,255,255,0.6)", padding: "6px 8px", textAlign: "left", whiteSpace: "nowrap", borderBottom: `1px solid ${C.border}` };
@@ -80,7 +80,7 @@ export default function QuestionnaireResponses({ questionnaire, players, assignm
                   </td>
                   {questionnaire.questions.map((q) => (
                     <td key={q.id} style={{ padding: "6px 8px", fontSize: 11.5, color: "rgba(255,255,255,0.85)", borderBottom: `1px solid ${C.border2}`, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {a.statut === "rempli" ? (formatAnswer(q, a.reponses[q.id]) || "—") : "—"}
+                      {a.statut === "rempli" ? (formatAnswer(q, a.reponses[q.id], t) || "—") : "—"}
                     </td>
                   ))}
                 </tr>
@@ -119,7 +119,7 @@ export function PlayerAnswers({ questionnaire, player, assignment, onClose }) {
           questionnaire.questions.map((q) => (
             <div key={q.id} style={{ padding: "9px 0", borderBottom: `1px solid ${C.border2}` }}>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 3 }}>{q.label}</div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: "#fff", whiteSpace: "pre-wrap" }}>{formatAnswer(q, a.reponses[q.id]) || "—"}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: "#fff", whiteSpace: "pre-wrap" }}>{formatAnswer(q, a.reponses[q.id], t) || "—"}</div>
             </div>
           ))
         )}

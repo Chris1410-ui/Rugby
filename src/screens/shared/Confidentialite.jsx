@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { Section } from "../../lib/ui.jsx";
@@ -94,7 +95,7 @@ export default function Confidentialite({ player, self = false, onErased }) {
             <div style={line}><span style={{ color: "rgba(255,255,255,0.6)" }}>{t("shared.privacy.guardianEmail")}</span>
               <span style={{ fontWeight: 700 }}>{consent.guardian_email || "—"}</span></div>
             <div style={{ ...line, borderBottom: "none" }}><span style={{ color: "rgba(255,255,255,0.6)" }}>{t("shared.privacy.policyAccepted")}</span>
-              <span style={{ fontWeight: 700 }}>v{consent.policy_version}{consent.consented_at ? ` · ${new Date(consent.consented_at).toLocaleDateString("fr-BE")}` : ""}</span></div>
+              <span style={{ fontWeight: 700 }}>v{consent.policy_version}{consent.consented_at ? ` · ${new Date(consent.consented_at).toLocaleDateString(localeTag())}` : ""}</span></div>
           </div>
         ) : (
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}>

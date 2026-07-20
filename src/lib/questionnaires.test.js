@@ -1,5 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+import i18n from "../i18n/config.js";
 import { formatAnswer, questionnaireCSV, QUESTION_BANK, bankById } from "./questionnaires.js";
+
+const t = i18n.t.bind(i18n);
+beforeAll(async () => { await i18n.changeLanguage("fr"); });
 
 describe("formatAnswer", () => {
   it("échelle → n/10", () => expect(formatAnswer({ type: "scale" }, 7)).toBe("7/10"));
@@ -18,7 +22,7 @@ describe("formatAnswer", () => {
     const out = formatAnswer(q, val);
     expect(out).toContain("Type: Entorse");
     expect(out).toContain("Zone: Cheville");
-    expect(out).toContain("Opéré ?: non");
+    expect(out).toContain("Opéré ?: Non");
     expect(out).not.toContain("Séquelles"); // vide → omis
   });
 });
@@ -30,7 +34,7 @@ describe("questionnaireCSV", () => {
       { name: "Aigle", statut: "rempli", reponses: { moral: 8, note: 'dit "ok"' } },
       { name: "Loup", statut: "a_remplir", reponses: {} },
     ];
-    const csv = questionnaireCSV(q, rows);
+    const csv = questionnaireCSV(q, rows, t);
     const lines = csv.split("\r\n");
     expect(lines[0]).toBe('"Joueur","Statut","Moral","Note"');
     expect(lines[1]).toContain('"Aigle","Rempli","8/10"');

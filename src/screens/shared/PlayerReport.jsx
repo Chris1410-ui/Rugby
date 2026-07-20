@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel, posDisplay } from "../../lib/positions.js";
@@ -34,7 +35,7 @@ const WB = [
 ];
 const fmtDateTime = (iso) => {
   if (!iso) return "—";
-  try { return new Date(iso).toLocaleString("fr-BE", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+  try { return new Date(iso).toLocaleString(localeTag(), { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
   catch { return iso; }
 };
 

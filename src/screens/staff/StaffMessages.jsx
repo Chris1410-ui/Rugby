@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
@@ -35,8 +36,8 @@ export default function StaffMessages({ players }) {
     const d = new Date(ts), now = new Date();
     const sameDay = d.toDateString() === now.toDateString();
     return sameDay
-      ? d.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })
-      : d.toLocaleDateString("fr-BE", { day: "numeric", month: "short" });
+      ? d.toLocaleTimeString(localeTag(), { hour: "2-digit", minute: "2-digit" })
+      : d.toLocaleDateString(localeTag(), { day: "numeric", month: "short" });
   };
 
   // Fil ouvert

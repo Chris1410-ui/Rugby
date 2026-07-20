@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
@@ -206,7 +207,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
           </button>
         )}
         {players.length > 0 && (
-          <button onClick={() => downloadCSV(`effectif_${todayISO()}.csv`, rosterCSV(players))} title={t("staff.app.exportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
+          <button onClick={() => downloadCSV(`effectif_${todayISO()}.csv`, rosterCSV(players, t))} title={t("staff.app.exportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 9, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}>
             <Download size={16} />
           </button>
         )}
@@ -359,7 +360,7 @@ function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
   const byId = (pid) => players.find((p) => p.id === pid);
   return (
     <section>
-      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{t("staff.app.today", { date: new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" }) })}</div>
+      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{t("staff.app.today", { date: new Date().toLocaleDateString(localeTag(), { weekday: "long", day: "numeric", month: "long" }) })}</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
         <KPI label={t("staff.app.kpiReadiness")} value={avg("readiness")} color={avg("readiness") > 70 ? C.green : avg("readiness") > 50 ? C.amb : C.coral} />
         <KPI label={t("staff.app.kpiWellness")} value={`${avg("wellness")}/50`} color={C.blue} />

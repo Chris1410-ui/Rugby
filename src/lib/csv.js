@@ -1,4 +1,6 @@
 /* Export CSV — porté du prototype (BOM + séparateur ';' pour Excel FR). */
+import { acwrZ, zoneLabel } from "./metrics.js";
+import { grpLabel, posDisplay } from "./positions.js";
 export function downloadCSV(filename, rows) {
   const csv = rows
     .map((r) =>
@@ -21,13 +23,15 @@ export function downloadCSV(filename, rows) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-// Export de l'effectif enrichi (charge / risque / bien-être)
-export function rosterCSV(players) {
-  const header = ["N°", "Nom", "Poste", "Ligne", "ACWR", "Zone", "Charge7j (UA)", "Monotonie", "Strain", "Bien-être/50", "Readiness/100", "Risque/100", "Bilan du jour"];
-  const zone = (v) => (v < 0.8 ? "sous-charge" : v <= 1.3 ? "cible" : v <= 1.5 ? "vigilance" : "surcharge");
+// Export de l'effectif enrichi (charge / risque / bien-être). `t` = i18next :
+// en-têtes, zone ACWR, poste/ligne et oui/non sont traduits dans la langue de
+// l'utilisateur (export lisible ; ce fichier n'est pas réimporté par l'app).
+export function rosterCSV(players, t) {
+  const H = (k) => t(`csv.roster.${k}`);
+  const header = [H("num"), H("name"), H("pos"), H("line"), H("acwr"), H("zone"), H("load7d"), H("monotony"), H("strain"), H("wellness"), H("readiness"), H("risk"), H("todayCheckin")];
   const rows = players.map((p) => [
-    p.num ?? "", p.name, p.pos ?? "", p.grp ?? "", p.acwr, zone(p.acwr), p.charge7j, p.monotonie, p.strain,
-    p.wellness, p.readiness, p.risque, p._live ? "oui" : "non",
+    p.num ?? "", p.name, posDisplay(t, p.pos), grpLabel(p.grp), p.acwr, zoneLabel(t, acwrZ(p.acwr)),
+    p.charge7j, p.monotonie, p.strain, p.wellness, p.readiness, p.risque, p._live ? t("csv.yes") : t("csv.no"),
   ]);
   return [header, ...rows];
 }

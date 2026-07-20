@@ -52,10 +52,14 @@ export const bankById = Object.fromEntries(QUESTION_BANK.map((q) => [q.id, q]));
 export const newQid = () => (globalThis.crypto?.randomUUID?.() || `q${Math.random().toString(36).slice(2, 10)}`);
 
 // Valeur → texte lisible (affichage staff + CSV). Gère tous les types.
-export function formatAnswer(q, val) {
+// `t` (i18next, optionnel) traduit les valeurs oui/non ; sans lui, repli FR.
+// Les libellés de questions/champs (q.label / f.label) restent des données.
+export function formatAnswer(q, val, t) {
+  const yes = t ? t("common.yes") : "Oui";
+  const no = t ? t("common.no") : "Non";
   if (val == null || val === "") return "";
   switch (q.type) {
-    case "yesno": return val === true || val === "oui" ? "Oui" : val === false || val === "non" ? "Non" : String(val);
+    case "yesno": return val === true || val === "oui" ? yes : val === false || val === "non" ? no : String(val);
     case "scale": return `${val}/10`;
     case "number": return `${val}${q.unit ? " " + q.unit : ""}`;
     case "repeat": {
@@ -64,7 +68,7 @@ export function formatAnswer(q, val) {
       return rows.map((r) => (q.fields || []).map((f) => {
         const v = r?.[f.key];
         if (v == null || v === "") return null;
-        return `${f.label}: ${f.type === "yesno" ? (v === true || v === "oui" ? "oui" : "non") : v}`;
+        return `${f.label}: ${f.type === "yesno" ? (v === true || v === "oui" ? yes : no) : v}`;
       }).filter(Boolean).join(", ")).join(" | ");
     }
     default: return String(val);
@@ -74,13 +78,15 @@ export function formatAnswer(q, val) {
 const csvCell = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
 
 // CSV : lignes = joueurs, colonnes = questions (+ statut). `rows` = [{ name, statut, reponses }].
-export function questionnaireCSV(questionnaire, rows) {
+// `t` = i18next : colonnes fixes et statut traduits (les libellés de questions
+// restent des données saisies).
+export function questionnaireCSV(questionnaire, rows, t) {
   const qs = questionnaire.questions || [];
-  const header = ["Joueur", "Statut", ...qs.map((q) => q.label)];
+  const header = [t("csv.questionnaire.player"), t("csv.questionnaire.status"), ...qs.map((q) => q.label)];
   const lines = [header.map(csvCell).join(",")];
   (rows || []).forEach((r) => {
-    const cells = [r.name, r.statut === "rempli" ? "Rempli" : "En attente",
-      ...qs.map((q) => formatAnswer(q, (r.reponses || {})[q.id]))];
+    const cells = [r.name, r.statut === "rempli" ? t("csv.questionnaire.filled") : t("csv.questionnaire.pending"),
+      ...qs.map((q) => formatAnswer(q, (r.reponses || {})[q.id], t))];
     lines.push(cells.map(csvCell).join(","));
   });
   return lines.join("\r\n");
