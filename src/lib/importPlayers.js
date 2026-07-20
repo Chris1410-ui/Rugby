@@ -6,6 +6,11 @@
 import { RUGBY_POS } from "./positions.js";
 import { freeTotem } from "./totems.js";
 import { normalizeInitials } from "./identity.js";
+import fr from "../i18n/locales/fr.json";
+import en from "../i18n/locales/en.json";
+import nl from "../i18n/locales/nl.json";
+
+const CATALOGS = [fr, en, nl];
 
 /* Colonnes du modèle (ordre = modèle téléchargeable + aperçu).
    `metric: true` → va dans test_results ; sinon → identité (players). */
@@ -52,6 +57,17 @@ const ALIASES = {
   cmj_overall: ["cmj", "cmjoverall", "detente"],
   bodyweight: ["poids", "poidsdecorps", "bodyweight", "masse", "pdc", "bw"],
 };
+
+// En-têtes TRADUITS (fr/en/nl) ajoutés comme variantes reconnues → un modèle
+// téléchargé dans n'importe quelle langue se réimporte correctement (aucune
+// liste à maintenir à la main : la source est le catalogue import.col.*).
+CATALOGS.forEach((cat) => {
+  const cols = cat?.import?.col || {};
+  Object.entries(cols).forEach(([key, label]) => {
+    const nn = norm(label);
+    if (ALIASES[key] && nn && !ALIASES[key].includes(nn)) ALIASES[key].push(nn);
+  });
+});
 
 // Toutes les paires (alias, key), triées par alias décroissant (pour startsWith).
 const ALIAS_PAIRS = Object.entries(ALIASES)
@@ -101,6 +117,25 @@ const POS_SYNONYMS = {
   arriere: 10, fullback: 10, quinze: 10,
 };
 
+// Ajoute les noms de postes TRADUITS (data.pos.*, fr/en/nl) comme synonymes →
+// un poste écrit dans la langue du modèle est résolu vers son nom canonique FR.
+const POS_IDX_BY_KEY = Object.fromEntries(RUGBY_POS.map((p, i) => [p.key, i]));
+CATALOGS.forEach((cat) => {
+  const pos = cat?.data?.pos || {};
+  Object.entries(pos).forEach(([key, label]) => {
+    const nn = norm(label);
+    const idx = POS_IDX_BY_KEY[key];
+    if (nn && idx != null && POS_SYNONYMS[nn] == null) POS_SYNONYMS[nn] = idx;
+  });
+});
+
+// Lignes traduites (data.lines.*, fr/en/nl) → 'avants' | 'arrieres', pour matchGrp.
+const GRP_BY_ALIAS = {};
+CATALOGS.forEach((cat) => {
+  const lines = cat?.data?.lines || {};
+  ["avants", "arrieres"].forEach((g) => { const nn = norm(lines[g]); if (nn) GRP_BY_ALIAS[nn] = g; });
+});
+
 /* Résout un poste écrit librement → { pos (nom exact), grp } ou null.
    Essaie : synonyme court, puis correspondance de sous-chaîne sur le nom. */
 export function matchPoste(str) {
@@ -115,9 +150,25 @@ export function matchPoste(str) {
 export function matchGrp(str) {
   const n = norm(str);
   if (!n) return null;
+  if (GRP_BY_ALIAS[n]) return GRP_BY_ALIAS[n]; // libellé traduit exact (fr/en/nl)
   if (n.startsWith("avant") || n === "fwd" || n.startsWith("pack")) return "avants";
   if (n.startsWith("arrier") || n.startsWith("back") || n.startsWith("trois")) return "arrieres";
   return null;
+}
+
+/* Modèle téléchargeable LOCALISÉ (t = i18next) : [en-têtes traduits, ligne
+   exemple]. La ligne exemple utilise les libellés traduits pour poste/ligne
+   (résolus à la relecture par matchPoste/matchGrp → nom canonique stocké). */
+export function importTemplate(t) {
+  const headers = IMPORT_COLUMNS.map((c) => t(`import.col.${c.key}`));
+  const ex = {
+    name: "Minotaure", initials: "M.", num: "8",
+    pos: t("data.pos.troisiemeLigneCentre"), grp: t("data.lines.avants"),
+    club: "RC Namur", mas: "4,72", bronco: "5'15", yoyo: "1840",
+    squat_5rm: "3x150", bench_5rm: "110", deadlift: "180",
+    hang_clean_2rm: "95", tractions: "18", cmj_overall: "42", bodyweight: "98",
+  };
+  return [headers, IMPORT_COLUMNS.map((c) => ex[c.key] ?? "")];
 }
 
 /* Construit le plan d'import (create/update) à partir des lignes brutes du

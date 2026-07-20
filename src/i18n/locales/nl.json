@@ -725,7 +725,8 @@
       "summaryLine1": "{{created}} speler(s) aangemaakt · {{updated}} bijgewerkt",
       "summaryTests": "{{count}} testreeks(en) opgeslagen — campagne “Import van {{date}}”",
       "summaryNoTests": "Geen testresultaat geïmporteerd",
-      "close": "Sluiten"
+      "close": "Sluiten",
+      "sheetName": "Spelers"
     },
     "tasks": {
       "modeGroup": "Linie · {{group}}",
@@ -1721,6 +1722,26 @@
       "status": "Status",
       "filled": "Ingevuld",
       "pending": "In afwachting"
+    }
+  },
+  "import": {
+    "col": {
+      "name": "Totem",
+      "club": "Club",
+      "mas": "MAS (m/s)",
+      "bronco": "Bronco",
+      "yoyo": "Yo-Yo IR (m)",
+      "squat_5rm": "Squat 5RM",
+      "bench_5rm": "Bench 5RM (kg)",
+      "deadlift": "Deadlift (kg)",
+      "hang_clean_2rm": "Hang Clean 2RM (kg)",
+      "cmj_overall": "CMJ (cm)",
+      "initials": "Initialen",
+      "num": "Nummer",
+      "pos": "Positie",
+      "grp": "Linie",
+      "tractions": "Optrekken (+kg)",
+      "bodyweight": "Gewicht (kg)"
     }
   }
 }
