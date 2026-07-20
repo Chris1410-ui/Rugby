@@ -1,5 +1,6 @@
 /* Constantes bibliothèque d'exercices + helpers programmes (portés du prototype). */
 import { C } from "./tokens.js";
+import i18n from "../i18n/config.js";
 
 export const EXCATS = ["Force", "Puissance", "Vitesse", "Prévention", "Conditionnement", "Mobilité"];
 export const EXCATC = {
@@ -11,11 +12,10 @@ export const EXCATC = {
   Mobilité: C.teal,
 };
 
-// Jours de la semaine ([valeur getDay(), label])
-export const WD = [
-  [1, "Lun"], [2, "Mar"], [3, "Mer"], [4, "Jeu"], [5, "Ven"], [6, "Sam"], [0, "Dim"],
-];
-export const wdLabel = (v) => (WD.find((w) => w[0] === v) || [])[1] || "";
+// Ordre des jours de la semaine (valeurs getDay(), lundi → dimanche). Le libellé
+// n'est plus stocké ici : il est traduit à l'affichage via wdLabel (data.weekday.*).
+export const WD_ORDER = [1, 2, 3, 4, 5, 6, 0];
+export const wdLabel = (v) => i18n.t(`data.weekday.wd${v}`);
 
 let _c = 0;
 export const newExo = () => ({

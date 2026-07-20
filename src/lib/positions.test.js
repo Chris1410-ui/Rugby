@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+import i18n from "../i18n/config.js";
 import { RUGBY_POS, POS_GROUPS, posLabel, grpLabel } from "./positions.js";
+
+// Les libellés de ligne passent désormais par i18n (data.lines.*). On fige la
+// langue sur FR pour des assertions déterministes (l'env de test expose parfois
+// navigator.language = en).
+beforeAll(async () => { await i18n.changeLanguage("fr"); });
 
 describe("positions", () => {
   it("chaque poste a un numéro, un nom et une ligne valide", () => {

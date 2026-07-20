@@ -17,6 +17,8 @@
     secondes ; Yo-Yo en m ; CMJ en cm.)
    ════════════════════════════════════════════════════════════════ */
 
+import i18n from "../i18n/config.js";
+
 // Seuils EXACTS (Bronco converti en secondes : 5:30=330, 5:20=320, 5:05=305,
 // 4:45=285, 4:50=290). hangclean = ×PdC ; mas = m/s.
 export const TOP14_BENCH = {
@@ -40,7 +42,7 @@ export function posToCat(pos) {
   if (/ailier|arriere|triangle/.test(p)) return "triangle";
   return null;
 }
-export const catLabel = (cat) => TOP14_BENCH[cat]?.label || "—";
+export const catLabel = (cat) => (TOP14_BENCH[cat] ? i18n.t(`data.top14cat.${cat}`) : "—");
 
 // Helpers de parsing (données saisies).
 const numOrNull = (v) => { if (v == null || v === "") return null; const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };

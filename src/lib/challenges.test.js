@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+import i18n from "../i18n/config.js";
 import { challengeBadges, topChallengeBadge, defiOfWeek, CHALLENGE_BANNERS, assignedLabel } from "./challenges.js";
+
+// assignedLabel compose grpLabel (data.lines.* via i18n) → on fige FR pour des
+// assertions déterministes (l'env de test peut exposer navigator.language = en).
+beforeAll(async () => { await i18n.changeLanguage("fr"); });
 
 describe("badges de défis (paliers 1/5/10/25)", () => {
   it("débloque les paliers selon le nombre de défis confirmés", () => {

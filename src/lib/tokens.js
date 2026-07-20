@@ -3,6 +3,8 @@
    Source: RugbyApp.jsx §palette + PROMPT.md §Palette & design system.
    ════════════════════════════════════════════════════════════════ */
 
+import i18n from "../i18n/config.js";
+
 export const C = {
   navy: "#16142E",
   panel: "#1E1B3A",
@@ -57,12 +59,18 @@ export const TEAMS = {
   ],
 };
 
-// Rôles = vues
+// Rôles = vues. Les libellés `l`/`s` sont des getters (data.roles.*) → traduits
+// dans la langue courante à chaque lecture, sans figer la valeur au chargement.
+const roleView = (id, e, c) => ({
+  id, e, c,
+  get l() { return i18n.t(`data.roles.${id}.l`); },
+  get s() { return i18n.t(`data.roles.${id}.s`); },
+});
 export const ROLES = [
-  { id: "preparateur", l: "Préparateur physique", s: "Staff complet · charge · séances", e: "⚡", c: C.coral },
-  { id: "joueur", l: "Joueur", s: "Mon espace · bilan · feedback", e: "🏉", c: C.green },
-  { id: "medical", l: "Médical", s: "Kiné / réathlé · disponibilité", e: "🩺", c: C.teal },
-  { id: "coach", l: "Coach (lecture seule)", s: "Vue complète du club · consultation", e: "📋", c: C.blue },
+  roleView("preparateur", "⚡", C.coral),
+  roleView("joueur", "🏉", C.green),
+  roleView("medical", "🩺", C.teal),
+  roleView("coach", "📋", C.blue),
 ];
 
 export const STAFF_ROLES = ["preparateur", "medical", "coach"];

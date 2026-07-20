@@ -220,8 +220,8 @@ export default function Bilan({ me, accent }) {
             return (
               <button key={a.key} onClick={() => toggleActivity(a.key)} style={{ flex: "1 1 90px", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "12px 8px", borderRadius: 12, cursor: "pointer", background: on ? `${C.green}22` : "rgba(255,255,255,0.05)", border: `1.5px solid ${on ? C.green : C.border}`, color: "#fff" }}>
                 <span style={{ fontSize: 24 }}>{a.emoji}</span>
-                <span style={{ fontSize: 12, fontWeight: 700 }}>{a.label}</span>
-                <span style={{ fontSize: 9, fontWeight: 700, color: on ? C.green : "rgba(255,255,255,0.5)" }}>{on ? "✓ +10 pts" : "déclarer"}</span>
+                <span style={{ fontSize: 12, fontWeight: 700 }}>{t("data.activities." + a.key)}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: on ? C.green : "rgba(255,255,255,0.5)" }}>{on ? t("player.bilan.activityOn") : t("player.bilan.activityDeclare")}</span>
               </button>
             );
           })}
@@ -242,7 +242,7 @@ export default function Bilan({ me, accent }) {
       <Section title={t("player.bilan.secEveningMarkers")}>
         {EVENING_MARKERS.map((m, i) => {
           const col = [C.blue, C.amb, C.viol, C.coral, C.green, C.teal][i % 6];
-          return <Slider key={m.k} label={m.l} value={s[m.k]} color={col} onChange={(v) => setSoir(m.k, v)} />;
+          return <Slider key={m.k} label={t("data.evening." + m.k)} value={s[m.k]} color={col} onChange={(v) => setSoir(m.k, v)} />;
         })}
       </Section>
 

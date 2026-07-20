@@ -548,7 +548,9 @@
       "remarksPlaceholder": "Pain, points of attention, note for the staff…",
       "blockDoneAt": "completed ✓ at {{at}}",
       "blockDone": "completed ✓",
-      "blockTodo": "to fill in"
+      "blockTodo": "to fill in",
+      "activityOn": "✓ +10 pts",
+      "activityDeclare": "declare"
     },
     "session": {
       "testHint": "Physical tests — the staff enters your results (profile + Top 14 comparison).",
@@ -1537,5 +1539,70 @@
     "viewAs": "👁 View as",
     "impersonateBanner": "👁 Owner view — you are viewing as {{name}} · {{role}}{{team}} · read-only",
     "backToOwner": "Back to owner"
+  },
+  "data": {
+    "lines": {
+      "avants": "Forwards",
+      "arrieres": "Backs"
+    },
+    "roles": {
+      "preparateur": {
+        "l": "S&C coach",
+        "s": "Full staff · load · sessions"
+      },
+      "joueur": {
+        "l": "Player",
+        "s": "My space · check-in · feedback"
+      },
+      "medical": {
+        "l": "Medical",
+        "s": "Physio / rehab · availability"
+      },
+      "coach": {
+        "l": "Coach (read-only)",
+        "s": "Full club view · consultation"
+      }
+    },
+    "activities": {
+      "salle": "Gym",
+      "course": "Running",
+      "natation": "Swimming"
+    },
+    "evening": {
+      "quality": "Quality",
+      "intensity": "Intensity",
+      "difficulty": "Difficulty",
+      "fatigue": "Perceived fatigue",
+      "moral": "Morale",
+      "motivation": "Enjoyment / Motivation"
+    },
+    "top14cat": {
+      "premiere": "Front row (1,2,3)",
+      "deuxieme": "2nd row (4,5)",
+      "troisieme": "Back row (6,7,8)",
+      "charniere": "Half-backs (9,10)",
+      "centres": "Centres (12,13)",
+      "triangle": "Back three (11,14,15)"
+    },
+    "top14test": {
+      "squat": "Squat 5RM",
+      "bench": "Bench 5RM",
+      "deadlift": "Deadlift",
+      "hangclean": "Hang Clean 2RM",
+      "tractions": "Pull-ups",
+      "mas": "MAS",
+      "bronco": "Bronco",
+      "yoyo": "Yo-Yo IR1",
+      "cmj": "CMJ"
+    },
+    "weekday": {
+      "wd1": "Mon",
+      "wd2": "Tue",
+      "wd3": "Wed",
+      "wd4": "Thu",
+      "wd5": "Fri",
+      "wd6": "Sat",
+      "wd0": "Sun"
+    }
   }
 }
