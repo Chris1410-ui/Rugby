@@ -4,6 +4,7 @@ import { buildReportModel } from "./compute.js";
 import { buildNarrative } from "./narrative.js";
 import { renderReportHtml } from "./template.js";
 import { thresholdFor, strengthTargetKg } from "./standards.js";
+import { canAccessReport } from "./access.js";
 
 // Fixture « Melvin » : demi de mêlée (charnière), points forts terrain, force en
 // construction, sommeil 6/10, antécédents blessures — comme la référence.
@@ -125,6 +126,35 @@ describe("narrative.buildNarrative", () => {
     expect(m.flags.lowSleep).toBe(false);
     // Toujours des tests manquants → au moins la priorité « indicateurs manquants ».
     expect(n.priorities.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("access.canAccessReport", () => {
+  const player = { playerTeamId: "clubA", playerOwnerUid: "u-self" };
+
+  it("owner : accès total, tous clubs (team_id null inclus)", () => {
+    expect(canAccessReport({ role: "owner", requesterTeamId: null, ...player, userId: "u-owner" })).toBe(true);
+    expect(canAccessReport({ role: "owner", requesterTeamId: null, playerTeamId: "clubZ", playerOwnerUid: "x", userId: "u-owner" })).toBe(true);
+  });
+
+  it("staff (preparateur/medical/coach) : joueur de SON club uniquement", () => {
+    for (const role of ["preparateur", "medical", "coach"]) {
+      expect(canAccessReport({ role, requesterTeamId: "clubA", ...player, userId: "u-staff" })).toBe(true);
+      expect(canAccessReport({ role, requesterTeamId: "clubB", ...player, userId: "u-staff" })).toBe(false); // autre club
+      expect(canAccessReport({ role, requesterTeamId: null, ...player, userId: "u-staff" })).toBe(false);    // sans club
+    }
+  });
+
+  it("joueur : lui-même uniquement", () => {
+    expect(canAccessReport({ role: "joueur", requesterTeamId: "clubA", playerTeamId: "clubA", playerOwnerUid: "u-self", userId: "u-self" })).toBe(true);
+    expect(canAccessReport({ role: "joueur", requesterTeamId: "clubA", playerTeamId: "clubA", playerOwnerUid: "u-self", userId: "u-other" })).toBe(false); // coéquipier
+  });
+
+  it("rôle inconnu / null : retombe sur la règle joueur (doit posséder la ligne)", () => {
+    expect(canAccessReport({ role: null, requesterTeamId: "clubA", ...player, userId: "u-self" })).toBe(true);
+    expect(canAccessReport({ role: "???", requesterTeamId: "clubA", ...player, userId: "u-other" })).toBe(false);
+    // garde-fou : owner_uid null ne doit jamais matcher un userId null.
+    expect(canAccessReport({ role: "joueur", requesterTeamId: null, playerTeamId: "clubA", playerOwnerUid: null, userId: null })).toBe(false);
   });
 });
 
