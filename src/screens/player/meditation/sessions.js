@@ -40,6 +40,11 @@ export const MED_SESSIONS = [
   // ── Relaxation profonde ──
   { id: "schultz", kind: "steps", group: "deep", accent: C.viol, steps: "schultz", durationMin: 6 },
   { id: "jacobson", kind: "jacobson", group: "deep", accent: C.viol, contractSec: 5, releaseSec: 15, durationMin: 5 },
+  // Jacobson MODIFIÉ (contraction globale) : 3 cycles inspir/expir, puis 4ᵉ
+  // inspiration + blocage/contraction de TOUS les muscles (10 s), puis
+  // relâchement total (15 s). Répétable. Vibration + audio d'ambiance optionnel.
+  { id: "jacobsonGlobal", kind: "contraction", group: "deep", accent: C.viol, audio: "jacobson-global",
+    breathCycles: 3, inhaleSec: 5, exhaleSec: 5, holdContractSec: 10, releaseSec: 15, reps: 3, durationMin: 3 },
   // ── Séances courtes ──
   { id: "prematch", kind: "steps", group: "short", accent: C.blue, steps: "prematch", durationMin: 2 },
   { id: "postmatch", kind: "steps", group: "short", accent: C.blue, steps: "postmatch", durationMin: 3 },
@@ -53,6 +58,22 @@ export const MED_GROUPS = [
   { key: "deep", emoji: "🧘" },
   { key: "short", emoji: "⏱️" },
 ];
+
+/* Phases d'UNE répétition de « contraction globale » (Jacobson modifié) :
+   breathCycles × (inspiration + expiration), puis 4ᵉ inspiration, puis
+   contraction (blocage) et enfin relâchement. `type` → texte i18n + comportement
+   du cercle/vibration dans ContractionCycle. */
+export function contractionPhases(s) {
+  const p = [];
+  for (let i = 0; i < s.breathCycles; i++) {
+    p.push({ type: "inhale", sec: s.inhaleSec });
+    p.push({ type: "exhale", sec: s.exhaleSec });
+  }
+  p.push({ type: "inhale4", sec: s.inhaleSec });
+  p.push({ type: "contract", sec: s.holdContractSec });
+  p.push({ type: "release", sec: s.releaseSec });
+  return p;
+}
 
 // Résout les étapes d'une séance « steps » : fusionne les textes i18n avec les
 // durées locales → [{ label, text, seconds }].
