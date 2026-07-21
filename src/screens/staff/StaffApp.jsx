@@ -21,7 +21,7 @@ import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -31,6 +31,7 @@ import Alertes from "./Alertes.jsx";
 import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
+import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
 import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
@@ -93,6 +94,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["defis", t("nav.defis"), Flame, bDefis],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
     ["exos", t("nav.exos"), BookOpen],
+    ["exercices", t("nav.exercices"), Grid],
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
     ["compare", t("nav.compare"), Activity],
@@ -122,6 +124,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
+        {tab === "exercices" && <ExerciseLibrary />}
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}

@@ -14,7 +14,7 @@ import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles, Grid } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Taches from "./Taches.jsx";
 import Questionnaires from "./Questionnaires.jsx";
@@ -29,6 +29,7 @@ import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Fiche from "../shared/Fiche.jsx";
 import Confidentialite from "../shared/Confidentialite.jsx";
+import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
 
 const ACCENT = C.green;
 
@@ -80,6 +81,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
     ["messages", t("nav.messages"), MessageSquare, unread],
     ["equipe", t("nav.equipe"), Users],
+    ["exercices", t("nav.exercices"), Grid],
     ["meditation", t("nav.meditation"), Sparkles],
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
@@ -101,6 +103,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
+          {tab === "exercices" && <ExerciseLibrary />}
           {tab === "meditation" && <Meditation me={me} accent={ACCENT} />}
           {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={false} accent={ACCENT} />}
           {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}
