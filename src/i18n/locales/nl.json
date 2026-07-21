@@ -1167,7 +1167,25 @@
     },
     "veille": {
       "byTheme": "MONITORING PER THEMA",
-      "biblioTitle": "BIBLIOGRAFIE · RUGBY"
+      "biblioTitle": "BIBLIOGRAFIE · RUGBY",
+      "themes": {
+        "charge": {
+          "title": "Belasting & ACWR",
+          "desc": "Kwantificering interne/externe belasting, acuut:chronisch-ratio, monotonie."
+        },
+        "matchDemands": {
+          "title": "Wedstrijdeisen (GPS)",
+          "desc": "Afstanden, hoge snelheid, versnellingen per positie en niveau."
+        },
+        "injury": {
+          "title": "Blessurepreventie",
+          "desc": "Nordic, hamstring-asymmetrieën, screening."
+        },
+        "testing": {
+          "title": "Testing & conditie",
+          "desc": "Fysieke profielen van jonge topsporters, testbatterij."
+        }
+      }
     },
     "top14": {
       "title": "TOP 14-VERGELIJKING",

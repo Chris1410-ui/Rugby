@@ -12,8 +12,8 @@ export default function Veille({ accent = C.coral }) {
       <Section title={t("shared.veille.byTheme")}>
         {VEILLE_THEMES.map((th, i) => (
           <div key={i} style={{ padding: "10px 0", borderBottom: `1px solid ${C.border2}` }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{th.t}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>{th.d}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{t(`shared.veille.themes.${th.key}.title`)}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>{t(`shared.veille.themes.${th.key}.desc`)}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {th.refs.map((rid) => {
                 const r = getRef(rid);
