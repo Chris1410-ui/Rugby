@@ -1570,6 +1570,12 @@
     }
   },
   "auth": {
+    "inviteLoggedIn": {
+      "title": "Invitation détectée",
+      "body": "Vous êtes déjà connecté ({{email}}). Pour accepter cette invitation, elle doit créer le compte du destinataire : déconnectez-vous puis rouvrez le lien (ou ouvrez-le dans une fenêtre de navigation privée).",
+      "logout": "Se déconnecter et accepter l'invitation",
+      "stay": "Rester connecté"
+    },
     "reset": {
       "strengthWeak": "Faible",
       "strengthMed": "Moyen",

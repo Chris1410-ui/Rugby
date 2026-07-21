@@ -1570,6 +1570,12 @@
     }
   },
   "auth": {
+    "inviteLoggedIn": {
+      "title": "Invitation detected",
+      "body": "You are already signed in ({{email}}). To accept this invitation it must create the recipient's account: sign out and reopen the link (or open it in a private browsing window).",
+      "logout": "Sign out and accept the invitation",
+      "stay": "Stay signed in"
+    },
     "reset": {
       "strengthWeak": "Weak",
       "strengthMed": "Medium",
