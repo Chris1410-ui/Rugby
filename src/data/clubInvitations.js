@@ -53,6 +53,24 @@ export async function createClubInvitation(clubId, { role, email, playerId = nul
   return token;
 }
 
+/* Envoie le lien d'invitation par email au destinataire (Edge Function
+   `send-invitation` → Resend). N'est appelée que si un email est renseigné ;
+   sinon on garde le lien à copier-coller. L'autorisation (staff/owner du club)
+   est revérifiée côté serveur via la RLS de club_invitations. Lève en cas
+   d'échec (service non configuré, email invalide, envoi refusé). */
+export async function sendInvitationEmail({ token, email, role }) {
+  const { data, error } = await supabase.functions.invoke("send-invitation", {
+    body: { token, email, role, link: inviteLink(token) },
+  });
+  if (error) {
+    // functions.invoke enrobe l'erreur HTTP ; on tente d'en extraire le message serveur.
+    let msg = error.message || "SEND_FAILED";
+    try { const ctx = await error.context?.json?.(); if (ctx?.error) msg = ctx.error; } catch { /* corps non-JSON */ }
+    throw new Error(msg);
+  }
+  return data;
+}
+
 export async function revokeClubInvitation(id) {
   const { error } = await supabase.from("club_invitations").delete().eq("id", id);
   if (error) throw error;
