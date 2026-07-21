@@ -4,7 +4,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/players/[id]/report.js": { "memory": 1024, "maxDuration": 60 }
+    "api/players/[id]/report.js": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
+    }
   },
   "rewrites": [
     { "source": "/players/:id/report.pdf", "destination": "/api/players/:id/report" }

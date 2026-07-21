@@ -13,9 +13,18 @@
    Génération : le HTML paramétré (lib/report/*) est rendu en PDF par Chromium
    headless (@sparticuz/chromium + puppeteer-core). */
 
-import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 import { createClient } from "@supabase/supabase-js";
+
+/* @sparticuz/chromium choisit son jeu de bibliothèques (Amazon Linux 2 vs 2023)
+   et pose LD_LIBRARY_PATH À SON CHARGEMENT, d'après AWS_EXECUTION_ENV /
+   AWS_LAMBDA_JS_RUNTIME. Sur Vercel, AUCUNE de ces variables n'est définie → le
+   paquet n'extrait aucune lib et ne pose pas LD_LIBRARY_PATH → le binaire démarre
+   mais « libnss3.so: cannot open shared object file ». Le runtime Vercel est
+   Amazon Linux 2023 : on force donc la variante AL2023 en déclarant le runtime
+   AVANT le chargement de chromium (import DYNAMIQUE dans le handler ; les imports
+   statiques ci-dessus ne lisent pas cette variable). */
+if (!process.env.AWS_LAMBDA_JS_RUNTIME) process.env.AWS_LAMBDA_JS_RUNTIME = "nodejs22.x";
 
 import { normalizeReportInput } from "../../../src/lib/report/input.js";
 import { buildReportModel } from "../../../src/lib/report/compute.js";
@@ -104,7 +113,10 @@ export default async function handler(req, res) {
     const model = buildReportModel(input);
     const html = renderReportHtml(model, buildNarrative(model));
 
-    // 6) HTML → PDF (Chromium headless).
+    // 6) HTML → PDF (Chromium headless). Import DYNAMIQUE : garantit que
+    //    AWS_LAMBDA_JS_RUNTIME est déjà positionné quand le module s'initialise
+    //    (extraction al2023 + LD_LIBRARY_PATH).
+    const chromium = (await import("@sparticuz/chromium")).default;
     const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1280, height: 720 },
