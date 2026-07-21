@@ -34,4 +34,9 @@ export default [
     files: ["**/*.test.{js,jsx}"],
     languageOptions: { globals: { ...globals.node } },
   },
+  {
+    // Fonctions serverless Vercel (api/**) : environnement Node.
+    files: ["api/**/*.js"],
+    languageOptions: { globals: { ...globals.node } },
+  },
 ];
