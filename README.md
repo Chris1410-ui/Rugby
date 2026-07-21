@@ -1,5 +1,7 @@
 # Rugby Player Performance Platform — Belgique U18
 
+[![CI](https://github.com/Chris1410-ui/Rugby/actions/workflows/ci.yml/badge.svg)](https://github.com/Chris1410-ui/Rugby/actions/workflows/ci.yml)
+
 Migration du prototype `localStorage` (mono-navigateur) vers une **vraie application
 multi-utilisateurs** avec backend **Supabase** (Postgres + Auth + RLS + Realtime).
 
