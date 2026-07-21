@@ -33,6 +33,8 @@ import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
 import StaffInvites from "../shared/StaffInvites.jsx";
+import MembershipRequests from "../shared/MembershipRequests.jsx";
+import { useMembershipRequests } from "../../data/membership.js";
 import { createClubInvitation, inviteLink } from "../../data/clubInvitations.js";
 import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
@@ -77,6 +79,9 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
   const bTaches = staffTaskToConfirm(byTask);
   const bDefis = staffTaskToConfirm(byChallenge);
   const bQuest = staffQuestionnaireTodo(byQuestionnaire);
+  // Demandes d'adhésion en attente (auto-inscription) → pastille de non-lu.
+  const { requests: pendingMembers } = useMembershipRequests(readOnly ? null : profile.team_id);
+  const bAdhesions = pendingMembers.length;
   const bAlertes = activeAlertsCount(players, sessions, logs, checkins, statuses, todayISO());
 
   // Vue joueur (lecture seule) : le staff ouvre l'expérience d'un joueur telle
@@ -107,6 +112,8 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["abonnements", t("nav.abonnements"), Bell],
     // Invitations staff : owner + staff écrivain uniquement (coach exclu).
     ...(!readOnly ? [["invites", t("nav.invites"), Shield]] : []),
+    // Demandes d'adhésion (auto-inscription joueur) : owner + staff écrivain.
+    ...(!readOnly ? [["adhesions", t("nav.adhesions"), Users, bAdhesions]] : []),
   ];
   return (
    <ReadOnlyContext.Provider value={readOnly}>
@@ -138,6 +145,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "veille" && <Veille accent={ACCENT} />}
         {tab === "abonnements" && <Abonnements teamId={profile.team_id} players={players} />}
         {tab === "invites" && !readOnly && <StaffInvites teamId={profile.team_id} />}
+        {tab === "adhesions" && !readOnly && <MembershipRequests teamId={profile.team_id} />}
        </PullToRefresh>
       </main>
       {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}

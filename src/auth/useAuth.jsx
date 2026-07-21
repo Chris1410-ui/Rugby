@@ -68,9 +68,23 @@ export function AuthProvider({ children }) {
           9000,
         );
         if (error) throw new Error(error.message);
+        // Statut d'adhésion (auto-inscription) : un joueur « pending »/« rejected »
+        // est authentifié mais bloqué sur un écran dédié (cf. AppShell). Lu sur sa
+        // propre ligne players (players_self_read). Défaut 'active' si absent/échec
+        // → n'enferme jamais un joueur existant sur une erreur transitoire.
+        let membership = "active";
+        if (data?.role === "joueur" && data.player_id) {
+          try {
+            const { data: pl } = await withTimeout(
+              supabase.from("players").select("membership_status").eq("id", data.player_id).maybeSingle(),
+              9000,
+            );
+            membership = pl?.membership_status ?? "active";
+          } catch { /* transitoire → 'active' par défaut */ }
+        }
         // Langue du compte prioritaire : appliquée dès le chargement du profil.
         applyProfileLocale(data?.locale);
-        setProfile(data ?? null);
+        setProfile(data ? { ...data, membership_status: membership } : null);
         setProfileLoaded(true);
         setProfileError(false);
         setProfileLoading(false);

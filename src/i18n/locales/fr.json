@@ -73,7 +73,8 @@
     "compare": "Comparaison",
     "abonnements": "Abonnements",
     "exercices": "Bibliothèque",
-    "invites": "Invitations"
+    "invites": "Invitations",
+    "adhesions": "Demandes d'adhésion"
   },
   "roles": {
     "preparateur": "Préparateur physique",
@@ -1569,7 +1570,54 @@
       "selected": "Sélectionné"
     }
   },
+  "membership": {
+    "pendingTitle": "Demande envoyée",
+    "pendingBody": "Votre demande d'adhésion a bien été transmise au staff du club. Vous accéderez à l'application dès qu'un responsable l'aura validée.",
+    "rejectedTitle": "Demande refusée",
+    "rejectedBody": "Votre demande d'adhésion n'a pas été acceptée par le staff du club. Rapprochez-vous du club pour en connaître la raison.",
+    "refresh": "Vérifier la validation",
+    "checking": "Vérification…",
+    "staff": {
+      "title": "Demandes d'adhésion",
+      "subtitle": "Partagez le code club aux joueurs et validez leurs demandes d'auto-inscription. Le staff, lui, ne rejoint que par invitation.",
+      "codeTitle": "CODE CLUB",
+      "codeHelp": "Communiquez ce code aux joueurs qui s'auto-inscrivent. Sans lui, impossible de demander l'adhésion à votre club. Régénérez-le si vous pensez qu'il a fuité.",
+      "copy": "Copier",
+      "copied": "Copié",
+      "regen": "Régénérer le code",
+      "regenConfirm": "Régénérer le code ? L'ancien ne fonctionnera plus — les joueurs devront utiliser le nouveau.",
+      "pendingTitle": "EN ATTENTE DE VALIDATION",
+      "empty": "Aucune demande en attente.",
+      "requestedOn": "Demande le {{date}}",
+      "approve": "Valider",
+      "reject": "Refuser",
+      "errDecide": "Décision impossible : {{err}}",
+      "errRegen": "Régénération impossible : {{err}}"
+    }
+  },
   "auth": {
+    "signup": {
+      "cta": "Créer un compte joueur",
+      "staffNote": "Réservé aux joueurs. Le staff (préparateur, médical, coach) rejoint uniquement sur invitation d'un responsable.",
+      "title": "Inscription joueur",
+      "subtitle": "Rejoignez votre club avec le code communiqué par le staff. Votre demande sera validée par un responsable.",
+      "clubLabel": "Club",
+      "clubPlaceholder": "Choisir un club…",
+      "codeLabel": "Code club",
+      "codePlaceholder": "Ex. ABCD2345",
+      "codeHint": "Code fourni par le staff de votre club.",
+      "totemLabel": "Totem (nom affiché)",
+      "totemPlaceholder": "Ex. Aigle",
+      "initialsLabel": "Initiales",
+      "submit": "Envoyer ma demande",
+      "errClub": "Choisissez votre club.",
+      "errCode": "Saisissez le code club.",
+      "errTotem": "Choisissez un totem.",
+      "errBadCode": "Code club incorrect. Vérifiez auprès du staff.",
+      "errTotemTaken": "Ce totem est déjà pris dans ce club — choisissez-en un autre.",
+      "errAlreadyMember": "Ce compte est déjà rattaché à un club.",
+      "errGeneric": "Échec de l'inscription : {{err}}"
+    },
     "inviteLoggedIn": {
       "title": "Invitation détectée",
       "body": "Vous êtes déjà connecté ({{email}}). Pour accepter cette invitation, elle doit créer le compte du destinataire : déconnectez-vous puis rouvrez le lien (ou ouvrez-le dans une fenêtre de navigation privée).",

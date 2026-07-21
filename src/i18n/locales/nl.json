@@ -73,7 +73,8 @@
     "compare": "Vergelijk +",
     "abonnements": "Abonnementen",
     "exercices": "Bibliotheek",
-    "invites": "Uitnodigingen"
+    "invites": "Uitnodigingen",
+    "adhesions": "Lidmaatschapsaanvragen"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -1569,7 +1570,54 @@
       "selected": "Geselecteerd"
     }
   },
+  "membership": {
+    "pendingTitle": "Aanvraag verzonden",
+    "pendingBody": "Uw lidmaatschapsaanvraag is naar de clubstaf verzonden. U krijgt toegang tot de app zodra een verantwoordelijke ze goedkeurt.",
+    "rejectedTitle": "Aanvraag geweigerd",
+    "rejectedBody": "Uw lidmaatschapsaanvraag werd niet aanvaard door de clubstaf. Neem contact op met de club voor de reden.",
+    "refresh": "Goedkeuring controleren",
+    "checking": "Controleren…",
+    "staff": {
+      "title": "Lidmaatschapsaanvragen",
+      "subtitle": "Deel de clubcode met spelers en keur hun zelfregistratie goed. Staf treedt enkel via uitnodiging toe.",
+      "codeTitle": "CLUBCODE",
+      "codeHelp": "Geef deze code aan spelers die zich zelf registreren. Zonder de code kunnen ze geen lidmaatschap aanvragen. Genereer opnieuw als u vermoedt dat hij gelekt is.",
+      "copy": "Kopiëren",
+      "copied": "Gekopieerd",
+      "regen": "Code opnieuw genereren",
+      "regenConfirm": "Code opnieuw genereren? De oude werkt niet meer — spelers hebben de nieuwe nodig.",
+      "pendingTitle": "WACHT OP GOEDKEURING",
+      "empty": "Geen openstaande aanvragen.",
+      "requestedOn": "Aangevraagd op {{date}}",
+      "approve": "Goedkeuren",
+      "reject": "Weigeren",
+      "errDecide": "Beslissing mislukt: {{err}}",
+      "errRegen": "Opnieuw genereren mislukt: {{err}}"
+    }
+  },
   "auth": {
+    "signup": {
+      "cta": "Spelersaccount aanmaken",
+      "staffNote": "Alleen voor spelers. Staf (S&C, medisch, coach) treedt uitsluitend toe via de uitnodiging van een verantwoordelijke.",
+      "title": "Spelersregistratie",
+      "subtitle": "Word lid van uw club met de code van de staf. Uw aanvraag wordt door een verantwoordelijke goedgekeurd.",
+      "clubLabel": "Club",
+      "clubPlaceholder": "Kies een club…",
+      "codeLabel": "Clubcode",
+      "codePlaceholder": "Bijv. ABCD2345",
+      "codeHint": "Code verstrekt door de staf van uw club.",
+      "totemLabel": "Totem (weergavenaam)",
+      "totemPlaceholder": "Bijv. Adelaar",
+      "initialsLabel": "Initialen",
+      "submit": "Mijn aanvraag versturen",
+      "errClub": "Kies uw club.",
+      "errCode": "Voer de clubcode in.",
+      "errTotem": "Kies een totem.",
+      "errBadCode": "Verkeerde clubcode. Controleer bij de staf.",
+      "errTotemTaken": "Die totem is al in gebruik in deze club — kies een andere.",
+      "errAlreadyMember": "Dit account is al aan een club gekoppeld.",
+      "errGeneric": "Registratie mislukt: {{err}}"
+    },
     "inviteLoggedIn": {
       "title": "Uitnodiging gedetecteerd",
       "body": "U bent al aangemeld ({{email}}). Om deze uitnodiging te accepteren moet het account van de ontvanger worden aangemaakt: meld u af en open de link opnieuw (of open hem in een privévenster).",

@@ -11,6 +11,7 @@ import { markOnboardingSeen } from "../data/onboarding.js";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import OwnerApp from "./OwnerApp.jsx";
+import MembershipGate from "./shared/MembershipGate.jsx";
 
 const teamLabel = (id) => TEAMS.rugby.find((t) => t.id === id)?.label || id;
 const roleObjOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
@@ -60,6 +61,13 @@ export default function AppShell() {
         </div>
       </Centered>
     );
+  }
+
+  // Auto-inscription (0061) : un joueur « pending » / « rejected » est authentifié
+  // mais bloqué sur un écran dédié. À TESTER AVANT isProfileComplete : un pending a
+  // volontairement team_id nul (aucun accès club tant qu'il n'est pas validé).
+  if (profile.role === "joueur" && profile.membership_status && profile.membership_status !== "active") {
+    return <MembershipGate status={profile.membership_status} email={user?.email} onSignOut={signOut} onRefresh={refreshProfile} />;
   }
 
   // Profil présent mais incomplet pour son rôle (ex. joueur sans club/fiche,
