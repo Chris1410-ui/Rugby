@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase.js";
 import { useAuth } from "./useAuth.jsx";
 import { requestPasswordReset } from "../data/players.js";
-import { acceptClubInvitation } from "../data/clubInvitations.js";
+import { acceptClubInvitation, peekClubInvitation, isMinor } from "../data/clubInvitations.js";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { RUGBY_POS, POS_GROUPS } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
@@ -44,7 +44,13 @@ export default function LoginScreen() {
   // le rôle/club viennent de l'invite (serveur), jamais du formulaire.
   const inviteToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("invite") : null;
   // Lien de réinit expiré/invalide → on ouvre directement la connexion + message.
-  const [step, setStep] = useState(inviteToken ? "invite" : linkError ? "signin" : "role"); // invite | role | details | signin
+  // Entrée publique = connexion + acceptation d'invitation. Le self-signup avec
+  // rattachement à un club est retiré (le trigger n'attache plus rien) : on rejoint
+  // un club UNIQUEMENT via un lien d'invitation validé par un admin.
+  const [step, setStep] = useState(inviteToken ? "invite" : "signin"); // invite | signin (role/details : hérités, inatteignables)
+  const [inviteRole, setInviteRole] = useState(null); // rôle porté par l'invitation (peek)
+  const [invitePeekErr, setInvitePeekErr] = useState(false);
+  const [birthdate, setBirthdate] = useState(""); // acceptation joueur : décide majeur/mineur
   const [role, setRole] = useState(null);
   const [team, setTeam] = useState(TEAMS.rugby[0].id);
   const [fullName, setFullName] = useState("");
@@ -69,6 +75,16 @@ export default function LoginScreen() {
   const st = pwdStrength(pwd);
   const sCol = st.score <= 2 ? C.coral : st.score <= 4 ? C.amb : C.green;
   const sLab = st.score <= 2 ? t("auth.reset.strengthWeak") : st.score <= 4 ? t("auth.reset.strengthMed") : t("auth.reset.strengthStrong");
+
+  // Aperçu de l'invitation (rôle + club) pour adapter le formulaire (staff/joueur).
+  useEffect(() => {
+    if (!inviteToken) return;
+    let alive = true;
+    peekClubInvitation(inviteToken)
+      .then((inv) => { if (alive) (inv ? setInviteRole(inv.role) : setInvitePeekErr(true)); })
+      .catch(() => { if (alive) setInvitePeekErr(true); });
+    return () => { alive = false; };
+  }, [inviteToken]);
 
   const reset = () => {
     setErr(""); setInfo(""); setPwd(""); setPwd2(""); clearLinkError();
@@ -138,28 +154,39 @@ export default function LoginScreen() {
   // par l'invite. Le rôle ne transite jamais par le client.
   const doInviteSignUp = async () => {
     reset();
-    if (!fullName.trim()) return setErr(t("auth.login.errName"));
+    const isPlayer = inviteRole === "joueur";
+    const minor = isPlayer && isMinor(birthdate);
+    if (!isPlayer && !fullName.trim()) return setErr(t("auth.login.errName"));
     if (!/^\S+@\S+\.\S+$/.test(email)) return setErr(t("auth.login.errEmail"));
     if (!st.valid) return setErr(t("auth.reset.errWeak"));
     if (pwd !== pwd2) return setErr(t("auth.reset.errMismatch"));
+    if (isPlayer) {
+      if (!birthdate) return setErr(t("auth.login.errBirthdate"));
+      if (minor) {
+        if (!guardianName.trim()) return setErr(t("auth.login.errGuardianName"));
+        if (!/^\S+@\S+\.\S+$/.test(guardianEmail)) return setErr(t("auth.login.errGuardianEmail"));
+      }
+      if (!consent) return setErr(t("auth.login.errConsent"));
+    }
     if (!policyOk) return setErr(t("auth.login.errPolicy"));
     setBusy(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: pwd,
-      options: { data: { full_name: fullName.trim(), policy_version: POLICY_VERSION } },
-    });
+    const meta = isPlayer ? { policy_version: POLICY_VERSION } : { full_name: fullName.trim(), policy_version: POLICY_VERSION };
+    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password: pwd, options: { data: meta } });
     if (error) { setBusy(false); return setErr(error.message); }
     if (!data.session) { setBusy(false); return setInfo(t("auth.login.inviteNeedsSignin")); }
     try {
-      await acceptClubInvitation(inviteToken);
+      await acceptClubInvitation(inviteToken, isPlayer
+        ? { birthdate, guardianName: guardianName.trim(), guardianEmail: guardianEmail.trim(), policyVersion: POLICY_VERSION, consent }
+        : {});
     } catch (e) {
       setBusy(false);
-      return setErr(e.message === "INVITE_INVALID" ? t("auth.login.inviteInvalid")
-        : e.message === "INVITE_EMAIL_MISMATCH" ? t("auth.login.inviteEmailMismatch")
-        : t("auth.login.inviteError", { err: e.message }));
+      const m = e.message;
+      return setErr(m === "INVITE_INVALID" ? t("auth.login.inviteInvalid")
+        : m === "INVITE_EMAIL_MISMATCH" ? t("auth.login.inviteEmailMismatch")
+        : m === "ALREADY_CLAIMED" ? t("auth.login.inviteAlreadyClaimed")
+        : t("auth.login.inviteError", { err: m }));
     }
-    // Rôle appliqué : on recharge sur une URL propre (sans ?invite) → profil staff.
+    // Rattachement appliqué : reload sur une URL propre (sans ?invite) → profil élevé.
     window.location.href = window.location.origin;
   };
 
@@ -225,8 +252,10 @@ export default function LoginScreen() {
       <div style={{ fontSize: 11, color: C.green, margin: "2px 0 10px", textAlign: "center" }}>{info}</div>
     ) : null;
 
-  /* ── INSCRIPTION STAFF PAR INVITATION ── */
+  /* ── ACCEPTATION D'INVITATION (staff ou joueur, selon peek) ── */
   if (step === "invite") {
+    const isPlayer = inviteRole === "joueur";
+    const minor = isPlayer && isMinor(birthdate);
     return (
       <div style={wrap}>
         {styleTag}
@@ -235,47 +264,85 @@ export default function LoginScreen() {
           <Header />
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, justifyContent: "center", color: C.coral }}>
             <Shield size={16} />
-            <span style={{ fontSize: 15, fontWeight: 800 }}>{t("auth.login.inviteTitle")}</span>
+            <span style={{ fontSize: 15, fontWeight: 800 }}>{isPlayer ? t("auth.login.invitePlayerTitle") : t("auth.login.inviteTitle")}</span>
           </div>
-          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.6)", textAlign: "center", marginBottom: 16, lineHeight: 1.5 }}>{t("auth.login.inviteSubtitle")}</div>
+          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.6)", textAlign: "center", marginBottom: 16, lineHeight: 1.5 }}>{isPlayer ? t("auth.login.invitePlayerSubtitle") : t("auth.login.inviteSubtitle")}</div>
 
-          <div style={label}>{t("auth.login.nameLabel")}</div>
-          <input value={fullName} onChange={(e) => { setFullName(e.target.value); setErr(""); }} placeholder={t("auth.login.namePlaceholder")} style={input(false)} />
+          {invitePeekErr ? (
+            <>
+              <div style={{ fontSize: 12, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 9, padding: "10px 12px", marginBottom: 12, textAlign: "center", lineHeight: 1.5 }}>{t("auth.login.inviteInvalid")}</div>
+              <button onClick={() => { reset(); setStep("signin"); }} style={{ width: "100%", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer" }}>{t("auth.login.backToSignin")}</button>
+            </>
+          ) : !inviteRole ? (
+            <div style={{ textAlign: "center", padding: 18, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>{t("common.loading")}</div>
+          ) : (
+            <>
+              {!isPlayer && (
+                <>
+                  <div style={label}>{t("auth.login.nameLabel")}</div>
+                  <input value={fullName} onChange={(e) => { setFullName(e.target.value); setErr(""); }} placeholder={t("auth.login.namePlaceholder")} style={input(false)} />
+                </>
+              )}
 
-          <div style={label}>{t("auth.login.emailLabel")}</div>
-          <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} placeholder={t("auth.login.emailPlaceholder")} autoComplete="email" style={input(false)} />
+              <div style={label}>{t("auth.login.emailLabel")}</div>
+              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} placeholder={t("auth.login.emailPlaceholder")} autoComplete="email" style={input(false)} />
 
-          <div style={label}>{t("auth.login.pwdLabel")}</div>
-          <div style={{ position: "relative" }}>
-            <input type={showPwd ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setErr(""); }} placeholder={t("auth.login.pwdPlaceholder")} autoComplete="new-password" style={input(false)} />
-            <button onClick={() => setShowPwd((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>
-              {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-          {pwd && (
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
-                <div style={{ height: 5, width: `${(st.score / 7) * 100}%`, background: sCol, transition: "width .3s" }} />
+              <div style={label}>{t("auth.login.pwdLabel")}</div>
+              <div style={{ position: "relative" }}>
+                <input type={showPwd ? "text" : "password"} value={pwd} onChange={(e) => { setPwd(e.target.value); setErr(""); }} placeholder={t("auth.login.pwdPlaceholder")} autoComplete="new-password" style={input(false)} />
+                <button onClick={() => setShowPwd((v) => !v)} style={{ position: "absolute", right: 10, top: 10, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>
+                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              <div style={{ fontSize: 10, color: sCol, marginTop: 4 }}>{sLab} — {st.valid ? t("auth.reset.valid") : t("auth.reset.weakHint")}</div>
-            </div>
+              {pwd && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: 5, width: `${(st.score / 7) * 100}%`, background: sCol, transition: "width .3s" }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: sCol, marginTop: 4 }}>{sLab} — {st.valid ? t("auth.reset.valid") : t("auth.reset.weakHint")}</div>
+                </div>
+              )}
+              <input type={showPwd ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setErr(""); }} placeholder={t("auth.reset.confirmPlaceholder")} autoComplete="new-password" style={input(pwd2 && pwd !== pwd2)} />
+
+              {isPlayer && (
+                <>
+                  <div style={label}>{t("auth.login.birthdateLabel")}</div>
+                  <input type="date" value={birthdate} onChange={(e) => { setBirthdate(e.target.value); setErr(""); }} style={{ ...input(false), colorScheme: "dark" }} />
+                  {minor ? (
+                    <div style={{ marginTop: 2, marginBottom: 4, border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, background: "rgba(255,255,255,0.03)" }}>
+                      <div style={{ fontSize: 10, color: C.amb, letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>{t("auth.login.guardianSection")}</div>
+                      <input value={guardianName} onChange={(e) => { setGuardianName(e.target.value); setErr(""); }} placeholder={t("auth.login.guardianNamePlaceholder")} style={input(false)} />
+                      <input type="email" value={guardianEmail} onChange={(e) => { setGuardianEmail(e.target.value); setErr(""); }} placeholder={t("auth.login.guardianEmailPlaceholder")} autoComplete="off" style={input(false)} />
+                      <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, cursor: "pointer" }}>
+                        <input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); setErr(""); }} style={{ marginTop: 2, width: 16, height: 16, accentColor: C.green, flexShrink: 0 }} />
+                        <span>{t("auth.login.consentText")}</span>
+                      </label>
+                    </div>
+                  ) : birthdate ? (
+                    <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, cursor: "pointer", margin: "6px 0 4px" }}>
+                      <input type="checkbox" checked={consent} onChange={(e) => { setConsent(e.target.checked); setErr(""); }} style={{ marginTop: 2, width: 16, height: 16, accentColor: C.green, flexShrink: 0 }} />
+                      <span>{t("auth.login.consentAdult")}</span>
+                    </label>
+                  ) : null}
+                </>
+              )}
+
+              <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, cursor: "pointer", margin: "8px 0 4px" }}>
+                <input type="checkbox" checked={policyOk} onChange={(e) => { setPolicyOk(e.target.checked); setErr(""); }} style={{ marginTop: 2, width: 16, height: 16, accentColor: C.green, flexShrink: 0 }} />
+                <span>{t("auth.login.policyAck")}
+                  <button type="button" onClick={() => setShowPolicy(true)} style={{ background: "none", border: "none", color: C.viol, fontWeight: 700, cursor: "pointer", padding: 0, textDecoration: "underline", fontSize: 11.5 }}>{t("auth.login.policyLink")}</button>.
+                </span>
+              </label>
+
+              <Feedback />
+              <button onClick={doInviteSignUp} disabled={busy} style={{ width: "100%", background: busy ? "rgba(255,255,255,0.1)" : C.coral, border: "none", borderRadius: 10, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", marginTop: 4, opacity: busy ? 0.6 : 1 }}>
+                {busy ? spinner : t("auth.login.inviteBtn")}
+              </button>
+              <button onClick={() => { reset(); setStep("signin"); }} style={{ width: "100%", background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, cursor: "pointer", marginTop: 12 }}>
+                {t("auth.login.alreadyRegistered")}
+              </button>
+            </>
           )}
-          <input type={showPwd ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setErr(""); }} placeholder={t("auth.reset.confirmPlaceholder")} autoComplete="new-password" style={input(pwd2 && pwd !== pwd2)} />
-
-          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, cursor: "pointer", margin: "8px 0 4px" }}>
-            <input type="checkbox" checked={policyOk} onChange={(e) => { setPolicyOk(e.target.checked); setErr(""); }} style={{ marginTop: 2, width: 16, height: 16, accentColor: C.green, flexShrink: 0 }} />
-            <span>{t("auth.login.policyAck")}
-              <button type="button" onClick={() => setShowPolicy(true)} style={{ background: "none", border: "none", color: C.viol, fontWeight: 700, cursor: "pointer", padding: 0, textDecoration: "underline", fontSize: 11.5 }}>{t("auth.login.policyLink")}</button>.
-            </span>
-          </label>
-
-          <Feedback />
-          <button onClick={doInviteSignUp} disabled={busy} style={{ width: "100%", background: busy ? "rgba(255,255,255,0.1)" : C.coral, border: "none", borderRadius: 10, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", marginTop: 4, opacity: busy ? 0.6 : 1 }}>
-            {busy ? spinner : t("auth.login.inviteBtn")}
-          </button>
-          <button onClick={() => { reset(); setStep("signin"); }} style={{ width: "100%", background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, cursor: "pointer", marginTop: 12 }}>
-            {t("auth.login.alreadyRegistered")}
-          </button>
         </div>
       </div>
     );
@@ -471,10 +538,8 @@ export default function LoginScreen() {
             {t("auth.login.askStaff")}
           </button>
         </div>
-        <div style={{ textAlign: "center", marginTop: 10 }}>
-          <button onClick={() => { reset(); setStep("role"); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 12, cursor: "pointer" }}>
-            {t("auth.login.createAccount")}
-          </button>
+        <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+          {t("auth.login.inviteOnlyNote")}
         </div>
       </div>
     </div>

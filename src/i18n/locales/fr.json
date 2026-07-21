@@ -1132,7 +1132,8 @@
       "kpiBilansSub": "encodés",
       "alertsTitle": "Alertes · {{count}}",
       "alertsTab": "→ onglet Alertes",
-      "noAlerts": "Aucune alerte. 👌"
+      "noAlerts": "Aucune alerte. 👌",
+      "invitePlayer": "Inviter ce joueur"
     },
     "invites": {
       "title": "Invitations staff",
@@ -1604,7 +1605,15 @@
       "inviteInvalid": "Invitation invalide ou expirée.",
       "inviteEmailMismatch": "Cette invitation est réservée à une autre adresse email.",
       "inviteError": "Échec : {{err}}",
-      "inviteNeedsSignin": "Compte créé. Connectez-vous, puis rouvrez le lien d’invitation."
+      "inviteNeedsSignin": "Compte créé. Connectez-vous, puis rouvrez le lien d’invitation.",
+      "invitePlayerTitle": "Rejoindre en tant que joueur",
+      "invitePlayerSubtitle": "Ton club t'a invité. Crée ton compte pour rejoindre l'équipe.",
+      "birthdateLabel": "Date de naissance",
+      "consentAdult": "Je consens au traitement de mes données personnelles conformément à la politique de confidentialité.",
+      "errBirthdate": "Indique ta date de naissance.",
+      "inviteAlreadyClaimed": "Ce profil joueur a déjà été revendiqué par un autre compte.",
+      "backToSignin": "Retour à la connexion",
+      "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club."
     },
     "link": {
       "expired": "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.",
