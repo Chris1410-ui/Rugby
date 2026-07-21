@@ -613,7 +613,13 @@
       "create_one": "Create session ({{count}} exercise)",
       "create_other": "Create session ({{count}} exercises)",
       "creating": "Creating…",
-      "errNoExercise": "Add at least one exercise."
+      "errNoExercise": "Add at least one exercise.",
+      "myRoutines": "MY ROUTINES",
+      "loadRoutine": "Load this routine",
+      "deleteRoutine": "Delete routine",
+      "routineNamePlaceholder": "Routine name",
+      "saveRoutineConfirm": "Save",
+      "saveAsRoutine": "Save as routine"
     }
   },
   "staff": {

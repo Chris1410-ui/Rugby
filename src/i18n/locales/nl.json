@@ -613,7 +613,13 @@
       "create_one": "Sessie maken ({{count}} oefening)",
       "create_other": "Sessie maken ({{count}} oefeningen)",
       "creating": "Aanmaken…",
-      "errNoExercise": "Voeg minstens één oefening toe."
+      "errNoExercise": "Voeg minstens één oefening toe.",
+      "myRoutines": "MIJN ROUTINES",
+      "loadRoutine": "Deze routine laden",
+      "deleteRoutine": "Routine verwijderen",
+      "routineNamePlaceholder": "Routinenaam",
+      "saveRoutineConfirm": "Opslaan",
+      "saveAsRoutine": "Opslaan als routine"
     }
   },
   "staff": {

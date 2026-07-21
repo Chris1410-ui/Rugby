@@ -613,7 +613,13 @@
       "create_one": "Créer la séance ({{count}} exercice)",
       "create_other": "Créer la séance ({{count}} exercices)",
       "creating": "Création…",
-      "errNoExercise": "Ajoute au moins un exercice."
+      "errNoExercise": "Ajoute au moins un exercice.",
+      "myRoutines": "MES ROUTINES",
+      "loadRoutine": "Charger cette routine",
+      "deleteRoutine": "Supprimer la routine",
+      "routineNamePlaceholder": "Nom de la routine",
+      "saveRoutineConfirm": "Enregistrer",
+      "saveAsRoutine": "Enregistrer comme routine"
     }
   },
   "staff": {
