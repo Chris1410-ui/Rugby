@@ -249,6 +249,23 @@
         }
       }
     },
+    "contraction": {
+      "rep": "Repetition {{n}} / {{total}}",
+      "label": {
+        "inhale": "Inhale",
+        "exhale": "Exhale",
+        "inhale4": "Inhale fully",
+        "contract": "Contract",
+        "release": "Release"
+      },
+      "hint": {
+        "inhale": "Breathe in slowly through the nose, expand your belly.",
+        "exhale": "Breathe out slowly through the mouth, let the air go.",
+        "inhale4": "One last deep breath in… get ready to hold everything.",
+        "contract": "Hold your breath and CONTRACT every muscle: fists, arms, shoulders, face, belly, thighs, calves, feet.",
+        "release": "Release EVERYTHING at once. Long exhale, let your body grow heavy and calm."
+      }
+    },
     "player": {
       "start": "▶ Start",
       "pause": "❚❚ Pause",
@@ -256,6 +273,7 @@
       "stop": "■ Stop",
       "restart": "Restart",
       "cycles": "Cycles:",
+      "reps": "Repetitions:",
       "doneTag": "done ✓",
       "doneTitle": "Session complete 🌿",
       "doneSub": "Take a moment before getting back to your activity.",
@@ -281,6 +299,10 @@
       "jacobson": {
         "title": "Muscle relaxation (Jacobson)",
         "subtitle": "Tense then release each muscle group"
+      },
+      "jacobsonGlobal": {
+        "title": "Modified Jacobson (global contraction)",
+        "subtitle": "3 breaths · hold + full-body contraction 10 s · release"
       },
       "prematch": {
         "title": "Pre-match",

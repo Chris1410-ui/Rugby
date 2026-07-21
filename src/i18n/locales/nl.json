@@ -249,6 +249,23 @@
         }
       }
     },
+    "contraction": {
+      "rep": "Herhaling {{n}} / {{total}}",
+      "label": {
+        "inhale": "Adem in",
+        "exhale": "Adem uit",
+        "inhale4": "Adem diep in",
+        "contract": "Span aan",
+        "release": "Ontspan"
+      },
+      "hint": {
+        "inhale": "Adem langzaam in door de neus, zet je buik uit.",
+        "exhale": "Adem langzaam uit door de mond, laat de lucht los.",
+        "inhale4": "Een laatste diepe inademing… maak je klaar om alles vast te houden.",
+        "contract": "Houd je adem in en SPAN al je spieren aan: vuisten, armen, schouders, gezicht, buik, dijen, kuiten, voeten.",
+        "release": "Laat ALLES in één keer los. Lange uitademing, laat je lichaam zwaar en rustig worden."
+      }
+    },
     "player": {
       "start": "▶ Start",
       "pause": "❚❚ Pauze",
@@ -256,6 +273,7 @@
       "stop": "■ Stop",
       "restart": "Opnieuw",
       "cycles": "Cycli:",
+      "reps": "Herhalingen:",
       "doneTag": "gedaan ✓",
       "doneTitle": "Sessie voltooid 🌿",
       "doneSub": "Neem even de tijd voordat je je activiteit hervat.",
@@ -281,6 +299,10 @@
       "jacobson": {
         "title": "Spierontspanning (Jacobson)",
         "subtitle": "Span aan en ontspan elke spiergroep"
+      },
+      "jacobsonGlobal": {
+        "title": "Aangepaste Jacobson (globale contractie)",
+        "subtitle": "3 ademhalingen · vasthouden + volledige contractie 10 s · loslaten"
       },
       "prematch": {
         "title": "Voor de wedstrijd",

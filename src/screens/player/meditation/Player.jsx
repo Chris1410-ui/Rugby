@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
+import { supabase } from "../../../lib/supabase.js";
 import { ChevronLeft, CheckCircle } from "../../../lib/icons.jsx";
 import { useWakeLock } from "./medTimer.js";
 import { JACOBSON_GROUPS, resolveSteps } from "./sessions.js";
 import BreathingCircle from "./BreathingCircle.jsx";
 import Jacobson from "./Jacobson.jsx";
+import ContractionCycle from "./ContractionCycle.jsx";
 import GuidedSteps from "./GuidedSteps.jsx";
 
 /* Lecteur commun à toutes les séances : démarrer / pause / stop, minuteur,
@@ -13,6 +15,7 @@ import GuidedSteps from "./GuidedSteps.jsx";
    (via onComplete). Le visuel est remonté (key=runId) à chaque Stop/Recommencer ;
    Pause ne remonte pas. Textes via i18n (namespace `meditation`). */
 const CYCLE_PRESETS = [6, 12, 20, 30];
+const REP_PRESETS = [1, 2, 3, 5];
 
 export default function Player({ session, onClose, onComplete, alreadyDone }) {
   const { t } = useTranslation();
@@ -21,7 +24,22 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
   const [running, setRunning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [cycles, setCycles] = useState(session.cycles || 12);
+  const [reps, setReps] = useState(session.reps || 3);
   useWakeLock(running);
+
+  // Audio d'ambiance OPTIONNEL (bucket public `meditation-audio`, cf. 0062).
+  // Absent (404) → la séance se déroule en texte/visuel seul, sans erreur.
+  const audioUrl = useMemo(
+    () => (session.audio ? supabase.storage.from("meditation-audio").getPublicUrl(`${session.audio}.mp3`).data.publicUrl : null),
+    [session.audio],
+  );
+  const audioRef = useRef(null);
+  useEffect(() => { const a = audioRef.current; if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } } }, [runId]);
+  useEffect(() => {
+    const a = audioRef.current; if (!a) return;
+    if (running) a.play?.().catch(() => { /* autoplay bloqué / 404 → silencieux */ });
+    else a.pause?.();
+  }, [running]);
 
   const start = () => { setFinished(false); setRunId((n) => n + 1); setRunning(true); };
   const toggle = () => setRunning((r) => !r);
@@ -32,6 +50,7 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
     const common = { running, onFinish, accent };
     if (session.kind === "breathing") return <BreathingCircle key={runId} pattern={session.pattern} targetCycles={cycles} {...common} />;
     if (session.kind === "jacobson") return <Jacobson key={runId} groups={JACOBSON_GROUPS} contractSec={session.contractSec} releaseSec={session.releaseSec} {...common} />;
+    if (session.kind === "contraction") return <ContractionCycle key={runId} session={session} reps={reps} {...common} />;
     return <GuidedSteps key={runId} steps={resolveSteps(session, t)} {...common} />;
   };
 
@@ -76,6 +95,23 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
           ))}
         </div>
       )}
+
+      {/* Réglage du nombre de répétitions (contraction globale) */}
+      {session.kind === "contraction" && !finished && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginRight: 2 }}>{t("meditation.player.reps")}</span>
+          {REP_PRESETS.map((n) => (
+            <button key={n} onClick={() => !running && setReps(n)} disabled={running}
+              style={{ minWidth: 40, padding: "6px 10px", borderRadius: 9, cursor: running ? "default" : "pointer", fontSize: 12.5, fontWeight: 800,
+                background: reps === n ? accent : "rgba(255,255,255,0.06)", border: `1px solid ${reps === n ? accent : C.border}`, color: reps === n ? "#fff" : "rgba(255,255,255,0.7)", opacity: running && reps !== n ? 0.4 : 1 }}>
+              {n}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Audio d'ambiance optionnel (silencieux si le fichier n'existe pas). */}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} loop preload="none" />}
 
       {/* Contrôles */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, paddingBottom: 4 }}>

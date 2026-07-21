@@ -45,6 +45,15 @@ export function useWakeLock(active) {
   }, [active]);
 }
 
+/* Vibration haptique (feedback des séances). navigator.vibrate n'existe pas sur
+   iOS/Safari → no-op silencieux (le visuel/audio suffisent). `pattern` = nombre
+   (ms) ou tableau [vibre, pause, vibre…]. vibe(0) coupe toute vibration en cours. */
+export function vibe(pattern) {
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(pattern);
+  } catch { /* certains navigateurs lèvent hors interaction utilisateur → ignoré */ }
+}
+
 // mm:ss depuis des secondes.
 export const fmtClock = (sec) => {
   const s = Math.max(0, Math.round(sec));

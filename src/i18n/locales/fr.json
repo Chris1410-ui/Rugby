@@ -249,6 +249,23 @@
         }
       }
     },
+    "contraction": {
+      "rep": "Répétition {{n}} / {{total}}",
+      "label": {
+        "inhale": "Inspire",
+        "exhale": "Expire",
+        "inhale4": "Inspire à fond",
+        "contract": "Contracte",
+        "release": "Relâche"
+      },
+      "hint": {
+        "inhale": "Inspire lentement par le nez, gonfle le ventre.",
+        "exhale": "Expire lentement par la bouche, laisse filer l'air.",
+        "inhale4": "Dernière inspiration profonde… prépare-toi à tout bloquer.",
+        "contract": "Bloque la respiration et CONTRACTE tous tes muscles : poings, bras, épaules, visage, ventre, cuisses, mollets, pieds.",
+        "release": "Relâche TOUT d'un coup. Longue expiration, laisse ton corps devenir lourd et calme."
+      }
+    },
     "player": {
       "start": "▶ Démarrer",
       "pause": "❚❚ Pause",
@@ -256,6 +273,7 @@
       "stop": "■ Stop",
       "restart": "Recommencer",
       "cycles": "Cycles :",
+      "reps": "Répétitions :",
       "doneTag": "fait ✓",
       "doneTitle": "Séance terminée 🌿",
       "doneSub": "Prends un instant avant de reprendre ton activité.",
@@ -281,6 +299,10 @@
       "jacobson": {
         "title": "Relaxation musculaire (Jacobson)",
         "subtitle": "Contracte puis relâche chaque groupe musculaire"
+      },
+      "jacobsonGlobal": {
+        "title": "Jacobson modifié (contraction globale)",
+        "subtitle": "3 respirations · blocage + contraction totale 10 s · relâchement"
       },
       "prematch": {
         "title": "Avant-match",
