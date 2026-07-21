@@ -3,7 +3,7 @@
    TOP14_BENCH — éditable). Ce module n'ajoute que la présentation propre au
    rapport : libellés, unités, groupe (terrain / force / cardio), et formatage. */
 
-import { TOP14_BENCH, posToCat } from "../top14.js";
+import { TOP14_BENCH, posToCat } from "../top14.core.js";
 
 // Ordre + métadonnées d'affichage des 9 tests du référentiel.
 // group: field (terrain) | strength (×PC) | cardio ; dir: up = plus haut mieux,
