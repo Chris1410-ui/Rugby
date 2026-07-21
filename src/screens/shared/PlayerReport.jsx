@@ -217,6 +217,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
                   <span style={{ width: 8, height: 8, borderRadius: 4, background: cfg.c, flexShrink: 0 }} />
                   <span style={{ fontSize: 11, fontWeight: 700, width: 54 }}>{fmtShort(s.date)}</span>
                   <span style={{ flex: 1, minWidth: 0, fontSize: 11, color: "rgba(255,255,255,0.75)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.code} · {s.titre}</span>
+                  {s.origin === "libre" && <Tag c={C.viol}>{t("player.session.freeTag")}</Tag>}
                   {hasDetail && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.45)" }}>{open ? "▲" : t("shared.report.detailToggle")}</span>}
                   {rpe != null && st === "done" && <span style={{ fontSize: 10, fontWeight: 700, color: C.green }}>{t("shared.report.tagRpe", { v: rpe })}</span>}
                   <Tag c={cfg.c}>{cfg.l}</Tag>
