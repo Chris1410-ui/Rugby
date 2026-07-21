@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase.js";
 import { useAuth } from "./useAuth.jsx";
 import { requestPasswordReset } from "../data/players.js";
-import { redeemStaffInvite } from "../data/staffInvites.js";
+import { acceptClubInvitation } from "../data/clubInvitations.js";
 import { C, FONT, sc, ROLES, TEAMS, isStaffRole } from "../lib/tokens.js";
 import { RUGBY_POS, POS_GROUPS } from "../lib/positions.js";
 import { pwdStrength } from "../lib/password.js";
@@ -134,7 +134,7 @@ export default function LoginScreen() {
 
   // ── INSCRIPTION STAFF PAR INVITATION ──
   // Le compte est créé SANS rôle (le trigger ne pose pas de profil) ; c'est la
-  // fonction serveur redeem_staff_invite qui élève le profil au rôle/club portés
+  // fonction serveur accept_club_invitation qui élève le profil au rôle/club portés
   // par l'invite. Le rôle ne transite jamais par le client.
   const doInviteSignUp = async () => {
     reset();
@@ -152,7 +152,7 @@ export default function LoginScreen() {
     if (error) { setBusy(false); return setErr(error.message); }
     if (!data.session) { setBusy(false); return setInfo(t("auth.login.inviteNeedsSignin")); }
     try {
-      await redeemStaffInvite(inviteToken);
+      await acceptClubInvitation(inviteToken);
     } catch (e) {
       setBusy(false);
       return setErr(e.message === "INVITE_INVALID" ? t("auth.login.inviteInvalid")

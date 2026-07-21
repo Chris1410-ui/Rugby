@@ -4,7 +4,7 @@ import { C } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { Plus, Trash2, Check, Shield } from "../../lib/icons.jsx";
 import { fmtShort } from "../../lib/metrics.js";
-import { useStaffInvites, createStaffInvite, revokeStaffInvite, inviteLink } from "../../data/staffInvites.js";
+import { useClubInvitations, createClubInvitation, revokeClubInvitation, inviteLink } from "../../data/clubInvitations.js";
 
 const accent = C.coral;
 const STAFF_INVITE_ROLES = ["preparateur", "medical", "coach"];
@@ -14,7 +14,7 @@ const STAFF_INVITE_ROLES = ["preparateur", "medical", "coach"];
    est élevé au bon rôle. Le staff ne se rattache plus jamais seul à un club. */
 export default function StaffInvites({ teamId }) {
   const { t } = useTranslation();
-  const { invites, loading } = useStaffInvites(teamId);
+  const { invites, loading } = useClubInvitations(teamId);
   const [role, setRole] = useState("preparateur");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,7 +24,7 @@ export default function StaffInvites({ teamId }) {
   const generate = async () => {
     setBusy(true); setErr("");
     try {
-      const token = await createStaffInvite(teamId, { role, email });
+      const token = await createClubInvitation(teamId, { role, email });
       setEmail("");
       // Copie immédiate du lien fraîchement créé (confort).
       copy(token);
@@ -73,7 +73,7 @@ export default function StaffInvites({ teamId }) {
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", padding: "6px 0" }}>{t("staff.invites.empty")}</div>
         ) : (
           invites.map((iv) => {
-            const used = !!iv.redeemedAt;
+            const used = iv.status === "accepted";
             const expired = !used && new Date(iv.expiresAt) < new Date();
             return (
               <div key={iv.id} style={{ padding: "9px 0", borderBottom: `1px solid ${C.border2}`, opacity: used || expired ? 0.55 : 1 }}>
@@ -90,12 +90,12 @@ export default function StaffInvites({ teamId }) {
                       <button onClick={() => copy(iv.token)} style={{ background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 7, padding: "4px 10px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
                         {copied === iv.token ? <><Check size={12} /> {t("staff.invites.copied")}</> : t("staff.invites.copy")}
                       </button>
-                      <button onClick={() => revokeStaffInvite(iv.id)} title={t("staff.invites.revoke")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.45)", display: "flex" }}><Trash2 size={14} /></button>
+                      <button onClick={() => revokeClubInvitation(iv.id)} title={t("staff.invites.revoke")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.45)", display: "flex" }}><Trash2 size={14} /></button>
                     </>
                   )}
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.45)" }}>
-                  {used ? t("staff.invites.usedOn", { date: fmtShort(iv.redeemedAt) }) : t("staff.invites.expiresOn", { date: fmtShort(iv.expiresAt) })}
+                  {used ? t("staff.invites.usedOn", { date: fmtShort(iv.acceptedAt) }) : t("staff.invites.expiresOn", { date: fmtShort(iv.expiresAt) })}
                 </div>
               </div>
             );
