@@ -21,7 +21,7 @@ import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -32,6 +32,7 @@ import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
+import StaffInvites from "../shared/StaffInvites.jsx";
 import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
@@ -103,6 +104,8 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["video", t("nav.video"), Video],
     ["veille", t("nav.veille"), Activity],
     ["abonnements", t("nav.abonnements"), Bell],
+    // Invitations staff : owner + staff écrivain uniquement (coach exclu).
+    ...(!readOnly ? [["invites", t("nav.invites"), Shield]] : []),
   ];
   return (
    <ReadOnlyContext.Provider value={readOnly}>
@@ -133,6 +136,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}
         {tab === "veille" && <Veille accent={ACCENT} />}
         {tab === "abonnements" && <Abonnements teamId={profile.team_id} players={players} />}
+        {tab === "invites" && !readOnly && <StaffInvites teamId={profile.team_id} />}
        </PullToRefresh>
       </main>
       {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}
