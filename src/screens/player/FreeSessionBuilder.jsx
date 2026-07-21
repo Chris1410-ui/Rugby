@@ -6,20 +6,25 @@ import { Overlay, Section, Tag } from "../../lib/ui.jsx";
 import { Search, Plus, Check, Trash2, Dumbbell } from "../../lib/icons.jsx";
 import { useExerciseLibrary, useExerciseFacets, bodyPartLabel, PAGE_SIZE } from "../../data/exerciseLibrary.js";
 import { createFreeSession } from "../../data/freeSessions.js";
+import { useMyRoutines, saveMyRoutine, deleteMyRoutine } from "../../data/routines.js";
 
 const accent = C.green;
 
 /* Compositeur de « séance libre » (autonome). Le joueur pioche des exercices
    dans la Bibliothèque (panier), règle séries/reps/charge, puis crée la séance
    (datée du jour, assignée à lui seul). Elle se loggue ensuite comme n'importe
-   quelle séance (SessionPlayCard) et alimente historique / compliance / points. */
-export default function FreeSessionBuilder({ onClose, onCreated }) {
+   quelle séance (SessionPlayCard) et alimente historique / compliance / points.
+   Le panier peut être chargé depuis une routine perso ou y être enregistré. */
+export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("RS");
   const [cart, setCart] = useState([]); // [{ ref, name, bodyPart, sets, reps, charge }]
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [savingRoutine, setSavingRoutine] = useState(false);
+  const [routineName, setRoutineName] = useState("");
+  const { routines } = useMyRoutines(me?.id);
 
   const inCart = (ref) => cart.some((c) => c.ref === ref);
   const toggle = (ex) => {
@@ -29,6 +34,35 @@ export default function FreeSessionBuilder({ onClose, onCreated }) {
   };
   const patch = (ref, p) => setCart((c) => c.map((x) => (x.ref === ref ? { ...x, ...p } : x)));
   const remove = (ref) => setCart((c) => c.filter((x) => x.ref !== ref));
+
+  // Charge une routine perso dans le panier (remplace le contenu courant).
+  const loadRoutine = (r) => {
+    setCart((r.templates || []).map((tpl) => ({
+      ref: tpl.ref || tpl.id || tpl.name,
+      name: tpl.name,
+      bodyPart: tpl.bodyPart,
+      sets: tpl.sets ?? 3,
+      reps: tpl.reps ?? "8",
+      charge: tpl.charge ?? "",
+    })));
+    if (!title && r.name) setTitle(r.name);
+  };
+
+  const saveRoutine = async () => {
+    if (cart.length === 0) return;
+    setBusy(true); setErr("");
+    try {
+      await saveMyRoutine(me?.id, me?.team, { name: routineName || title, templates: cart });
+      setSavingRoutine(false); setRoutineName("");
+    } catch (e) {
+      setErr(t("common.actionFailed", { err: e.message }));
+    }
+    setBusy(false);
+  };
+
+  const removeRoutine = async (r) => {
+    try { await deleteMyRoutine(r.id); } catch (e) { console.error("[deleteMyRoutine]", e.message); }
+  };
 
   const create = async () => {
     if (cart.length === 0) return;
@@ -58,6 +92,23 @@ export default function FreeSessionBuilder({ onClose, onCreated }) {
           ))}
         </div>
 
+        {/* Mes routines : chargement en un geste */}
+        {routines.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, marginBottom: 8 }}>{t("player.freeSession.myRoutines")}</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {routines.map((r) => (
+                <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 8px 5px 10px" }}>
+                  <button onClick={() => loadRoutine(r)} title={t("player.freeSession.loadRoutine")} style={{ background: "none", border: "none", color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0 }}>
+                    {r.name} <span style={{ color: "rgba(255,255,255,0.45)" }}>· {r.templates?.length || 0}</span>
+                  </button>
+                  <button onClick={() => removeRoutine(r)} title={t("player.freeSession.deleteRoutine")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", display: "flex", padding: 0 }}><Trash2 size={13} /></button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Panier */}
         <Section title={t("player.freeSession.cartTitle")} right={<span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{cart.length}</span>}>
           {cart.length === 0 ? (
@@ -78,6 +129,21 @@ export default function FreeSessionBuilder({ onClose, onCreated }) {
             ))
           )}
         </Section>
+
+        {/* Enregistrer le panier comme routine perso réutilisable */}
+        {cart.length > 0 && (
+          savingRoutine ? (
+            <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+              <input value={routineName} onChange={(e) => setRoutineName(e.target.value)} placeholder={t("player.freeSession.routineNamePlaceholder")} autoFocus style={{ ...inp, flex: 1 }} />
+              <button onClick={saveRoutine} disabled={busy} style={{ background: accent, border: "none", borderRadius: 8, padding: "0 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{t("player.freeSession.saveRoutineConfirm")}</button>
+              <button onClick={() => setSavingRoutine(false)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "0 12px", color: "rgba(255,255,255,0.7)", fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
+            </div>
+          ) : (
+            <button onClick={() => { setSavingRoutine(true); setRoutineName(title); }} style={{ background: "none", border: "none", color: accent, fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: "2px 0", display: "flex", alignItems: "center", gap: 5 }}>
+              <Plus size={13} /> {t("player.freeSession.saveAsRoutine")}
+            </button>
+          )
+        )}
 
         {/* Ajout depuis la Bibliothèque */}
         <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, margin: "4px 0 10px" }}>{t("player.freeSession.addTitle")}</div>

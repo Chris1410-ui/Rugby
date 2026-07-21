@@ -33,7 +33,7 @@ export default function Seances({ me, sessions, logs, teamId, accent }) {
           <Plus size={16} /> {t("player.freeSession.newButton")}
         </button>
       )}
-      {building && <FreeSessionBuilder onClose={() => setBuilding(false)} />}
+      {building && <FreeSessionBuilder me={me} onClose={() => setBuilding(false)} />}
 
       <OpenEnrollments me={me} sessions={sessions} teamId={teamId} accent={accent} />
 
