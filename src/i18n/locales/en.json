@@ -72,7 +72,8 @@
     "veille": "Watch",
     "compare": "Compare +",
     "abonnements": "Subscriptions",
-    "exercices": "Library"
+    "exercices": "Library",
+    "invites": "Invitations"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -1132,6 +1133,28 @@
       "alertsTitle": "Alerts · {{count}}",
       "alertsTab": "→ Alerts tab",
       "noAlerts": "No alert. 👌"
+    },
+    "invites": {
+      "title": "Staff invitations",
+      "subtitle": "Staff join the club by invitation only. Generate a link to share — their role and club are set here.",
+      "newTitle": "NEW INVITATION",
+      "roleLabel": "Role",
+      "emailLabel": "Email (optional — locks the invite to this address)",
+      "emailPlaceholder": "email@example.com",
+      "generate": "Generate invite link",
+      "generating": "Generating…",
+      "listTitle": "INVITATIONS",
+      "empty": "No invitation.",
+      "anyEmail": "any email",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "revoke": "Revoke",
+      "used": "Used",
+      "expired": "Expired",
+      "usedOn": "Used on {{date}}",
+      "expiresOn": "Expires on {{date}}",
+      "errCreate": "Creation failed: {{err}}",
+      "errCopy": "Copy failed — copy the link manually."
     }
   },
   "shared": {
@@ -1574,7 +1597,14 @@
       "signinBtn": "Sign in",
       "forgot": "Forgot password?",
       "askStaff": "Ask the staff",
-      "createAccount": "Create an account"
+      "createAccount": "Create an account",
+      "inviteTitle": "Join as staff",
+      "inviteSubtitle": "You've been invited. Create your account to join the club — your role is set by the invitation.",
+      "inviteBtn": "Create my staff account",
+      "inviteInvalid": "Invalid or expired invitation.",
+      "inviteEmailMismatch": "This invitation is reserved for another email address.",
+      "inviteError": "Failed: {{err}}",
+      "inviteNeedsSignin": "Account created. Sign in, then reopen the invite link."
     },
     "link": {
       "expired": "The reset link has expired. Request a new email below.",

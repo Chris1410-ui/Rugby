@@ -72,7 +72,8 @@
     "veille": "Veille",
     "compare": "Comparaison",
     "abonnements": "Abonnements",
-    "exercices": "Bibliothèque"
+    "exercices": "Bibliothèque",
+    "invites": "Invitations"
   },
   "roles": {
     "preparateur": "Préparateur physique",
@@ -1132,6 +1133,28 @@
       "alertsTitle": "Alertes · {{count}}",
       "alertsTab": "→ onglet Alertes",
       "noAlerts": "Aucune alerte. 👌"
+    },
+    "invites": {
+      "title": "Invitations staff",
+      "subtitle": "Le staff rejoint le club uniquement sur invitation. Génère un lien à transmettre : son rôle et son club sont fixés ici.",
+      "newTitle": "NOUVELLE INVITATION",
+      "roleLabel": "Rôle",
+      "emailLabel": "Email (optionnel — verrouille l'invitation à cette adresse)",
+      "emailPlaceholder": "email@exemple.com",
+      "generate": "Générer le lien d'invitation",
+      "generating": "Génération…",
+      "listTitle": "INVITATIONS",
+      "empty": "Aucune invitation.",
+      "anyEmail": "tout email",
+      "copy": "Copier le lien",
+      "copied": "Copié",
+      "revoke": "Révoquer",
+      "used": "Utilisée",
+      "expired": "Expirée",
+      "usedOn": "Utilisée le {{date}}",
+      "expiresOn": "Expire le {{date}}",
+      "errCreate": "Échec de la création : {{err}}",
+      "errCopy": "Copie impossible — copie le lien manuellement."
     }
   },
   "shared": {
@@ -1574,7 +1597,14 @@
       "signinBtn": "Se connecter",
       "forgot": "Mot de passe oublié ?",
       "askStaff": "Demander au staff",
-      "createAccount": "Créer un compte"
+      "createAccount": "Créer un compte",
+      "inviteTitle": "Rejoindre en tant que staff",
+      "inviteSubtitle": "Vous avez reçu une invitation. Créez votre compte pour rejoindre le club — votre rôle est défini par l'invitation.",
+      "inviteBtn": "Créer mon compte staff",
+      "inviteInvalid": "Invitation invalide ou expirée.",
+      "inviteEmailMismatch": "Cette invitation est réservée à une autre adresse email.",
+      "inviteError": "Échec : {{err}}",
+      "inviteNeedsSignin": "Compte créé. Connectez-vous, puis rouvrez le lien d’invitation."
     },
     "link": {
       "expired": "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.",

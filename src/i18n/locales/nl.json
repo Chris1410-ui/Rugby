@@ -72,7 +72,8 @@
     "veille": "Nieuws",
     "compare": "Vergelijk +",
     "abonnements": "Abonnementen",
-    "exercices": "Bibliotheek"
+    "exercices": "Bibliotheek",
+    "invites": "Uitnodigingen"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -1132,6 +1133,28 @@
       "alertsTitle": "Meldingen · {{count}}",
       "alertsTab": "→ tabblad Meldingen",
       "noAlerts": "Geen melding. 👌"
+    },
+    "invites": {
+      "title": "Staf-uitnodigingen",
+      "subtitle": "Staf treedt alleen op uitnodiging toe. Genereer een link om te delen — rol en club worden hier bepaald.",
+      "newTitle": "NIEUWE UITNODIGING",
+      "roleLabel": "Rol",
+      "emailLabel": "E-mail (optioneel — vergrendelt de uitnodiging op dit adres)",
+      "emailPlaceholder": "email@voorbeeld.com",
+      "generate": "Uitnodigingslink genereren",
+      "generating": "Genereren…",
+      "listTitle": "UITNODIGINGEN",
+      "empty": "Geen uitnodiging.",
+      "anyEmail": "elke e-mail",
+      "copy": "Link kopiëren",
+      "copied": "Gekopieerd",
+      "revoke": "Intrekken",
+      "used": "Gebruikt",
+      "expired": "Verlopen",
+      "usedOn": "Gebruikt op {{date}}",
+      "expiresOn": "Verloopt op {{date}}",
+      "errCreate": "Aanmaken mislukt: {{err}}",
+      "errCopy": "Kopiëren mislukt — kopieer de link handmatig."
     }
   },
   "shared": {
@@ -1574,7 +1597,14 @@
       "signinBtn": "Inloggen",
       "forgot": "Wachtwoord vergeten?",
       "askStaff": "Vraag de staf",
-      "createAccount": "Een account aanmaken"
+      "createAccount": "Een account aanmaken",
+      "inviteTitle": "Deelnemen als staf",
+      "inviteSubtitle": "U bent uitgenodigd. Maak uw account aan om lid te worden — uw rol wordt bepaald door de uitnodiging.",
+      "inviteBtn": "Mijn stafaccount aanmaken",
+      "inviteInvalid": "Ongeldige of verlopen uitnodiging.",
+      "inviteEmailMismatch": "Deze uitnodiging is voorbehouden aan een ander e-mailadres.",
+      "inviteError": "Mislukt: {{err}}",
+      "inviteNeedsSignin": "Account aangemaakt. Log in en open de uitnodigingslink opnieuw."
     },
     "link": {
       "expired": "De reset-link is verlopen. Vraag hieronder een nieuwe e-mail aan.",
