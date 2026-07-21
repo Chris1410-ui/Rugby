@@ -3,83 +3,139 @@ import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { vibe, fmtClock } from "./medTimer.js";
 
-/* Séance PILOTÉE PAR L'AUDIO : ici la VOIX enregistrée guide tout le déroulé
-   (respirations, blocage/contraction, relâchement). Le visuel ne se lance PAS
-   sur un minuteur propre — il SUIT la position de lecture de l'audio :
-   - le cercle respire au rythme de la lecture (fige à la pause, reprend, se
-     termine avec l'audio) ;
-   - la séance se termine quand l'audio se termine (→ récompense).
-   Aucune désynchronisation possible : il n'y a plus d'horloge concurrente. */
-const IN = 5.5, OUT = 5.5;            // rythme d'ambiance du cercle (s) — accompagnement
+/* Séance PILOTÉE PAR L'AUDIO, synchronisée PHASE PAR PHASE sur une cue sheet
+   (timestamps extraits de l'enregistrement). L'unique source de temps est
+   audio.currentTime → le visuel SUIT strictement la voix (fige à la pause,
+   reprend, se termine avec l'audio). Aucun minuteur concurrent.
+   Comportement par type de phase :
+     inhale  → le cercle grandit (MIN→MAX) sur la durée de la phase
+     exhale  → le cercle rétrécit (MAX→MIN)
+     hold    → figé plein + throb rouge + COMPTE À REBOURS + vibration intense
+     release → détente (teal), longue décrue
+     intro/prepare/outro → respiration d'ambiance lente
+   OFFSET : décalage global (s) si un retard/avance constant apparaît. */
 const MIN = 0.5, MAX = 1;
+const OFFSET = 0;
 const lerp = (a, b, t) => a + (b - a) * t;
+const colorFor = (type, accent) => (type === "hold" ? C.coral : type === "release" || type === "outro" ? C.teal : accent);
 
-export default function AudioGuided({ src, running, onFinish, accent }) {
+// Vibration couvrant ~sec s de contraction, intensifiée sur la 2ᵉ moitié.
+function holdVibe(sec) {
+  const half = Math.floor(sec / 2), pat = [];
+  for (let i = 0; i < half; i++) pat.push(820, 180);
+  for (let i = 0; i < Math.max(0, sec - half); i++) pat.push(940, 60);
+  return pat;
+}
+
+export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const { t } = useTranslation();
-  const audioRef = useRef(null);
-  const circleRef = useRef(null);
-  const glowRef = useRef(null);
-  const rafRef = useRef(0);
-  const lastBreath = useRef(-1);
-  const finished = useRef(false);
-  const [cur, setCur] = useState(0);
-  const [dur, setDur] = useState(0);
-  const [err, setErr] = useState(false);
+  const audioRef = useRef(null), circleRef = useRef(null), glowRef = useRef(null), rafRef = useRef(0);
+  const finished = useRef(false), lastIdx = useRef(-1), durRef = useRef(0);
+  const paintRef = useRef(() => {});
+  const [cur, setCur] = useState(0), [dur, setDur] = useState(0), [err, setErr] = useState(false);
+  const [phase, setPhase] = useState(cues?.[0]?.type || "intro");
+  const [count, setCount] = useState(0);
 
-  // Lecture/pause suit l'état `running` (boutons Démarrer/Pause/Stop du Player).
+  // Lecture/pause suit l'état `running` (boutons du Player).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    if (running) a.play?.().catch(() => { /* autoplay bloqué → l'utilisateur relance */ });
+    if (running) a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ });
     else { a.pause?.(); vibe(0); }
   }, [running]);
 
-  // Boucle d'animation : le cercle est fonction de audio.currentTime → il SUIT
-  // strictement la lecture (immobile tant que l'audio ne joue pas).
-  useEffect(() => {
-    const loop = () => {
-      const a = audioRef.current;
-      if (a) {
-        const ct = a.currentTime || 0;
-        setCur(ct);
-        const cyc = IN + OUT;
-        const p = ((ct % cyc) + cyc) % cyc;
-        const scale = p < IN ? lerp(MIN, MAX, p / IN) : lerp(MAX, MIN, (p - IN) / OUT);
-        if (circleRef.current) circleRef.current.style.transform = `scale(${scale.toFixed(3)})`;
-        if (glowRef.current) glowRef.current.style.opacity = String((0.25 + (scale - MIN) / (MAX - MIN) * 0.5).toFixed(3));
-        // Pulsation haptique légère à chaque inspiration (si l'audio avance).
-        const bi = Math.floor(ct / cyc);
-        if (running && !a.paused && bi !== lastBreath.current) { lastBreath.current = bi; vibe(45); }
+  // Peinture (réassignée à chaque rendu → toujours les dernières props/état).
+  paintRef.current = () => {
+    const a = audioRef.current;
+    if (!a || !cues || !cues.length) return;
+    const raw = a.currentTime || 0;
+    setCur((p) => (Math.abs(p - raw) > 0.05 ? raw : p));
+    const time = raw + OFFSET;
+
+    let idx = 0;
+    for (let i = 0; i < cues.length; i++) { if (time >= cues[i].t) idx = i; else break; }
+    const ph = cues[idx], next = cues[idx + 1];
+    const endT = next ? next.t : (durRef.current || ph.t);
+    const len = Math.max(0.001, endT - ph.t);
+    const frac = Math.min(1, Math.max(0, (time - ph.t) / len));
+
+    let scale;
+    if (ph.type === "inhale") scale = lerp(MIN, MAX, frac);
+    else if (ph.type === "exhale" || ph.type === "release") scale = lerp(MAX, MIN, frac);
+    else if (ph.type === "hold") scale = MAX - 0.025 + 0.025 * Math.abs(Math.sin((time - ph.t) * Math.PI * 3));
+    else { const amb = (time % 11) / 11; scale = amb < 0.5 ? lerp(MIN, 0.8, amb / 0.5) : lerp(0.8, MIN, (amb - 0.5) / 0.5); }
+
+    const col = colorFor(ph.type, accent);
+    if (circleRef.current) {
+      const c = circleRef.current;
+      c.style.transform = `scale(${scale.toFixed(3)})`;
+      c.style.background = `radial-gradient(circle at 50% 40%, ${col}cc, ${col}55 70%, ${col}22)`;
+      c.style.borderColor = col;
+      c.style.boxShadow = `0 0 32px ${col}55, inset 0 0 40px ${col}44`;
+    }
+    if (glowRef.current) {
+      let o = 0.25 + (scale - MIN) / (MAX - MIN) * 0.5;
+      if (ph.type === "hold") o = 0.6 + 0.35 * Math.abs(Math.sin((time - ph.t) * Math.PI * 4));
+      glowRef.current.style.opacity = String(o.toFixed(3));
+      glowRef.current.style.background = `radial-gradient(circle, ${col}88 0%, ${col}00 70%)`;
+    }
+
+    if (idx !== lastIdx.current) {
+      lastIdx.current = idx;
+      setPhase(ph.type);
+      if (running && !a.paused) {
+        if (ph.type === "inhale") vibe(60);
+        else if (ph.type === "exhale") vibe(40);
+        else if (ph.type === "hold") vibe(holdVibe(Math.round(len)));
+        else if (ph.type === "release") vibe(0);
       }
-      rafRef.current = requestAnimationFrame(loop);
-    };
+      if (ph.type === "end" && !finished.current) { finished.current = true; vibe(0); onFinish?.(); }
+    }
+    setCount((p) => { const c = ph.type === "hold" ? Math.max(0, Math.ceil(endT - time)) : 0; return p !== c ? c : p; });
+  };
+
+  useEffect(() => {
+    const loop = () => { paintRef.current(); rafRef.current = requestAnimationFrame(loop); };
     rafRef.current = requestAnimationFrame(loop);
     return () => { cancelAnimationFrame(rafRef.current); vibe(0); };
-  }, [running]);
+  }, []);
 
   const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); onFinish?.(); } };
-  const label = running ? t("meditation.contraction.audioLead") : t("meditation.contraction.audioReady");
+  const holding = phase === "hold";
+  const col = colorFor(phase, accent);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 0", width: "100%" }}>
-      <audio ref={audioRef} src={src} preload="auto" onLoadedMetadata={(e) => setDur(e.currentTarget.duration || 0)} onEnded={onEnded} onError={() => setErr(true)} />
+      <audio ref={audioRef} src={src} preload="auto"
+        onLoadedMetadata={(e) => { durRef.current = e.currentTarget.duration || 0; setDur(durRef.current); }}
+        onEnded={onEnded} onError={() => setErr(true)} />
 
       <div style={{ position: "relative", width: 260, height: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div ref={glowRef} style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", background: `radial-gradient(circle, ${accent}88 0%, ${accent}00 70%)`, filter: "blur(6px)", transition: "opacity .12s linear", pointerEvents: "none" }} />
         <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: `1px solid ${accent}22` }} />
         <div ref={circleRef} style={{ width: 220, height: 220, borderRadius: "50%", background: `radial-gradient(circle at 50% 40%, ${accent}cc, ${accent}55 70%, ${accent}22)`, border: `2px solid ${accent}`, boxShadow: `0 0 32px ${accent}55, inset 0 0 40px ${accent}44`, willChange: "transform", transform: `scale(${MIN})` }} />
         <div style={{ position: "absolute", textAlign: "center", pointerEvents: "none" }}>
-          <div style={{ fontSize: 34, marginBottom: 2 }}>🎧</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{fmtClock(cur)}{dur ? ` / ${fmtClock(dur)}` : ""}</div>
+          {holding ? (
+            <>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{t("meditation.contraction.label.contract")}</div>
+              <div style={{ fontSize: 52, fontWeight: 900, color: "#fff", lineHeight: 1.05, textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{count}</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 30, marginBottom: 3 }}>🎧</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{fmtClock(cur)}{dur ? ` / ${fmtClock(dur)}` : ""}</div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Barre de progression = position dans l'audio (le guide). */}
+      {/* Progression = position dans l'audio (le guide). */}
       <div style={{ width: 260, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden", marginTop: 14 }}>
-        <div style={{ height: "100%", width: `${dur ? Math.min(100, (cur / dur) * 100) : 0}%`, background: accent, transition: "width .2s linear" }} />
+        <div style={{ height: "100%", width: `${dur ? Math.min(100, (cur / dur) * 100) : 0}%`, background: col, transition: "width .2s linear, background .3s" }} />
       </div>
 
-      <div style={{ marginTop: 12, textAlign: "center", minHeight: 34, maxWidth: 320, fontSize: 13.5, fontWeight: 600, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
-        {err ? t("meditation.contraction.audioMissing") : label}
+      {/* Consigne courte synchronisée sur la phase. */}
+      <div key={phase} style={{ marginTop: 12, textAlign: "center", minHeight: 34, maxWidth: 320, fontSize: 13.5, fontWeight: 600, color: holding ? C.coral : "rgba(255,255,255,0.78)", lineHeight: 1.5, animation: "medFade .4s ease" }}>
+        {err ? t("meditation.contraction.audioMissing") : t(`meditation.contraction.phase.${phase}`)}
       </div>
     </div>
   );

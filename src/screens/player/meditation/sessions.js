@@ -43,8 +43,8 @@ export const MED_SESSIONS = [
   // Jacobson MODIFIÉ (contraction globale) : 3 cycles inspir/expir, puis 4ᵉ
   // inspiration + blocage/contraction de TOUS les muscles (10 s), puis
   // relâchement total (15 s). Répétable. Vibration + audio d'ambiance optionnel.
-  { id: "jacobsonGlobal", kind: "contraction", group: "deep", accent: C.viol, audio: "jacobson-global",
-    breathCycles: 3, inhaleSec: 5, exhaleSec: 5, holdContractSec: 10, releaseSec: 15, reps: 3, durationMin: 3 },
+  { id: "jacobsonGlobal", kind: "contraction", group: "deep", accent: C.viol, audio: "jacobson-global", cues: "jacobsonGlobal",
+    breathCycles: 3, inhaleSec: 5, exhaleSec: 5, holdContractSec: 10, releaseSec: 15, reps: 3, durationMin: 4 },
   // ── Séances courtes ──
   { id: "prematch", kind: "steps", group: "short", accent: C.blue, steps: "prematch", durationMin: 2 },
   { id: "postmatch", kind: "steps", group: "short", accent: C.blue, steps: "postmatch", durationMin: 3 },
@@ -58,6 +58,35 @@ export const MED_GROUPS = [
   { key: "deep", emoji: "🧘" },
   { key: "short", emoji: "⏱️" },
 ];
+
+/* Cue sheet de l'audio guidé `jacobson-global.mp3` (extraite de l'enregistrement :
+   transcription + analyse d'énergie, ±0,3 s). Chaque entrée = début d'une phase
+   (jusqu'au `t` suivant), pilotée par audio.currentTime dans AudioGuided :
+   inhale = expansion · exhale = contraction du cercle · hold = figé + compte à
+   rebours + vibration (les 3 « bloque + contracte ») · release/outro = détente.
+   OFFSET global ajustable dans AudioGuided si un décalage constant apparaît. */
+export const AUDIO_CUES = {
+  jacobsonGlobal: [
+    { t: 0.0, type: "intro" },
+    { t: 26.0, type: "prepare" },
+    { t: 37.0, type: "inhale" },
+    { t: 65.9, type: "hold" },
+    { t: 76.9, type: "release" },
+    { t: 84.0, type: "exhale" },
+    { t: 96.0, type: "inhale" }, { t: 101.0, type: "exhale" },
+    { t: 108.0, type: "inhale" }, { t: 112.0, type: "exhale" },
+    { t: 120.0, type: "inhale" },
+    { t: 126.3, type: "hold" },
+    { t: 138.1, type: "release" },
+    { t: 150.0, type: "inhale" }, { t: 159.0, type: "exhale" },
+    { t: 171.0, type: "inhale" }, { t: 178.4, type: "exhale" },
+    { t: 181.0, type: "inhale" },
+    { t: 185.3, type: "hold" },
+    { t: 197.1, type: "release" },
+    { t: 200.0, type: "outro" },
+    { t: 212.4, type: "end" },
+  ],
+};
 
 /* Phases d'UNE répétition de « contraction globale » (Jacobson modifié) :
    breathCycles × (inspiration + expiration), puis 4ᵉ inspiration, puis

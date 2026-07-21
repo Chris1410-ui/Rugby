@@ -4,7 +4,7 @@ import { C } from "../../../lib/tokens.js";
 import { supabase } from "../../../lib/supabase.js";
 import { ChevronLeft, CheckCircle } from "../../../lib/icons.jsx";
 import { useWakeLock } from "./medTimer.js";
-import { JACOBSON_GROUPS, resolveSteps } from "./sessions.js";
+import { JACOBSON_GROUPS, AUDIO_CUES, resolveSteps } from "./sessions.js";
 import BreathingCircle from "./BreathingCircle.jsx";
 import Jacobson from "./Jacobson.jsx";
 import ContractionCycle from "./ContractionCycle.jsx";
@@ -48,7 +48,7 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
     // Audio présent → séance pilotée par la voix (le visuel suit la lecture).
     // Sinon → repli sur le minuteur visuel/haptique.
     if (session.kind === "contraction") return audioUrl
-      ? <AudioGuided key={runId} src={audioUrl} {...common} />
+      ? <AudioGuided key={runId} src={audioUrl} cues={AUDIO_CUES[session.cues]} {...common} />
       : <ContractionCycle key={runId} session={session} reps={reps} {...common} />;
     return <GuidedSteps key={runId} steps={resolveSteps(session, t)} {...common} />;
   };

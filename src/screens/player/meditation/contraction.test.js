@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { contractionPhases, MED_SESSIONS } from "./sessions.js";
+import { contractionPhases, MED_SESSIONS, AUDIO_CUES } from "./sessions.js";
 
 describe("Jacobson modifié — phases de contraction globale", () => {
   const s = MED_SESSIONS.find((x) => x.id === "jacobsonGlobal");
@@ -26,5 +26,26 @@ describe("Jacobson modifié — phases de contraction globale", () => {
     expect(by("release")[0].sec).toBe(15);
     expect(by("inhale4")[0].sec).toBe(5);
     expect(p.reduce((a, x) => a + x.sec, 0)).toBe(60);
+  });
+});
+
+describe("Jacobson modifié — cue sheet audio (jacobson-global)", () => {
+  const cues = AUDIO_CUES.jacobsonGlobal;
+
+  it("timestamps strictement croissants et se termine par 'end'", () => {
+    for (let i = 1; i < cues.length; i++) expect(cues[i].t).toBeGreaterThan(cues[i - 1].t);
+    expect(cues[cues.length - 1].type).toBe("end");
+  });
+
+  it("3 phases de contraction (hold) d'environ 11–12 s chacune", () => {
+    const holds = cues.map((c, i) => ({ c, i })).filter((x) => x.c.type === "hold");
+    expect(holds).toHaveLength(3);
+    for (const { c, i } of holds) {
+      const len = cues[i + 1].t - c.t;
+      expect(len).toBeGreaterThanOrEqual(10);
+      expect(len).toBeLessThanOrEqual(13);
+    }
+    // Les 3 blocages annoncés : 65,9 / 126,3 / 185,3 s.
+    expect(holds.map((h) => h.c.t)).toEqual([65.9, 126.3, 185.3]);
   });
 });

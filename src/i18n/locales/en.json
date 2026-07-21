@@ -254,6 +254,16 @@
       "audioLead": "Let the voice guide you.",
       "audioReady": "Put your headphones on, settle in, then press Start.",
       "audioMissing": "Audio unavailable — please try again later.",
+      "phase": {
+        "intro": "Settle in, lie down, palms facing the floor.",
+        "prepare": "Close your eyes, get ready.",
+        "inhale": "Breathe in slowly, all the way…",
+        "exhale": "Breathe out, let the air go.",
+        "hold": "Hold and contract your whole body.",
+        "release": "Release everything, let yourself feel heavy and calm.",
+        "outro": "Let yourself be carried by your breath.",
+        "end": "Session complete."
+      },
       "label": {
         "inhale": "Inhale",
         "exhale": "Exhale",
