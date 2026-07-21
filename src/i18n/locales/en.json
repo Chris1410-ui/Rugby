@@ -603,12 +603,9 @@
       "namePlaceholder": "Session name (optional)",
       "cartTitle": "MY SESSION",
       "cartEmpty": "Add exercises from the library below.",
-      "addTitle": "ADD EXERCISES",
       "sets": "Sets",
       "reps": "Reps",
       "charge": "Load",
-      "add": "Add",
-      "added": "Added",
       "remove": "Remove",
       "create_one": "Create session ({{count}} exercise)",
       "create_other": "Create session ({{count}} exercises)",
@@ -1079,7 +1076,10 @@
       "addSession": "Add a session (another day)",
       "routineBtn": "Template",
       "sending": "Sending…",
-      "sendBtn": "Send to players"
+      "sendBtn": "Send to players",
+      "addFromLibrary": "Library",
+      "restPlaceholder": "rest",
+      "restTitle": "Rest between sets (seconds)"
     },
     "app": {
       "fabSeance": "＋ Session",
@@ -1500,6 +1500,15 @@
       "secondaryMuscles": "Secondary",
       "instructionsTitle": "INSTRUCTIONS",
       "noInstructions": "Instructions not available in this language."
+    },
+    "expick": {
+      "title": "Add exercises",
+      "add_one": "Add ({{count}})",
+      "add_other": "Add ({{count}})",
+      "alreadyAdded": "already added",
+      "detail": "Details",
+      "select": "Select",
+      "selected": "Selected"
     }
   },
   "auth": {

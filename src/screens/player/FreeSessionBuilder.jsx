@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { C, sc } from "../../lib/tokens.js";
+import { C } from "../../lib/tokens.js";
 import { SESSION_CODES, CODES, sessionCodeLabel } from "../../lib/tokens.js";
-import { Overlay, Section, Tag } from "../../lib/ui.jsx";
-import { Search, Plus, Check, Trash2, Dumbbell } from "../../lib/icons.jsx";
-import { useExerciseLibrary, useExerciseFacets, bodyPartLabel, PAGE_SIZE } from "../../data/exerciseLibrary.js";
+import { Overlay, Section } from "../../lib/ui.jsx";
+import { Plus, Trash2 } from "../../lib/icons.jsx";
 import { createFreeSession } from "../../data/freeSessions.js";
 import { useMyRoutines, saveMyRoutine, deleteMyRoutine } from "../../data/routines.js";
+import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
 
 const accent = C.green;
 
 /* Compositeur de « séance libre » (autonome). Le joueur pioche des exercices
-   dans la Bibliothèque (panier), règle séries/reps/charge, puis crée la séance
-   (datée du jour, assignée à lui seul). Elle se loggue ensuite comme n'importe
-   quelle séance (SessionPlayCard) et alimente historique / compliance / points.
-   Le panier peut être chargé depuis une routine perso ou y être enregistré. */
+   dans la Bibliothèque (sélecteur partagé), règle séries/reps/charge, puis crée
+   la séance (datée du jour, assignée à lui seul). Elle se loggue ensuite comme
+   n'importe quelle séance (SessionPlayCard) et alimente historique / compliance
+   / points. Le panier peut être chargé depuis une routine perso ou y être
+   enregistré. */
 export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
@@ -24,16 +25,23 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   const [err, setErr] = useState("");
   const [savingRoutine, setSavingRoutine] = useState(false);
   const [routineName, setRoutineName] = useState("");
+  const [picking, setPicking] = useState(false);
   const { routines } = useMyRoutines(me?.id);
 
   const inCart = (ref) => cart.some((c) => c.ref === ref);
-  const toggle = (ex) => {
-    setCart((c) => inCart(ex.ref)
-      ? c.filter((x) => x.ref !== ex.ref)
-      : [...c, { ref: ex.ref, name: ex.name, bodyPart: ex.bodyPart, sets: 3, reps: "8", charge: "" }]);
-  };
   const patch = (ref, p) => setCart((c) => c.map((x) => (x.ref === ref ? { ...x, ...p } : x)));
   const remove = (ref) => setCart((c) => c.filter((x) => x.ref !== ref));
+
+  // Ajout depuis le sélecteur : on n'ajoute que les exercices pas déjà au panier.
+  const addFromLibrary = (items) => {
+    setCart((c) => {
+      const have = new Set(c.map((x) => x.ref));
+      const fresh = items
+        .filter((e) => !have.has(e.ref))
+        .map((e) => ({ ref: e.ref, name: e.name, bodyPart: e.bodyPart, sets: 3, reps: "8", charge: "" }));
+      return [...c, ...fresh];
+    });
+  };
 
   // Charge une routine perso dans le panier (remplace le contenu courant).
   const loadRoutine = (r) => {
@@ -145,9 +153,10 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
           )
         )}
 
-        {/* Ajout depuis la Bibliothèque */}
-        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, margin: "4px 0 10px" }}>{t("player.freeSession.addTitle")}</div>
-        <ExercisePicker inCart={inCart} onToggle={toggle} />
+        {/* Ajout depuis la Bibliothèque (sélecteur partagé) */}
+        <button onClick={() => setPicking(true)} style={{ width: "100%", marginTop: 12, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, color: accent, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <Plus size={15} /> {t("shared.expick.title")}
+        </button>
 
         {err && <div style={{ fontSize: 11, color: C.coral, margin: "12px 0 0" }}>{err}</div>}
 
@@ -155,6 +164,8 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
           {busy ? t("player.freeSession.creating") : t("player.freeSession.create", { count: cart.length })}
         </button>
       </div>
+
+      {picking && <ExercisePickerSheet onAdd={addFromLibrary} onClose={() => setPicking(false)} isAdded={(e) => inCart(e.ref)} />}
     </Overlay>
   );
 }
@@ -176,57 +187,3 @@ function LabeledTxt({ label, value, onChange, placeholder }) {
   );
 }
 const miniInp = { width: "100%", marginTop: 3, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
-
-/* Recherche + filtre partie du corps + grille avec ajout rapide (quick-add). */
-function ExercisePicker({ inCart, onToggle }) {
-  const { t } = useTranslation();
-  const [search, setSearch] = useState("");
-  const [bodyPart, setBodyPart] = useState("");
-  const [page, setPage] = useState(0);
-  const facets = useExerciseFacets();
-  const { exercises, total, loading } = useExerciseLibrary({ search, bodyPart, page });
-  const set = (fn) => (v) => { fn(v); setPage(0); };
-
-  return (
-    <div>
-      <div style={{ position: "relative", marginBottom: 8 }}>
-        <Search size={14} color="rgba(255,255,255,0.35)" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} />
-        <input value={search} onChange={(e) => set(setSearch)(e.target.value)} placeholder={t("shared.exlib.search")} style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 12px 9px 32px", color: "#fff", fontSize: 12.5, outline: "none" }} />
-      </div>
-      <select value={bodyPart} onChange={(e) => set(setBodyPart)(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 10px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none", marginBottom: 10 }}>
-        <option value="">{t("shared.exlib.allBodyParts")}</option>
-        {facets.bodyParts.map((v) => <option key={v} value={v}>{bodyPartLabel(t, v)}</option>)}
-      </select>
-
-      {loading ? (
-        <div style={{ textAlign: "center", padding: 18, color: "rgba(255,255,255,0.5)", fontSize: 12 }}>{t("common.loading")}</div>
-      ) : exercises.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 18, color: "rgba(255,255,255,0.5)", fontSize: 12 }}>{t("shared.exlib.empty")}</div>
-      ) : (
-        exercises.map((e) => {
-          const on = inCart(e.ref);
-          return (
-            <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
-              <div style={{ width: 34, height: 34, borderRadius: 8, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Dumbbell size={16} color="rgba(255,255,255,0.3)" />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700 }}>{e.name}</div>
-                <div><Tag c={accent}>{bodyPartLabel(t, e.bodyPart)}</Tag></div>
-              </div>
-              <button onClick={() => onToggle(e)} title={on ? t("player.freeSession.added") : t("player.freeSession.add")} style={{ width: 34, height: 34, borderRadius: 8, border: on ? "none" : `1px solid ${accent}66`, background: on ? accent : `${accent}18`, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {on ? <Check size={16} /> : <Plus size={16} color={accent} />}
-              </button>
-            </div>
-          );
-        })
-      )}
-      {!loading && total > PAGE_SIZE && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 12 }}>
-          <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} style={{ ...sc({ padding: "6px 12px" }), border: `1px solid ${C.border}`, color: "#fff", cursor: page === 0 ? "default" : "pointer", opacity: page === 0 ? 0.35 : 1, fontSize: 12 }}>{t("shared.exlib.prevPage")}</button>
-          <button onClick={() => setPage((p) => p + 1)} disabled={(page + 1) * PAGE_SIZE >= total} style={{ ...sc({ padding: "6px 12px" }), border: `1px solid ${C.border}`, color: "#fff", cursor: (page + 1) * PAGE_SIZE >= total ? "default" : "pointer", opacity: (page + 1) * PAGE_SIZE >= total ? 0.35 : 1, fontSize: 12 }}>{t("shared.exlib.nextPage")}</button>
-        </div>
-      )}
-    </div>
-  );
-}

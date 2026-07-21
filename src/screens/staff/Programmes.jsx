@@ -14,6 +14,7 @@ import { useExercises } from "../../data/exercises.js";
 import { parsePDFtoTemplates } from "../../lib/pdf.js";
 import { programFolder, uploadFile } from "../../data/storage.js";
 import ProgramFiles from "./ProgramFiles.jsx";
+import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
@@ -32,6 +33,7 @@ const ExoRow = ({ exo, onChange, onDel, cues }) => {
         <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>×</span>
         <input value={exo.reps} onChange={(e) => onChange({ reps: e.target.value })} placeholder={t("staff.programs.repsPlaceholder")} style={{ width: 54, ...miniSt, textAlign: "center" }} />
         <input value={exo.charge} onChange={(e) => onChange({ charge: e.target.value })} placeholder={t("staff.programs.chargePlaceholder")} style={{ width: 80, ...miniSt }} />
+        <input value={exo.rest ?? ""} onChange={(e) => onChange({ rest: e.target.value.replace(/[^\d]/g, "") })} inputMode="numeric" placeholder={t("staff.programs.restPlaceholder")} title={t("staff.programs.restTitle")} style={{ width: 58, ...miniSt, textAlign: "center" }} />
         <button onClick={onDel} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex", padding: 4 }}><X size={14} /></button>
       </div>
       <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
@@ -62,6 +64,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", titre: "Séance force", exercises: [newExo()] }]);
   const [pdfFile, setPdfFile] = useState(null); // PDF source à archiver dans Storage
   const [filesOf, setFilesOf] = useState(null); // programme dont on ouvre les fichiers
+  const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
 
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
 
@@ -75,6 +78,16 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const setTpl = (i, patch) => setTemplates((t) => t.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const setExo = (ti, ei, patch) => setTemplates((t) => t.map((x, j) => (j === ti ? { ...x, exercises: x.exercises.map((e, k) => (k === ei ? { ...e, ...patch } : e)) } : x)));
   const addExo = (ti) => setTemplates((t) => t.map((x, j) => (j === ti ? { ...x, exercises: [...x.exercises, newExo()] } : x)));
+  // Ajout depuis la Bibliothèque (1324 exos) : mappe vers la forme newExo (name
+  // rempli, séries/reps/charge/repos par défaut, éditables), sans doublon de nom.
+  const addFromLibrary = (ti, items) => setTemplates((t) => t.map((x, j) => {
+    if (j !== ti) return x;
+    const have = new Set(x.exercises.map((e) => (e.name || "").trim().toLowerCase()));
+    const fresh = items.filter((e) => !have.has(e.name.trim().toLowerCase())).map((e) => ({ ...newExo(), name: e.name }));
+    // Remplace une 1re ligne vide (état initial) plutôt que de laisser un trou.
+    const base = x.exercises.length === 1 && !x.exercises[0].name.trim() ? [] : x.exercises;
+    return { ...x, exercises: [...base, ...fresh] };
+  }));
   const delExo = (ti, ei) => setTemplates((t) => t.map((x, j) => (j === ti ? { ...x, exercises: x.exercises.filter((_, k) => k !== ei) } : x)));
   const delTpl = (ti) => setTemplates((t) => t.filter((_, j) => j !== ti));
 
@@ -265,9 +278,19 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           {tpl.exercises.map((exo, ei) => (
             <ExoRow key={exo.id} exo={exo} cues={find(exo.name)?.cues} onChange={(patch) => setExo(ti, ei, patch)} onDel={() => delExo(ti, ei)} />
           ))}
-          <button onClick={() => addExo(ti)} style={{ marginTop: 10, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 600, cursor: "pointer", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={13} /> {t("staff.programs.addExo")}</button>
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <button onClick={() => addExo(ti)} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={13} /> {t("staff.programs.addExo")}</button>
+            <button onClick={() => setPickingFor(ti)} style={{ flex: 1, background: `${C.green}18`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: 7, color: C.green, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={13} /> {t("staff.programs.addFromLibrary")}</button>
+          </div>
         </div>
       ))}
+      {pickingFor != null && (
+        <ExercisePickerSheet
+          onAdd={(items) => addFromLibrary(pickingFor, items)}
+          onClose={() => setPickingFor(null)}
+          isAdded={(e) => (templates[pickingFor]?.exercises || []).some((x) => (x.name || "").trim().toLowerCase() === e.name.trim().toLowerCase())}
+        />
+      )}
 
       <button onClick={addTpl} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 10, color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, cursor: "pointer", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={14} /> {t("staff.programs.addSession")}</button>
 

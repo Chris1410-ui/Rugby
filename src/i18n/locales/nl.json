@@ -603,12 +603,9 @@
       "namePlaceholder": "Sessienaam (optioneel)",
       "cartTitle": "MIJN SESSIE",
       "cartEmpty": "Voeg hieronder oefeningen toe uit de bibliotheek.",
-      "addTitle": "OEFENINGEN TOEVOEGEN",
       "sets": "Sets",
       "reps": "Reps",
       "charge": "Gewicht",
-      "add": "Toevoegen",
-      "added": "Toegevoegd",
       "remove": "Verwijderen",
       "create_one": "Sessie maken ({{count}} oefening)",
       "create_other": "Sessie maken ({{count}} oefeningen)",
@@ -1079,7 +1076,10 @@
       "addSession": "Een sessie toevoegen (andere dag)",
       "routineBtn": "Sjabloon",
       "sending": "Verzenden…",
-      "sendBtn": "Naar spelers verzenden"
+      "sendBtn": "Naar spelers verzenden",
+      "addFromLibrary": "Bibliotheek",
+      "restPlaceholder": "rust",
+      "restTitle": "Rust tussen sets (seconden)"
     },
     "app": {
       "fabSeance": "＋ Sessie",
@@ -1500,6 +1500,15 @@
       "secondaryMuscles": "Secundair",
       "instructionsTitle": "INSTRUCTIES",
       "noInstructions": "Instructies niet beschikbaar in deze taal."
+    },
+    "expick": {
+      "title": "Oefeningen toevoegen",
+      "add_one": "Toevoegen ({{count}})",
+      "add_other": "Toevoegen ({{count}})",
+      "alreadyAdded": "al toegevoegd",
+      "detail": "Details",
+      "select": "Selecteren",
+      "selected": "Geselecteerd"
     }
   },
   "auth": {
