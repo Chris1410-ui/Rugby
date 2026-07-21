@@ -1132,7 +1132,8 @@
       "kpiBilansSub": "ingevoerd",
       "alertsTitle": "Meldingen · {{count}}",
       "alertsTab": "→ tabblad Meldingen",
-      "noAlerts": "Geen melding. 👌"
+      "noAlerts": "Geen melding. 👌",
+      "invitePlayer": "Deze speler uitnodigen"
     },
     "invites": {
       "title": "Staf-uitnodigingen",
@@ -1604,7 +1605,15 @@
       "inviteInvalid": "Ongeldige of verlopen uitnodiging.",
       "inviteEmailMismatch": "Deze uitnodiging is voorbehouden aan een ander e-mailadres.",
       "inviteError": "Mislukt: {{err}}",
-      "inviteNeedsSignin": "Account aangemaakt. Log in en open de uitnodigingslink opnieuw."
+      "inviteNeedsSignin": "Account aangemaakt. Log in en open de uitnodigingslink opnieuw.",
+      "invitePlayerTitle": "Deelnemen als speler",
+      "invitePlayerSubtitle": "Je club heeft je uitgenodigd. Maak je account aan om deel te nemen.",
+      "birthdateLabel": "Geboortedatum",
+      "consentAdult": "Ik stem in met de verwerking van mijn persoonsgegevens volgens het privacybeleid.",
+      "errBirthdate": "Voer je geboortedatum in.",
+      "inviteAlreadyClaimed": "Dit spelersprofiel is al door een ander account geclaimd.",
+      "backToSignin": "Terug naar aanmelden",
+      "inviteOnlyNote": "Registratie alleen op uitnodiging. Vraag je club om een link."
     },
     "link": {
       "expired": "De reset-link is verlopen. Vraag hieronder een nieuwe e-mail aan.",

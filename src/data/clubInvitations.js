@@ -66,11 +66,24 @@ export async function peekClubInvitation(token) {
   return row ? { role: row.role, clubId: row.club_id, hasEmail: row.has_email } : null;
 }
 
+// Âge de majorité : le consentement parental n'est requis qu'en dessous.
+export const isMinor = (birthdate) => {
+  if (!birthdate) return true; // par prudence, tant que la date n'est pas saisie
+  const b = new Date(birthdate), now = new Date();
+  let age = now.getFullYear() - b.getFullYear();
+  const m = now.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age -= 1;
+  return age < 18;
+};
+
 /* Acceptation après inscription : élève le profil de l'appelant depuis l'invite.
-   Consentement parental (mineur) optionnel — requis côté UI pour un joueur. */
-export async function acceptClubInvitation(token, { guardianName, guardianEmail, policyVersion, consent } = {}) {
+   Pour un joueur : date de naissance obligatoire (l'âge décide du consentement —
+   majeur = auto-consentement, mineur = consentement parental). Le serveur
+   recalcule la minorité et exige le tuteur si mineur. */
+export async function acceptClubInvitation(token, { birthdate, guardianName, guardianEmail, policyVersion, consent } = {}) {
   const { error } = await supabase.rpc("accept_club_invitation", {
     p_token: token,
+    p_birthdate: birthdate || null,
     p_guardian_name: guardianName || null,
     p_guardian_email: guardianEmail || null,
     p_policy_version: policyVersion || null,

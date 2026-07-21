@@ -1132,7 +1132,8 @@
       "kpiBilansSub": "recorded",
       "alertsTitle": "Alerts · {{count}}",
       "alertsTab": "→ Alerts tab",
-      "noAlerts": "No alert. 👌"
+      "noAlerts": "No alert. 👌",
+      "invitePlayer": "Invite this player"
     },
     "invites": {
       "title": "Staff invitations",
@@ -1604,7 +1605,15 @@
       "inviteInvalid": "Invalid or expired invitation.",
       "inviteEmailMismatch": "This invitation is reserved for another email address.",
       "inviteError": "Failed: {{err}}",
-      "inviteNeedsSignin": "Account created. Sign in, then reopen the invite link."
+      "inviteNeedsSignin": "Account created. Sign in, then reopen the invite link.",
+      "invitePlayerTitle": "Join as player",
+      "invitePlayerSubtitle": "Your club invited you. Create your account to join the team.",
+      "birthdateLabel": "Date of birth",
+      "consentAdult": "I consent to the processing of my personal data in accordance with the privacy policy.",
+      "errBirthdate": "Enter your date of birth.",
+      "inviteAlreadyClaimed": "This player profile has already been claimed by another account.",
+      "backToSignin": "Back to sign in",
+      "inviteOnlyNote": "Registration is by invitation only. Ask your club for a link."
     },
     "link": {
       "expired": "The reset link has expired. Request a new email below.",

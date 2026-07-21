@@ -21,7 +21,7 @@ import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
 import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -33,6 +33,7 @@ import Programmes from "./Programmes.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
 import StaffInvites from "../shared/StaffInvites.jsx";
+import { createClubInvitation, inviteLink } from "../../data/clubInvitations.js";
 import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
@@ -188,7 +189,18 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
   const [importing, setImporting] = useState(false);
   const [demoBusy, setDemoBusy] = useState(false);
   const [demoNote, setDemoNote] = useState("");
+  const [invited, setInvited] = useState(null); // id du joueur dont le lien vient d'être copié
   const demoCount = players.filter((p) => p.isDemo).length;
+
+  // Invite un joueur non revendiqué : crée l'invitation (role=joueur, carte
+  // roster) et copie le lien. Le joueur rejoint le club en l'ouvrant.
+  const invitePlayer = async (p) => {
+    try {
+      const token = await createClubInvitation(teamId, { role: "joueur", playerId: p.id });
+      await navigator.clipboard?.writeText(inviteLink(token));
+      setInvited(p.id); setTimeout(() => setInvited(null), 2500);
+    } catch (e) { console.error("[invitePlayer]", e.message); }
+  };
 
   const genDemo = async () => {
     setDemoBusy(true); setDemoNote("");
@@ -285,6 +297,11 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
                 <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
                 <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>{t("staff.app.ready")}</div>
               </div>
+              {!readOnly && !p.ownerUid && !p.isDemo && (
+                <button onClick={(e) => { e.stopPropagation(); invitePlayer(p); }} title={t("staff.app.invitePlayer")} style={{ background: invited === p.id ? C.green : `${C.green}18`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: 7, color: invited === p.id ? "#fff" : C.green, cursor: "pointer", display: "flex" }}>
+                  {invited === p.id ? <Check size={15} /> : <Shield size={15} />}
+                </button>
+              )}
               <button onClick={(e) => { e.stopPropagation(); onPreview?.(p); }} title={t("staff.app.previewTitle")} style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
                 <Eye size={15} />
               </button>
