@@ -38,6 +38,8 @@ export function dbToSession(row, roster) {
     assigned: row.assigned || { mode: "all" },
     assignedIds: resolveAssignedIds(row.assigned, roster),
     campaignId: row.campaign_id || null, // séance-test → campagne de tests liée (0021)
+    origin: row.origin || "staff",        // 'staff' (prescrite) | 'libre' (autonome, 0054)
+    createdBy: row.created_by || null,
   };
 }
 

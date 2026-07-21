@@ -593,7 +593,27 @@
       "estimated1rm": "ESTIMATED 1RM",
       "kg": "kg",
       "notEnoughHistory": "Not enough history yet to plot a progression. Validate at least two sessions with this exercise.",
-      "rpeShort": "RPE"
+      "rpeShort": "RPE",
+      "freeTag": "Free",
+      "deleteFree": "Delete this free session"
+    },
+    "freeSession": {
+      "newButton": "Create a free session",
+      "title": "Free session",
+      "namePlaceholder": "Session name (optional)",
+      "cartTitle": "MY SESSION",
+      "cartEmpty": "Add exercises from the library below.",
+      "addTitle": "ADD EXERCISES",
+      "sets": "Sets",
+      "reps": "Reps",
+      "charge": "Load",
+      "add": "Add",
+      "added": "Added",
+      "remove": "Remove",
+      "create_one": "Create session ({{count}} exercise)",
+      "create_other": "Create session ({{count}} exercises)",
+      "creating": "Creating…",
+      "errNoExercise": "Add at least one exercise."
     }
   },
   "staff": {

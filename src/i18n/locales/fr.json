@@ -593,7 +593,27 @@
       "estimated1rm": "1RM ESTIMÉ",
       "kg": "kg",
       "notEnoughHistory": "Pas encore assez d'historique pour tracer une progression. Valide au moins deux séances avec cet exercice.",
-      "rpeShort": "RPE"
+      "rpeShort": "RPE",
+      "freeTag": "Libre",
+      "deleteFree": "Supprimer cette séance libre"
+    },
+    "freeSession": {
+      "newButton": "Créer une séance libre",
+      "title": "Séance libre",
+      "namePlaceholder": "Nom de la séance (optionnel)",
+      "cartTitle": "MA SÉANCE",
+      "cartEmpty": "Ajoute des exercices depuis la bibliothèque ci-dessous.",
+      "addTitle": "AJOUTER DES EXERCICES",
+      "sets": "Séries",
+      "reps": "Reps",
+      "charge": "Charge",
+      "add": "Ajouter",
+      "added": "Ajouté",
+      "remove": "Retirer",
+      "create_one": "Créer la séance ({{count}} exercice)",
+      "create_other": "Créer la séance ({{count}} exercices)",
+      "creating": "Création…",
+      "errNoExercise": "Ajoute au moins un exercice."
     }
   },
   "staff": {

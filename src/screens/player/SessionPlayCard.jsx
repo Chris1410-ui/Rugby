@@ -15,7 +15,7 @@ import { usePreview } from "../../lib/preview.js";
 const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
-export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved }) {
+export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete }) {
   const { t } = useTranslation();
   const preview = usePreview(); // aperçu owner/staff → lecture seule
   const past = s.date <= todayISO();
@@ -134,6 +134,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, fontWeight: 800 }}>{fmtShort(s.date)}</span>
             <Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag>
+            {s.origin === "libre" && <Tag c={C.viol}>{t("player.session.freeTag")}</Tag>}
             <span style={{ fontSize: 12, fontWeight: 600 }}>{s.titre}</span>
           </div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("player.session.exercisesSeries", { ex: s.exercises.length, sets: totSets })}</div>
@@ -235,6 +236,11 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                 <button onClick={() => valider("postponed")} disabled={busy} title={t("player.session.postponeTitle")} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.postpone")}</button>
               </div>
             </>
+          )}
+          {!preview && s.origin === "libre" && onDelete && (
+            <button onClick={() => onDelete(s)} style={{ width: "100%", marginTop: 8, background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}>
+              {t("player.session.deleteFree")}
+            </button>
           )}
         </div>
       )}

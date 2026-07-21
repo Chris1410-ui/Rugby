@@ -3,22 +3,38 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { todayISO, statusOfLog, fmtShort } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
-import { Flag, CheckCircle } from "../../lib/icons.jsx";
+import { Flag, CheckCircle, Plus } from "../../lib/icons.jsx";
 import { usePreview } from "../../lib/preview.js";
 import { enrollInSession } from "../../data/sessions.js";
+import { deleteFreeSession } from "../../data/freeSessions.js";
 import { useTeamCamps, useMyCampEnrollments, enrollInCamp } from "../../data/camps.js";
 import SessionPlayCard from "./SessionPlayCard.jsx";
+import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
 
-/* Mes séances (joueur) — inscriptions ouvertes + à faire + historique. */
+/* Mes séances (joueur) — inscriptions ouvertes + séance libre + à faire + historique. */
 export default function Seances({ me, sessions, logs, teamId, accent }) {
   const { t } = useTranslation();
+  const preview = usePreview();
+  const [building, setBuilding] = useState(false);
   const mine = sessions.filter((s) => s.assignedIds.includes(me.id));
   const today = todayISO();
   const upcoming = mine.filter((s) => s.date >= today && statusOfLog(logs, s.id, me.id) === "pending");
   const pastOnes = mine.filter((s) => !(s.date >= today && statusOfLog(logs, s.id, me.id) === "pending"));
 
+  const onDelete = async (s) => {
+    if (preview) return;
+    try { await deleteFreeSession(s.id); } catch (e) { console.error("[deleteFreeSession]", e.message); }
+  };
+
   return (
     <div>
+      {!preview && (
+        <button onClick={() => setBuilding(true)} style={{ width: "100%", marginBottom: 14, background: `${accent}18`, border: `1px solid ${accent}66`, borderRadius: 10, padding: 12, color: accent, fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <Plus size={16} /> {t("player.freeSession.newButton")}
+        </button>
+      )}
+      {building && <FreeSessionBuilder onClose={() => setBuilding(false)} />}
+
       <OpenEnrollments me={me} sessions={sessions} teamId={teamId} accent={accent} />
 
       {mine.length === 0 ? (
@@ -31,7 +47,7 @@ export default function Seances({ me, sessions, logs, teamId, accent }) {
             <>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>{t("player.seances.todo")} · {upcoming.length}</div>
               {upcoming.map((s) => (
-                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} />
+                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onDelete={onDelete} />
               ))}
             </>
           )}
@@ -39,7 +55,7 @@ export default function Seances({ me, sessions, logs, teamId, accent }) {
             <>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, margin: "16px 0 10px" }}>{t("player.seances.history")}</div>
               {pastOnes.map((s) => (
-                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} />
+                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onDelete={onDelete} />
               ))}
             </>
           )}
