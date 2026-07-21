@@ -3,7 +3,7 @@
    S'appuie sur le référentiel Top 14 existant (lib/top14.js) : % vs cible,
    statut et points ne sont jamais écrits en dur. */
 
-import { top14Player } from "../top14.js";
+import { top14Player } from "../top14.core.js";
 import { REPORT_TEST_BY_KEY, thresholdFor, strengthTargetKg, frNum, secToMMSS, roundKg } from "./standards.js";
 
 const POINTS_PER_STANDARD = 30; // règle confirmée : +30 par standard atteint.
