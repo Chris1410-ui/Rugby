@@ -722,7 +722,6 @@
       "importFail": "Import mislukt: {{err}}",
       "title": "Spelers importeren (Excel / CSV)",
       "step1": "1. Download het sjabloon (genormaliseerde kolommen)",
-      "templateXlsx": "Sjabloon .xlsx",
       "templateCsv": "Sjabloon .csv",
       "step1Hint": "1 rij = 1 speler. Totem (of nummer) = sleutel. Testkolommen optioneel. Decimalen met komma of punt. MAS in m/s.",
       "reading": "Lezen…",
@@ -750,8 +749,7 @@
       "summaryLine1": "{{created}} speler(s) aangemaakt · {{updated}} bijgewerkt",
       "summaryTests": "{{count}} testreeks(en) opgeslagen — campagne “Import van {{date}}”",
       "summaryNoTests": "Geen testresultaat geïmporteerd",
-      "close": "Sluiten",
-      "sheetName": "Spelers"
+      "close": "Sluiten"
     },
     "tasks": {
       "modeGroup": "Linie · {{group}}",

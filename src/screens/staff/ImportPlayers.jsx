@@ -4,6 +4,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { CloseX, useModalClose, Tag } from "../../lib/ui.jsx";
 import { Download, Upload, CheckCircle } from "../../lib/icons.jsx";
 import { downloadCSV } from "../../lib/csv.js";
+import { parseSpreadsheetFile } from "../../lib/spreadsheet.js";
 import { buildPreview, importTemplate, importMsg } from "../../lib/importPlayers.js";
 import { commitImport } from "../../data/importer.js";
 import { todayISO, fmtShort } from "../../lib/metrics.js";
@@ -24,25 +25,16 @@ export default function ImportPlayers({ teamId, players = [], onClose }) {
   const [err, setErr] = useState("");
   const [summary, setSummary] = useState(null);
 
-  const downloadTemplate = async (kind) => {
-    const rows = importTemplate(t); // [en-têtes traduits, ligne exemple]
-    if (kind === "csv") { downloadCSV("modele_import_joueurs.csv", rows); return; }
-    const XLSX = await import("xlsx");
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, t("staff.import.sheetName"));
-    XLSX.writeFile(wb, "modele_import_joueurs.xlsx");
+  // Modèle en CSV (ouvre dans Excel/Sheets). Le dépôt accepte toujours .xlsx ET .csv.
+  const downloadTemplate = () => {
+    downloadCSV("modele_import_joueurs.csv", importTemplate(t)); // [en-têtes traduits, ligne exemple]
   };
 
   const onFile = async (file) => {
     if (!file) return;
     setErr(""); setBusy(true); setFileName(file.name);
     try {
-      const XLSX = await import("xlsx");
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      const raw = await parseSpreadsheetFile(file); // .xlsx (read-excel-file) ou .csv (papaparse)
       if (!raw.length) { setErr(t("staff.import.emptyFile")); setBusy(false); return; }
       const pv = buildPreview(raw, players);
       if (!Object.keys(pv.columnMap).length) { setErr(t("staff.import.noColumn")); setBusy(false); return; }
@@ -78,8 +70,7 @@ export default function ImportPlayers({ teamId, players = [], onClose }) {
             <div style={sc({ padding: 14, marginBottom: 12 })}>
               <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>{t("staff.import.step1")}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button onClick={() => downloadTemplate("xlsx")} style={tplBtn}><Download size={14} /> {t("staff.import.templateXlsx")}</button>
-                <button onClick={() => downloadTemplate("csv")} style={tplBtn}><Download size={14} /> {t("staff.import.templateCsv")}</button>
+                <button onClick={downloadTemplate} style={tplBtn}><Download size={14} /> {t("staff.import.templateCsv")}</button>
               </div>
               <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 10, lineHeight: 1.6 }}>
                 {t("staff.import.step1Hint")}

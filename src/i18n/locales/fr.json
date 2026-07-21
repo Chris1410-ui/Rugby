@@ -722,7 +722,6 @@
       "importFail": "Échec de l'import : {{err}}",
       "title": "Importer des joueurs (Excel / CSV)",
       "step1": "1. Télécharge le modèle (colonnes normalisées)",
-      "templateXlsx": "Modèle .xlsx",
       "templateCsv": "Modèle .csv",
       "step1Hint": "1 ligne = 1 joueur. Totem (ou numéro) = clé. Colonnes de tests optionnelles. Décimales avec virgule ou point. MAS en m/s.",
       "reading": "Lecture…",
@@ -750,8 +749,7 @@
       "summaryLine1": "{{created}} joueur(s) créé(s) · {{updated}} mis à jour",
       "summaryTests": "{{count}} série(s) de tests enregistrée(s) — campagne « Import du {{date}} »",
       "summaryNoTests": "Aucun résultat de test importé",
-      "close": "Fermer",
-      "sheetName": "Joueurs"
+      "close": "Fermer"
     },
     "tasks": {
       "modeGroup": "Ligne · {{group}}",
