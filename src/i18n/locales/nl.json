@@ -254,6 +254,16 @@
       "audioLead": "Laat je leiden door de stem.",
       "audioReady": "Zet je koptelefoon op, installeer je en druk op Start.",
       "audioMissing": "Audio niet beschikbaar — probeer het later opnieuw.",
+      "phase": {
+        "intro": "Installeer je, ga liggen, handpalmen naar de vloer.",
+        "prepare": "Sluit je ogen, maak je klaar.",
+        "inhale": "Adem langzaam in, helemaal…",
+        "exhale": "Adem uit, laat de lucht los.",
+        "hold": "Houd vast en span je hele lichaam aan.",
+        "release": "Laat alles los, word zwaar en rustig.",
+        "outro": "Laat je dragen door je ademhaling.",
+        "end": "Sessie voltooid."
+      },
       "label": {
         "inhale": "Adem in",
         "exhale": "Adem uit",
