@@ -251,6 +251,9 @@
     },
     "contraction": {
       "rep": "Répétition {{n}} / {{total}}",
+      "audioLead": "Laisse-toi guider par la voix.",
+      "audioReady": "Mets tes écouteurs, installe-toi, puis appuie sur Démarrer.",
+      "audioMissing": "Audio indisponible — réessaie plus tard.",
       "label": {
         "inhale": "Inspire",
         "exhale": "Expire",

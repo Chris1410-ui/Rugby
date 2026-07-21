@@ -251,6 +251,9 @@
     },
     "contraction": {
       "rep": "Herhaling {{n}} / {{total}}",
+      "audioLead": "Laat je leiden door de stem.",
+      "audioReady": "Zet je koptelefoon op, installeer je en druk op Start.",
+      "audioMissing": "Audio niet beschikbaar — probeer het later opnieuw.",
       "label": {
         "inhale": "Adem in",
         "exhale": "Adem uit",

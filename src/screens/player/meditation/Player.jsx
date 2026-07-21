@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { supabase } from "../../../lib/supabase.js";
@@ -8,6 +8,7 @@ import { JACOBSON_GROUPS, resolveSteps } from "./sessions.js";
 import BreathingCircle from "./BreathingCircle.jsx";
 import Jacobson from "./Jacobson.jsx";
 import ContractionCycle from "./ContractionCycle.jsx";
+import AudioGuided from "./AudioGuided.jsx";
 import GuidedSteps from "./GuidedSteps.jsx";
 
 /* Lecteur commun à toutes les séances : démarrer / pause / stop, minuteur,
@@ -27,19 +28,13 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
   const [reps, setReps] = useState(session.reps || 3);
   useWakeLock(running);
 
-  // Audio d'ambiance OPTIONNEL (bucket public `meditation-audio`, cf. 0062).
-  // Absent (404) → la séance se déroule en texte/visuel seul, sans erreur.
+  // URL publique de l'audio guidé (bucket public `meditation-audio`, cf. 0062).
+  // Présent → la séance est PILOTÉE PAR L'AUDIO (AudioGuided) : le visuel suit la
+  // voix, aucune horloge concurrente. Absent → repli sur le minuteur (ContractionCycle).
   const audioUrl = useMemo(
     () => (session.audio ? supabase.storage.from("meditation-audio").getPublicUrl(`${session.audio}.mp3`).data.publicUrl : null),
     [session.audio],
   );
-  const audioRef = useRef(null);
-  useEffect(() => { const a = audioRef.current; if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } } }, [runId]);
-  useEffect(() => {
-    const a = audioRef.current; if (!a) return;
-    if (running) a.play?.().catch(() => { /* autoplay bloqué / 404 → silencieux */ });
-    else a.pause?.();
-  }, [running]);
 
   const start = () => { setFinished(false); setRunId((n) => n + 1); setRunning(true); };
   const toggle = () => setRunning((r) => !r);
@@ -50,7 +45,11 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
     const common = { running, onFinish, accent };
     if (session.kind === "breathing") return <BreathingCircle key={runId} pattern={session.pattern} targetCycles={cycles} {...common} />;
     if (session.kind === "jacobson") return <Jacobson key={runId} groups={JACOBSON_GROUPS} contractSec={session.contractSec} releaseSec={session.releaseSec} {...common} />;
-    if (session.kind === "contraction") return <ContractionCycle key={runId} session={session} reps={reps} {...common} />;
+    // Audio présent → séance pilotée par la voix (le visuel suit la lecture).
+    // Sinon → repli sur le minuteur visuel/haptique.
+    if (session.kind === "contraction") return audioUrl
+      ? <AudioGuided key={runId} src={audioUrl} {...common} />
+      : <ContractionCycle key={runId} session={session} reps={reps} {...common} />;
     return <GuidedSteps key={runId} steps={resolveSteps(session, t)} {...common} />;
   };
 
@@ -96,8 +95,9 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
         </div>
       )}
 
-      {/* Réglage du nombre de répétitions (contraction globale) */}
-      {session.kind === "contraction" && !finished && (
+      {/* Réglage du nombre de répétitions — uniquement en repli minuteur (sans
+          audio) ; en mode audio-piloté, c'est l'enregistrement qui fixe la durée. */}
+      {session.kind === "contraction" && !audioUrl && !finished && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginRight: 2 }}>{t("meditation.player.reps")}</span>
           {REP_PRESETS.map((n) => (
@@ -110,8 +110,6 @@ export default function Player({ session, onClose, onComplete, alreadyDone }) {
         </div>
       )}
 
-      {/* Audio d'ambiance optionnel (silencieux si le fichier n'existe pas). */}
-      {audioUrl && <audio ref={audioRef} src={audioUrl} loop preload="none" />}
 
       {/* Contrôles */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, paddingBottom: 4 }}>
