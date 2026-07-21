@@ -722,7 +722,6 @@
       "importFail": "Import failed: {{err}}",
       "title": "Import players (Excel / CSV)",
       "step1": "1. Download the template (normalised columns)",
-      "templateXlsx": "Template .xlsx",
       "templateCsv": "Template .csv",
       "step1Hint": "1 row = 1 player. Totem (or number) = key. Test columns optional. Decimals with comma or dot. MAS in m/s.",
       "reading": "Reading…",
@@ -750,8 +749,7 @@
       "summaryLine1": "{{created}} player(s) created · {{updated}} updated",
       "summaryTests": "{{count}} test set(s) recorded — campaign “Import of {{date}}”",
       "summaryNoTests": "No test result imported",
-      "close": "Close",
-      "sheetName": "Players"
+      "close": "Close"
     },
     "tasks": {
       "modeGroup": "Line · {{group}}",
