@@ -593,7 +593,27 @@
       "estimated1rm": "GESCHATTE 1RM",
       "kg": "kg",
       "notEnoughHistory": "Nog niet genoeg geschiedenis om een progressie te tekenen. Valideer minstens twee sessies met deze oefening.",
-      "rpeShort": "RPE"
+      "rpeShort": "RPE",
+      "freeTag": "Vrij",
+      "deleteFree": "Deze vrije sessie verwijderen"
+    },
+    "freeSession": {
+      "newButton": "Vrije sessie maken",
+      "title": "Vrije sessie",
+      "namePlaceholder": "Sessienaam (optioneel)",
+      "cartTitle": "MIJN SESSIE",
+      "cartEmpty": "Voeg hieronder oefeningen toe uit de bibliotheek.",
+      "addTitle": "OEFENINGEN TOEVOEGEN",
+      "sets": "Sets",
+      "reps": "Reps",
+      "charge": "Gewicht",
+      "add": "Toevoegen",
+      "added": "Toegevoegd",
+      "remove": "Verwijderen",
+      "create_one": "Sessie maken ({{count}} oefening)",
+      "create_other": "Sessie maken ({{count}} oefeningen)",
+      "creating": "Aanmaken…",
+      "errNoExercise": "Voeg minstens één oefening toe."
     }
   },
   "staff": {
