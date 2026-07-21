@@ -4,7 +4,7 @@ import { C } from "../../lib/tokens.js";
 import { Section } from "../../lib/ui.jsx";
 import { Plus, Trash2, Check, Shield } from "../../lib/icons.jsx";
 import { fmtShort } from "../../lib/metrics.js";
-import { useClubInvitations, createClubInvitation, revokeClubInvitation, inviteLink } from "../../data/clubInvitations.js";
+import { useClubInvitations, createClubInvitation, revokeClubInvitation, inviteLink, sendInvitationEmail } from "../../data/clubInvitations.js";
 
 const accent = C.coral;
 const STAFF_INVITE_ROLES = ["preparateur", "medical", "coach"];
@@ -20,14 +20,26 @@ export default function StaffInvites({ teamId }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(null);
+  const [sent, setSent] = useState(""); // message de succès (email envoyé / lien copié)
 
   const generate = async () => {
-    setBusy(true); setErr("");
+    setBusy(true); setErr(""); setSent("");
+    const targetEmail = email.trim();
     try {
-      const token = await createClubInvitation(teamId, { role, email });
+      const token = await createClubInvitation(teamId, { role, email: targetEmail });
       setEmail("");
-      // Copie immédiate du lien fraîchement créé (confort).
+      // Copie immédiate du lien fraîchement créé (confort, toujours).
       copy(token);
+      // Si un email est renseigné, on l'envoie AUSSI automatiquement (Resend).
+      if (targetEmail) {
+        try {
+          await sendInvitationEmail({ token, email: targetEmail, role });
+          setSent(t("staff.invites.emailSent", { email: targetEmail }));
+        } catch (e) {
+          // L'invitation existe (lien copié) ; seul l'envoi a échoué → on le signale sans bloquer.
+          setErr(t("staff.invites.emailFail", { err: e.message }));
+        }
+      }
     } catch (e) {
       setErr(t("staff.invites.errCreate", { err: e.message }));
     }
@@ -59,7 +71,9 @@ export default function StaffInvites({ teamId }) {
           ))}
         </div>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", fontWeight: 700, marginBottom: 5 }}>{t("staff.invites.emailLabel")}</div>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("staff.invites.emailPlaceholder")} type="email" style={{ ...inp, marginBottom: 10 }} />
+        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("staff.invites.emailPlaceholder")} type="email" style={{ ...inp, marginBottom: 4 }} />
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, marginBottom: 10 }}>{t("staff.invites.emailHint")}</div>
+        {sent && <div style={{ fontSize: 11, color: C.green, marginBottom: 8 }}>{sent}</div>}
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
         <button onClick={generate} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 9, padding: 11, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
           <Plus size={15} /> {busy ? t("staff.invites.generating") : t("staff.invites.generate")}
