@@ -21,6 +21,7 @@ import { normalizeReportInput } from "../../../src/lib/report/input.js";
 import { buildReportModel } from "../../../src/lib/report/compute.js";
 import { buildNarrative } from "../../../src/lib/report/narrative.js";
 import { renderReportHtml } from "../../../src/lib/report/template.js";
+import { canAccessReport } from "../../../src/lib/report/access.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -69,16 +70,20 @@ export default async function handler(req, res) {
   try {
     // 2) Rôle + équipe du demandeur (profiles_self : sa propre ligne).
     const { data: me } = await supabase.from("profiles").select("role, team_id").eq("id", user.id).maybeSingle();
-    const isStaff = !!me && me.role !== "joueur";
 
-    // 3) Joueur cible (lisible via RLS effectif/équipe).
+    // 3) Joueur cible (lisible via RLS effectif/équipe/owner).
     const { data: player } = await supabase.from("players").select("*").eq("id", playerId).maybeSingle();
     if (!player) return res.status(404).json({ error: "Joueur introuvable" });
 
-    // 4) Contrôle d'accès EXPLICITE.
-    const allowed = isStaff
-      ? me.team_id != null && player.team_id === me.team_id
-      : player.owner_uid === user.id;
+    // 4) Contrôle d'accès EXPLICITE (owner = tous clubs ; staff = son club ;
+    //    joueur = lui-même). Aligné sur les helpers RLS is_owner()/is_staff().
+    const allowed = canAccessReport({
+      role: me?.role || null,
+      requesterTeamId: me?.team_id ?? null,
+      playerTeamId: player.team_id,
+      playerOwnerUid: player.owner_uid,
+      userId: user.id,
+    });
     if (!allowed) return res.status(403).json({ error: "Accès refusé" });
 
     // 5) Données (RLS : joueur = les siennes ; staff = son équipe).
