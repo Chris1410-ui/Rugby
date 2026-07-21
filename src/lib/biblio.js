@@ -11,11 +11,14 @@ export const BIBLIO = {
   ],
 };
 
+/* Thèmes de veille : titre + description TRADUITS via i18n
+   (shared.veille.themes.<key>.title/desc). Seul le `key` (stable) et les `refs`
+   vers la bibliographie vivent ici ; les citations elles-mêmes restent neutres. */
 export const VEILLE_THEMES = [
-  { t: "Charge & ACWR", d: "Quantification de la charge interne/externe, ratio aigu:chronique, monotonie.", refs: ["rugby:0", "rugby:1"] },
-  { t: "Demandes de match (GPS)", d: "Distances, haute vitesse, accélérations par poste et niveau.", refs: ["rugby:4", "rugby:5"] },
-  { t: "Prévention des blessures", d: "Nordic, asymétries ischio-jambiers, screening.", refs: ["rugby:0", "rugby:3"] },
-  { t: "Testing & condition", d: "Profils physiques des jeunes élites, batterie de tests.", refs: ["rugby:2", "rugby:3"] },
+  { key: "charge", refs: ["rugby:0", "rugby:1"] },
+  { key: "matchDemands", refs: ["rugby:4", "rugby:5"] },
+  { key: "injury", refs: ["rugby:0", "rugby:3"] },
+  { key: "testing", refs: ["rugby:2", "rugby:3"] },
 ];
 
 export const getRef = (id) => {

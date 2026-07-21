@@ -1167,7 +1167,25 @@
     },
     "veille": {
       "byTheme": "VEILLE PAR THÈME",
-      "biblioTitle": "BIBLIOGRAPHIE · RUGBY"
+      "biblioTitle": "BIBLIOGRAPHIE · RUGBY",
+      "themes": {
+        "charge": {
+          "title": "Charge & ACWR",
+          "desc": "Quantification de la charge interne/externe, ratio aigu:chronique, monotonie."
+        },
+        "matchDemands": {
+          "title": "Demandes de match (GPS)",
+          "desc": "Distances, haute vitesse, accélérations par poste et niveau."
+        },
+        "injury": {
+          "title": "Prévention des blessures",
+          "desc": "Nordic, asymétries ischio-jambiers, screening."
+        },
+        "testing": {
+          "title": "Testing & condition",
+          "desc": "Profils physiques des jeunes élites, batterie de tests."
+        }
+      }
     },
     "top14": {
       "title": "COMPARAISON TOP 14",

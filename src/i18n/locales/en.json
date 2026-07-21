@@ -1167,7 +1167,25 @@
     },
     "veille": {
       "byTheme": "WATCH BY THEME",
-      "biblioTitle": "BIBLIOGRAPHY · RUGBY"
+      "biblioTitle": "BIBLIOGRAPHY · RUGBY",
+      "themes": {
+        "charge": {
+          "title": "Load & ACWR",
+          "desc": "Internal/external load quantification, acute:chronic ratio, monotony."
+        },
+        "matchDemands": {
+          "title": "Match demands (GPS)",
+          "desc": "Distances, high speed, accelerations by position and level."
+        },
+        "injury": {
+          "title": "Injury prevention",
+          "desc": "Nordic, hamstring asymmetries, screening."
+        },
+        "testing": {
+          "title": "Testing & conditioning",
+          "desc": "Physical profiles of young elites, test battery."
+        }
+      }
     },
     "top14": {
       "title": "TOP 14 COMPARISON",
