@@ -1570,6 +1570,12 @@
     }
   },
   "auth": {
+    "inviteLoggedIn": {
+      "title": "Uitnodiging gedetecteerd",
+      "body": "U bent al aangemeld ({{email}}). Om deze uitnodiging te accepteren moet het account van de ontvanger worden aangemaakt: meld u af en open de link opnieuw (of open hem in een privévenster).",
+      "logout": "Afmelden en de uitnodiging accepteren",
+      "stay": "Aangemeld blijven"
+    },
     "reset": {
       "strengthWeak": "Zwak",
       "strengthMed": "Gemiddeld",
