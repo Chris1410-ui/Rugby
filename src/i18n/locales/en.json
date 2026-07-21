@@ -73,7 +73,8 @@
     "compare": "Compare +",
     "abonnements": "Subscriptions",
     "exercices": "Library",
-    "invites": "Invitations"
+    "invites": "Invitations",
+    "adhesions": "Membership requests"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -1569,7 +1570,54 @@
       "selected": "Selected"
     }
   },
+  "membership": {
+    "pendingTitle": "Request sent",
+    "pendingBody": "Your membership request has been sent to the club staff. You will get access to the app as soon as a manager approves it.",
+    "rejectedTitle": "Request declined",
+    "rejectedBody": "Your membership request was not accepted by the club staff. Please reach out to the club to find out why.",
+    "refresh": "Check approval",
+    "checking": "Checking…",
+    "staff": {
+      "title": "Membership requests",
+      "subtitle": "Share the club code with players and approve their self-signup requests. Staff still join by invitation only.",
+      "codeTitle": "CLUB CODE",
+      "codeHelp": "Give this code to players who self-register. Without it, they cannot request to join your club. Regenerate it if you think it has leaked.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "regen": "Regenerate code",
+      "regenConfirm": "Regenerate the code? The old one will stop working — players will need the new one.",
+      "pendingTitle": "AWAITING APPROVAL",
+      "empty": "No pending requests.",
+      "requestedOn": "Requested on {{date}}",
+      "approve": "Approve",
+      "reject": "Decline",
+      "errDecide": "Could not apply the decision: {{err}}",
+      "errRegen": "Could not regenerate: {{err}}"
+    }
+  },
   "auth": {
+    "signup": {
+      "cta": "Create a player account",
+      "staffNote": "Players only. Staff (S&C, medical, coach) join solely via a manager's invitation.",
+      "title": "Player sign-up",
+      "subtitle": "Join your club with the code provided by the staff. Your request will be approved by a manager.",
+      "clubLabel": "Club",
+      "clubPlaceholder": "Choose a club…",
+      "codeLabel": "Club code",
+      "codePlaceholder": "e.g. ABCD2345",
+      "codeHint": "Code provided by your club staff.",
+      "totemLabel": "Totem (display name)",
+      "totemPlaceholder": "e.g. Eagle",
+      "initialsLabel": "Initials",
+      "submit": "Send my request",
+      "errClub": "Choose your club.",
+      "errCode": "Enter the club code.",
+      "errTotem": "Choose a totem.",
+      "errBadCode": "Wrong club code. Please check with the staff.",
+      "errTotemTaken": "That totem is already taken in this club — pick another.",
+      "errAlreadyMember": "This account is already attached to a club.",
+      "errGeneric": "Sign-up failed: {{err}}"
+    },
     "inviteLoggedIn": {
       "title": "Invitation detected",
       "body": "You are already signed in ({{email}}). To accept this invitation it must create the recipient's account: sign out and reopen the link (or open it in a private browsing window).",

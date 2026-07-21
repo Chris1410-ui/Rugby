@@ -40,6 +40,7 @@ export function dbToPlayer(row) {
     heightCm: row.height_cm != null ? Number(row.height_cm) : null,
     sessionsPerWeek: row.sessions_per_week != null ? Number(row.sessions_per_week) : null,
     injuryHistory: row.injury_history ?? null,
+    membershipStatus: row.membership_status ?? "active",
     ppNotes: row.pp_notes ?? null,
     isCustom: row.is_custom,
     isDemo: row.is_demo ?? false,
@@ -57,10 +58,14 @@ export function useRoster(teamId) {
 
   const fetchRoster = useCallback(async () => {
     if (!teamId) return;
+    // Effectif ACTIF uniquement : les joueurs auto-inscrits « pending »/« rejected »
+    // (migration 0061) n'entrent dans le roster qu'une fois validés par le staff
+    // (ils vivent dans l'écran « Demandes d'adhésion » d'ici là).
     const { data, error } = await supabase
       .from("players")
       .select("*")
-      .eq("team_id", teamId);
+      .eq("team_id", teamId)
+      .eq("membership_status", "active");
     if (error) {
       setError(error.message);
       setLoading(false);
