@@ -22,7 +22,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22+ requis : @supabase/realtime-js utilise le WebSocket global
+          # (absent en Node 20), sollicité au chargement de src/lib/supabase.js.
+          node-version: 22
           cache: npm
 
       - name: Install (clean, from lockfile)
