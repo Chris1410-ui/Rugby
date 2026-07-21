@@ -603,12 +603,9 @@
       "namePlaceholder": "Nom de la séance (optionnel)",
       "cartTitle": "MA SÉANCE",
       "cartEmpty": "Ajoute des exercices depuis la bibliothèque ci-dessous.",
-      "addTitle": "AJOUTER DES EXERCICES",
       "sets": "Séries",
       "reps": "Reps",
       "charge": "Charge",
-      "add": "Ajouter",
-      "added": "Ajouté",
       "remove": "Retirer",
       "create_one": "Créer la séance ({{count}} exercice)",
       "create_other": "Créer la séance ({{count}} exercices)",
@@ -1079,7 +1076,10 @@
       "addSession": "Ajouter une séance (autre jour)",
       "routineBtn": "Modèle",
       "sending": "Envoi…",
-      "sendBtn": "Envoyer aux joueurs"
+      "sendBtn": "Envoyer aux joueurs",
+      "addFromLibrary": "Bibliothèque",
+      "restPlaceholder": "repos",
+      "restTitle": "Repos entre séries (secondes)"
     },
     "app": {
       "fabSeance": "＋ Séance",
@@ -1500,6 +1500,15 @@
       "secondaryMuscles": "Secondaires",
       "instructionsTitle": "INSTRUCTIONS",
       "noInstructions": "Instructions indisponibles dans cette langue."
+    },
+    "expick": {
+      "title": "Ajouter des exercices",
+      "add_one": "Ajouter ({{count}})",
+      "add_other": "Ajouter ({{count}})",
+      "alreadyAdded": "déjà ajouté",
+      "detail": "Détails",
+      "select": "Sélectionner",
+      "selected": "Sélectionné"
     }
   },
   "auth": {
