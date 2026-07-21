@@ -9,6 +9,7 @@ import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } fro
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
 import { updatePlayer, resetPlayerPassword, setMyInitials } from "../../data/players.js";
+import { openPlayerReport } from "../../data/report.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
@@ -104,6 +105,36 @@ function PasswordReset({ playerId }) {
         </div>
       )}
     </Section>
+  );
+}
+
+/* Bouton « Générer le rapport de performance » (PDF). Accessible au staff sur
+   n'importe quelle fiche de son équipe et au joueur sur sa propre fiche —
+   l'autorisation réelle est vérifiée côté serveur (endpoint report). */
+function ReportButton({ player }) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const run = async () => {
+    setBusy(true); setErr("");
+    try { await openPlayerReport(player.id); }
+    catch (e) {
+      const msg = e?.status === 403 ? t("shared.fiche.reportForbidden")
+        : e?.status === 404 ? t("shared.fiche.reportNotFound")
+        : e?.message === "SESSION" ? t("shared.fiche.reportNoSession")
+        : t("shared.fiche.reportFail");
+      setErr(msg);
+    }
+    setBusy(false);
+  };
+  return (
+    <div style={sc({ padding: 14, marginBottom: 12 })}>
+      <button onClick={run} disabled={busy} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: C.viol, border: "none", borderRadius: 10, padding: "11px 14px", color: "#fff", fontSize: 13, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+        <FileText size={15} /> {busy ? t("shared.fiche.reportBusy") : t("shared.fiche.reportBtn")}
+      </button>
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 8, lineHeight: 1.5 }}>{t("shared.fiche.reportNote")}</div>
+      {err && <div style={{ fontSize: 11, color: C.coral, marginTop: 8 }}>{err}</div>}
+    </div>
   );
 }
 
@@ -259,6 +290,9 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
       num: player.num ?? "",
       initials: player.initials ?? "",
       bodyweight: player.bodyweight ?? "",
+      height_cm: player.heightCm ?? "",
+      sessions_per_week: player.sessionsPerWeek ?? "",
+      injury_history: player.injuryHistory ?? "",
       mas: player.mas ?? "",
       back_squat: player.backSquat ?? "",
       cmj_g: player.cmjG ?? "",
@@ -285,6 +319,9 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
         bodyweight: bwNum,
         // Édition staff = mesure du jour → devient le poids le plus récent.
         ...(bwNum !== (player.bodyweight ?? null) ? { bodyweight_at: new Date().toISOString() } : {}),
+        height_cm: num(d.height_cm),
+        sessions_per_week: num(d.sessions_per_week),
+        injury_history: (d.injury_history ?? "").trim() || null,
         mas: num(d.mas),
         back_squat: num(d.back_squat),
         cmj_g: num(d.cmj_g),
@@ -336,6 +373,10 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
         </div>
       </div>
 
+      {/* Rapport de performance PDF : staff sur toute fiche de l'équipe,
+          joueur sur la sienne. Autorisation vérifiée côté serveur. */}
+      {(canEdit || self) && <ReportButton player={player} />}
+
       {/* Le joueur saisit / modifie SES initiales (affichées « Totem (I.F.) »
           partout). Réservé à sa propre fiche. */}
       {self && <SelfInitials player={player} />}
@@ -385,6 +426,8 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
             <span style={{ fontSize: 14, fontWeight: 800 }}>{bw?.value != null ? `${bw.value} kg` : "—"}</span>
           )}
         </div>
+        <Row label={t("shared.fiche.rowHeight")} k="height_cm" unit=" cm" value={player.heightCm} placeholder={t("shared.fiche.cmPlaceholder")} />
+        <Row label={t("shared.fiche.rowSessions")} k="sessions_per_week" unit={t("shared.fiche.perWeekUnit")} value={player.sessionsPerWeek} placeholder={t("shared.fiche.sessionsPlaceholder")} />
         <Row label={t("shared.fiche.rowMas")} k="mas" value={player.mas} />
         <Row label={t("shared.fiche.rowSquat")} k="back_squat" value={player.backSquat} />
         <Row label={t("shared.fiche.rowCmjG")} k="cmj_g" value={player.cmjG} />
@@ -404,6 +447,19 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
             <div style={{ fontSize: 13, color: player.ppNotes ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{player.ppNotes || "—"}</div>
           )}
         </div>
+
+        {/* Historique blessures & gênes (donnée santé → staff uniquement). Nourrit
+            le rapport de performance (carte « surveillance blessures »). */}
+        {canEdit && (
+          <div style={{ paddingTop: 10 }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 6 }}>{t("shared.fiche.injuryHistory")} <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.injuryHistoryHint")}</span></div>
+            {edit ? (
+              <textarea value={d.injury_history ?? ""} onChange={(e) => setD((p) => ({ ...p, injury_history: e.target.value }))} placeholder={t("shared.fiche.injuryPlaceholder")} style={{ width: "100%", minHeight: 60, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.viol}66`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+            ) : (
+              <div style={{ fontSize: 13, color: player.injuryHistory ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{player.injuryHistory || "—"}</div>
+            )}
+          </div>
+        )}
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginTop: 8 }}>{err}</div>}
         {edit && (
