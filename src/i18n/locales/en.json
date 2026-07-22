@@ -254,9 +254,8 @@
       "audioLead": "Let the voice guide you.",
       "audioReady": "Put your headphones on, settle in, then press Start.",
       "audioMissing": "Audio unavailable — please try again later.",
-      "waves": "Waves",
-      "wavesOn": "on",
-      "wavesOff": "off",
+      "voice": "Voice",
+      "forest": "Night forest",
       "seek": "Audio position",
       "phase": {
         "intro": "Settle in, lie down, palms facing the floor.",
