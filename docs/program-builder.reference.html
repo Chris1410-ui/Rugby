@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOCOLE C1 — Intersaison Crabos 26·27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --nuit:#0D1117;        /* fond stade */
+    --ardoise:#161C24;     /* panneau */
+    --brume:#1E2732;       /* panneau clair */
+    --craie:#E8EDF3;       /* texte */
+    --fumee:#94A2B2;       /* texte atténué */
+    --ambre:#E8A33D;       /* VOLUME / force */
+    --ambre-d:#8a5f1c;
+    --cyan:#38D2E6;        /* INTENSITÉ / vitesse */
+    --cyan-d:#146a75;
+    --rouge:#E5484D;       /* obligatoire */
+    --vert:#4FBF7B;        /* validé */
+    --line:rgba(255,255,255,.09);
+    --line-2:rgba(255,255,255,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--nuit);
+    color:var(--craie);
+    font-family:'Barlow',system-ui,sans-serif;
+    font-size:16px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* ---------- TYPO ---------- */
+  h1,h2,h3,h4,.eyebrow,.mono{font-family:'Oswald',sans-serif}
+  .anton{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;line-height:.92}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .eyebrow{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;font-weight:600;color:var(--fumee)}
+
+  /* ---------- HERO ---------- */
+  header.hero{position:relative;padding:80px 0 56px;overflow:hidden;
+    background:
+      radial-gradient(1200px 500px at 78% -8%, rgba(56,210,230,.10), transparent 60%),
+      radial-gradient(900px 500px at 8% 108%, rgba(232,163,61,.10), transparent 60%),
+      linear-gradient(180deg,#0b0f14,#0D1117);
+    border-bottom:1px solid var(--line)}
+  .hero .pitchlines{position:absolute;inset:0;opacity:.5;
+    background-image:repeating-linear-gradient(90deg,transparent 0 118px,var(--line-2) 118px 119px);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 20%,#000 80%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 20%,#000 80%,transparent)}
+  .badge-c1{display:inline-flex;align-items:baseline;gap:14px;margin-bottom:26px}
+  .badge-c1 .big{font-family:'Anton';font-size:clamp(58px,11vw,120px);
+    background:linear-gradient(160deg,#fff, #cfe9ee 40%, var(--cyan));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 6px 30px rgba(56,210,230,.25))}
+  .badge-c1 .tag{font-family:'Oswald';font-weight:600;font-size:.8rem;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--ambre);
+    border:1px solid var(--ambre-d);border-radius:100px;padding:8px 16px;transform:translateY(-14px)}
+  header.hero h1{font-family:'Anton';font-size:clamp(34px,6.4vw,72px);text-transform:uppercase;
+    letter-spacing:.005em;max-width:16ch;margin-bottom:22px}
+  header.hero h1 em{font-style:normal;color:var(--cyan)}
+  .lede{font-size:clamp(1rem,2vw,1.22rem);color:var(--fumee);max-width:60ch;margin-bottom:36px}
+  .lede b{color:var(--craie);font-weight:600}
+  .hero-facts{display:flex;flex-wrap:wrap;gap:14px}
+  .fact{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:12px;
+    padding:14px 18px;min-width:120px}
+  .fact .n{font-family:'Anton';font-size:1.9rem;line-height:1}
+  .fact .n.c{color:var(--cyan)} .fact .n.a{color:var(--ambre)}
+  .fact .l{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fumee);margin-top:6px}
+  .sources{margin-top:34px;font-size:.82rem;color:var(--fumee);letter-spacing:.02em}
+  .sources b{color:var(--craie)}
+
+  /* ---------- NAV ---------- */
+  nav.toc{position:sticky;top:0;z-index:40;background:rgba(13,17,23,.86);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav.toc .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:12px;padding-bottom:12px;
+    scrollbar-width:none}
+  nav.toc .wrap::-webkit-scrollbar{display:none}
+  nav.toc a{font-family:'Oswald';font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--fumee);text-decoration:none;white-space:nowrap;padding:8px 12px;border-radius:8px;
+    font-weight:600;transition:.2s}
+  nav.toc a:hover{color:var(--craie);background:rgba(255,255,255,.05)}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:66px 0;border-bottom:1px solid var(--line-2)}
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:34px}
+  .sec-head .num{font-family:'JetBrains Mono';font-weight:700;font-size:.9rem;color:var(--cyan);
+    border:1px solid var(--cyan-d);border-radius:7px;padding:4px 9px;flex:none}
+  .sec-head h2{font-family:'Oswald';font-weight:700;text-transform:uppercase;letter-spacing:.02em;
+    font-size:clamp(1.5rem,3.6vw,2.3rem)}
+  .sec-head p{color:var(--fumee);font-size:.95rem;margin-top:4px}
+  .intro-p{color:var(--fumee);max-width:70ch;margin-bottom:26px;font-size:1.02rem}
+  .intro-p b{color:var(--craie);font-weight:600}
+
+  /* grid + cards */
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--ardoise);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .card h3{font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+    font-size:1.02rem;margin-bottom:10px}
+  .card p{color:var(--fumee);font-size:.92rem}
+  .card ul{list-style:none;margin-top:8px}
+  .card li{color:var(--fumee);font-size:.9rem;padding-left:18px;position:relative;margin-bottom:7px}
+  .card li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;
+    border-radius:2px;background:var(--cyan)}
+  .card.vol li::before{background:var(--ambre)}
+  .k{color:var(--craie);font-weight:600}
+
+  .tint-c{border-top:3px solid var(--cyan)}
+  .tint-a{border-top:3px solid var(--ambre)}
+  .tint-r{border-top:3px solid var(--rouge)}
+
+  /* pills / tags */
+  .pill{display:inline-block;font-family:'JetBrains Mono';font-size:.68rem;font-weight:600;
+    letter-spacing:.06em;padding:3px 9px;border-radius:100px;text-transform:uppercase}
+  .pill.c{color:var(--cyan);border:1px solid var(--cyan-d);background:rgba(56,210,230,.07)}
+  .pill.a{color:var(--ambre);border:1px solid var(--ambre-d);background:rgba(232,163,61,.07)}
+  .pill.r{color:var(--rouge);border:1px solid rgba(229,72,77,.4);background:rgba(229,72,77,.08)}
+  .pill.v{color:var(--vert);border:1px solid rgba(79,191,123,.4);background:rgba(79,191,123,.08)}
+
+  /* tables */
+  .tblx{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:6px}
+  .tblx caption{text-align:left;font-family:'Oswald';font-weight:600;text-transform:uppercase;
+    letter-spacing:.05em;font-size:.95rem;padding:12px 14px;background:var(--brume);
+    border:1px solid var(--line);border-bottom:none;border-radius:12px 12px 0 0;color:var(--craie)}
+  .tblx th,.tblx td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:middle}
+  .tblx thead th{background:rgba(255,255,255,.03);font-family:'Oswald';font-weight:600;
+    text-transform:uppercase;letter-spacing:.04em;font-size:.72rem;color:var(--fumee)}
+  .tblx td.mono,.tblx th.mono{font-family:'JetBrains Mono';font-size:.8rem}
+  .tblx tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+  .tblx .blk td:first-child{font-family:'JetBrains Mono';font-weight:700;color:var(--nuit);
+    text-align:center;width:44px}
+  .b-a td:first-child{background:var(--ambre)!important}
+  .b-c td:first-child{background:var(--cyan)!important}
+  .b-r td:first-child{background:var(--rouge)!important;color:#fff!important}
+  .tblx td .note{color:var(--fumee);font-size:.78rem}
+  .tblx-scroll{overflow-x:auto;border-radius:0 0 12px 12px}
+  .tblx th.wc{background:rgba(56,210,230,.12);color:var(--cyan);text-align:center}
+  .tblx th.wa{background:rgba(232,163,61,.12);color:var(--ambre);text-align:center}
+  .tblx th.wm{background:rgba(255,255,255,.05);color:var(--fumee);text-align:center}
+  .rdlgd{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:16px;font-size:.82rem;color:var(--fumee)}
+  .rdlgd b{color:var(--craie)} .rdlgd i{font-style:normal}
+  .rdlgd span{display:inline-flex;align-items:center;gap:8px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .sw.c{background:var(--cyan)} .sw.a{background:var(--ambre)} .sw.m{background:var(--fumee)}
+
+  /* week rail / periodisation */
+  .rail{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+  .wk{background:var(--ardoise);border:1px solid var(--line);border-radius:14px;padding:20px 18px;
+    position:relative;overflow:hidden}
+  .wk::after{content:"";position:absolute;left:0;bottom:0;height:5px;width:var(--fill);
+    background:linear-gradient(90deg,var(--cyan),var(--ambre))}
+  .wk .wn{font-family:'Anton';font-size:2.6rem;line-height:1;color:var(--craie)}
+  .wk .wt{font-family:'Oswald';font-weight:600;text-transform:uppercase;font-size:.82rem;
+    letter-spacing:.06em;color:var(--cyan);margin:6px 0 10px}
+  .wk .wt.force{color:var(--ambre)}
+  .wk p{color:var(--fumee);font-size:.82rem}
+  .wk .rpe{font-family:'JetBrains Mono';font-size:.72rem;color:var(--fumee);margin-top:10px}
+  .wk .rpe b{color:var(--craie)}
+
+  /* semaine-type */
+  .weektbl{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:6px;overflow:hidden;border-radius:12px}
+  .weektbl th,.weektbl td{border:1px solid var(--line);padding:10px 8px;text-align:center}
+  .weektbl thead th{font-family:'Oswald';text-transform:uppercase;letter-spacing:.05em;font-size:.7rem;
+    background:var(--brume);color:var(--craie);font-weight:600}
+  .weektbl td .s{display:block;font-family:'Oswald';font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.02em}
+  .weektbl td .d{color:var(--fumee);font-size:.72rem}
+  .cell-a{background:rgba(232,163,61,.09)} .cell-c{background:rgba(56,210,230,.09)}
+  .cell-off{background:rgba(255,255,255,.02);color:var(--fumee)}
+
+  /* callout */
+  .callout{border:1px solid var(--line);border-left:3px solid var(--ambre);background:var(--ardoise);
+    border-radius:0 12px 12px 0;padding:18px 22px;margin-top:20px}
+  .callout.c{border-left-color:var(--cyan)} .callout.r{border-left-color:var(--rouge)}
+  .callout h4{font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.05em;
+    font-size:.92rem;margin-bottom:6px}
+  .callout p{color:var(--fumee);font-size:.9rem}
+  .callout p b{color:var(--craie)}
+
+  /* pitch svg */
+  .pitch{background:var(--ardoise);border:1px solid var(--line);border-radius:14px;padding:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:.82rem;color:var(--fumee)}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .legend i{width:22px;height:4px;border-radius:2px;display:inline-block}
+
+  /* checklist */
+  .checks{list-style:none;display:grid;gap:10px;margin-top:8px}
+  .checks li{background:var(--ardoise);border:1px solid var(--line);border-radius:10px;
+    padding:12px 16px;display:flex;gap:12px;align-items:flex-start;font-size:.92rem;color:var(--fumee)}
+  .checks li b{color:var(--craie);font-weight:600}
+  .checks li .box{flex:none;width:20px;height:20px;border:1.5px solid var(--cyan-d);border-radius:5px;
+    margin-top:1px}
+
+  /* footer */
+  footer{padding:60px 0 70px;text-align:center;
+    background:radial-gradient(700px 300px at 50% -20%,rgba(56,210,230,.08),transparent 70%)}
+  footer .mantra{font-family:'Anton';font-size:clamp(1.6rem,4.5vw,3rem);text-transform:uppercase;
+    line-height:1;margin-bottom:18px}
+  footer .mantra em{font-style:normal;color:var(--ambre)}
+  footer p{color:var(--fumee);font-size:.86rem;max-width:52ch;margin:0 auto}
+
+  .split{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:start}
+  .stack{display:grid;gap:16px}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  /* responsive */
+  @media(max-width:860px){
+    .g4{grid-template-columns:repeat(2,1fr)}
+    .g3{grid-template-columns:1fr}
+    .split{grid-template-columns:1fr}
+    .rail{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:560px){
+    .g2,.g4{grid-template-columns:1fr}
+    .hero-facts .fact{min-width:calc(50% - 7px)}
+    section{padding:50px 0}
+  }
+
+  /* print */
+  @media print{
+    body{background:#fff;color:#111;font-size:11px}
+    nav.toc,.hero .pitchlines,.rv{display:revert;position:static;opacity:1;transform:none}
+    nav.toc{display:none}
+    header.hero,section,footer{background:#fff;border-color:#ccc;page-break-inside:avoid;padding:20px 0}
+    .card,.wk,.callout,.pitch,.checks li,.tblx caption,.weektbl thead th{background:#f4f4f4!important;
+      border-color:#bbb!important;color:#111!important}
+    .anton,.badge-c1 .big,footer .mantra,.wk .wn{color:#111!important;-webkit-text-fill-color:#111!important}
+    .badge-c1 .big{-webkit-background-clip:border-box;background:none}
+    h1,h2,h3,h4,.k,.fact .n,.card li,.card p,.intro-p,.lede,.wk p,.wk .wt,.sec-head p{color:#111!important}
+    a{color:#111!important;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="pitchlines"></div>
+  <div class="wrap" style="position:relative">
+    <div class="badge-c1 rv in">
+      <span class="big">C1</span>
+      <span class="tag">Première catégorie · Haut niveau</span>
+    </div>
+    <div class="eyebrow rv">Protocole d'intersaison · Crabos U18 · 2026–2027</div>
+    <h1 class="rv">Revenir <em>prêt</em>, pas juste reposé.</h1>
+    <p class="lede rv">Un seul protocole, construit à partir du meilleur de quatre programmes de clubs pros.
+      Objectif : <b>limiter le désentraînement</b>, maintenir force et masse, reconstruire la base aérobie
+      et <b>revenir au niveau</b> pour une pré-saison courte et décisive.</p>
+    <div class="hero-facts rv">
+      <div class="fact"><div class="n c">4</div><div class="l">semaines</div></div>
+      <div class="fact"><div class="n a">2</div><div class="l">profils</div></div>
+      <div class="fact"><div class="n c">4</div><div class="l">séances / sem.</div></div>
+      <div class="fact"><div class="n a">RPE</div><div class="l">pilotage charge</div></div>
+      <div class="fact"><div class="n c">J-0</div><div class="l">reprise en forme</div></div>
+    </div>
+    <p class="sources rv">Synthèse des programmes <b>CA Brive</b> · <b>Stade Rochelais</b> ·
+      <b>Racing&nbsp;92 (RIHNO)</b> · <b>FC Grenoble</b>.</p>
+  </div>
+</header>
+
+<!-- ============ NAV ============ -->
+<nav class="toc">
+  <div class="wrap">
+    <a href="#cadre">01 · Cadre</a>
+    <a href="#lecture">02 · Lecture &amp; suivi</a>
+    <a href="#profil">03 · Ton profil</a>
+    <a href="#plan">04 · Plan 4 semaines</a>
+    <a href="#echauf">05 · Échauffement</a>
+    <a href="#muscu">06 · Musculation</a>
+    <a href="#cardio">07 · Cardio</a>
+    <a href="#courses">08 · Courses</a>
+    <a href="#gainage">09 · Gainage</a>
+    <a href="#preven">10 · Prévention</a>
+    <a href="#recup">11 · Mobilité</a>
+    <a href="#bilan">12 · Bilan</a>
+  </div>
+</nav>
+
+<!-- ============ 01 CADRE ============ -->
+<section id="cadre">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">01</span>
+      <div><h2>Cadre &amp; objectifs</h2><p>Pourquoi ce travail, et dans quel état d'esprit.</p></div>
+    </div>
+    <p class="intro-p rv">Ce programme n'est pas fait pour te créer de la fatigue. Il est là pour
+      <b>limiter le désentraînement</b> et te ramener au niveau physique de fin de saison. La qualité et
+      l'investissement de chacun conditionnent les premiers objectifs de la reprise : <b>être opérationnel dès le jour 1</b>.</p>
+
+    <div class="grid g3 rv">
+      <div class="card tint-a vol">
+        <h3>3 objectifs de la période</h3>
+        <ul>
+          <li><span class="k">Base aérobie</span> — mieux récupérer et répéter les efforts (fini les groupes cardio en saison).</li>
+          <li><span class="k">Force &amp; masse</span> — conserver l'acquis, préparer le volume avant la pré-saison.</li>
+          <li><span class="k">Prévention</span> — revenir sans blessure, corps préparé au contact.</li>
+        </ul>
+      </div>
+      <div class="card tint-c">
+        <h3>Les 6 règles de vie</h3>
+        <ul>
+          <li>Respect · Responsabilité · Engagement</li>
+          <li>Devoir · Partage · Plaisir partagé</li>
+          <li>Ce qui compte : <span class="k">nos actions, nos comportements, notre état d'esprit.</span></li>
+        </ul>
+      </div>
+      <div class="card tint-c">
+        <h3>Le principe</h3>
+        <p>Les meilleurs joueurs du moment jouent. L'année d'âge ne compte pas, mais
+          <span class="k">l'apprentissage et le développement priment</span>. Ce que tu fais cet été
+          construit ta place à la reprise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 LECTURE & SUIVI ============ -->
+<section id="lecture">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">02</span>
+      <div><h2>Lire le programme &amp; se faire suivre</h2><p>Le code commun à toutes les séances + le suivi à distance.</p></div>
+    </div>
+
+    <div class="split rv">
+      <div class="stack">
+        <div class="card">
+          <h3>Le langage des séances</h3>
+          <div class="tblx-scroll">
+          <table class="tblx" style="margin-top:0">
+            <tbody>
+              <tr><td class="mono" style="width:120px;color:var(--cyan)">RPE 7</td><td>3 reps « en réserve » : tu pourrais faire 3 reps de plus. Charge modérée-lourde.</td></tr>
+              <tr><td class="mono" style="color:var(--ambre)">RPE 8</td><td>2 reps en réserve. Plus lourd. Le <span class="k">top set</span> (série★) se fait à RPE 8.</td></tr>
+              <tr><td class="mono">Tempo 3010</td><td>excentrique 3s · pause 0 · concentrique 1s · pause 0. « ISO » = pas de mouvement (gainage).</td></tr>
+              <tr><td class="mono">ExMOM</td><td>départ toutes les X minutes (E4MOM = je repars toutes les 4′).</td></tr>
+              <tr><td class="mono">PDC</td><td>poids de corps. Possible de lester (bouteilles, haltères, élastiques).</td></tr>
+              <tr><td class="mono">A1 / A2</td><td>même bloc, exercices enchaînés (A1 puis A2, puis récup).</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="callout">
+          <h4>Espacement</h4>
+          <p>Laisse au moins <b>48 h entre deux séances de muscu obligatoires</b>. Place le cardio de préférence
+            les jours sans muscu, et la séance bonus en fin de semaine selon tes dispos.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card tint-c">
+          <h3><span class="pill r">Obligatoire</span> vs <span class="pill v">Bonus</span></h3>
+          <ul>
+            <li><span class="k">2 muscu obligatoires</span> + 1 bonus (« muscu plage » bras) — le bonus seulement une fois les 2 faites.</li>
+            <li><span class="k">2 cardio obligatoires</span> : 1 base aérobie + 1 fractionné haute intensité.</li>
+            <li><span class="k">1 cardio bonus</span> — <span class="pill r">non-bonus si Yo-Yo insuffisant</span> (voir profil).</li>
+          </ul>
+        </div>
+        <div class="card tint-a">
+          <h3>Suivi à distance</h3>
+          <ul class="vol">
+            <li><span class="k">Muscu — photo à la salle</span>, envoyée dans la foulée sur le groupe, légende « Séance X – Semaine X ✅ ».</li>
+            <li><span class="k">Cardio — Strava.</span> Nom « Prénom NOM » + photo. Chaque sortie nommée « Cardio X – Semaine X ». Ajoute le compte du club.</li>
+            <li><span class="k">Appli perf</span> (type Perfbook) : planning, vidéos, suivi — profil perso + alertes.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 PROFIL ============ -->
+<section id="profil">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">03</span>
+      <div><h2>Ton profil décide de tes cibles</h2><p>Deux tracks, et un test qui module ton volume cardio.</p></div>
+    </div>
+
+    <div class="grid g2 rv" style="margin-bottom:20px">
+      <div class="card tint-a">
+        <h3><span class="pill a">Track PUISSANCE</span> — Avants / gros gabarits</h3>
+        <p>Priorité : garder la force, protéger les cervicales et la chaîne postérieure, construire de la
+          capacité aérobie <span class="k">sans s'alourdir</span>. Distances de course plus courtes, volume
+          machine plus élevé.</p>
+        <p style="margin-top:8px"><span class="mono" style="color:var(--ambre)">Course type · 40–70 m · nav. courtes</span></p>
+      </div>
+      <div class="card tint-c">
+        <h3><span class="pill c">Track VITESSE</span> — 3/4 / profils légers</h3>
+        <p>Priorité : la vitesse, la répétition d'effort et les changements de direction. Distances plus
+          longues, objectifs de temps plus exigeants, plus de séquences vitesse et de sprints en courbe.</p>
+        <p style="margin-top:8px"><span class="mono" style="color:var(--cyan)">Course type · 50–90 m · sprints / lignes</span></p>
+      </div>
+    </div>
+
+    <div class="callout r rv">
+      <h4>Test Yo-Yo « Coq Jaune » — ta jauge d'entrée</h4>
+      <p><b>Coq Jaune = niveau (5/10) = niveau Crabos.</b> Si tu n'atteins pas le palier de ton poste au
+        Yo-Yo de reprise, tu passes à <b>3 cardio obligatoires / semaine</b> (le 3ᵉ n'est plus un bonus).</p>
+    </div>
+
+    <div class="tblx-scroll rv" style="margin-top:20px">
+      <table class="tblx">
+        <caption>Paliers minimum par poste (en-dessous = 3 cardio obligatoires)</caption>
+        <thead><tr><th>Poste</th><th class="mono">Palier mini</th><th class="mono">Distance</th><th>Track</th></tr></thead>
+        <tbody>
+          <tr><td>Piliers</td><td class="mono">15.5</td><td class="mono">≥ 960 m</td><td><span class="pill a">Puissance</span></td></tr>
+          <tr><td>Talons / 2ᵉ ligne</td><td class="mono">15.8</td><td class="mono">≥ 1080 m</td><td><span class="pill a">Puissance</span></td></tr>
+          <tr><td>3ᵉ ligne</td><td class="mono">16.5</td><td class="mono">≥ 1300 m</td><td><span class="pill a">Puissance</span></td></tr>
+          <tr><td>10 / Centres / Ailiers / 15</td><td class="mono">17.7</td><td class="mono">≥ 1680 m</td><td><span class="pill c">Vitesse</span></td></tr>
+          <tr><td>9 (demi de mêlée)</td><td class="mono">18.5</td><td class="mono">≥ 1940 m</td><td><span class="pill c">Vitesse</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 PLAN 4 SEMAINES ============ -->
+<section id="plan">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">04</span>
+      <div><h2>Le plan sur 4 semaines</h2><p>Une montée en charge maîtrisée, puis un réaffûtage.</p></div>
+    </div>
+
+    <div class="rail rv">
+      <div class="wk" style="--fill:35%">
+        <div class="wn">S1</div><div class="wt">Reprise · Hyper.</div>
+        <p>Volume qui monte, intensité contenue. On (re)pose la technique.</p>
+        <div class="rpe">Muscu <b>RPE 7</b> · 3×8–10 · tempo 2010</div>
+      </div>
+      <div class="wk" style="--fill:60%">
+        <div class="wn">S2</div><div class="wt">Hyper. + top set</div>
+        <p>Plus de charge, apparition du top set★. Reprise vitesse courte.</p>
+        <div class="rpe">Muscu <b>RPE 8</b> · 4×6–8 · top set★</div>
+      </div>
+      <div class="wk" style="--fill:82%">
+        <div class="wn">S3</div><div class="wt force">Force / PMA</div>
+        <p>Charges lourdes, séries plus courtes, cardio haute intensité.</p>
+        <div class="rpe">Muscu <b>RPE 8</b> · 5×4–6 · repos longs</div>
+      </div>
+      <div class="wk" style="--fill:100%">
+        <div class="wn">S4</div><div class="wt">Affûtage</div>
+        <p>Moins de volume, on garde intensité + vitesse. Objectif : frais &amp; vif à la reprise.</p>
+        <div class="rpe">Muscu + courses · <b>pas de cardio lourd</b></div>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;font-size:1.05rem" class="rv">Semaine type</h3>
+    <div class="tblx-scroll rv">
+    <table class="weektbl">
+      <thead><tr><th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th><th>Samedi</th><th>Dimanche</th></tr></thead>
+      <tbody><tr>
+        <td class="cell-a"><span class="s">Muscu 1</span><span class="d">Bas + courses</span></td>
+        <td class="cell-c"><span class="s">Cardio 1</span><span class="d">Base aérobie</span></td>
+        <td class="cell-a"><span class="s">Muscu 2</span><span class="d">Haut + gainage</span></td>
+        <td class="cell-c"><span class="s">Cardio 2</span><span class="d">Fractionné HI</span></td>
+        <td class="cell-a"><span class="s">Bonus bras</span><span class="d">optionnel</span></td>
+        <td class="cell-c"><span class="s">Cardio 3</span><span class="d">extra / libre</span></td>
+        <td class="cell-off"><span class="s">OFF</span><span class="d">mobilité</span></td>
+      </tr></tbody>
+    </table>
+    </div>
+    <p class="intro-p rv" style="margin-top:16px">Chaque « jour clé » peut se faire en séance complète, dans cet ordre :
+      <span class="k">Cardio terrain → Musculation → Gainage</span>. Le mercredi et le week-end restent souples :
+      ajoute ce que tu aimes (natation, vélo, rando) sans casser la logique de récup.</p>
+  </div>
+</section>
+
+<!-- ============ 05 ECHAUFFEMENT ============ -->
+<section id="echauf">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">05</span>
+      <div><h2>Échauffement — non négociable</h2><p>Un échauffement TYPE (avant muscu / course) et une version VITESSE.</p></div>
+    </div>
+
+    <div class="grid g2 rv">
+      <div class="card tint-c">
+        <h3>Échauffement TYPE <span class="pill c">~11 min</span></h3>
+        <ul>
+          <li><span class="k">Foam roller 3′</span> — voûte, mollets, ischios, quadris, adducteurs, fessiers, dos.</li>
+          <li><span class="k">Mobilité 3′</span> — bassin (anté/rétro, rotations), dos rond/creux, thoracique, cou.</li>
+          <li><span class="k">Contractions 3′</span> — squat ×5, squat ischios ×5, fentes av/lat 2×4, iso adducteurs/fessiers 5s, mollets ×10, balistique.</li>
+          <li><span class="k">Gammes 3′</span> — montées de genoux, talons-fesses, déplacements latéraux, jambes tendues.</li>
+          <li><span class="k">Accél/décél 2′</span> — 3×5 m accel/décel · 3×5 m A-R avec CDD · 2×10 m à 80 %.</li>
+        </ul>
+      </div>
+      <div class="card tint-a vol">
+        <h3>Échauffement VITESSE <span class="pill a">avant sprint</span></h3>
+        <ul>
+          <li><span class="k">Foam roller + mobilité</span> — comme TYPE.</li>
+          <li><span class="k">Activo-dynamique</span> — iso quadri/ischios unilat., iso adducteurs + déplacements, hip bridge unilat., plio basse pointe de pieds.</li>
+          <li><span class="k">Gammes vitesse</span> — wall drill (6×1 / 6×2 temps), switching genoux, déroulé plantaire + saut, foulées bondissantes.</li>
+          <li><span class="k">Accél/décél</span> — 3×5 m + 3×5 m A-R avec CDD · 5×5 m · 2×10 m &amp; 2×15 m à 80 %.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 MUSCU ============ -->
+<section id="muscu">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">06</span>
+      <div><h2>Musculation — le socle</h2><p>3 séances (2 obligatoires + 1 bonus), pilotées au RPE, en surcharge progressive.</p></div>
+    </div>
+    <p class="intro-p rv">Structure : <b>Séance 1 = Bas du corps</b> dominant, <b>Séance 2 = Haut du corps</b> dominant,
+      <b>Bonus = bras/finisher</b>. Technique &gt; charge : on ne monte la charge que quand l'exécution est propre.
+      Note ta charge à chaque série pour la <b>battre la semaine suivante à même RPE</b>.</p>
+
+    <div class="rdlgd rv">
+      <span>Chaque case = <b>séries × reps @ RPE</b></span>
+      <span><b>★</b> = top set à RPE 8</span>
+      <span><i class="sw c"></i>S1–S2 hypertrophie</span>
+      <span><i class="sw a"></i>S3 force</span>
+      <span><i class="sw m"></i>S4 affûtage</span>
+    </div>
+
+    <!-- Séance 1 -->
+    <div class="tblx-scroll rv">
+    <table class="tblx">
+      <caption>Séance 1 · Bas du corps <span class="pill r" style="margin-left:8px">Obligatoire</span></caption>
+      <thead><tr>
+        <th>Bloc</th><th>Exercice</th><th class="mono">Tempo</th><th class="mono">Repos</th>
+        <th class="mono wc">S1</th><th class="mono wc">S2</th><th class="mono wa">S3</th><th class="mono wm">S4</th><th>Note</th>
+      </tr></thead>
+      <tbody>
+        <tr class="blk b-a"><td>A1</td><td>Squat</td><td class="mono">2010</td><td class="mono" rowspan="2">E4MOM</td><td class="mono">4×8 R7</td><td class="mono">4×6 R8★</td><td class="mono">5×5 R8</td><td class="mono">3×5 R7</td><td class="note">Montée en charge, amplitude complète.</td></tr>
+        <tr class="blk b-a"><td>A2</td><td>Cervicales en pont</td><td class="mono">ISO</td><td class="mono">3×15s</td><td class="mono">3×15s</td><td class="mono">3×20s</td><td class="mono">3×15s</td><td class="note">Jamais lourd, reprise progressive.</td></tr>
+        <tr class="blk b-a"><td>B1</td><td>Hip thrust</td><td class="mono">2010</td><td class="mono" rowspan="2">E4MOM</td><td class="mono">4×8 R7</td><td class="mono">4×6 R8★</td><td class="mono">5×5 R8</td><td class="mono">3×6 R7</td><td class="note">Verrouillage haut, fessiers.</td></tr>
+        <tr class="blk b-a"><td>B2</td><td>Rotateurs externes (élastique)</td><td class="mono">3010</td><td class="mono">4×10/c</td><td class="mono">4×10/c</td><td class="mono">4×12/c</td><td class="mono">3×10/c</td><td class="note">Épaule saine.</td></tr>
+        <tr class="blk b-c"><td>C1</td><td>Fente marchée haltères</td><td class="mono">2010</td><td class="mono" rowspan="2">E3MOM</td><td class="mono">4×6/c R7</td><td class="mono">4×6/c R8</td><td class="mono">4×5/c R8</td><td class="mono">3×5/c R7</td><td class="note">Attention à la charge.</td></tr>
+        <tr class="blk b-c"><td>C2</td><td>Élévation latérale</td><td class="mono">3110</td><td class="mono">4×10</td><td class="mono">4×10</td><td class="mono">4×8</td><td class="mono">3×10</td><td class="note">Garde 1 temps en haut.</td></tr>
+        <tr class="blk b-c"><td>D1</td><td>Adducteurs Swiss-ball / Nordic</td><td class="mono">ISO/exc.</td><td class="mono">—</td><td class="mono">4×5×5s</td><td class="mono">4×5×5s</td><td class="mono">4×6×5s</td><td class="mono">3×5×5s</td><td class="note">Prévention. 5s entre reps.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <!-- Séance 2 -->
+    <div class="tblx-scroll rv" style="margin-top:22px">
+    <table class="tblx">
+      <caption>Séance 2 · Haut du corps <span class="pill r" style="margin-left:8px">Obligatoire</span></caption>
+      <thead><tr>
+        <th>Bloc</th><th>Exercice</th><th class="mono">Tempo</th><th class="mono">Repos</th>
+        <th class="mono wc">S1</th><th class="mono wc">S2</th><th class="mono wa">S3</th><th class="mono wm">S4</th><th>Note</th>
+      </tr></thead>
+      <tbody>
+        <tr class="blk b-a"><td>A1</td><td>Développé (couché / incliné)</td><td class="mono">2010</td><td class="mono" rowspan="2">E4MOM</td><td class="mono">4×8 R7</td><td class="mono">4×6 R8★</td><td class="mono">5×5 R8</td><td class="mono">3×5 R7</td><td class="note">Montée en charge, variante planche possible.</td></tr>
+        <tr class="blk b-a"><td>A2</td><td>Cervicales en pont de face</td><td class="mono">ISO</td><td class="mono">3×15s</td><td class="mono">3×15s</td><td class="mono">3×20s</td><td class="mono">3×15s</td><td class="note">Tête sur banc.</td></tr>
+        <tr class="blk b-a"><td>B1</td><td>Rowing buste penché</td><td class="mono">2010</td><td class="mono" rowspan="2">E4MOM</td><td class="mono">4×8 R7</td><td class="mono">4×6 R8★</td><td class="mono">5×5 R8</td><td class="mono">3×5 R7</td><td class="note">Dos gainé, tirage complet.</td></tr>
+        <tr class="blk b-a"><td>B2</td><td>Cervicales élastique côté</td><td class="mono">ISO</td><td class="mono">3×15s</td><td class="mono">3×15s</td><td class="mono">3×20s</td><td class="mono">3×15s</td><td class="note">La tête ne bouge pas.</td></tr>
+        <tr class="blk b-c"><td>C1</td><td>Développé militaire / barre pivot</td><td class="mono">2010</td><td class="mono" rowspan="2">E3MOM</td><td class="mono">4×8/c R7</td><td class="mono">4×6/c R8</td><td class="mono">5×6/c R8</td><td class="mono">3×6/c R7</td><td class="note">Chevalier servant.</td></tr>
+        <tr class="blk b-c"><td>C2</td><td>Shrug haltères</td><td class="mono">3110</td><td class="mono">4×8</td><td class="mono">4×8</td><td class="mono">4×8</td><td class="mono">3×8</td><td class="note">Garde 1 temps en haut.</td></tr>
+        <tr class="blk b-c"><td>D1</td><td>Face pull / tirage oblique</td><td class="mono">3010</td><td class="mono">—</td><td class="mono">4×10</td><td class="mono">4×10</td><td class="mono">4×12</td><td class="mono">3×10</td><td class="note">Santé d'épaule + posture.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <!-- Bonus -->
+    <div class="tblx-scroll rv" style="margin-top:22px">
+    <table class="tblx">
+      <caption>Bonus · Finisher bras <span class="pill v" style="margin-left:8px">Optionnel — après les 2 séances</span></caption>
+      <thead><tr>
+        <th>#</th><th>Exercice</th><th class="mono">Séries</th>
+        <th class="mono wc">S1</th><th class="mono wc">S2</th><th class="mono wa">S3</th><th class="mono wm">S4</th>
+      </tr></thead>
+      <tbody>
+        <tr class="blk b-c"><td>1</td><td>Biceps curl</td><td class="mono">2</td><td class="mono">10+max+max</td><td class="mono">10+max+max</td><td class="mono">40 for time</td><td class="mono">40 for time</td></tr>
+        <tr class="blk b-c"><td>2</td><td>Triceps poulie</td><td class="mono">2</td><td class="mono">10+max+max</td><td class="mono">10+max+max</td><td class="mono">40 for time</td><td class="mono">40 for time</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="intro-p rv" style="margin-top:12px;font-size:.9rem">S1–S2 : double drop set (10 reps + max + max, on baisse la charge à chaque échec). S3–S4 : 40 reps le plus vite possible. RPE 10.</p>
+
+    <div class="callout c rv">
+      <h4>En cas de salle — charge des gros mouvements</h4>
+      <p>Sur squat et développé couché, si tu travailles au % du max : <b>S1 65 % · 4×8</b> → <b>S2 70 % · 4×6</b>
+        → <b>S3 75 % · 5×5</b> → <b>S4 réduit</b> (garde l'intensité, coupe le volume). Sinon, pilote au RPE comme
+        indiqué et note tes charges pour les battre.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 CARDIO ============ -->
+<section id="cardio">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">07</span>
+      <div><h2>Cardio — deux qualités, une base</h2><p>Une séance basse intensité pour la base aérobie, une fractionnée pour répéter l'effort.</p></div>
+    </div>
+
+    <div class="grid g3 rv">
+      <div class="card tint-c">
+        <h3>Cardio 1 · Base aérobie <span class="pill r">Oblig.</span></h3>
+        <p>Faible intensité, continu. Footing 30–40′ <span class="k">ou</span> vélo 1 h–1 h 30 <span class="k">ou</span> machine 45′.</p>
+        <p style="margin-top:8px"><span class="k">Machines au choix, à alterner :</span> Wattbike · Rameur · SkiErg · Assault bike.</p>
+      </div>
+      <div class="card tint-a vol">
+        <h3>Cardio 2 · Fractionné HI <span class="pill r">Oblig.</span></h3>
+        <p>Répétition d'effort à haute intensité, format EMOM. À faire <span class="k">en crampons sur terrain</span> pour les changements de direction.</p>
+        <p style="margin-top:8px"><span class="k">Trames :</span> E2MOM, Broken Bronco, half-Bronco.</p>
+      </div>
+      <div class="card tint-c">
+        <h3>Cardio 3 · Extra <span class="pill v">Bonus</span></h3>
+        <p>Au choix, plutôt en running. <span class="pill r" style="margin-top:6px">Devient obligatoire si Yo-Yo insuffisant.</span></p>
+      </div>
+    </div>
+
+    <div class="tblx-scroll rv" style="margin-top:22px">
+    <table class="tblx">
+      <caption>Exemple machine (à alterner lundi / jeudi)</caption>
+      <thead><tr><th>Machine</th><th class="mono">Track Puissance (avants)</th><th class="mono">Track Vitesse (3/4)</th></tr></thead>
+      <tbody>
+        <tr><td>Wattbike</td><td class="mono">10 × 500 m · rés. 8 · en 45s · récup 45s</td><td class="mono">10 × 200 m · rés. 8 · en 15s · récup 30s</td></tr>
+        <tr><td>Rameur</td><td class="mono">6 × 500 m · rés. 8 · en 2′ · récup 1′</td><td class="mono">8 × 300 m · rés. 8 · en 1′30 · récup 45s</td></tr>
+        <tr><td>SkiErg</td><td class="mono">2 blocs (récup 3′) · 8 × 20s · récup 40s</td><td class="mono">2 blocs · 10 × 15s · récup 30s</td></tr>
+        <tr><td>Assault bike</td><td class="mono">2 blocs · 10 × 15s · récup 15s</td><td class="mono">2 blocs · 8 × 10s · récup 20s</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="tblx-scroll rv" style="margin-top:22px">
+    <table class="tblx">
+      <caption>Cardio 1 · Base aérobie — durée continue S1 → S4</caption>
+      <thead><tr><th>Support</th><th class="mono wc">S1</th><th class="mono wc">S2</th><th class="mono wa">S3</th><th class="mono wm">S4</th></tr></thead>
+      <tbody>
+        <tr class="blk b-c"><td>Footing (running)</td><td class="mono">30′</td><td class="mono">35′</td><td class="mono">40′</td><td class="mono">30′ souple</td></tr>
+        <tr class="blk b-c"><td>Vélo</td><td class="mono">1 h</td><td class="mono">1 h 15</td><td class="mono">1 h 30</td><td class="mono">1 h souple</td></tr>
+        <tr class="blk b-c"><td>Machine continue</td><td class="mono">40′</td><td class="mono">45′</td><td class="mono">50′</td><td class="mono">40′ souple</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="intro-p rv" style="margin-top:14px"><b>Cardio 2 (fractionné HI) = la séance de courses détaillée en section 08</b>, différenciée par profil et progressive S1→S4.
+      Sur la semaine d'affûtage (S4) : <b>on garde muscu + courses, on coupe le cardio base lourd.</b>
+      Rappel : <span class="mono">Bronco = A-R entre 0 · 22 m · 40 m · 60 m · 0 (0 = ligne d'embut).</span></p>
+  </div>
+</section>
+
+<!-- ============ 08 COURSES ============ -->
+<section id="courses">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">08</span>
+      <div><h2>Courses terrain</h2><p>Le travail spécifique : intermittent, navettes, sprints — différencié par profil.</p></div>
+    </div>
+
+    <div class="split rv">
+      <div class="pitch">
+        <svg viewBox="0 0 620 300" width="100%" role="img" aria-label="Schéma de terrain : navettes et lignes">
+          <rect x="0" y="0" width="620" height="300" rx="10" fill="#12313a"/>
+          <rect x="20" y="20" width="580" height="260" rx="4" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
+          <!-- lines -->
+          <line x1="310" y1="20" x2="310" y2="280" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
+          <line x1="145" y1="20" x2="145" y2="280" stroke="rgba(255,255,255,.22)" stroke-width="1.5" stroke-dasharray="6 7"/>
+          <line x1="475" y1="20" x2="475" y2="280" stroke="rgba(255,255,255,.22)" stroke-width="1.5" stroke-dasharray="6 7"/>
+          <text x="150" y="38" fill="rgba(255,255,255,.5)" font-family="JetBrains Mono" font-size="13">22</text>
+          <text x="315" y="38" fill="rgba(255,255,255,.5)" font-family="JetBrains Mono" font-size="13">50</text>
+          <text x="452" y="38" fill="rgba(255,255,255,.5)" font-family="JetBrains Mono" font-size="13">22</text>
+          <!-- cyan long run -->
+          <line x1="55" y1="95" x2="565" y2="95" stroke="#38D2E6" stroke-width="4" marker-end="url(#ac)"/>
+          <text x="290" y="82" fill="#38D2E6" font-family="JetBrains Mono" font-size="12">100 m — ×6</text>
+          <!-- amber A-R -->
+          <line x1="55" y1="160" x2="360" y2="160" stroke="#E8A33D" stroke-width="4" marker-end="url(#aa)"/>
+          <line x1="360" y1="172" x2="55" y2="172" stroke="#E8A33D" stroke-width="4" marker-end="url(#aa)"/>
+          <text x="120" y="150" fill="#E8A33D" font-family="JetBrains Mono" font-size="12">50 m A-R — ×6</text>
+          <!-- red navette -->
+          <line x1="55" y1="235" x2="200" y2="235" stroke="#E5484D" stroke-width="4" marker-end="url(#ar)"/>
+          <line x1="200" y1="247" x2="55" y2="247" stroke="#E5484D" stroke-width="4" marker-end="url(#ar)"/>
+          <text x="215" y="245" fill="#E5484D" font-family="JetBrains Mono" font-size="12">navette galloise — ×6</text>
+          <defs>
+            <marker id="ac" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#38D2E6"/></marker>
+            <marker id="aa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E8A33D"/></marker>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E5484D"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>Structure d'une séance course</h3>
+          <ul>
+            <li><span class="k">Bloc 1</span> — intermittent court (10″/15″), volume selon profil.</li>
+            <li><span class="k">Bloc 2</span> — intermittent long (15″/15″) ou fartlek.</li>
+            <li><span class="k">Bloc 3</span> — répétition d'effort (navettes / lignes / Malcolm).</li>
+            <li><span class="k">Bloc 4</span> — Bronco / half-Bronco ou navette avec passage au sol.</li>
+          </ul>
+          <p style="margin-top:8px">≈ <span class="k">2′ de récup entre les blocs.</span> Volume total qui monte de S1 à S3.</p>
+        </div>
+        <div class="callout">
+          <h4>Cibles différenciées</h4>
+          <p><span class="pill a">Puissance</span> Bloc 1 : 40–45 m · Bloc 2 : 60–70 m · Bronco départ /min.<br>
+             <span class="pill c">Vitesse</span> Bloc 1 : 50–55 m · Bloc 2 : 75–85 m · Bronco départ /50s + sprints en courbe.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Track PUISSANCE -->
+    <div class="tblx-scroll rv" style="margin-top:24px">
+    <table class="tblx">
+      <caption><span class="pill a" style="margin-right:8px">Track Puissance · Avants</span> Courses S1 → S4 · c'est la séance Cardio 2 (fractionné HI)</caption>
+      <thead><tr>
+        <th>Bloc</th><th class="mono wc">S1</th><th class="mono wc">S2</th><th class="mono wa">S3</th><th class="mono wm">S4 · affûtage</th>
+      </tr></thead>
+      <tbody>
+        <tr class="blk b-a"><td>1</td><td class="mono">6 × 100 m /1′</td><td class="mono">8 × 100 m /50s</td><td class="mono">8 × 20/10 (70–80 m)</td><td class="mono">5 × 10/20 (55 m)</td></tr>
+        <tr class="blk b-a"><td>2</td><td class="mono">6 × 50 m A-R /1′</td><td class="mono">6 × 50 m A-R /50s</td><td class="mono">8 × 50 m A-R /45s</td><td class="mono">6 × 100 m /50s</td></tr>
+        <tr class="blk b-a"><td>3</td><td class="mono">6 nav. galloise /30s</td><td class="mono">6 half-Bronco /1′10</td><td class="mono">5 half-Bronco /1′</td><td class="mono">4 half-Bronco /1′</td></tr>
+        <tr><td class="mono" style="font-weight:700">Volume</td><td class="mono">≈ 1500 m</td><td class="mono">≈ 2250 m</td><td class="mono">≈ 2500 m</td><td class="mono">≈ 2250 m</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <!-- Track VITESSE -->
+    <div class="tblx-scroll rv" style="margin-top:22px">
+    <table class="tblx">
+      <caption><span class="pill c" style="margin-right:8px">Track Vitesse · 3/4</span> Courses S1 → S4 · distances plus longues, objectifs plus exigeants</caption>
+      <thead><tr>
+        <th>Bloc</th><th class="mono wc">S1</th><th class="mono wc">S2</th><th class="mono wa">S3</th><th class="mono wm">S4 · affûtage</th>
+      </tr></thead>
+      <tbody>
+        <tr class="blk b-c"><td>1</td><td class="mono">6 × 100 m /50s</td><td class="mono">8 × 100 m /50s</td><td class="mono">8 × 20/10 (80–90 m)</td><td class="mono">5 × 10/20 (55 m)</td></tr>
+        <tr class="blk b-c"><td>2</td><td class="mono">6 × 50 m A-R /50s</td><td class="mono">5 × 10/20 (55 m)</td><td class="mono">8 × 50 m A-R /45s</td><td class="mono">6 × Navette galloise /35s</td></tr>
+        <tr class="blk b-c"><td>3</td><td class="mono">6 Malcolm (départ sol) /30s</td><td class="mono">6 half-Bronco /1′10</td><td class="mono">5 half-Bronco /1′</td><td class="mono">8 × (0-60-40-100) /30s</td></tr>
+        <tr class="blk b-c"><td>+</td><td class="mono">Accél. courbe 5/10 m</td><td class="mono">Sprint courbe 40 m</td><td class="mono">Broken Bronco ×3</td><td class="mono">Vitesse 10/15/20/25</td></tr>
+        <tr><td class="mono" style="font-weight:700">Volume</td><td class="mono">≈ 1500 m</td><td class="mono">≈ 2250 m</td><td class="mono">≈ 2500 m</td><td class="mono">≈ 2250 m</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="intro-p rv" style="margin-top:12px;font-size:.9rem">Échauffement « Vitesse » (section 05) avant toute séance à dominante sprint.
+      2′ de récup entre les blocs. En crampons sur terrain pour les changements de direction.</p>
+  </div>
+</section>
+
+<!-- ============ 09 GAINAGE ============ -->
+<section id="gainage">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">09</span>
+      <div><h2>Gainage — lesté &amp; progressif</h2><p>3 séries / exercice · 2′ de récup entre les blocs · on ajoute du poids chaque semaine.</p></div>
+    </div>
+
+    <div class="grid g3 rv">
+      <div class="card tint-a vol">
+        <h3>Bloc anti-extension</h3>
+        <ul>
+          <li>Gainage face <span class="k">lesté</span> — 30s</li>
+          <li>Bear walk barbell — 5 m A-R</li>
+          <li>AB wheel rollouts — 10 reps</li>
+        </ul>
+      </div>
+      <div class="card tint-c">
+        <h3>Bloc anti-rotation</h3>
+        <ul>
+          <li>Pallof press — 10 reps/côté</li>
+          <li>Landmine twist — 10 reps/côté</li>
+          <li>Anti-rotation buste incliné ISO — 20s/côté</li>
+        </ul>
+      </div>
+      <div class="card tint-c">
+        <h3>Bloc latéral / global</h3>
+        <ul>
+          <li>Gainage latéral lesté — 30s/côté</li>
+          <li>KB plank pull — 8 reps/côté</li>
+          <li>DB overhead sit-up / hollow — 10 reps</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tblx-scroll rv" style="margin-top:22px">
+    <table class="tblx">
+      <caption>Rotation gainage · 3 séries / exercice · 2′ récup entre blocs</caption>
+      <thead><tr>
+        <th>Semaine</th><th>Anti-extension</th><th>Anti-rotation</th><th>Latéral / global</th><th class="mono">Charge lest</th>
+      </tr></thead>
+      <tbody>
+        <tr class="blk b-c"><td>S1</td><td>Gainage face — 30s</td><td>Pallof press — 10/c</td><td>DB overhead sit-up — 10</td><td class="mono">+20 kg</td></tr>
+        <tr class="blk b-c"><td>S2</td><td>Bear walk barbell — 5 m A-R</td><td>Pallof press — 10/c</td><td>Hollow hold KB — 8/c</td><td class="mono">+25 kg</td></tr>
+        <tr class="blk b-a"><td>S3</td><td>AB wheel rollouts — 10</td><td>Anti-rotation buste ISO — 20s/c</td><td>KB plank pull — 8/c</td><td class="mono">+30 kg</td></tr>
+        <tr class="blk b-a"><td>S4</td><td>Gainage face — 30s</td><td>Landmine twist — 10/c</td><td>KB plank pull — 8/c</td><td class="mono">+30 kg</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="callout a rv">
+      <h4>Charge du gainage lesté</h4>
+      <p><b>S1 : + 20 kg</b> minimum → <b>S2 : + 25 kg</b> → <b>S3–S4 : + 30 kg</b>. Gainage face &amp; latéral toujours
+        lestés. Sur l'anti-rotation, ne mets le poids que d'un seul côté.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 PREVENTION ============ -->
+<section id="preven">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">10</span>
+      <div><h2>Prévention — la partie qu'on ne saute pas</h2><p>Cervicales obligatoires + prophylaxie chaîne postérieure.</p></div>
+    </div>
+
+    <div class="grid g2 rv">
+      <div class="card tint-r">
+        <h3>Renfo cervicales <span class="pill r">Obligatoire</span></h3>
+        <ul>
+          <li><span class="k">Activation</span> — rotations lentes contrôlées + 2 séries : 10s puis 5s plus fort.</li>
+          <li><span class="k">2a · avec élastique</span> — 20s par côté × 3.</li>
+          <li><span class="k">2b · sans matériel</span> — 10s × 3 (avec les mains si besoin).</li>
+          <li>1′ de récup entre les séries.</li>
+        </ul>
+      </div>
+      <div class="card tint-a vol">
+        <h3>Prophylaxie chaîne postérieure</h3>
+        <ul>
+          <li>Extension mollet — 10 × 5</li>
+          <li>Hip thrust 1 jambe — 10 × 5</li>
+          <li>Copenhagen plank — 30″ × 5</li>
+          <li>Quadrupédie statique 30″ + mains au mur 30″ — × 5</li>
+          <li>1′ de récup entre les séries.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout r rv">
+      <h4>Douleur ou gêne ?</h4>
+      <p>Adapte ou stoppe l'exercice, et <b>préviens le préparateur physique</b>. Hydratation +++ en été.
+        Toute séance manquée se signale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 MOBILITE / RECUP ============ -->
+<section id="recup">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">11</span>
+      <div><h2>Mobilité &amp; récupération</h2><p>À faire en activation avant séance, ou en récup les jours OFF.</p></div>
+    </div>
+    <div class="grid g2 rv">
+      <div class="card tint-c">
+        <h3>Foam roller — 11 zones</h3>
+        <p>Voûte plantaire · mollets · ischios · quadriceps · adducteurs · TFL · fessiers · lombaire/thoracique/cervicale ·
+          dorsaux · deltoïdes · pectoraux.</p>
+      </div>
+      <div class="card tint-c">
+        <h3>Étirement / mobilité</h3>
+        <p>Bassin (anté/rétro, rotations) · dos rond/creux · grandissement · chien tête haut/bas ·
+          mobilité thoracique · chevilles · quadris · ischios · adducteurs · psoas · épaules · cou.</p>
+      </div>
+    </div>
+    <p class="intro-p rv" style="margin-top:16px">Le jour OFF, <b>renfo cervical possible en supplément</b> et une routine mobilité
+      complète = meilleure récup pour repartir frais.</p>
+  </div>
+</section>
+
+<!-- ============ 12 BILAN ============ -->
+<section id="bilan" style="border-bottom:none">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="num">12</span>
+      <div><h2>Ta checklist de la semaine</h2><p>Coche, poste, progresse.</p></div>
+    </div>
+    <ul class="checks rv">
+      <li><span class="box"></span><span><b>2 muscu obligatoires</b> réalisées et postées (photo salle · « Séance X – Semaine X ✅ »).</span></li>
+      <li><span class="box"></span><span><b>Cardio 1 base aérobie</b> + <b>Cardio 2 fractionné HI</b> enregistrés sur Strava (« Cardio X – Semaine X »).</span></li>
+      <li><span class="box"></span><span><b>Renfo cervicales</b> fait à chaque séance haut du corps — non négociable.</span></li>
+      <li><span class="box"></span><span><b>Gainage lesté</b> + prophylaxie chaîne postérieure au moins 2× / semaine.</span></li>
+      <li><span class="box"></span><span>Charges <b>notées</b> pour battre la semaine suivante à même RPE.</span></li>
+      <li><span class="box"></span><span>Cardio 3 fait <b>si mon Yo-Yo n'atteint pas mon palier de poste</b>.</span></li>
+      <li><span class="box"></span><span>48 h entre deux muscu · hydratation +++ · toute séance manquée signalée.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="mantra rv">Travailler <em>aujourd'hui</em>,<br>dominer <em>demain</em>.</div>
+    <p class="rv">Protocole C1 · Intersaison Crabos 2026–2027 — synthèse des meilleures pratiques
+      CA Brive · Stade Rochelais · Racing 92 · FC Grenoble. Reviens au niveau, reviens prêt.</p>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
