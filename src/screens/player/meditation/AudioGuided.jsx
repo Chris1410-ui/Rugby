@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { vibe, fmtClock } from "./medTimer.js";
-import { createOceanWaves } from "./waves.js";
+import { createNightForest } from "./nightforest.js";
 
 /* Séance PILOTÉE PAR L'AUDIO, synchronisée PHASE PAR PHASE sur une cue sheet
    (timestamps extraits de l'enregistrement). L'unique source de temps est
@@ -36,22 +36,26 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const [cur, setCur] = useState(0), [dur, setDur] = useState(0), [err, setErr] = useState(false);
   const [phase, setPhase] = useState(cues?.[0]?.type || "intro");
   const [count, setCount] = useState(0);
-  const [wavesVol, setWavesVol] = useState(0.55); // volume du fond de vagues (0..1)
-  const wavesRef = useRef(null);
-  if (!wavesRef.current) wavesRef.current = createOceanWaves(0.55);
-  const wavesVolRef = useRef(0.55); wavesVolRef.current = wavesVol;
+  const [voiceVol, setVoiceVol] = useState(1);      // volume de la voix guidée (0..1)
+  const [forestVol, setForestVol] = useState(0.55); // volume du fond de forêt (0..1)
+  const forestRef = useRef(null);
+  if (!forestRef.current) forestRef.current = createNightForest(0.55);
+  const forestVolRef = useRef(0.55); forestVolRef.current = forestVol;
 
-  // Lecture/pause suit l'état `running` (boutons du Player). Le fond de vagues
+  // Lecture/pause suit l'état `running` (boutons du Player). Le fond de forêt
   // démarre/s'arrête avec la voix (démarré sous le geste utilisateur → autorisé).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); wavesRef.current?.start(); wavesRef.current?.setVolume(wavesVolRef.current); }
-    else { a.pause?.(); vibe(0); wavesRef.current?.pause(); }
+    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); forestRef.current?.start(); forestRef.current?.setVolume(forestVolRef.current); }
+    else { a.pause?.(); vibe(0); forestRef.current?.pause(); }
   }, [running]);
 
-  // Volume des vagues réglable à chaud + arrêt propre au démontage.
-  useEffect(() => { wavesRef.current?.setVolume(wavesVol); }, [wavesVol]);
-  useEffect(() => () => { wavesRef.current?.stop(); }, []);
+  // Volume de la voix réglable à chaud (élément <audio>).
+  useEffect(() => { const a = audioRef.current; if (a) a.volume = voiceVol; }, [voiceVol]);
+
+  // Volume du fond de forêt réglable à chaud + arrêt propre au démontage.
+  useEffect(() => { forestRef.current?.setVolume(forestVol); }, [forestVol]);
+  useEffect(() => () => { forestRef.current?.stop(); }, []);
 
   // Se placer où l'on veut dans l'audio (le visuel suit, piloté par currentTime).
   const seek = (v) => { const a = audioRef.current; if (a) { try { a.currentTime = v; setCur(v); lastIdx.current = -1; } catch { /* noop */ } } };
@@ -112,7 +116,7 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
     return () => { cancelAnimationFrame(rafRef.current); vibe(0); };
   }, []);
 
-  const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); wavesRef.current?.pause(); onFinish?.(); } };
+  const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); forestRef.current?.pause(); onFinish?.(); } };
   const holding = phase === "hold";
 
   return (
@@ -151,14 +155,24 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
         </div>
       </div>
 
-      {/* Volume du fond de vagues (masque la friture). 0 = coupé. */}
+      {/* Volume de la voix guidée. 0 = coupée. */}
       <div style={{ width: 280, marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 15 }} title={t("meditation.contraction.waves")}>🌊</span>
-        <input type="range" min={0} max={1} step={0.02} value={wavesVol}
-          onChange={(e) => setWavesVol(Number(e.target.value))}
-          aria-label={t("meditation.contraction.waves")}
+        <span style={{ fontSize: 15 }} title={t("meditation.contraction.voice")}>🔊</span>
+        <input type="range" min={0} max={1} step={0.02} value={voiceVol}
+          onChange={(e) => setVoiceVol(Number(e.target.value))}
+          aria-label={t("meditation.contraction.voice")}
+          style={{ flex: 1, accentColor: accent, cursor: "pointer" }} />
+        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(voiceVol * 100)}%</span>
+      </div>
+
+      {/* Volume du fond de forêt la nuit (masque la friture). 0 = coupé. */}
+      <div style={{ width: 280, marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 15 }} title={t("meditation.contraction.forest")}>🌲</span>
+        <input type="range" min={0} max={1} step={0.02} value={forestVol}
+          onChange={(e) => setForestVol(Number(e.target.value))}
+          aria-label={t("meditation.contraction.forest")}
           style={{ flex: 1, accentColor: C.teal, cursor: "pointer" }} />
-        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(wavesVol * 100)}%</span>
+        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(forestVol * 100)}%</span>
       </div>
 
       {/* Consigne courte synchronisée sur la phase. */}
