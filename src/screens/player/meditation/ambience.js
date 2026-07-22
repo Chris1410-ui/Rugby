@@ -17,60 +17,91 @@ function brownNoise(ctx, seconds, amp) {
   return buf;
 }
 
-// Bruit blanc bouclé (couture inaudible car aléatoire).
-function whiteNoise(ctx, seconds) {
+// Bruit rose (spectre en 1/f, chaud et naturel — bien plus « pluie » que le
+// bruit blanc). Approximation de Paul Kellet. Bouclé.
+function pinkNoise(ctx, seconds) {
   const len = Math.floor(ctx.sampleRate * seconds);
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);
   const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-  return buf;
-}
-
-// Buffer de « crépitements » pré-calculé : pops courts décroissants placés au hasard.
-function crackleBuffer(ctx, seconds, pops) {
-  const len = Math.floor(ctx.sampleRate * seconds);
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let k = 0; k < pops; k++) {
-    const start = Math.floor(Math.random() * len);
-    const dur = Math.floor(ctx.sampleRate * (0.004 + Math.random() * 0.02));
-    const amp = 0.4 + Math.random() * 0.6;
-    for (let i = 0; i < dur && start + i < len; i++) { const env = 1 - i / dur; d[start + i] += (Math.random() * 2 - 1) * amp * env * env; }
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+  for (let i = 0; i < len; i++) {
+    const w = Math.random() * 2 - 1;
+    b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759;
+    b2 = 0.96900 * b2 + w * 0.1538520; b3 = 0.86650 * b3 + w * 0.3104856;
+    b4 = 0.55000 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.0168980;
+    d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
   }
   return buf;
 }
 
-// Forêt la nuit : brise feutrée + grillons stridulants répartis en stéréo.
+// Grillons pré-rendus : chaque grillon émet des « stridulations » = trains de
+// courtes impulsions sinusoïdales fenêtrées (attaque/chute douces, aucun clic),
+// espacées avec du jitter → cri-cri naturel et vivant, réparti en stéréo.
+function renderCrickets(ctx, seconds) {
+  const sr = ctx.sampleRate, len = Math.floor(sr * seconds);
+  const buf = ctx.createBuffer(2, len, sr);
+  const L = buf.getChannelData(0), R = buf.getChannelData(1);
+  const voices = [
+    { freq: 4500, rate: 2.4, pulses: 4, pan: -0.55, gain: 0.30 },
+    { freq: 4780, rate: 2.7, pulses: 3, pan: 0.40, gain: 0.26 },
+    { freq: 5150, rate: 2.1, pulses: 5, pan: 0.05, gain: 0.22 },
+  ];
+  for (const v of voices) {
+    const ang = (v.pan + 1) * Math.PI / 4, lg = Math.cos(ang) * v.gain, rg = Math.sin(ang) * v.gain;
+    const pulseDur = Math.floor(sr * 0.009), gap = Math.floor(sr * 0.010);
+    let pos = Math.random() * (sr / v.rate);
+    while (pos < len) {
+      const f = v.freq * (0.99 + Math.random() * 0.02);
+      const chirp = Math.floor(pos);
+      for (let p = 0; p < v.pulses; p++) {
+        const ps = chirp + p * (pulseDur + gap);
+        for (let i = 0; i < pulseDur && ps + i < len; i++) {
+          const env = Math.sin(Math.PI * i / pulseDur);
+          const s = Math.sin(2 * Math.PI * f * i / sr) * env * env;
+          L[ps + i] += s * lg; R[ps + i] += s * rg;
+        }
+      }
+      pos += (sr / v.rate) * (0.8 + Math.random() * 0.6);
+    }
+  }
+  return buf;
+}
+
+// Crépitements de feu pré-rendus : pops à attaque instantanée et chute
+// exponentielle, durées/amplitudes très variées (quelques « claquements »
+// forts parmi de nombreux petits ticks) → crépitement crédible, non répétitif.
+function renderCrackle(ctx, seconds, perSec) {
+  const sr = ctx.sampleRate, len = Math.floor(sr * seconds);
+  const buf = ctx.createBuffer(1, len, sr);
+  const d = buf.getChannelData(0);
+  const n = Math.floor(seconds * perSec);
+  for (let k = 0; k < n; k++) {
+    const start = Math.floor(Math.random() * len);
+    const big = Math.random() < 0.10;
+    const dur = Math.floor(sr * (big ? 0.010 + Math.random() * 0.020 : 0.002 + Math.random() * 0.006));
+    const amp = big ? 0.55 + Math.random() * 0.45 : 0.08 + Math.random() * 0.22;
+    const decay = dur * 0.35;
+    for (let i = 0; i < dur && start + i < len; i++) { const env = Math.exp(-i / decay); d[start + i] += (Math.random() * 2 - 1) * amp * env; }
+  }
+  return buf;
+}
+
+// Forêt la nuit : brise feutrée + grillons (chirps rendus) répartis en stéréo.
 function buildForest(ctx, master, keep) {
-  const wind = ctx.createBufferSource(); wind.buffer = brownNoise(ctx, 4, 3.2); wind.loop = true;
-  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 420; lp.Q.value = 0.5;
-  const windGain = ctx.createGain(); windGain.gain.value = 0.5;
-  const swell = ctx.createOscillator(); swell.type = "sine"; swell.frequency.value = 0.06;
-  const swellDepth = ctx.createGain(); swellDepth.gain.value = 0.28;
+  const wind = ctx.createBufferSource(); wind.buffer = brownNoise(ctx, 4, 2.6); wind.loop = true;
+  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 480; lp.Q.value = 0.4;
+  const windGain = ctx.createGain(); windGain.gain.value = 0.32;
+  const swell = ctx.createOscillator(); swell.type = "sine"; swell.frequency.value = 0.05;
+  const swellDepth = ctx.createGain(); swellDepth.gain.value = 0.16;
   swell.connect(swellDepth).connect(windGain.gain);
   wind.connect(lp).connect(windGain).connect(master);
   wind.start(); swell.start(); keep(wind); keep(swell);
 
-  const cricket = (freq, trillHz, gateHz, pan, level) => {
-    const carrier = ctx.createOscillator(); carrier.type = "sine"; carrier.frequency.value = freq;
-    const trillGain = ctx.createGain(); trillGain.gain.value = 0.5;
-    const trill = ctx.createOscillator(); trill.type = "square"; trill.frequency.value = trillHz;
-    const trillDepth = ctx.createGain(); trillDepth.gain.value = 0.5;
-    trill.connect(trillDepth).connect(trillGain.gain);
-    const gateGain = ctx.createGain(); gateGain.gain.value = 0.5;
-    const gate = ctx.createOscillator(); gate.type = "square"; gate.frequency.value = gateHz;
-    const gateDepth = ctx.createGain(); gateDepth.gain.value = 0.5;
-    gate.connect(gateDepth).connect(gateGain.gain);
-    const lvl = ctx.createGain(); lvl.gain.value = level;
-    const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-    if (panner) panner.pan.value = pan;
-    carrier.connect(trillGain).connect(gateGain).connect(lvl);
-    (panner ? lvl.connect(panner).connect(master) : lvl.connect(master));
-    carrier.start(); trill.start(); gate.start(); keep(carrier); keep(trill); keep(gate);
-  };
-  cricket(4300 + Math.random() * 120, 27, 0.62, -0.55, 0.05);
-  cricket(4600 + Math.random() * 140, 31, 0.74, 0.05, 0.045);
-  cricket(5000 + Math.random() * 160, 24, 0.55, 0.6, 0.04);
+  const crk = ctx.createBufferSource(); crk.buffer = renderCrickets(ctx, 12); crk.loop = true;
+  const clp = ctx.createBiquadFilter(); clp.type = "lowpass"; clp.frequency.value = 7200; clp.Q.value = 0.3;
+  const cgain = ctx.createGain(); cgain.gain.value = 0.9;
+  crk.connect(clp).connect(cgain).connect(master);
+  crk.start(); keep(crk);
 }
 
 // Vagues : bruit brun filtré, houle lente (LFO sur le volume ET la coupure).
@@ -86,37 +117,45 @@ function buildWaves(ctx, master, keep) {
   src.start(); lfo.start(); keep(src); keep(lfo);
 }
 
-// Pluie : bruit blanc filtré (sifflement fin) + corps grave, intensité qui ondule.
+// Pluie : bruit rose filtré (chaleur, pas de sifflement de statique) en bande
+// medium + léger corps grave ; intensité qui respire lentement.
 function buildRain(ctx, master, keep) {
-  const hiss = ctx.createBufferSource(); hiss.buffer = whiteNoise(ctx, 3); hiss.loop = true;
-  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 800;
-  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 6500; lp.Q.value = 0.4;
-  const bed = ctx.createGain(); bed.gain.value = 0.3;
-  const swell = ctx.createOscillator(); swell.type = "sine"; swell.frequency.value = 0.08;
-  const swellDepth = ctx.createGain(); swellDepth.gain.value = 0.08;
+  const rain = ctx.createBufferSource(); rain.buffer = pinkNoise(ctx, 5); rain.loop = true;
+  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 350;
+  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2600; lp.Q.value = 0.3;
+  const bed = ctx.createGain(); bed.gain.value = 0.55;
+  const swell = ctx.createOscillator(); swell.type = "sine"; swell.frequency.value = 0.09;
+  const swellDepth = ctx.createGain(); swellDepth.gain.value = 0.12;
   swell.connect(swellDepth).connect(bed.gain);
-  hiss.connect(hp).connect(lp).connect(bed).connect(master);
-  hiss.start(); swell.start(); keep(hiss); keep(swell);
+  rain.connect(hp).connect(lp).connect(bed).connect(master);
+  rain.start(); swell.start(); keep(rain); keep(swell);
 
-  const body = ctx.createBufferSource(); body.buffer = brownNoise(ctx, 4, 3.0); body.loop = true;
-  const blp = ctx.createBiquadFilter(); blp.type = "lowpass"; blp.frequency.value = 320;
-  const bGain = ctx.createGain(); bGain.gain.value = 0.16;
+  const body = ctx.createBufferSource(); body.buffer = brownNoise(ctx, 4, 2.6); body.loop = true;
+  const blp = ctx.createBiquadFilter(); blp.type = "lowpass"; blp.frequency.value = 380;
+  const bGain = ctx.createGain(); bGain.gain.value = 0.14;
   body.connect(blp).connect(bGain).connect(master);
   body.start(); keep(body);
 }
 
-// Feu de camp : braise grave + crépitements aléatoires (buffer pré-calculé bouclé).
+// Feu de camp : braise grave (rumble) + souffle de flammes (bruit rose medium)
+// + crépitements variés (buffer pré-rendu bouclé).
 function buildFire(ctx, master, keep) {
-  const ember = ctx.createBufferSource(); ember.buffer = brownNoise(ctx, 4, 3.0); ember.loop = true;
-  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 360;
-  const emberGain = ctx.createGain(); emberGain.gain.value = 0.42;
-  ember.connect(lp).connect(emberGain).connect(master);
+  const ember = ctx.createBufferSource(); ember.buffer = brownNoise(ctx, 4, 2.8); ember.loop = true;
+  const elp = ctx.createBiquadFilter(); elp.type = "lowpass"; elp.frequency.value = 300;
+  const eGain = ctx.createGain(); eGain.gain.value = 0.3;
+  ember.connect(elp).connect(eGain).connect(master);
   ember.start(); keep(ember);
 
-  const crack = ctx.createBufferSource(); crack.buffer = crackleBuffer(ctx, 8, 110); crack.loop = true;
-  const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 1800; bp.Q.value = 0.7;
-  const crackGain = ctx.createGain(); crackGain.gain.value = 0.5;
-  crack.connect(bp).connect(crackGain).connect(master);
+  const flame = ctx.createBufferSource(); flame.buffer = pinkNoise(ctx, 5); flame.loop = true;
+  const fbp = ctx.createBiquadFilter(); fbp.type = "bandpass"; fbp.frequency.value = 1100; fbp.Q.value = 0.6;
+  const fGain = ctx.createGain(); fGain.gain.value = 0.13;
+  flame.connect(fbp).connect(fGain).connect(master);
+  flame.start(); keep(flame);
+
+  const crack = ctx.createBufferSource(); crack.buffer = renderCrackle(ctx, 10, 16); crack.loop = true;
+  const cbp = ctx.createBiquadFilter(); cbp.type = "bandpass"; cbp.frequency.value = 2200; cbp.Q.value = 0.6;
+  const cGain = ctx.createGain(); cGain.gain.value = 0.75;
+  crack.connect(cbp).connect(cGain).connect(master);
   crack.start(); keep(crack);
 }
 
