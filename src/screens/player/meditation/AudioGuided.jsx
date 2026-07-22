@@ -48,6 +48,10 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const runningRef = useRef(false); runningRef.current = running;
   const voiceVolRef = useRef(1.8); voiceVolRef.current = voiceVol;
   const vCtxRef = useRef(null), vGainRef = useRef(null), vBuiltRef = useRef(false);
+  // Horloge de secours : sur certains navigateurs (iOS…), router l'élément via
+  // Web Audio fige `currentTime` alors que le son joue → le visuel n'aurait plus
+  // de temps à suivre. On extrapole alors au temps réel écoulé tant que ça joue.
+  const clockRef = useRef({ lastRaw: -1, lastPerf: 0, val: 0 });
 
   // Chaîne Web Audio de la voix : source(élément) → gain (boost) → limiteur →
   // sortie. Permet de dépasser 100 % sans saturer. Créée une seule fois, sous
@@ -108,9 +112,17 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   paintRef.current = () => {
     const a = audioRef.current;
     if (!a || !cues || !cues.length) return;
+    // Base de temps : `currentTime` quand il progresse ; sinon extrapolation au
+    // temps réel écoulé tant que la lecture est active (currentTime figé).
+    const nowPerf = typeof performance !== "undefined" ? performance.now() : 0;
     const raw = a.currentTime || 0;
-    setCur((p) => (Math.abs(p - raw) > 0.05 ? raw : p));
-    const time = raw + OFFSET;
+    const st = clockRef.current;
+    let base;
+    if (raw !== st.lastRaw) { st.lastRaw = raw; st.lastPerf = nowPerf; st.val = raw; base = raw; }
+    else if (running && !a.paused) { base = st.val + Math.max(0, (nowPerf - st.lastPerf) / 1000); }
+    else { base = st.val; }
+    setCur((p) => (Math.abs(p - base) > 0.05 ? base : p));
+    const time = base + OFFSET;
 
     let idx = 0;
     for (let i = 0; i < cues.length; i++) { if (time >= cues[i].t) idx = i; else break; }
