@@ -257,6 +257,7 @@
       "waves": "Vagues",
       "wavesOn": "activées",
       "wavesOff": "coupées",
+      "seek": "Position dans l'audio",
       "phase": {
         "intro": "Installe-toi, allonge-toi, paumes vers le sol.",
         "prepare": "Ferme les yeux, prépare-toi.",
