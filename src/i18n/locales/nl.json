@@ -254,6 +254,9 @@
       "audioLead": "Laat je leiden door de stem.",
       "audioReady": "Zet je koptelefoon op, installeer je en druk op Start.",
       "audioMissing": "Audio niet beschikbaar — probeer het later opnieuw.",
+      "waves": "Golven",
+      "wavesOn": "aan",
+      "wavesOff": "uit",
       "phase": {
         "intro": "Installeer je, ga liggen, handpalmen naar de vloer.",
         "prepare": "Sluit je ogen, maak je klaar.",
