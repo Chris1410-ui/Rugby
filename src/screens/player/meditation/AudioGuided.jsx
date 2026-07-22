@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { vibe, fmtClock } from "./medTimer.js";
-import { createNightForest } from "./nightforest.js";
+import { createAmbience, AMBIENCE_THEMES } from "./ambience.js";
 
 /* Séance PILOTÉE PAR L'AUDIO, synchronisée PHASE PAR PHASE sur une cue sheet
    (timestamps extraits de l'enregistrement). L'unique source de temps est
@@ -19,6 +19,7 @@ const MIN = 0.5, MAX = 1;
 const OFFSET = 0;
 const lerp = (a, b, t) => a + (b - a) * t;
 const colorFor = (type, accent) => (type === "hold" ? C.coral : type === "release" || type === "outro" ? C.teal : accent);
+const THEME_EMOJI = { forest: "🌲", waves: "🌊", rain: "🌧️", fire: "🔥" };
 
 // Vibration couvrant ~sec s de contraction, intensifiée sur la 2ᵉ moitié.
 function holdVibe(sec) {
@@ -37,25 +38,35 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const [phase, setPhase] = useState(cues?.[0]?.type || "intro");
   const [count, setCount] = useState(0);
   const [voiceVol, setVoiceVol] = useState(1);      // volume de la voix guidée (0..1)
-  const [forestVol, setForestVol] = useState(0.55); // volume du fond de forêt (0..1)
-  const forestRef = useRef(null);
-  if (!forestRef.current) forestRef.current = createNightForest(0.55);
-  const forestVolRef = useRef(0.55); forestVolRef.current = forestVol;
+  const [theme, setTheme] = useState("forest");     // thème d'ambiance choisi
+  const [ambVol, setAmbVol] = useState(0.55);       // volume du fond d'ambiance (0..1)
+  const ambRef = useRef(null);
+  if (!ambRef.current) ambRef.current = createAmbience("forest", 0.55);
+  const ambVolRef = useRef(0.55); ambVolRef.current = ambVol;
+  const runningRef = useRef(false); runningRef.current = running;
 
-  // Lecture/pause suit l'état `running` (boutons du Player). Le fond de forêt
+  // Lecture/pause suit l'état `running` (boutons du Player). Le fond d'ambiance
   // démarre/s'arrête avec la voix (démarré sous le geste utilisateur → autorisé).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); forestRef.current?.start(); forestRef.current?.setVolume(forestVolRef.current); }
-    else { a.pause?.(); vibe(0); forestRef.current?.pause(); }
+    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); ambRef.current?.start(); ambRef.current?.setVolume(ambVolRef.current); }
+    else { a.pause?.(); vibe(0); ambRef.current?.pause(); }
   }, [running]);
+
+  // Changement de thème : on arrête l'ancien fond et on recrée le nouveau (au
+  // même volume), en le relançant si la séance est en cours.
+  useEffect(() => {
+    ambRef.current?.stop();
+    ambRef.current = createAmbience(theme, ambVolRef.current);
+    if (runningRef.current) { ambRef.current.start(); ambRef.current.setVolume(ambVolRef.current); }
+  }, [theme]);
 
   // Volume de la voix réglable à chaud (élément <audio>).
   useEffect(() => { const a = audioRef.current; if (a) a.volume = voiceVol; }, [voiceVol]);
 
-  // Volume du fond de forêt réglable à chaud + arrêt propre au démontage.
-  useEffect(() => { forestRef.current?.setVolume(forestVol); }, [forestVol]);
-  useEffect(() => () => { forestRef.current?.stop(); }, []);
+  // Volume de l'ambiance réglable à chaud + arrêt propre au démontage.
+  useEffect(() => { ambRef.current?.setVolume(ambVol); }, [ambVol]);
+  useEffect(() => () => { ambRef.current?.stop(); }, []);
 
   // Se placer où l'on veut dans l'audio (le visuel suit, piloté par currentTime).
   const seek = (v) => { const a = audioRef.current; if (a) { try { a.currentTime = v; setCur(v); lastIdx.current = -1; } catch { /* noop */ } } };
@@ -116,7 +127,7 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
     return () => { cancelAnimationFrame(rafRef.current); vibe(0); };
   }, []);
 
-  const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); forestRef.current?.pause(); onFinish?.(); } };
+  const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); ambRef.current?.pause(); onFinish?.(); } };
   const holding = phase === "hold";
 
   return (
@@ -165,14 +176,28 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
         <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(voiceVol * 100)}%</span>
       </div>
 
-      {/* Volume du fond de forêt la nuit (masque la friture). 0 = coupé. */}
+      {/* Choix du thème d'ambiance (masque la friture). */}
+      <div style={{ width: 280, marginTop: 12, display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+        {AMBIENCE_THEMES.map((id) => {
+          const on = id === theme;
+          return (
+            <button key={id} type="button" onClick={() => setTheme(id)}
+              aria-pressed={on} title={t(`meditation.contraction.theme.${id}`)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, background: on ? `${C.teal}22` : "rgba(255,255,255,0.06)", border: `1px solid ${on ? C.teal : C.border}`, borderRadius: 999, padding: "5px 11px", color: on ? "#fff" : "rgba(255,255,255,0.6)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+              <span style={{ fontSize: 14 }}>{THEME_EMOJI[id]}</span>{t(`meditation.contraction.theme.${id}`)}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Volume du thème sélectionné. 0 = coupé. */}
       <div style={{ width: 280, marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 15 }} title={t("meditation.contraction.forest")}>🌲</span>
-        <input type="range" min={0} max={1} step={0.02} value={forestVol}
-          onChange={(e) => setForestVol(Number(e.target.value))}
-          aria-label={t("meditation.contraction.forest")}
+        <span style={{ fontSize: 15 }} title={t("meditation.contraction.ambience")}>{THEME_EMOJI[theme]}</span>
+        <input type="range" min={0} max={1} step={0.02} value={ambVol}
+          onChange={(e) => setAmbVol(Number(e.target.value))}
+          aria-label={t("meditation.contraction.ambience")}
           style={{ flex: 1, accentColor: C.teal, cursor: "pointer" }} />
-        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(forestVol * 100)}%</span>
+        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(ambVol * 100)}%</span>
       </div>
 
       {/* Consigne courte synchronisée sur la phase. */}
