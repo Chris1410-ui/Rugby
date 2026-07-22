@@ -37,20 +37,48 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const [cur, setCur] = useState(0), [dur, setDur] = useState(0), [err, setErr] = useState(false);
   const [phase, setPhase] = useState(cues?.[0]?.type || "intro");
   const [count, setCount] = useState(0);
-  const [voiceVol, setVoiceVol] = useState(1);      // volume de la voix guidée (0..1)
+  // Voix guidée : gain 0..VOICE_MAX. Boostable AU-DELÀ de 100 % (l'enregistrement
+  // est faible) via un gain Web Audio + limiteur ; l'élément <audio> plafonne à 1.
+  const [voiceVol, setVoiceVol] = useState(1.8);
   const [theme, setTheme] = useState("forest");     // thème d'ambiance choisi
-  const [ambVol, setAmbVol] = useState(0.55);       // volume du fond d'ambiance (0..1)
+  const [ambVol, setAmbVol] = useState(0.35);       // volume du fond d'ambiance (0..1)
   const ambRef = useRef(null);
-  if (!ambRef.current) ambRef.current = createAmbience("forest", 0.55);
-  const ambVolRef = useRef(0.55); ambVolRef.current = ambVol;
+  if (!ambRef.current) ambRef.current = createAmbience("forest", 0.35);
+  const ambVolRef = useRef(0.35); ambVolRef.current = ambVol;
   const runningRef = useRef(false); runningRef.current = running;
+  const voiceVolRef = useRef(1.8); voiceVolRef.current = voiceVol;
+  const vCtxRef = useRef(null), vGainRef = useRef(null), vBuiltRef = useRef(false);
+
+  // Chaîne Web Audio de la voix : source(élément) → gain (boost) → limiteur →
+  // sortie. Permet de dépasser 100 % sans saturer. Créée une seule fois, sous
+  // geste utilisateur. Retombe sur l'élément <audio> (≤100 %) si indisponible
+  // (ex. lecture inter-origine sans CORS).
+  const buildVoiceChain = () => {
+    const a = audioRef.current; if (!a) return false;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    try {
+      const ctx = new AC();
+      const srcNode = ctx.createMediaElementSource(a);
+      const g = ctx.createGain(); g.gain.value = voiceVolRef.current;
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -6; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = 0.003; comp.release.value = 0.25;
+      srcNode.connect(g).connect(comp).connect(ctx.destination);
+      a.volume = 1; // le gain pilote le volume ; l'élément reste à fond
+      vCtxRef.current = ctx; vGainRef.current = g; vBuiltRef.current = true;
+      return true;
+    } catch { return false; }
+  };
 
   // Lecture/pause suit l'état `running` (boutons du Player). Le fond d'ambiance
   // démarre/s'arrête avec la voix (démarré sous le geste utilisateur → autorisé).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); ambRef.current?.start(); ambRef.current?.setVolume(ambVolRef.current); }
-    else { a.pause?.(); vibe(0); ambRef.current?.pause(); }
+    if (running) {
+      if (!vBuiltRef.current) { if (!buildVoiceChain()) a.volume = Math.min(1, voiceVolRef.current); }
+      vCtxRef.current?.resume?.();
+      a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ });
+      ambRef.current?.start(); ambRef.current?.setVolume(ambVolRef.current);
+    } else { a.pause?.(); vibe(0); ambRef.current?.pause(); }
   }, [running]);
 
   // Changement de thème : on arrête l'ancien fond et on recrée le nouveau (au
@@ -61,12 +89,17 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
     if (runningRef.current) { ambRef.current.start(); ambRef.current.setVolume(ambVolRef.current); }
   }, [theme]);
 
-  // Volume de la voix réglable à chaud (élément <audio>).
-  useEffect(() => { const a = audioRef.current; if (a) a.volume = voiceVol; }, [voiceVol]);
+  // Volume de la voix réglable à chaud : gain Web Audio si dispo (boost >100 %),
+  // sinon volume de l'élément (plafonné à 100 %).
+  useEffect(() => {
+    const g = vGainRef.current, ctx = vCtxRef.current;
+    if (g && ctx) g.gain.setTargetAtTime(voiceVol, ctx.currentTime, 0.08);
+    else { const a = audioRef.current; if (a) a.volume = Math.min(1, voiceVol); }
+  }, [voiceVol]);
 
   // Volume de l'ambiance réglable à chaud + arrêt propre au démontage.
   useEffect(() => { ambRef.current?.setVolume(ambVol); }, [ambVol]);
-  useEffect(() => () => { ambRef.current?.stop(); }, []);
+  useEffect(() => () => { ambRef.current?.stop(); try { vCtxRef.current?.close?.(); } catch { /* noop */ } }, []);
 
   // Se placer où l'on veut dans l'audio (le visuel suit, piloté par currentTime).
   const seek = (v) => { const a = audioRef.current; if (a) { try { a.currentTime = v; setCur(v); lastIdx.current = -1; } catch { /* noop */ } } };
@@ -132,7 +165,7 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 0", width: "100%" }}>
-      <audio ref={audioRef} src={src} preload="auto"
+      <audio ref={audioRef} src={src} preload="auto" crossOrigin="anonymous"
         onLoadedMetadata={(e) => { durRef.current = e.currentTarget.duration || 0; setDur(durRef.current); }}
         onEnded={onEnded} onError={() => setErr(true)} />
 
@@ -166,14 +199,14 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
         </div>
       </div>
 
-      {/* Volume de la voix guidée. 0 = coupée. */}
+      {/* Volume de la voix guidée (boostable au-delà de 100 %). 0 = coupée. */}
       <div style={{ width: 280, marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ fontSize: 15 }} title={t("meditation.contraction.voice")}>🔊</span>
-        <input type="range" min={0} max={1} step={0.02} value={voiceVol}
+        <input type="range" min={0} max={3.5} step={0.05} value={voiceVol}
           onChange={(e) => setVoiceVol(Number(e.target.value))}
           aria-label={t("meditation.contraction.voice")}
           style={{ flex: 1, accentColor: accent, cursor: "pointer" }} />
-        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(voiceVol * 100)}%</span>
+        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 34, textAlign: "right" }}>{Math.round(voiceVol * 100)}%</span>
       </div>
 
       {/* Choix du thème d'ambiance (masque la friture). */}
