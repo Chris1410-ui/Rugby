@@ -1,9 +1,9 @@
 /* Fonds sonores d'AMBIANCE synthétisés (Web Audio API) — aucun fichier requis.
-   4 thèmes au choix : forêt la nuit, vagues, pluie, feu de camp. Chacun expose
-   la même API (start/pause/stop/setVolume) ; le volume est piloté par
-   l'utilisateur (0..1). Silencieux si Web Audio indisponible (la voix reste).
-   L'AudioContext n'est créé qu'au premier start() (autorisé sous geste user). */
-export const AMBIENCE_THEMES = ["forest", "waves", "rain", "fire"];
+   2 thèmes au choix : vagues, feu de camp. Chacun expose la même API
+   (start/pause/stop/setVolume) ; le volume est piloté par l'utilisateur (0..1).
+   Silencieux si Web Audio indisponible (la voix reste). L'AudioContext n'est
+   créé qu'au premier start() (autorisé sous geste user). */
+export const AMBIENCE_THEMES = ["waves", "fire"];
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
@@ -34,39 +34,6 @@ function pinkNoise(ctx, seconds) {
   return buf;
 }
 
-// Grillons pré-rendus : chaque grillon émet des « stridulations » = trains de
-// courtes impulsions sinusoïdales fenêtrées (attaque/chute douces, aucun clic),
-// espacées avec du jitter → cri-cri naturel et vivant, réparti en stéréo.
-function renderCrickets(ctx, seconds) {
-  const sr = ctx.sampleRate, len = Math.floor(sr * seconds);
-  const buf = ctx.createBuffer(2, len, sr);
-  const L = buf.getChannelData(0), R = buf.getChannelData(1);
-  const voices = [
-    { freq: 4500, rate: 2.4, pulses: 4, pan: -0.55, gain: 0.30 },
-    { freq: 4780, rate: 2.7, pulses: 3, pan: 0.40, gain: 0.26 },
-    { freq: 5150, rate: 2.1, pulses: 5, pan: 0.05, gain: 0.22 },
-  ];
-  for (const v of voices) {
-    const ang = (v.pan + 1) * Math.PI / 4, lg = Math.cos(ang) * v.gain, rg = Math.sin(ang) * v.gain;
-    const pulseDur = Math.floor(sr * 0.009), gap = Math.floor(sr * 0.010);
-    let pos = Math.random() * (sr / v.rate);
-    while (pos < len) {
-      const f = v.freq * (0.99 + Math.random() * 0.02);
-      const chirp = Math.floor(pos);
-      for (let p = 0; p < v.pulses; p++) {
-        const ps = chirp + p * (pulseDur + gap);
-        for (let i = 0; i < pulseDur && ps + i < len; i++) {
-          const env = Math.sin(Math.PI * i / pulseDur);
-          const s = Math.sin(2 * Math.PI * f * i / sr) * env * env;
-          L[ps + i] += s * lg; R[ps + i] += s * rg;
-        }
-      }
-      pos += (sr / v.rate) * (0.8 + Math.random() * 0.6);
-    }
-  }
-  return buf;
-}
-
 // Crépitements de feu pré-rendus : pops à attaque instantanée et chute
 // exponentielle, durées/amplitudes très variées (quelques « claquements »
 // forts parmi de nombreux petits ticks) → crépitement crédible, non répétitif.
@@ -86,24 +53,6 @@ function renderCrackle(ctx, seconds, perSec) {
   return buf;
 }
 
-// Forêt la nuit : brise feutrée + grillons (chirps rendus) répartis en stéréo.
-function buildForest(ctx, master, keep) {
-  const wind = ctx.createBufferSource(); wind.buffer = brownNoise(ctx, 4, 2.6); wind.loop = true;
-  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 480; lp.Q.value = 0.4;
-  const windGain = ctx.createGain(); windGain.gain.value = 0.32;
-  const swell = ctx.createOscillator(); swell.type = "sine"; swell.frequency.value = 0.05;
-  const swellDepth = ctx.createGain(); swellDepth.gain.value = 0.16;
-  swell.connect(swellDepth).connect(windGain.gain);
-  wind.connect(lp).connect(windGain).connect(master);
-  wind.start(); swell.start(); keep(wind); keep(swell);
-
-  const crk = ctx.createBufferSource(); crk.buffer = renderCrickets(ctx, 12); crk.loop = true;
-  const clp = ctx.createBiquadFilter(); clp.type = "lowpass"; clp.frequency.value = 7200; clp.Q.value = 0.3;
-  const cgain = ctx.createGain(); cgain.gain.value = 0.9;
-  crk.connect(clp).connect(cgain).connect(master);
-  crk.start(); keep(crk);
-}
-
 // Vagues : bruit brun filtré, houle lente (LFO sur le volume ET la coupure).
 function buildWaves(ctx, master, keep) {
   const src = ctx.createBufferSource(); src.buffer = brownNoise(ctx, 4, 3.4); src.loop = true;
@@ -115,26 +64,6 @@ function buildWaves(ctx, master, keep) {
   const fLfo = ctx.createGain(); fLfo.gain.value = 280; lfo.connect(fLfo).connect(lp.frequency);
   src.connect(hp).connect(lp).connect(swell).connect(master);
   src.start(); lfo.start(); keep(src); keep(lfo);
-}
-
-// Pluie : bruit rose filtré (chaleur, pas de sifflement de statique) en bande
-// medium + léger corps grave ; intensité qui respire lentement.
-function buildRain(ctx, master, keep) {
-  const rain = ctx.createBufferSource(); rain.buffer = pinkNoise(ctx, 5); rain.loop = true;
-  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 350;
-  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2600; lp.Q.value = 0.3;
-  const bed = ctx.createGain(); bed.gain.value = 0.55;
-  const swell = ctx.createOscillator(); swell.type = "sine"; swell.frequency.value = 0.09;
-  const swellDepth = ctx.createGain(); swellDepth.gain.value = 0.12;
-  swell.connect(swellDepth).connect(bed.gain);
-  rain.connect(hp).connect(lp).connect(bed).connect(master);
-  rain.start(); swell.start(); keep(rain); keep(swell);
-
-  const body = ctx.createBufferSource(); body.buffer = brownNoise(ctx, 4, 2.6); body.loop = true;
-  const blp = ctx.createBiquadFilter(); blp.type = "lowpass"; blp.frequency.value = 380;
-  const bGain = ctx.createGain(); bGain.gain.value = 0.14;
-  body.connect(blp).connect(bGain).connect(master);
-  body.start(); keep(body);
 }
 
 // Feu de camp : braise grave (rumble) + souffle de flammes (bruit rose medium)
@@ -159,12 +88,12 @@ function buildFire(ctx, master, keep) {
   crack.start(); keep(crack);
 }
 
-const BUILDERS = { forest: buildForest, waves: buildWaves, rain: buildRain, fire: buildFire };
+const BUILDERS = { waves: buildWaves, fire: buildFire };
 
 /* Crée un fond d'ambiance pour un thème donné. L'AudioContext est différé au
    premier start() (geste utilisateur). API : start/pause/stop/setVolume. */
-export function createAmbience(theme = "forest", initialVolume = 0.55) {
-  const buildGraph = BUILDERS[theme] || buildForest;
+export function createAmbience(theme = "waves", initialVolume = 0.55) {
+  const buildGraph = BUILDERS[theme] || buildWaves;
   let ctx = null, master = null, nodes = [], built = false;
   let vol = clamp01(initialVolume);
 

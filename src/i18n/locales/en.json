@@ -257,9 +257,7 @@
       "voice": "Voice",
       "ambience": "Ambience",
       "theme": {
-        "forest": "Night forest",
         "waves": "Waves",
-        "rain": "Rain",
         "fire": "Campfire"
       },
       "seek": "Audio position",
@@ -274,11 +272,14 @@
         "end": "Session complete."
       },
       "label": {
+        "intro": "Settle in",
+        "prepare": "Get ready",
         "inhale": "Inhale",
         "exhale": "Exhale",
         "inhale4": "Inhale fully",
         "contract": "Contract",
-        "release": "Release"
+        "release": "Release",
+        "end": "Done"
       },
       "hint": {
         "inhale": "Breathe in slowly through the nose, expand your belly.",
