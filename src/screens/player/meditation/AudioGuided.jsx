@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { vibe, fmtClock } from "./medTimer.js";
+import { createOceanWaves } from "./waves.js";
 
 /* Séance PILOTÉE PAR L'AUDIO, synchronisée PHASE PAR PHASE sur une cue sheet
    (timestamps extraits de l'enregistrement). L'unique source de temps est
@@ -35,13 +36,22 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const [cur, setCur] = useState(0), [dur, setDur] = useState(0), [err, setErr] = useState(false);
   const [phase, setPhase] = useState(cues?.[0]?.type || "intro");
   const [count, setCount] = useState(0);
+  const [waves, setWaves] = useState(true); // fond de vagues (masque la friture)
+  const wavesRef = useRef(null);
+  if (!wavesRef.current) wavesRef.current = createOceanWaves();
+  const wavesOnRef = useRef(true); wavesOnRef.current = waves;
 
-  // Lecture/pause suit l'état `running` (boutons du Player).
+  // Lecture/pause suit l'état `running` (boutons du Player). Le fond de vagues
+  // démarre/s'arrête avec la voix (démarré sous le geste utilisateur → autorisé).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    if (running) a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ });
-    else { a.pause?.(); vibe(0); }
+    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); wavesRef.current?.start(); wavesRef.current?.setEnabled(wavesOnRef.current); }
+    else { a.pause?.(); vibe(0); wavesRef.current?.pause(); }
   }, [running]);
+
+  // Bascule du fond de vagues à chaud + arrêt propre au démontage.
+  useEffect(() => { wavesRef.current?.setEnabled(waves); }, [waves]);
+  useEffect(() => () => { wavesRef.current?.stop(); }, []);
 
   // Peinture (réassignée à chaque rendu → toujours les dernières props/état).
   paintRef.current = () => {
@@ -99,7 +109,7 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
     return () => { cancelAnimationFrame(rafRef.current); vibe(0); };
   }, []);
 
-  const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); onFinish?.(); } };
+  const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); wavesRef.current?.pause(); onFinish?.(); } };
   const holding = phase === "hold";
   const col = colorFor(phase, accent);
 
@@ -137,6 +147,11 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
       <div key={phase} style={{ marginTop: 12, textAlign: "center", minHeight: 34, maxWidth: 320, fontSize: 13.5, fontWeight: 600, color: holding ? C.coral : "rgba(255,255,255,0.78)", lineHeight: 1.5, animation: "medFade .4s ease" }}>
         {err ? t("meditation.contraction.audioMissing") : t(`meditation.contraction.phase.${phase}`)}
       </div>
+
+      {/* Fond de vagues (masque la friture de la voix) — activable/désactivable. */}
+      <button onClick={() => setWaves((w) => !w)} style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, background: waves ? `${accent}22` : "rgba(255,255,255,0.06)", border: `1px solid ${waves ? accent : C.border}`, borderRadius: 999, padding: "6px 13px", color: waves ? "#fff" : "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+        🌊 {t("meditation.contraction.waves")} · {waves ? t("meditation.contraction.wavesOn") : t("meditation.contraction.wavesOff")}
+      </button>
     </div>
   );
 }
