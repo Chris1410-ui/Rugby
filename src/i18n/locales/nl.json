@@ -257,9 +257,7 @@
       "voice": "Stem",
       "ambience": "Sfeer",
       "theme": {
-        "forest": "Nachtbos",
         "waves": "Golven",
-        "rain": "Regen",
         "fire": "Kampvuur"
       },
       "seek": "Audiopositie",
@@ -274,11 +272,14 @@
         "end": "Sessie voltooid."
       },
       "label": {
+        "intro": "Ga liggen",
+        "prepare": "Maak je klaar",
         "inhale": "Adem in",
         "exhale": "Adem uit",
         "inhale4": "Adem diep in",
         "contract": "Span aan",
-        "release": "Ontspan"
+        "release": "Ontspan",
+        "end": "Klaar"
       },
       "hint": {
         "inhale": "Adem langzaam in door de neus, zet je buik uit.",

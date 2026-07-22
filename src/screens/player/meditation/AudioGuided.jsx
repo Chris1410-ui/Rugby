@@ -18,8 +18,20 @@ import { createAmbience, AMBIENCE_THEMES } from "./ambience.js";
 const MIN = 0.5, MAX = 1;
 const OFFSET = 0;
 const lerp = (a, b, t) => a + (b - a) * t;
-const colorFor = (type, accent) => (type === "hold" ? C.coral : type === "release" || type === "outro" ? C.teal : accent);
-const THEME_EMOJI = { forest: "🌲", waves: "🌊", rain: "🌧️", fire: "🔥" };
+// Une couleur VIVE et DISTINCTE par phase → les changements sautent aux yeux.
+const PHASE = {
+  intro:   { color: "#6C5CE0", emoji: "🧘", label: "intro" },
+  prepare: { color: "#6C5CE0", emoji: "😌", label: "prepare" },
+  inhale:  { color: "#2E7DF6", emoji: "⬆️", label: "inhale" },   // bleu — on gonfle
+  exhale:  { color: "#22D3EE", emoji: "⬇️", label: "exhale" },   // cyan — on souffle
+  hold:    { color: "#FF3B30", emoji: "💪", label: "contract" }, // ROUGE — contraction
+  release: { color: "#22C55E", emoji: "🌿", label: "release" },  // vert — détente
+  outro:   { color: "#22C55E", emoji: "😌", label: "release" },
+  end:     { color: "#6C5CE0", emoji: "✨", label: "end" },
+};
+const phaseOf = (type) => PHASE[type] || PHASE.intro;
+const colorFor = (type) => phaseOf(type).color;
+const THEME_EMOJI = { waves: "🌊", fire: "🔥" };
 
 // Vibration couvrant ~sec s de contraction, intensifiée sur la 2ᵉ moitié.
 function holdVibe(sec) {
@@ -40,10 +52,10 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   // Voix guidée : gain 0..VOICE_MAX. Boostable AU-DELÀ de 100 % (l'enregistrement
   // est faible) via un gain Web Audio + limiteur ; l'élément <audio> plafonne à 1.
   const [voiceVol, setVoiceVol] = useState(1.8);
-  const [theme, setTheme] = useState("forest");     // thème d'ambiance choisi
+  const [theme, setTheme] = useState("waves");      // thème d'ambiance choisi
   const [ambVol, setAmbVol] = useState(0.35);       // volume du fond d'ambiance (0..1)
   const ambRef = useRef(null);
-  if (!ambRef.current) ambRef.current = createAmbience("forest", 0.35);
+  if (!ambRef.current) ambRef.current = createAmbience("waves", 0.35);
   const ambVolRef = useRef(0.35); ambVolRef.current = ambVol;
   const runningRef = useRef(false); runningRef.current = running;
   const voiceVolRef = useRef(1.8); voiceVolRef.current = voiceVol;
@@ -137,19 +149,23 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
     else if (ph.type === "hold") scale = MAX - 0.025 + 0.025 * Math.abs(Math.sin((time - ph.t) * Math.PI * 3));
     else { const amb = (time % 11) / 11; scale = amb < 0.5 ? lerp(MIN, 0.8, amb / 0.5) : lerp(0.8, MIN, (amb - 0.5) / 0.5); }
 
-    const col = colorFor(ph.type, accent);
+    const col = colorFor(ph.type);
+    const hold = ph.type === "hold";
     if (circleRef.current) {
       const c = circleRef.current;
       c.style.transform = `scale(${scale.toFixed(3)})`;
-      c.style.background = `radial-gradient(circle at 50% 40%, ${col}cc, ${col}55 70%, ${col}22)`;
+      // Remplissage vif et saturé (couleur pleine au centre) → la couleur de
+      // phase est franche et lisible ; bord épais et lueur forte.
+      c.style.background = `radial-gradient(circle at 50% 38%, ${col}, ${col}cc 60%, ${col}66)`;
       c.style.borderColor = col;
-      c.style.boxShadow = `0 0 32px ${col}55, inset 0 0 40px ${col}44`;
+      c.style.borderWidth = hold ? "4px" : "3px";
+      c.style.boxShadow = `0 0 ${hold ? 60 : 40}px ${col}${hold ? "aa" : "77"}, inset 0 0 46px ${col}55`;
     }
     if (glowRef.current) {
-      let o = 0.25 + (scale - MIN) / (MAX - MIN) * 0.5;
-      if (ph.type === "hold") o = 0.6 + 0.35 * Math.abs(Math.sin((time - ph.t) * Math.PI * 4));
+      let o = 0.35 + (scale - MIN) / (MAX - MIN) * 0.55;
+      if (hold) o = 0.7 + 0.3 * Math.abs(Math.sin((time - ph.t) * Math.PI * 4));
       glowRef.current.style.opacity = String(o.toFixed(3));
-      glowRef.current.style.background = `radial-gradient(circle, ${col}88 0%, ${col}00 70%)`;
+      glowRef.current.style.background = `radial-gradient(circle, ${col}bb 0%, ${col}00 70%)`;
     }
 
     if (idx !== lastIdx.current) {
@@ -174,6 +190,7 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
 
   const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); ambRef.current?.pause(); onFinish?.(); } };
   const holding = phase === "hold";
+  const pm = phaseOf(phase), pcol = pm.color; // couleur + action de la phase courante
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 0", width: "100%" }}>
@@ -181,23 +198,34 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
         onLoadedMetadata={(e) => { durRef.current = e.currentTarget.duration || 0; setDur(durRef.current); }}
         onEnded={onEnded} onError={() => setErr(true)} />
 
+      {/* Bandeau d'ACTION : couleur vive + verbe → on sait quoi faire d'un coup d'œil. */}
+      <div key={`banner-${phase}`} style={{ display: "inline-flex", alignItems: "center", gap: 9, background: `${pcol}26`, border: `2px solid ${pcol}`, color: "#fff", borderRadius: 999, padding: "8px 18px", fontSize: 17, fontWeight: 900, letterSpacing: 0.3, marginBottom: 14, boxShadow: `0 0 22px ${pcol}66`, animation: "medFade .3s ease" }}>
+        <span style={{ fontSize: 20 }}>{pm.emoji}</span>
+        <span>{err ? t("meditation.contraction.audioMissing") : t(`meditation.contraction.label.${pm.label}`)}</span>
+      </div>
+
       <div style={{ position: "relative", width: 260, height: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div ref={glowRef} style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", background: `radial-gradient(circle, ${accent}88 0%, ${accent}00 70%)`, filter: "blur(6px)", transition: "opacity .12s linear", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: `1px solid ${accent}22` }} />
-        <div ref={circleRef} style={{ width: 220, height: 220, borderRadius: "50%", background: `radial-gradient(circle at 50% 40%, ${accent}cc, ${accent}55 70%, ${accent}22)`, border: `2px solid ${accent}`, boxShadow: `0 0 32px ${accent}55, inset 0 0 40px ${accent}44`, willChange: "transform", transform: `scale(${MIN})` }} />
+        <div ref={glowRef} style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", background: `radial-gradient(circle, ${pcol}88 0%, ${pcol}00 70%)`, filter: "blur(6px)", transition: "opacity .12s linear", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 244, height: 244, borderRadius: "50%", border: `1px solid ${pcol}33` }} />
+        <div ref={circleRef} style={{ width: 220, height: 220, borderRadius: "50%", background: `radial-gradient(circle at 50% 38%, ${pcol}, ${pcol}cc 60%, ${pcol}66)`, border: `3px solid ${pcol}`, boxShadow: `0 0 40px ${pcol}77, inset 0 0 46px ${pcol}55`, willChange: "transform", transform: `scale(${MIN})` }} />
         <div style={{ position: "absolute", textAlign: "center", pointerEvents: "none" }}>
           {holding ? (
             <>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{t("meditation.contraction.label.contract")}</div>
-              <div style={{ fontSize: 52, fontWeight: 900, color: "#fff", lineHeight: 1.05, textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{count}</div>
+              <div style={{ fontSize: 21, fontWeight: 900, color: "#fff", textShadow: "0 1px 10px rgba(0,0,0,0.6)" }}>{t("meditation.contraction.label.contract")}</div>
+              <div style={{ fontSize: 64, fontWeight: 900, color: "#fff", lineHeight: 1, textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>{count}</div>
             </>
           ) : (
             <>
-              <div style={{ fontSize: 30, marginBottom: 3 }}>🎧</div>
+              <div style={{ fontSize: 40, marginBottom: 2 }}>{pm.emoji}</div>
               <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{fmtClock(cur)}{dur ? ` / ${fmtClock(dur)}` : ""}</div>
             </>
           )}
         </div>
+      </div>
+
+      {/* Consigne détaillée synchronisée sur la phase, juste sous le cercle. */}
+      <div key={`hint-${phase}`} style={{ marginTop: 14, textAlign: "center", minHeight: 40, maxWidth: 320, fontSize: 15, fontWeight: 700, color: pcol, lineHeight: 1.45, textShadow: "0 1px 6px rgba(0,0,0,0.4)", animation: "medFade .35s ease" }}>
+        {err ? t("meditation.contraction.audioMissing") : t(`meditation.contraction.phase.${phase}`)}
       </div>
 
       {/* Barre de position : glisse pour te placer où tu veux dans l'audio. */}
@@ -245,10 +273,6 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
         <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(ambVol * 100)}%</span>
       </div>
 
-      {/* Consigne courte synchronisée sur la phase. */}
-      <div key={phase} style={{ marginTop: 12, textAlign: "center", minHeight: 34, maxWidth: 320, fontSize: 13.5, fontWeight: 600, color: holding ? C.coral : "rgba(255,255,255,0.78)", lineHeight: 1.5, animation: "medFade .4s ease" }}>
-        {err ? t("meditation.contraction.audioMissing") : t(`meditation.contraction.phase.${phase}`)}
-      </div>
     </div>
   );
 }

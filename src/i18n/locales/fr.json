@@ -257,9 +257,7 @@
       "voice": "Voix",
       "ambience": "Ambiance",
       "theme": {
-        "forest": "Forêt la nuit",
         "waves": "Vagues",
-        "rain": "Pluie",
         "fire": "Feu de camp"
       },
       "seek": "Position dans l'audio",
@@ -274,11 +272,14 @@
         "end": "Séance terminée."
       },
       "label": {
+        "intro": "Installe-toi",
+        "prepare": "Prépare-toi",
         "inhale": "Inspire",
         "exhale": "Expire",
         "inhale4": "Inspire à fond",
         "contract": "Contracte",
-        "release": "Relâche"
+        "release": "Relâche",
+        "end": "Terminé"
       },
       "hint": {
         "inhale": "Inspire lentement par le nez, gonfle le ventre.",
