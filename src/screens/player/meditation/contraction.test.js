@@ -7,7 +7,8 @@ describe("Jacobson modifié — phases de contraction globale", () => {
   it("la séance existe et est de kind 'contraction'", () => {
     expect(s).toBeTruthy();
     expect(s.kind).toBe("contraction");
-    expect(s.audio).toBe("jacobson-global");
+    expect(typeof s.audio).toBe("string"); // nom de base du fichier audio (bucket public)
+    expect(s.cues).toBe("jacobsonGlobal");
   });
 
   it("déroule 3 cycles inspir/expir + 4ᵉ inspiration + contraction + relâchement", () => {

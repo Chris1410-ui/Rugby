@@ -43,7 +43,11 @@ export const MED_SESSIONS = [
   // Jacobson MODIFIÉ (contraction globale) : 3 cycles inspir/expir, puis 4ᵉ
   // inspiration + blocage/contraction de TOUS les muscles (10 s), puis
   // relâchement total (15 s). Répétable. Vibration + audio d'ambiance optionnel.
-  { id: "jacobsonGlobal", kind: "contraction", group: "deep", accent: C.viol, audio: "jacobson-global", cues: "jacobsonGlobal",
+  // `audio` = nom de base du fichier dans le bucket public `meditation-audio`
+  // (l'app ajoute « .mp3 »). Ici on cible le fichier tel qu'il a été déposé
+  // (`Avenue_Wi_elemans_Ceuppens_5.mp3`). Pour revenir à un nom propre, renommer
+  // l'objet en `jacobson-global.mp3` côté dashboard puis remettre "jacobson-global".
+  { id: "jacobsonGlobal", kind: "contraction", group: "deep", accent: C.viol, audio: "Avenue_Wi_elemans_Ceuppens_5", cues: "jacobsonGlobal",
     breathCycles: 3, inhaleSec: 5, exhaleSec: 5, holdContractSec: 10, releaseSec: 15, reps: 3, durationMin: 4 },
   // ── Séances courtes ──
   { id: "prematch", kind: "steps", group: "short", accent: C.blue, steps: "prematch", durationMin: 2 },
