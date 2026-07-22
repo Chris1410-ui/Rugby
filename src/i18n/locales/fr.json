@@ -255,7 +255,13 @@
       "audioReady": "Mets tes écouteurs, installe-toi, puis appuie sur Démarrer.",
       "audioMissing": "Audio indisponible — réessaie plus tard.",
       "voice": "Voix",
-      "forest": "Forêt la nuit",
+      "ambience": "Ambiance",
+      "theme": {
+        "forest": "Forêt la nuit",
+        "waves": "Vagues",
+        "rain": "Pluie",
+        "fire": "Feu de camp"
+      },
       "seek": "Position dans l'audio",
       "phase": {
         "intro": "Installe-toi, allonge-toi, paumes vers le sol.",
