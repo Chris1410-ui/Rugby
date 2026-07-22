@@ -36,22 +36,25 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
   const [cur, setCur] = useState(0), [dur, setDur] = useState(0), [err, setErr] = useState(false);
   const [phase, setPhase] = useState(cues?.[0]?.type || "intro");
   const [count, setCount] = useState(0);
-  const [waves, setWaves] = useState(true); // fond de vagues (masque la friture)
+  const [wavesVol, setWavesVol] = useState(0.55); // volume du fond de vagues (0..1)
   const wavesRef = useRef(null);
-  if (!wavesRef.current) wavesRef.current = createOceanWaves();
-  const wavesOnRef = useRef(true); wavesOnRef.current = waves;
+  if (!wavesRef.current) wavesRef.current = createOceanWaves(0.55);
+  const wavesVolRef = useRef(0.55); wavesVolRef.current = wavesVol;
 
   // Lecture/pause suit l'état `running` (boutons du Player). Le fond de vagues
   // démarre/s'arrête avec la voix (démarré sous le geste utilisateur → autorisé).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); wavesRef.current?.start(); wavesRef.current?.setEnabled(wavesOnRef.current); }
+    if (running) { a.play?.().catch(() => { /* autoplay bloqué → relance manuelle */ }); wavesRef.current?.start(); wavesRef.current?.setVolume(wavesVolRef.current); }
     else { a.pause?.(); vibe(0); wavesRef.current?.pause(); }
   }, [running]);
 
-  // Bascule du fond de vagues à chaud + arrêt propre au démontage.
-  useEffect(() => { wavesRef.current?.setEnabled(waves); }, [waves]);
+  // Volume des vagues réglable à chaud + arrêt propre au démontage.
+  useEffect(() => { wavesRef.current?.setVolume(wavesVol); }, [wavesVol]);
   useEffect(() => () => { wavesRef.current?.stop(); }, []);
+
+  // Se placer où l'on veut dans l'audio (le visuel suit, piloté par currentTime).
+  const seek = (v) => { const a = audioRef.current; if (a) { try { a.currentTime = v; setCur(v); lastIdx.current = -1; } catch { /* noop */ } } };
 
   // Peinture (réassignée à chaque rendu → toujours les dernières props/état).
   paintRef.current = () => {
@@ -111,7 +114,6 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
 
   const onEnded = () => { if (!finished.current) { finished.current = true; vibe(0); wavesRef.current?.pause(); onFinish?.(); } };
   const holding = phase === "hold";
-  const col = colorFor(phase, accent);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 0", width: "100%" }}>
@@ -138,20 +140,31 @@ export default function AudioGuided({ src, cues, running, onFinish, accent }) {
         </div>
       </div>
 
-      {/* Progression = position dans l'audio (le guide). */}
-      <div style={{ width: 260, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden", marginTop: 14 }}>
-        <div style={{ height: "100%", width: `${dur ? Math.min(100, (cur / dur) * 100) : 0}%`, background: col, transition: "width .2s linear, background .3s" }} />
+      {/* Barre de position : glisse pour te placer où tu veux dans l'audio. */}
+      <div style={{ width: 280, marginTop: 14 }}>
+        <input type="range" min={0} max={dur || 0} step={0.5} value={Math.min(cur, dur || 0)} disabled={!dur}
+          onChange={(e) => seek(Number(e.target.value))}
+          aria-label={t("meditation.contraction.seek")}
+          style={{ width: "100%", accentColor: accent, cursor: dur ? "pointer" : "default" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
+          <span>{fmtClock(cur)}</span><span>{dur ? fmtClock(dur) : "—"}</span>
+        </div>
+      </div>
+
+      {/* Volume du fond de vagues (masque la friture). 0 = coupé. */}
+      <div style={{ width: 280, marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 15 }} title={t("meditation.contraction.waves")}>🌊</span>
+        <input type="range" min={0} max={1} step={0.02} value={wavesVol}
+          onChange={(e) => setWavesVol(Number(e.target.value))}
+          aria-label={t("meditation.contraction.waves")}
+          style={{ flex: 1, accentColor: C.teal, cursor: "pointer" }} />
+        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", minWidth: 30, textAlign: "right" }}>{Math.round(wavesVol * 100)}%</span>
       </div>
 
       {/* Consigne courte synchronisée sur la phase. */}
       <div key={phase} style={{ marginTop: 12, textAlign: "center", minHeight: 34, maxWidth: 320, fontSize: 13.5, fontWeight: 600, color: holding ? C.coral : "rgba(255,255,255,0.78)", lineHeight: 1.5, animation: "medFade .4s ease" }}>
         {err ? t("meditation.contraction.audioMissing") : t(`meditation.contraction.phase.${phase}`)}
       </div>
-
-      {/* Fond de vagues (masque la friture de la voix) — activable/désactivable. */}
-      <button onClick={() => setWaves((w) => !w)} style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, background: waves ? `${accent}22` : "rgba(255,255,255,0.06)", border: `1px solid ${waves ? accent : C.border}`, borderRadius: 999, padding: "6px 13px", color: waves ? "#fff" : "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-        🌊 {t("meditation.contraction.waves")} · {waves ? t("meditation.contraction.wavesOn") : t("meditation.contraction.wavesOff")}
-      </button>
     </div>
   );
 }

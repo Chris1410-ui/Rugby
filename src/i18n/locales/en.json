@@ -257,6 +257,7 @@
       "waves": "Waves",
       "wavesOn": "on",
       "wavesOff": "off",
+      "seek": "Audio position",
       "phase": {
         "intro": "Settle in, lie down, palms facing the floor.",
         "prepare": "Close your eyes, get ready.",
