@@ -572,6 +572,30 @@
   "player": {
     "activityFab": "Activiteit",
     "activityFabTitle": "Een activiteit melden",
+    "today": {
+      "week": "Jouw week",
+      "morningSub": "Welzijn · slaap · herstel",
+      "eveningSub": "Hoe de dag voelde",
+      "session": "Sessie van vandaag",
+      "sessionSub": "{{count}} sessie(s) te loggen",
+      "sessionN": "Sessie ({{done}}/{{total}})",
+      "freeSession": "Vrije sessie",
+      "freeSessionSub": "Stel er direct een samen",
+      "activities": "Activiteiten van vandaag",
+      "activitiesSub": "Zaal · lopen · zwemmen…",
+      "activitiesSave": "Activiteiten opslaan",
+      "activitiesSaved": "Activiteiten opgeslagen",
+      "defis": "Uitdagingen van vandaag",
+      "defisSub": "Pak openstaande uitdagingen op",
+      "taches": "Taken van vandaag",
+      "tachesSub": "Wat de staf verwacht",
+      "done": "Klaar ✓",
+      "toFill": "Te doen",
+      "swipeClose": "Veeg om te sluiten",
+      "noSessionToday": "Geen sessie gepland vandaag.",
+      "noSessionDay": "Geen sessie die dag.",
+      "pastReadonly": "Vorige dag — alleen lezen"
+    },
     "messages": {
       "staffTitle": "Staf — Fysiek trainer"
     },
