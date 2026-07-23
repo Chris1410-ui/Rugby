@@ -1,9 +1,23 @@
+/* global process */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import legacy from '@vitejs/plugin-legacy'
+import { readFileSync } from 'node:fs'
+
+// Infos de build injectées dans le bundle (indicateur de version dans l'app,
+// pour diagnostiquer un cache/déploiement périmé d'un coup d'œil). Le SHA vient
+// de Vercel (VERCEL_GIT_COMMIT_SHA) au build ; « dev » en local.
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'))
+const buildSha = (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || 'dev'
+const buildTime = new Date().toISOString().slice(0, 16).replace('T', ' ')
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),
+    __BUILD_SHA__: JSON.stringify(buildSha),
+    __BUILD_TIME__: JSON.stringify(buildTime),
+  },
   plugins: [
     react(),
     // Cause racine « page blanche » sur certains appareils : la cible par défaut

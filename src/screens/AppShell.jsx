@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/useAuth.jsx";
 import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
 import { Bell } from "../lib/icons.jsx";
+import { BuildTag } from "../lib/ui.jsx";
 import { useNotifications } from "../data/notifications.js";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
@@ -139,6 +140,8 @@ export default function AppShell() {
                      déjà dans la barre du bas + hub « Plus » (un seul système). */}
                   <MenuItem label={t("common.replayTutorial")} onClick={() => { setAvatarOpen(false); setTourReplay(true); }} />
                   <MenuItem label={t("common.logout")} danger onClick={() => { setAvatarOpen(false); signOut(); }} />
+                  <div style={{ height: 1, background: C.border2, margin: "4px 0 0" }} />
+                  <BuildTag />
                 </div>
               </>
             )}

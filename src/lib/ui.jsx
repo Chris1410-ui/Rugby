@@ -5,6 +5,18 @@ import { C, sc } from "./tokens.js";
 import { acwrZ } from "./metrics.js";
 import { Clock, Grid, X } from "./icons.jsx";
 import i18n from "../i18n/config.js";
+import { BUILD_LABEL } from "./buildInfo.js";
+
+/* Indicateur de version/build (menu Compte) : « v0.1.0 · <sha> · <date> ».
+   Permet de voir en un coup d'œil si l'app tourne sur le dernier déploiement
+   (utile pour diagnostiquer un cache/bundle périmé). Texte sélectionnable. */
+export function BuildTag({ style }) {
+  return (
+    <div title={BUILD_LABEL} style={{ padding: "7px 10px 3px", fontSize: 9.5, color: "rgba(255,255,255,0.35)", fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", userSelect: "text", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...style }}>
+      {BUILD_LABEL}
+    </div>
+  );
+}
 
 // Traduction hors composant (atomes sans hook, ex. aria-label de CloseX).
 const tt = (key) => i18n.t(key);
