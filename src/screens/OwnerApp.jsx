@@ -110,6 +110,8 @@ export default function OwnerApp({ profile, user, signOut }) {
                   <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
                   <button onClick={() => { setMenuOpen(false); setShowAccounts(true); }} style={ownerMenuItem}><Users size={14} /> {t("owner.accounts")}</button>
                   <button onClick={() => { setMenuOpen(false); signOut(); }} style={{ ...ownerMenuItem, color: C.coral }}>{t("owner.signOut")}</button>
+                  <div style={{ height: 1, background: C.border2, margin: "4px 0 0" }} />
+                  <BuildTag />
                 </div>
               </>
             )}
