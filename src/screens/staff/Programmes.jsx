@@ -14,7 +14,8 @@ import { usePrograms, createProgram, deleteProgram } from "../../data/programs.j
 import { resolveAssignedIds } from "../../data/sessions.js";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { useExercises } from "../../data/exercises.js";
-import { parsePDFtoTemplates } from "../../lib/pdf.js";
+import { parseProgramPdf } from "../../lib/pdf.js";
+import PdfImportReview from "../shared/PdfImportReview.jsx";
 import { programFolder, uploadFile } from "../../data/storage.js";
 import ProgramFiles from "./ProgramFiles.jsx";
 import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
@@ -101,6 +102,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [recIds, setRecIds] = useState([]);
   const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   const [pdfFile, setPdfFile] = useState(null); // PDF source à archiver dans Storage
+  const [pdfReview, setPdfReview] = useState(null); // résultat de parse en attente de validation
   const [filesOf, setFilesOf] = useState(null); // programme dont on ouvre les fichiers
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
 
@@ -160,21 +162,28 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     catch (e) { setNote(t("staff.programs.routineErrSave", { err: e.message })); }
   };
 
+  // Import PDF : on PARSE puis on ouvre l'aperçu — rien n'est appliqué tant que
+  // le staff n'a pas validé (parse faillible).
   const onPDF = async (file) => {
     if (!file) return;
     setBusy(true); setNote("");
     setPdfFile(file); // conservé pour archivage dans Storage à l'envoi
     try {
-      const tpls = await parsePDFtoTemplates(file);
-      setTemplates(tpls.map((t) => ({ ...t, exercises: t.exercises.map((e) => ({ ...e, id: e.id || newExo().id })) })));
+      const result = await parseProgramPdf(file);
       setTitle(file.name.replace(/\.pdf$/i, ""));
       setView("new");
-      setNote(t("staff.programs.pdfImported"));
+      setPdfReview(result);
     } catch (e) {
       setView("new");
       setNote(e.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("staff.programs.pdfUnrecognized"));
     }
     setBusy(false);
+  };
+  // Validation de l'aperçu → remplit les modèles de séances (édition normale ensuite).
+  const applyReview = (sessions) => {
+    setTemplates(sessions.map((s) => ({ weekday: s.weekday, code: s.code || "RS", nature: s.nature || "force", titre: s.titre, exercises: s.exercises.map((e) => ({ ...newExo(), ...e })) })));
+    setPdfReview(null);
+    setNote(t("staff.programs.pdfImported"));
   };
 
   const send = async () => {
@@ -346,6 +355,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           isAdded={(e) => (templates[pickingFor]?.exercises || []).some((x) => (x.name || "").trim().toLowerCase() === e.name.trim().toLowerCase())}
         />
       )}
+      {pdfReview && <PdfImportReview result={pdfReview} onCancel={() => setPdfReview(null)} onConfirm={(sessions) => applyReview(sessions)} />}
 
       <button onClick={addTpl} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 10, color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, cursor: "pointer", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={14} /> {t("staff.programs.addSession")}</button>
 

@@ -2248,5 +2248,33 @@
       "noPos": "Cannot create without a valid position",
       "totemTaken": "Totem “{{wanted}}” already taken → “{{resolved}}”"
     }
+  },
+  "pdfImport": {
+    "title": "PDF import preview",
+    "intro": "Check and fix — nothing is saved without your confirmation.",
+    "confirm": "Import {{count}} session(s)",
+    "cancel": "Cancel",
+    "defaultSession": "Imported session",
+    "sessionTitle": "Session title",
+    "natureNone": "Nature?",
+    "exo": "Exercise",
+    "charge": "Load",
+    "addExo": "Add exercise",
+    "removeSession": "Remove session",
+    "noSession": "No usable session detected in this PDF.",
+    "unreadTitle": "Unread lines ({{count}})",
+    "unreadHint": "These lines couldn't be interpreted — add them manually if needed.",
+    "startDate": "Start date",
+    "weeks": "Weeks",
+    "warn": {
+      "empty": "No usable session detected.",
+      "noDay": "Session “{{titre}}”: day not detected (please choose).",
+      "noNature": "Session “{{titre}}”: nature not detected (please set).",
+      "droppedEmpty": "{{count}} session(s) without exercises skipped.",
+      "unread": "{{count}} unread line(s), listed below."
+    },
+    "openBtn": "Import a PDF",
+    "importedPlayer": "{{count}} session(s) added to your calendar.",
+    "importErr": "Import failed: {{err}}"
   }
 }
