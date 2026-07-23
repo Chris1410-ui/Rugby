@@ -12,6 +12,12 @@
 
 import { buildAlerts, statusOfLog } from "./metrics.js";
 
+/* Objectif hebdomadaire (hub « Aujourd'hui ») : nombre minimum de JOURS
+   d'entraînement validés par semaine. Un jour est « validé » = au moins une
+   séance/programme assigné ce jour-là passé en statut `done`. Constante produit
+   (paramétrage par le staff possible plus tard). */
+export const WEEKLY_GOAL_DAYS = 3;
+
 const skey = (pid, k) => `${pid}|${k}`;
 
 /* ── Côté joueur ── */
