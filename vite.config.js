@@ -2,7 +2,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import legacy from '@vitejs/plugin-legacy'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 
 // Infos de build injectées dans le bundle (indicateur de version dans l'app,
 // pour diagnostiquer un cache/déploiement périmé d'un coup d'œil). Le SHA vient
@@ -10,6 +10,24 @@ import { readFileSync } from 'node:fs'
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'))
 const buildSha = (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || 'dev'
 const buildTime = new Date().toISOString().slice(0, 16).replace('T', ' ')
+
+// Écrit /version.json (racine dist, non hashé) → le bouton « Vérifier les mises à
+// jour » le lit sans cache pour comparer le SHA déployé au SHA en cours. Écrit en
+// closeBundle (après écriture disque) une seule fois — robuste au plugin legacy
+// qui déclenche plusieurs passes de bundle.
+let versionWritten = false
+const emitVersion = {
+  name: 'emit-version-json',
+  closeBundle() {
+    if (versionWritten) return
+    versionWritten = true
+    try {
+      const dir = new URL('./dist/', import.meta.url)
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(new URL('version.json', dir), JSON.stringify({ version: pkg.version, sha: buildSha, time: buildTime }))
+    } catch (e) { console.warn('[emit-version-json]', e.message) }
+  },
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,6 +38,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    emitVersion,
     // Cause racine « page blanche » sur certains appareils : la cible par défaut
     // de Vite (es2020 / Safari 14) laisse `?.`, `globalThis`, Promise.allSettled…
     // dans le bundle. Sur un navigateur plus ancien (vieil iPhone, WebView

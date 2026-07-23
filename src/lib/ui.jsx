@@ -5,15 +5,37 @@ import { C, sc } from "./tokens.js";
 import { acwrZ } from "./metrics.js";
 import { Clock, Grid, X } from "./icons.jsx";
 import i18n from "../i18n/config.js";
-import { BUILD_LABEL } from "./buildInfo.js";
+import { BUILD_LABEL, checkForUpdate, clearCachesAndReload } from "./buildInfo.js";
 
-/* Indicateur de version/build (menu Compte) : « v0.1.0 · <sha> · <date> ».
-   Permet de voir en un coup d'œil si l'app tourne sur le dernier déploiement
-   (utile pour diagnostiquer un cache/bundle périmé). Texte sélectionnable. */
+/* Indicateur de version/build (menu Compte) : « v0.1.0 · <sha> · <date> » +
+   bouton « Vérifier les mises à jour ». Le bouton compare le SHA déployé
+   (/version.json, sans cache) au SHA en cours : à jour → confirmation ; sinon
+   (ou fichier absent → ancien déploiement) → purge des caches + rechargement. */
 export function BuildTag({ style }) {
+  const { t } = useTranslation();
+  const [state, setState] = useState("idle"); // idle | checking | upToDate
+
+  const check = async () => {
+    if (state === "checking") return;
+    setState("checking");
+    try {
+      const { upToDate } = await checkForUpdate();
+      if (upToDate) { setState("upToDate"); setTimeout(() => setState("idle"), 3000); }
+      else { await clearCachesAndReload(); } // recharge → dernier bundle
+    } catch {
+      await clearCachesAndReload(); // version.json absent (ancien déploiement) → on force
+    }
+  };
+
+  const label = state === "checking" ? t("common.checking") : state === "upToDate" ? t("common.upToDate") : t("common.checkUpdate");
   return (
-    <div title={BUILD_LABEL} style={{ padding: "7px 10px 3px", fontSize: 9.5, color: "rgba(255,255,255,0.35)", fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", userSelect: "text", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...style }}>
-      {BUILD_LABEL}
+    <div style={{ padding: "6px 10px 4px", ...style }}>
+      <div title={BUILD_LABEL} style={{ fontSize: 9.5, color: "rgba(255,255,255,0.35)", fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", userSelect: "text", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        {BUILD_LABEL}
+      </div>
+      <button onClick={check} disabled={state === "checking"} style={{ marginTop: 5, background: "none", border: "none", padding: 0, color: state === "upToDate" ? C.green : "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: 700, cursor: state === "checking" ? "default" : "pointer", textDecoration: state === "upToDate" ? "none" : "underline" }}>
+        {state === "upToDate" ? `✓ ${label}` : label}
+      </button>
     </div>
   );
 }
