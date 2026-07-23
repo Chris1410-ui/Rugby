@@ -1285,7 +1285,10 @@
       "addFromLibrary": "Bibliothèque",
       "restPlaceholder": "repos",
       "restTitle": "Repos entre séries (secondes)",
-      "natureTitle": "Nature de la séance"
+      "natureTitle": "Nature de la séance",
+      "overloadSame": "Déjà {{count}}× {{nature}} sur {{days}}/{{total}} jour(s) — attention à la surcharge",
+      "overloadBusy": "{{days}}/{{total}} jour(s) déjà chargé(s)",
+      "overloadClear": "Aucune activité prévue ces jours-là"
     },
     "app": {
       "fabSeance": "＋ Séance",

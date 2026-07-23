@@ -1285,7 +1285,10 @@
       "addFromLibrary": "Library",
       "restPlaceholder": "rest",
       "restTitle": "Rest between sets (seconds)",
-      "natureTitle": "Session nature"
+      "natureTitle": "Session nature",
+      "overloadSame": "Already {{count}}× {{nature}} on {{days}}/{{total}} day(s) — mind the overload",
+      "overloadBusy": "{{days}}/{{total}} day(s) already loaded",
+      "overloadClear": "No activity planned those days"
     },
     "app": {
       "fabSeance": "＋ Session",
