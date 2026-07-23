@@ -31,6 +31,7 @@ export function dbToSession(row, roster) {
     programId: row.program_id,
     date: row.date,
     code: row.code || "RS",
+    nature: row.nature || null,   // nature descriptive (lib/nature.js) ; repli code-dérivé à l'affichage
     titre: row.titre || "Séance",
     progTitle: row.titre || "Séance",
     dur: row.duration_min || 60,
@@ -81,7 +82,7 @@ export function useTeamSessions(teamId, roster) {
 }
 
 // Création d'une séance par le staff (précurseur minimal des programmes, étape 7)
-export async function createSession(teamId, { date, code, titre, durationMin, exercises, assigned }) {
+export async function createSession(teamId, { date, code, nature, titre, durationMin, exercises, assigned }) {
   const uid = () => (globalThis.crypto?.randomUUID?.() || `e${Math.random().toString(36).slice(2, 10)}`);
   const withIds = (exercises || []).map((e) => ({
     id: e.id || uid(),
@@ -97,6 +98,7 @@ export async function createSession(teamId, { date, code, titre, durationMin, ex
       team_id: teamId,
       date,
       code: code || "RS",
+      nature: nature || null,
       titre: titre || "Séance",
       duration_min: durationMin || 60,
       exercises: withIds,

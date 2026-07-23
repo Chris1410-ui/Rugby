@@ -159,7 +159,9 @@
     "saveAsTemplate": "Save as template",
     "templateNamePh": "Template name",
     "noSavedTemplates": "No saved template",
-    "deleteTemplate": "Delete template"
+    "deleteTemplate": "Delete template",
+    "fNature": "Nature",
+    "fNatureNone": "— unspecified —"
   },
   "nav": {
     "bilan": "Today",
@@ -1282,7 +1284,8 @@
       "sendBtn": "Send to players",
       "addFromLibrary": "Library",
       "restPlaceholder": "rest",
-      "restTitle": "Rest between sets (seconds)"
+      "restTitle": "Rest between sets (seconds)",
+      "natureTitle": "Session nature"
     },
     "app": {
       "fabSeance": "＋ Session",
@@ -2118,6 +2121,16 @@
       "wrist_extensors": "Wrist extensors",
       "wrist_flexors": "Wrist flexors",
       "wrists": "Wrists"
+    },
+    "nature": {
+      "force": "Strength",
+      "conditioning": "Conditioning / Cardio",
+      "vitesse": "Speed",
+      "prevention": "Prevention",
+      "recuperation": "Recovery",
+      "technique": "Skills",
+      "mobilite": "Mobility",
+      "autre": "Other"
     }
   },
   "points": {
