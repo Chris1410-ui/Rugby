@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, sc, sessionCodeLabel } from "../../lib/tokens.js";
@@ -32,7 +32,7 @@ import Taches from "./Taches.jsx";
    (WEEKLY_GOAL_DAYS) ; la pastille du bandeau suit la même définition. Tout se
    valide sur place, saisie du JOUR MÊME ; jours passés = lecture seule. Formules
    readiness/points INCHANGÉES (on réorganise l'accès, pas le calcul). */
-export default function Bilan({ me, accent = C.green, teamId, players = [], sessions = [], logs = {}, bilans = {}, badges = {} }) {
+export default function Bilan({ me, accent = C.green, teamId, players = [], sessions = [], logs = {}, bilans = {}, badges = {}, onData }) {
   const { t } = useTranslation();
   const preview = usePreview();
   const { day, refresh } = useMyDay(me.id);
@@ -41,6 +41,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   const [viewingProto, setViewingProto] = useState(null); // protocole ouvert en consultation
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
+  const [justCreated, setJustCreated] = useState(null); // id d'une séance libre à ouvrir dès qu'elle arrive
   const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
   const { checkins } = usePlayerCheckins(me.id, 21);
 
@@ -112,6 +113,14 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   const todaySessions = info.daySessions;
   const onSaved = () => refresh();
   const closeSheet = () => setSheet(null);
+
+  // Une séance libre vient d'être créée : dès qu'elle apparaît dans les données
+  // (rafraîchies), on ouvre son lecteur set-par-set pour logger directement.
+  useEffect(() => {
+    if (!justCreated) return;
+    const s = sessions.find((x) => x.id === justCreated);
+    if (s) { setOpenSession(s); setJustCreated(null); }
+  }, [justCreated, sessions]);
 
   // Ouvre un protocole en consultation (doc complet + cibles individualisées).
   const openProto = async (row) => {
@@ -282,7 +291,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         </Overlay>
       )}
 
-      {building && <FreeSessionBuilder me={me} onClose={() => setBuilding(false)} onCreated={refresh} />}
+      {building && <FreeSessionBuilder me={me} onClose={() => setBuilding(false)} onCreated={(id) => { setBuilding(false); setJustCreated(id); refresh(); onData?.(); }} />}
     </div>
   );
 }
