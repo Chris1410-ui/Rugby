@@ -1285,7 +1285,10 @@
       "addFromLibrary": "Bibliotheek",
       "restPlaceholder": "rust",
       "restTitle": "Rust tussen sets (seconden)",
-      "natureTitle": "Aard van de sessie"
+      "natureTitle": "Aard van de sessie",
+      "overloadSame": "Al {{count}}× {{nature}} op {{days}}/{{total}} dag(en) — let op overbelasting",
+      "overloadBusy": "{{days}}/{{total}} dag(en) al belast",
+      "overloadClear": "Geen activiteit gepland die dagen"
     },
     "app": {
       "fabSeance": "＋ Sessie",

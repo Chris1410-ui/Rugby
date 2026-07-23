@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, CODES, sc, SESSION_CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { fmtShort, todayISO, isoDate, statusOfLog } from "../../lib/metrics.js";
 import { WD_ORDER, wdLabel, newExo } from "../../lib/exlib.js";
-import { NATURES, natureLabel } from "../../lib/nature.js";
+import { NATURES, natureLabel, natureColor } from "../../lib/nature.js";
+import { weekdayDatesInRange, aggregateLoadByDate, overlapForWeekday } from "../../lib/overload.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video } from "../../lib/icons.jsx";
 import { hasVideo } from "../../lib/youtube.js";
 import { usePrograms, createProgram, deleteProgram } from "../../data/programs.js";
+import { resolveAssignedIds } from "../../data/sessions.js";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { useExercises } from "../../data/exercises.js";
 import { parsePDFtoTemplates } from "../../lib/pdf.js";
@@ -46,6 +48,41 @@ const ExoRow = ({ exo, onChange, onDel, cues }) => {
   );
 };
 
+/* Avertissement anti-surcharge sous un jour-modèle : agrège, sur toutes les
+   occurrences de ce weekday dans la plage, la charge DÉJÀ prévue du périmètre
+   (par nature). Signale surtout l'empilement de MÊME nature (ex. 2× FORCE le
+   même jour). Non bloquant — pur repère d'équilibrage. */
+function OverloadHint({ weekday, nature, start, end, loadByDate, t }) {
+  const dates = useMemo(() => weekdayDatesInRange(start, end, weekday), [weekday, start, end]);
+  const { sameNature, sameNatureDays, busyDays, natTotals } = useMemo(
+    () => overlapForWeekday(dates, loadByDate, nature),
+    [dates, loadByDate, nature],
+  );
+
+  if (!dates.length) return null;
+  const chips = Object.entries(natTotals).sort((a, b) => b[1] - a[1]);
+  const warn = sameNature > 0;
+  const info = !warn && busyDays > 0;
+  const col = warn ? C.coral : info ? C.amb : C.green;
+  const msg = warn
+    ? t("staff.programs.overloadSame", { count: sameNature, nature: natureLabel(t, nature), days: sameNatureDays, total: dates.length })
+    : info
+      ? t("staff.programs.overloadBusy", { days: busyDays, total: dates.length })
+      : t("staff.programs.overloadClear");
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "0 0 10px", padding: "6px 9px", borderRadius: 8, background: `${col}14`, border: `1px solid ${col}44` }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: col }}>{warn ? "⚠️ " : info ? "" : "✓ "}{msg}</span>
+      {chips.length > 0 && (
+        <span style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
+          {chips.map(([k, v]) => { const c = natureColor(k); return (
+            <span key={k} style={{ fontSize: 9.5, fontWeight: 700, color: c, background: `${c}20`, border: `1px solid ${c}44`, borderRadius: 5, padding: "1px 6px", whiteSpace: "nowrap" }}>{v}× {natureLabel(t, k)}</span>
+          ); })}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function Programmes({ teamId, players, sessions, logs }) {
   const { t } = useTranslation();
   const readOnly = useReadOnly();
@@ -68,6 +105,21 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
 
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
+
+  // ── Anti-surcharge : charge DÉJÀ prévue du périmètre de destinataires ──
+  // Ensemble des joueurs ciblés (all / ligne / joueurs) selon le mode en cours.
+  const recipientIds = useMemo(() => {
+    const assigned = recMode === "all" ? { mode: "all" } : recMode === "group" ? { mode: "group", group: recGroup } : { mode: "players", ids: recIds };
+    return new Set(resolveAssignedIds(assigned, players));
+  }, [recMode, recGroup, recIds, players]);
+
+  // Agrégation des séances existantes de ces joueurs, par date × nature, sur la
+  // plage [start, end] (les camps sont comptés : leurs séances sont des sessions
+  // datées dans la période). Les protocoles ne sont pas datés → hors agrégation.
+  const loadByDate = useMemo(
+    () => aggregateLoadByDate(sessions, recipientIds, start, end),
+    [sessions, recipientIds, start, end],
+  );
 
   const reset = () => {
     setTitle(""); setStart(todayISO()); setEnd(isoDate(new Date(Date.now() + 13 * 864e5)));
@@ -277,6 +329,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
             <input value={tpl.titre} onChange={(e) => setTpl(ti, { titre: e.target.value })} placeholder={t("staff.programs.titreSeancePlaceholder")} style={{ flex: 1, minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none" }} />
             {templates.length > 1 && <button onClick={() => delTpl(ti)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={15} /></button>}
           </div>
+          <OverloadHint weekday={tpl.weekday} nature={tpl.nature || "force"} start={start} end={end} loadByDate={loadByDate} t={t} />
           {tpl.exercises.map((exo, ei) => (
             <ExoRow key={exo.id} exo={exo} cues={find(exo.name)?.cues} onChange={(patch) => setExo(ti, ei, patch)} onDel={() => delExo(ti, ei)} />
           ))}
