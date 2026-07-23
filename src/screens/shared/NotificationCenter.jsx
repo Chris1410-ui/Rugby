@@ -8,7 +8,7 @@ import { pushSupported, getPushState, enablePush, disablePush } from "../../data
 
 /* Centre de notifications (joueur). Liste datée, non-lus en surbrillance,
    clic → écran concerné + marqué lu, « tout lu ». Rendu en modal. */
-const ICON = { task: ClipboardList, session: Dumbbell, message: MessageSquare, questionnaire: FileText, camp: Flag, test: Shield, challenge: Flame, media: Film };
+const ICON = { task: ClipboardList, session: Dumbbell, message: MessageSquare, questionnaire: FileText, camp: Flag, test: Shield, challenge: Flame, media: Film, program: FileText };
 
 const fmtWhen = (iso, t) => {
   try {
