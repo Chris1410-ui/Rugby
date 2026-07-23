@@ -13,7 +13,7 @@ const ACCENT = C.coral;
 /* Écran staff « Protocoles » : liste des programmes d'entraînement riches du club
    + création / duplication / publication / suppression, et ouverture de
    l'éditeur. Réservé au staff écrivain (le nav est masqué en lecture seule). */
-export default function Protocoles({ teamId }) {
+export default function Protocoles({ teamId, players = [] }) {
   const { t } = useTranslation();
   const { docs, loading, refresh } = useProgramDocs(teamId);
   const [editingId, setEditingId] = useState(null);
@@ -61,7 +61,7 @@ export default function Protocoles({ teamId }) {
   };
 
   if (editingId) {
-    return <ProgramEditor id={editingId} onClose={() => { setEditingId(null); refresh(); }} />;
+    return <ProgramEditor id={editingId} teamId={teamId} players={players} onClose={() => { setEditingId(null); refresh(); }} />;
   }
 
   return (

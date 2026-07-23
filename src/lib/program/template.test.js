@@ -76,6 +76,17 @@ describe("renderProgramHtml", () => {
     expect(html).toContain("&lt;script&gt;x&lt;/script&gt;");
   });
 
+  it("panneau « Tes cibles » rendu quand des cibles sont fournies", () => {
+    const html = renderProgramHtml(sample, { targets: { track: "Puissance", items: [{ label: "Palier Yo-Yo", value: "15.5" }] } });
+    expect(html).toContain("Tes cibles");
+    expect(html).toContain("Puissance");
+    expect(html).toContain("15.5");
+    expect(html).toContain("Palier Yo-Yo");
+    // panneau absent si aucune cible fournie
+    expect(renderProgramHtml(sample)).not.toContain("Tes cibles");
+    expect(renderProgramHtml(sample)).not.toContain("class=\"targets\"");
+  });
+
   it("nav : une ancre par section", () => {
     const html = renderProgramHtml(sample);
     expect(html).toContain("href=\"#cadre-objectifs-0\"");

@@ -18,6 +18,7 @@ if (!process.env.AWS_LAMBDA_JS_RUNTIME) process.env.AWS_LAMBDA_JS_RUNTIME = "nod
 
 import { renderProgramHtml } from "../../../src/lib/program/template.js";
 import { canReadProgram } from "../../../src/lib/program/access.js";
+import { mergeTargets } from "../../../src/lib/program/assign.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -55,8 +56,8 @@ export default async function handler(req, res) {
   if (userErr || !user) return res.status(401).json({ error: "Session invalide" });
 
   try {
-    // Rôle + équipe du demandeur.
-    const { data: me } = await supabase.from("profiles").select("role, team_id").eq("id", user.id).maybeSingle();
+    // Rôle + équipe (+ fiche joueur) du demandeur.
+    const { data: me } = await supabase.from("profiles").select("role, team_id, player_id").eq("id", user.id).maybeSingle();
 
     // Protocole cible (RLS : lisible seulement si publié pour un joueur, etc.).
     const { data: prog } = await supabase.from("program_docs").select("*").eq("id", programId).maybeSingle();
@@ -82,8 +83,18 @@ export default async function handler(req, res) {
       (exs || []).forEach((e) => { exercisesByRef[e.ref] = { name: e.name, gifUrl: e.gif_url, thumbUrl: e.thumb_url, attribution: e.attribution }; });
     }
 
+    // Cibles individualisées : si le demandeur est un joueur, on injecte ses
+    // cibles (assignations applicables à son id / son groupe).
+    let targets;
+    if (me?.player_id) {
+      const { data: mePlayer } = await supabase.from("players").select("grp").eq("id", me.player_id).maybeSingle();
+      const { data: asgs } = await supabase.from("program_assignments").select("*").eq("program_id", programId);
+      const mapped = (asgs || []).map((a) => ({ scope: a.scope, groupKey: a.group_key, playerId: a.player_id, track: a.track, targets: a.targets }));
+      targets = mergeTargets(mapped, { playerId: me.player_id, group: mePlayer?.grp });
+    }
+
     const doc = { ...(prog.doc || {}), meta: { ...((prog.doc && prog.doc.meta) || {}), weeks: prog.weeks } };
-    const html = renderProgramHtml(doc, { exercisesByRef });
+    const html = renderProgramHtml(doc, { exercisesByRef, targets });
 
     const chromium = (await import("@sparticuz/chromium")).default;
     const browser = await puppeteer.launch({

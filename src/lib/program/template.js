@@ -108,6 +108,17 @@ function renderSection(s, i, opts) {
   return `<section id="${anchor}"><div class="wrap"><div class="rv in">${sectionHead(s, anchorNum)}${body}</div></div></section>`;
 }
 
+/* Panneau « Tes cibles » (assignation individualisée) inséré après le hero pour
+   le joueur concerné. opts.targets = { track, items:[{label,value}] }. */
+function targetsPanel(targets) {
+  if (!targets) return "";
+  const { track, items } = targets;
+  if (!track && !(items && items.length)) return "";
+  const trackHtml = track ? `<span class="tgt-track">${escapeHtml(track)}</span>` : "";
+  const grid = (items || []).map((i) => `<div class="tgt-item"><div class="tv">${escapeHtml(i.value)}</div><div class="tl">${escapeHtml(i.label)}</div></div>`).join("");
+  return `<section class="targets"><div class="wrap"><div class="rv in tgt-card"><div class="tgt-head"><span class="tgt-h">Tes cibles</span>${trackHtml}</div>${grid ? `<div class="tgt-grid">${grid}</div>` : ""}</div></div></section>`;
+}
+
 function navToc(sections) {
   const links = sections.map((s, i) => {
     const num = escapeHtml(s.num || String(i + 1).padStart(2, "0"));
@@ -149,6 +160,7 @@ export function renderProgramHtml(rawDoc, opts = {}) {
 <header class="hero"><div class="pitchlines"></div><div class="wrap" style="position:relative">
 ${badgeHtml}${eyebrow}${h1}${lede}${facts}${sources}
 </div></header>
+${targetsPanel(opts.targets)}
 ${navToc(doc.sections)}
 ${sections}
 <footer><div class="wrap">${mantra}</div></footer>
@@ -210,6 +222,15 @@ section{padding:66px 0;border-bottom:1px solid var(--line-2)}
 .tblx th.wc{background:rgba(56,210,230,.12);color:var(--cyan);text-align:center}
 .tblx th.wa{background:rgba(232,163,61,.12);color:var(--ambre);text-align:center}
 .tblx th.wm{background:rgba(255,255,255,.05);color:var(--fumee);text-align:center}
+.targets{padding:26px 0 0;border-bottom:none}
+.tgt-card{background:linear-gradient(135deg,rgba(56,210,230,.10),rgba(232,163,61,.08));border:1px solid var(--cyan-d);border-radius:16px;padding:20px 22px}
+.tgt-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tgt-h{font-family:'Oswald';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:1.05rem;color:var(--craie)}
+.tgt-track{font-family:'Oswald';font-weight:600;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ambre);border:1px solid var(--ambre-d);border-radius:100px;padding:5px 13px}
+.tgt-grid{display:flex;flex-wrap:wrap;gap:12px}
+.tgt-item{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:12px;padding:12px 16px;min-width:120px}
+.tgt-item .tv{font-family:'Anton';font-size:1.5rem;line-height:1;color:var(--cyan)}
+.tgt-item .tl{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fumee);margin-top:6px}
 .peak{color:var(--ambre);font-weight:700}
 .exlink{color:var(--craie);text-decoration:none;border-bottom:1px dotted var(--cyan);cursor:pointer}
 .exlink:hover{color:var(--cyan)}

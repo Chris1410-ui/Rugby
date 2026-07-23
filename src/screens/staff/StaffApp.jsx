@@ -133,7 +133,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
-        {tab === "protocoles" && !readOnly && <Protocoles teamId={profile.team_id} />}
+        {tab === "protocoles" && !readOnly && <Protocoles teamId={profile.team_id} players={players} />}
         {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
