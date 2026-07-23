@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase.js";
 import { C, FONT, ROLES } from "../lib/tokens.js";
 import { displayName } from "../lib/identity.js";
 import { Users, Search } from "../lib/icons.jsx";
+import { BuildTag } from "../lib/ui.jsx";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
