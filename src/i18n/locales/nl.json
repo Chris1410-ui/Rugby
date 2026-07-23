@@ -2248,5 +2248,33 @@
       "noPos": "Aanmaken onmogelijk zonder geldige positie",
       "totemTaken": "Totem “{{wanted}}” al bezet → “{{resolved}}”"
     }
+  },
+  "pdfImport": {
+    "title": "PDF-import voorbeeld",
+    "intro": "Controleer en corrigeer — niets wordt opgeslagen zonder je bevestiging.",
+    "confirm": "{{count}} sessie(s) importeren",
+    "cancel": "Annuleren",
+    "defaultSession": "Geïmporteerde sessie",
+    "sessionTitle": "Sessietitel",
+    "natureNone": "Aard?",
+    "exo": "Oefening",
+    "charge": "Belasting",
+    "addExo": "Oefening toevoegen",
+    "removeSession": "Sessie verwijderen",
+    "noSession": "Geen bruikbare sessie gevonden in deze PDF.",
+    "unreadTitle": "Onbegrepen regels ({{count}})",
+    "unreadHint": "Deze regels konden niet worden geïnterpreteerd — voeg ze handmatig toe indien nodig.",
+    "startDate": "Startdatum",
+    "weeks": "Weken",
+    "warn": {
+      "empty": "Geen bruikbare sessie gevonden.",
+      "noDay": "Sessie “{{titre}}”: dag niet herkend (kies er een).",
+      "noNature": "Sessie “{{titre}}”: aard niet herkend (stel in).",
+      "droppedEmpty": "{{count}} sessie(s) zonder oefeningen overgeslagen.",
+      "unread": "{{count}} onbegrepen regel(s), hieronder."
+    },
+    "openBtn": "PDF importeren",
+    "importedPlayer": "{{count}} sessie(s) aan je kalender toegevoegd.",
+    "importErr": "Import mislukt: {{err}}"
   }
 }

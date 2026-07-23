@@ -6,6 +6,9 @@ import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload } from "../../lib/icons.jsx";
 import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } from "../../data/storage.js";
+import { parseProgramPdf } from "../../lib/pdf.js";
+import { importProgramForSelf } from "../../data/freeSessions.js";
+import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
 import { updatePlayer, resetPlayerPassword, setMyInitials } from "../../data/players.js";
@@ -201,6 +204,8 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
   const [files, setFiles] = useState([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [importResult, setImportResult] = useState(null); // aperçu PDF en attente de validation (joueur)
+  const [importMsg, setImportMsg] = useState("");
 
   const refresh = async () => {
     if (!hasTarget) return;
@@ -218,6 +223,24 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     try { await uploadPlayerPdf(player.team, player.id, file); await refresh(); }
     catch (ex) { setErr(ex.message === "PDF_ONLY" ? t("shared.fiche.pdfOnly") : t("shared.fiche.pdfUploadFail", { err: ex.message || "" })); }
     setBusy(false);
+  };
+  // Import « intelligent » (joueur) : parse le PDF → aperçu/validation → séances.
+  const onImportPick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.type !== "application/pdf") { setErr(t("shared.fiche.pdfOnly")); return; }
+    setBusy(true); setErr(""); setImportMsg("");
+    try { setImportResult(await parseProgramPdf(file)); }
+    catch (ex) { setErr(ex.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("staff.programs.pdfUnrecognized")); }
+    setBusy(false);
+  };
+  const confirmImport = async (sessions, opts) => {
+    try {
+      const n = await importProgramForSelf(sessions, opts);
+      setImportResult(null);
+      setImportMsg(t("pdfImport.importedPlayer", { count: n }));
+    } catch (ex) { setErr(t("pdfImport.importErr", { err: ex.message || "" })); }
   };
   const openFile = async (path, download) => {
     try { const url = await playerFileUrl(path, { download }); window.open(url, "_blank", "noopener"); }
@@ -238,6 +261,12 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     <div style={sc({ padding: 14, marginBottom: 12 })}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <div style={{ flex: 1, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, display: "flex", alignItems: "center", gap: 6 }}><FileText size={13} /> {self ? t("shared.fiche.pdfTitleSelf") : t("shared.fiche.pdfTitle")}</div>
+        {self && (
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: `${C.green}22`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: "6px 12px", color: C.green, fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+            <FileText size={13} /> {t("pdfImport.openBtn")}
+            <input type="file" accept="application/pdf" onChange={onImportPick} disabled={busy} style={{ display: "none" }} />
+          </label>
+        )}
         {canAdd && (
           <label style={{ display: "flex", alignItems: "center", gap: 6, background: C.viol, borderRadius: 8, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
             <Upload size={13} /> {busy ? t("shared.fiche.pdfSending") : t("shared.fiche.pdfAdd")}
@@ -246,7 +275,9 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
         )}
       </div>
       <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginBottom: 10, lineHeight: 1.5 }}>{t("shared.fiche.pdfNote")}</div>
+      {importMsg && <div style={{ fontSize: 11, color: C.green, marginBottom: 8 }}>{importMsg}</div>}
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
+      {importResult && <PdfImportReview result={importResult} withPlan onCancel={() => setImportResult(null)} onConfirm={confirmImport} />}
       {files.length === 0 ? (
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.pdfEmpty")}</div>
       ) : (

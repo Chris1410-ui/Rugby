@@ -2248,5 +2248,33 @@
       "noPos": "Création impossible sans poste valide",
       "totemTaken": "Totem « {{wanted}} » déjà pris → « {{resolved}} »"
     }
+  },
+  "pdfImport": {
+    "title": "Aperçu de l'import PDF",
+    "intro": "Vérifie et corrige — rien n'est enregistré sans ta validation.",
+    "confirm": "Importer {{count}} séance(s)",
+    "cancel": "Annuler",
+    "defaultSession": "Séance importée",
+    "sessionTitle": "Titre de la séance",
+    "natureNone": "Nature ?",
+    "exo": "Exercice",
+    "charge": "Charge",
+    "addExo": "Ajouter un exercice",
+    "removeSession": "Retirer la séance",
+    "noSession": "Aucune séance exploitable détectée dans ce PDF.",
+    "unreadTitle": "Lignes non comprises ({{count}})",
+    "unreadHint": "Ces lignes n'ont pas pu être interprétées — ajoute-les à la main si besoin.",
+    "startDate": "Date de début",
+    "weeks": "Semaines",
+    "warn": {
+      "empty": "Aucune séance exploitable détectée.",
+      "noDay": "Séance « {{titre}} » : jour non détecté (à choisir).",
+      "noNature": "Séance « {{titre}} » : nature non détectée (à préciser).",
+      "droppedEmpty": "{{count}} séance(s) sans exercice ignorée(s).",
+      "unread": "{{count}} ligne(s) non comprise(s), listées ci-dessous."
+    },
+    "openBtn": "Importer un PDF",
+    "importedPlayer": "{{count}} séance(s) ajoutée(s) à ton calendrier.",
+    "importErr": "Échec de l'import : {{err}}"
   }
 }
