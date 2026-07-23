@@ -1,49 +1,71 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
-import { C, sc } from "../../lib/tokens.js";
+import { C, sc, sessionCodeLabel } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { posDisplay } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
+import { WEEKLY_GOAL_DAYS } from "../../lib/badges.js";
 import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
 import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
+import { useProgramDocs, getProgramDoc } from "../../data/programDocs.js";
+import { useTeamProgramAssignments } from "../../data/programAssignments.js";
+import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
 import SessionPlayCard from "./SessionPlayCard.jsx";
 import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
+import ProgramView from "../shared/ProgramView.jsx";
 import Defis from "./Defis.jsx";
 import Taches from "./Taches.jsx";
 
 /* Tableau de bord « Aujourd'hui » (joueur) — hub du jour : bandeau semaine
-   (pastilles d'état par jour) + cartes d'action (bilans, séance, activités,
-   défis/tâches). Tout se valide sur place en bottom-sheet, sans changer d'écran.
-   Saisie du JOUR MÊME ; jours passés = lecture seule. Formules readiness/points
-   INCHANGÉES (on réorganise l'accès, pas le calcul). */
-export default function Bilan({ me, accent = C.green, players = [], sessions = [], logs = {}, bilans = {}, badges = {} }) {
+   (pastilles d'état par jour) + cartes d'action (bilans, séances/programmes
+   assignés du jour, protocoles, activités, défis/tâches). Une carte par séance
+   assignée aujourd'hui → lecteur set-par-set en feuille (validation = done + RPE
+   + points, inchangé) ; les protocoles s'ouvrent en consultation. « Séance
+   libre » en secondaire. Objectif hebdo = jours avec ≥ 1 séance validée / cible
+   (WEEKLY_GOAL_DAYS) ; la pastille du bandeau suit la même définition. Tout se
+   valide sur place, saisie du JOUR MÊME ; jours passés = lecture seule. Formules
+   readiness/points INCHANGÉES (on réorganise l'accès, pas le calcul). */
+export default function Bilan({ me, accent = C.green, teamId, players = [], sessions = [], logs = {}, bilans = {}, badges = {} }) {
   const { t } = useTranslation();
   const preview = usePreview();
   const { day, refresh } = useMyDay(me.id);
-  const [sheet, setSheet] = useState(null);   // morning | evening | activities | session | defis | taches
+  const [sheet, setSheet] = useState(null);   // morning | evening | activities | defis | taches
+  const [openSession, setOpenSession] = useState(null); // session unique, ou "all" (toutes celles du jour)
+  const [viewingProto, setViewingProto] = useState(null); // protocole ouvert en consultation
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
   const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
   const { checkins } = usePlayerCheckins(me.id, 21);
 
+  // Protocoles PUBLIÉS visibles par le joueur (même logique que l'onglet Protocoles).
+  const { docs: protoDocs } = useProgramDocs(teamId);
+  const { assignments: protoAsgs } = useTeamProgramAssignments(teamId);
+  const protoCtx = { playerId: me.id, group: me.grp };
+  const asgsForProto = (id) => protoAsgs.filter((a) => a.programId === id);
+  const myProtocols = useMemo(
+    () => protoDocs.filter((d) => d.status === "published" && isVisibleToPlayer(asgsForProto(d.id), protoCtx)),
+    [protoDocs, protoAsgs, me.id, me.grp], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
   const today = todayISO();
 
   // Info d'un jour : séances assignées + statut, bilans matin/soir, complétude.
+  // « Jour validé » (pastille verte + objectif hebdo) = au moins UNE séance
+  // assignée ce jour-là passée en `done`. Les bilans seuls → état « partiel ».
   const dayInfo = useMemo(() => (iso) => {
     const daySessions = sessions.filter((s) => s.date === iso && (s.assignedIds || []).includes(me.id));
     const done = daySessions.filter((s) => statusOfLog(logs, s.id, me.id) === "done").length;
     const moments = new Set((bilans[me.id] || []).filter((b) => b.date === iso).map((b) => b.moment));
     const hasM = moments.has("matin"), hasS = moments.has("soir");
-    const sessionOK = daySessions.length === 0 || done === daySessions.length;
-    const complete = hasM && hasS && sessionOK;
+    const validated = done >= 1;
     const any = hasM || hasS || done > 0;
-    return { daySessions, sessTotal: daySessions.length, sessDone: done, hasM, hasS, state: complete ? "done" : any ? "partial" : "none" };
+    return { daySessions, sessTotal: daySessions.length, sessDone: done, hasM, hasS, state: validated ? "done" : any ? "partial" : "none" };
   }, [sessions, logs, bilans, me.id]);
 
   // Bandeau semaine (lundi → dimanche autour d'aujourd'hui).
@@ -58,16 +80,11 @@ export default function Bilan({ me, accent = C.green, players = [], sessions = [
     ? computeReadiness(wbToWellness(day.matin.wb, day.matin.sleepH) || 0, me.risque, day.matin.sleepH)
     : (me.readiness || 0);
 
-  // Objectif de la semaine : séances faites / prévues ; à défaut, jours renseignés.
+  // Objectif de la semaine : nombre de JOURS avec ≥ 1 séance validée / cible (3).
   const goal = useMemo(() => {
-    const ws = sessions.filter((s) => week.includes(s.date) && (s.assignedIds || []).includes(me.id));
-    if (ws.length) {
-      const done = ws.filter((s) => statusOfLog(logs, s.id, me.id) === "done").length;
-      return { kind: "sessions", done, total: ws.length };
-    }
-    const days = new Set((bilans[me.id] || []).filter((b) => week.includes(b.date) && b.moment === "matin").map((b) => b.date));
-    return { kind: "bilans", done: days.size, total: 7 };
-  }, [sessions, logs, bilans, week, me.id]);
+    const done = week.filter((iso) => dayInfo(iso).sessDone >= 1).length;
+    return { done, total: WEEKLY_GOAL_DAYS };
+  }, [week, dayInfo]);
 
   // Séries pour le suivi rapide (sparklines) : readiness / bien-être / charge.
   const series = useMemo(() => {
@@ -94,6 +111,15 @@ export default function Bilan({ me, accent = C.green, players = [], sessions = [
   const todaySessions = info.daySessions;
   const onSaved = () => refresh();
   const closeSheet = () => setSheet(null);
+
+  // Ouvre un protocole en consultation (doc complet + cibles individualisées).
+  const openProto = async (row) => {
+    try {
+      const full = await getProgramDoc(row.id);
+      const targets = mergeTargets(asgsForProto(row.id), protoCtx);
+      setViewingProto({ id: full.id, title: full.title, doc: full.doc, targets });
+    } catch (e) { console.error("[bilan protocols]", e.message); }
+  };
 
   const dstr = (iso, opts) => new Date(iso + "T00:00:00").toLocaleDateString(localeTag(), opts);
 
@@ -141,7 +167,7 @@ export default function Bilan({ me, accent = C.green, players = [], sessions = [
           <div style={{ height: "100%", width: `${Math.min(100, goal.total ? (goal.done / goal.total) * 100 : 0)}%`, background: `linear-gradient(90deg, ${accent}, ${C.teal})`, borderRadius: 6, transition: "width .4s ease" }} />
         </div>
         <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>
-          {goal.kind === "sessions" ? t("player.today.goalSessions") : t("player.today.goalBilans")}
+          {t("player.today.goalDays")}
         </div>
       </div>
 
@@ -149,12 +175,33 @@ export default function Bilan({ me, accent = C.green, players = [], sessions = [
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <ActionCard emoji="☀️" title={t("player.bilan.morning")} sub={t("player.today.morningSub")} state={day.matin ? "done" : "todo"} accent={accent} onClick={() => setSheet("morning")} t={t} />
         <ActionCard emoji="🌙" title={t("player.bilan.evening")} sub={t("player.today.eveningSub")} state={day.soir ? "done" : "todo"} accent={accent} onClick={() => setSheet("evening")} t={t} />
-        {todaySessions.length > 0 ? (
-          <ActionCard emoji="🏋️" title={t("player.today.session")} sub={t("player.today.sessionSub", { count: todaySessions.length })} state={info.sessDone === info.sessTotal ? "done" : "todo"} accent={accent} onClick={() => setSheet("session")} t={t} />
-        ) : (
-          <ActionCard emoji="🏋️" title={t("player.today.freeSession")} sub={t("player.today.freeSessionSub")} state={null} accent={accent} onClick={() => !preview && setBuilding(true)} t={t} />
-        )}
+
+        {/* Cartes dynamiques : une par séance/programme assigné aujourd'hui */}
+        {todaySessions.map((s) => {
+          const st = statusOfLog(logs, s.id, me.id);
+          const n = (s.exercises || []).length;
+          return (
+            <ActionCard key={s.id} emoji="🏋️"
+              title={s.titre || t("player.today.session")}
+              sub={`${sessionCodeLabel(t, s.code)} · ${t("player.today.exoCount", { count: n })}`}
+              state={st === "done" ? "done" : "todo"}
+              extra={st === "missed" ? t("player.today.stMissed") : st === "postponed" ? t("player.today.stPostponed") : null}
+              accent={accent} onClick={() => setOpenSession(s)} t={t} />
+          );
+        })}
+
+        {/* Protocoles assignés (consultation) */}
+        {myProtocols.map((d) => (
+          <ActionCard key={d.id} emoji="📄"
+            title={d.title || t("nav.protocols")}
+            sub={t("player.today.protocolSub")}
+            state={null} accent={accent} onClick={() => openProto(d)} t={t} />
+        ))}
+
         <span id="activite-jour" />
+        {/* Séance libre — secondaire, pour les jours sans assignation */}
+        <ActionCard emoji="➕" title={t("player.today.freeSession")} sub={t("player.today.freeSessionSecondary")} state={null} accent={accent} muted onClick={() => !preview && setBuilding(true)} t={t} />
+
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
@@ -185,20 +232,22 @@ export default function Bilan({ me, accent = C.green, players = [], sessions = [
       {sheet === "morning" && <Overlay onClose={closeSheet} sheet z={320}><SheetHead title={t("player.bilan.morning")} t={t} /><div style={{ padding: "0 18px 22px" }}><MorningForm me={me} accent={accent} day={day} preview={preview} onSaved={onSaved} /></div></Overlay>}
       {sheet === "evening" && <Overlay onClose={closeSheet} sheet z={320}><SheetHead title={t("player.bilan.evening")} t={t} /><div style={{ padding: "0 18px 22px" }}><EveningForm me={me} accent={accent} day={day} preview={preview} onSaved={onSaved} /></div></Overlay>}
       {sheet === "activities" && <Overlay onClose={closeSheet} sheet z={320}><SheetHead title={t("player.today.activities")} t={t} /><div style={{ padding: "0 18px 22px" }}><ActivitiesForm me={me} accent={accent} day={day} preview={preview} onSaved={onSaved} /></div></Overlay>}
-      {sheet === "session" && (
-        <Overlay onClose={closeSheet} sheet z={320}>
-          <SheetHead title={t("player.today.session")} t={t} />
-          <div style={{ padding: "0 16px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {todaySessions.length === 0
-              ? <div style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12.5, padding: 18 }}>{t("player.today.noSessionToday")}</div>
-              : todaySessions.map((s) => <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onSaved={refresh} />)}
-            {!preview && (
-              <button onClick={() => { closeSheet(); setBuilding(true); }} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: `1px dashed ${C.border}`, borderRadius: 11, padding: 12, color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12.5, cursor: "pointer", marginTop: 2 }}>
-                ➕ {t("player.today.addFreeSession")}
-              </button>
-            )}
-          </div>
-        </Overlay>
+      {openSession && (() => {
+        const list = openSession === "all" ? todaySessions : [openSession];
+        return (
+          <Overlay onClose={() => setOpenSession(null)} sheet z={320}>
+            <SheetHead title={list.length === 1 ? (list[0]?.titre || t("player.today.session")) : t("player.today.session")} t={t} />
+            <div style={{ padding: "0 16px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {list.length === 0
+                ? <div style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12.5, padding: 18 }}>{t("player.today.noSessionToday")}</div>
+                : list.map((s) => <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onSaved={refresh} />)}
+            </div>
+          </Overlay>
+        );
+      })()}
+
+      {viewingProto && (
+        <ProgramView id={viewingProto.id} doc={viewingProto.doc} title={viewingProto.title} targets={viewingProto.targets} onClose={() => setViewingProto(null)} />
       )}
 
       {sheet === "defis" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Defis me={me} players={players} accent={accent} /></div></Overlay>}
@@ -211,7 +260,7 @@ export default function Bilan({ me, accent = C.green, players = [], sessions = [
           <DayDetail isToday={daySel === today} info={dayInfo(daySel)} ck={ckByDay[daySel]} me={me}
             onMorning={() => { setDaySel(null); setSheet("morning"); }}
             onEvening={() => { setDaySel(null); setSheet("evening"); }}
-            onSession={() => { setDaySel(null); setSheet("session"); }}
+            onSession={() => { setDaySel(null); setOpenSession("all"); }}
             t={t} />
         </Overlay>
       )}
@@ -247,14 +296,16 @@ function SheetHead({ title, t }) {
 }
 
 // Grande carte d'action cliquable (état à remplir / fait ✓, ou pastille de non-lu).
-function ActionCard({ emoji, title, sub, state, accent, onClick, badge, t }) {
+// `extra` = petit libellé secondaire (ex. « manqué »/« reporté ») ; `muted` =
+// carte secondaire (séance libre) légèrement estompée.
+function ActionCard({ emoji, title, sub, state, accent, onClick, badge, extra, muted, t }) {
   const pill = state === "done"
     ? { txt: t("player.today.done"), bg: `${C.green}22`, bd: `${C.green}66`, col: C.green }
     : state === "todo"
       ? { txt: t("player.today.toFill"), bg: "rgba(255,255,255,0.06)", bd: C.border, col: "rgba(255,255,255,0.6)" }
       : null;
   return (
-    <button onClick={onClick} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: 14, cursor: "pointer", textAlign: "left", width: "100%", transition: "transform .12s ease, border-color .12s ease" })}
+    <button onClick={onClick} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: 14, cursor: "pointer", textAlign: "left", width: "100%", opacity: muted ? 0.82 : 1, background: muted ? "rgba(255,255,255,0.02)" : undefined, transition: "transform .12s ease, border-color .12s ease" })}
       onPointerDown={(e) => { e.currentTarget.style.transform = "scale(0.985)"; }}
       onPointerUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
       onPointerLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}>
@@ -263,6 +314,7 @@ function ActionCard({ emoji, title, sub, state, accent, onClick, badge, t }) {
         <div style={{ fontSize: 14, fontWeight: 800 }}>{title}</div>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>{sub}</div>
       </div>
+      {extra && <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 7, background: `${C.coral}18`, border: `1px solid ${C.coral}55`, color: C.coral, flexShrink: 0 }}>{extra}</span>}
       {typeof badge === "number" && badge > 0 && (
         <span style={{ background: accent, color: "#fff", fontSize: 10.5, fontWeight: 800, borderRadius: 9, padding: "1px 6px", minWidth: 18, textAlign: "center" }}>{badge}</span>
       )}
