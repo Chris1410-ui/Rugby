@@ -30,7 +30,7 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
   const camp = activeCamp(camps);
   const lastCamp = [...testCampaigns].sort((a, b) => b.date.localeCompare(a.date))[0];
   const campFrom = camp?.dateDebut || lastCamp?.date || null;
-  const days = period === "7" ? 7 : period === "30" ? 30 : period === "camp" ? (campFrom ? daysBetween(campFrom) : 30) : 3650;
+  const days = period === "today" ? 1 : period === "7" ? 7 : period === "30" ? 30 : period === "camp" ? (campFrom ? daysBetween(campFrom) : 30) : 3650;
 
   // Fenêtre [fromISO, toISO] appliquée à TOUS les graphiques + à l'en-tête « Au … ».
   // Presets : se terminent aujourd'hui. Personnalisé : bornes début/fin choisies.
@@ -155,7 +155,7 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
         </select>
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: period === "custom" ? 8 : 14 }}>
-        {[["7", t("staff.hist.p7")], ["30", t("staff.hist.p30")], ["camp", t("staff.hist.pCamp")], ["all", t("staff.hist.pAll")]].map(([v, l]) => (
+        {[["today", t("staff.hist.pToday")], ["7", t("staff.hist.p7")], ["30", t("staff.hist.p30")], ["camp", t("staff.hist.pCamp")], ["all", t("staff.hist.pAll")]].map(([v, l]) => (
           <button key={v} onClick={() => setPeriod(v)} style={btn(period === v)} disabled={v === "camp" && !campFrom} title={v === "camp" && camp ? camp.nom : undefined}>{l}</button>
         ))}
         <button onClick={() => setPeriod("custom")} style={btn(period === "custom")}>{t("staff.hist.pCustom")}</button>
