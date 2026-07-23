@@ -145,7 +145,18 @@
     "targetValuePh": "Waarde (bijv. 15.5)",
     "addTarget": "Doel toevoegen",
     "addAssignment": "Toewijzing toevoegen",
-    "removeAssignment": "Toewijzing verwijderen"
+    "removeAssignment": "Toewijzing verwijderen",
+    "addSection": "Sectie toevoegen",
+    "tplBlank": "Leeg",
+    "tplBuiltin": "Sjablonen",
+    "tplMine": "Mijn sjablonen",
+    "tplCardio": "Cardio",
+    "tplRecovery": "Herstel",
+    "tplStrength": "Krachttraining",
+    "saveAsTemplate": "Als sjabloon opslaan",
+    "templateNamePh": "Sjabloonnaam",
+    "noSavedTemplates": "Geen opgeslagen sjabloon",
+    "deleteTemplate": "Sjabloon verwijderen"
   },
   "nav": {
     "bilan": "Vandaag",

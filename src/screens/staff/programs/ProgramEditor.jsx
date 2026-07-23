@@ -7,6 +7,8 @@ import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
   changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
 } from "../../../lib/program/model.js";
+import { BUILTIN_SECTION_TEMPLATES, freshSection } from "../../../lib/program/sectionTemplates.js";
+import { useTeamSectionTemplates, saveSectionTemplate, deleteSectionTemplate } from "../../../data/sectionTemplates.js";
 import ExercisePickerSheet from "../../shared/ExercisePickerSheet.jsx";
 import ProgramView from "../../shared/ProgramView.jsx";
 import AssignmentPanel from "./AssignmentPanel.jsx";
@@ -39,6 +41,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const [saving, setSaving] = useState(false);
   const [picker, setPicker] = useState(null); // index de la section d'exercices ciblée
   const [preview, setPreview] = useState(false); // aperçu « stade » du document en cours
+  const [saveTpl, setSaveTpl] = useState(null);  // { index } section à enregistrer comme modèle
 
   useEffect(() => {
     let alive = true;
@@ -83,6 +86,8 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
 
   // Sections -----------------------------------------------------------------
   const addSection = (type) => setDoc((d) => { d.sections.push(type === "narrative" ? emptyNarrativeSection() : emptyExerciseSection(weeks)); return d; });
+  // Insère une ou plusieurs sections (modèle) avec des ids frais.
+  const insertSections = (list) => setDoc((d) => { (list || []).forEach((s) => d.sections.push(freshSection(s))); return d; });
   const setSection = (i, patch) => setDoc((d) => { d.sections[i] = { ...d.sections[i], ...patch }; return d; });
   const moveSection = (i, dir) => setDoc((d) => { const j = i + dir; if (j < 0 || j >= d.sections.length) return d; [d.sections[i], d.sections[j]] = [d.sections[j], d.sections[i]]; return d; });
   const delSection = (i) => setDoc((d) => { d.sections.splice(i, 1); return d; });
@@ -183,8 +188,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
       {/* ── Sections ── */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "22px 0 10px" }}>
         <div style={{ fontSize: 14, fontWeight: 800, flex: 1 }}>{t("protocols.sections")}</div>
-        <button onClick={() => addSection("narrative")} style={miniBtn}><Plus size={13} /> {t("protocols.addNarrative")}</button>
-        <button onClick={() => addSection("exercises")} style={miniBtn}><Plus size={13} /> {t("protocols.addExercises")}</button>
+        <AddSectionMenu weeks={weeks} teamId={teamId} onBlank={addSection} onInsert={insertSections} t={t} />
       </div>
 
       {doc.sections.length === 0 && (
@@ -203,6 +207,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
               <input style={{ ...inp, flex: 1 }} value={s.title} onChange={(e) => setSection(si, { title: e.target.value })} placeholder={t("protocols.sectionTitlePh")} />
               <button onClick={() => moveSection(si, -1)} disabled={si === 0} title={t("protocols.moveUp")} style={{ ...iconBtn, opacity: si === 0 ? 0.35 : 1 }}><ChevronDown size={14} style={{ transform: "rotate(180deg)" }} /></button>
               <button onClick={() => moveSection(si, 1)} disabled={si === doc.sections.length - 1} title={t("protocols.moveDown")} style={{ ...iconBtn, opacity: si === doc.sections.length - 1 ? 0.35 : 1 }}><ChevronDown size={14} /></button>
+              <button onClick={() => setSaveTpl({ index: si })} title={t("protocols.saveAsTemplate")} style={iconBtn}><FileText size={14} /></button>
               <button onClick={() => delSection(si)} title={t("protocols.removeSection")} style={iconBtn}><Trash2 size={14} /></button>
             </div>
             <input style={{ ...inp, marginBottom: 10 }} value={s.subtitle} onChange={(e) => setSection(si, { subtitle: e.target.value })} placeholder={t("protocols.sectionSubtitlePh")} />
@@ -236,7 +241,87 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
       {preview && (
         <ProgramView doc={{ ...doc, meta: { ...doc.meta, weeks } }} title={title} onClose={() => setPreview(false)} />
       )}
+
+      {saveTpl && (
+        <SaveTemplateModal
+          teamId={teamId}
+          section={doc.sections[saveTpl.index]}
+          defaultName={doc.sections[saveTpl.index]?.title || ""}
+          onClose={() => setSaveTpl(null)}
+          t={t}
+        />
+      )}
     </section>
+  );
+}
+
+/* Menu « + Ajouter une section » : sections vierges, modèles fournis, et les
+   modèles enregistrés du club. Un clic insère la (ou les) section(s). */
+function AddSectionMenu({ weeks, teamId, onBlank, onInsert, t }) {
+  const [open, setOpen] = useState(false);
+  const { templates } = useTeamSectionTemplates(teamId);
+  const pick = (fn) => { fn(); setOpen(false); };
+  return (
+    <div style={{ position: "relative" }}>
+      <button onClick={() => setOpen((v) => !v)} style={{ ...miniBtn, background: `${ACCENT}18`, borderColor: `${ACCENT}66`, color: "#fff" }}>
+        <Plus size={13} /> {t("protocols.addSection")} <ChevronDown size={13} />
+      </button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 30 }} />
+          <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 31, width: 246, maxHeight: 340, overflowY: "auto", background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
+            <MenuLabel>{t("protocols.tplBlank")}</MenuLabel>
+            <MenuItem onClick={() => pick(() => onBlank("narrative"))}>{t("protocols.addNarrative")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("exercises"))}>{t("protocols.addExercises")}</MenuItem>
+            <MenuLabel>{t("protocols.tplBuiltin")}</MenuLabel>
+            {BUILTIN_SECTION_TEMPLATES.map((tpl) => (
+              <MenuItem key={tpl.id} onClick={() => pick(() => onInsert(tpl.build(weeks)))}>{t(tpl.nameKey)}</MenuItem>
+            ))}
+            <MenuLabel>{t("protocols.tplMine")}</MenuLabel>
+            {templates.length === 0 ? (
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", padding: "6px 10px" }}>{t("protocols.noSavedTemplates")}</div>
+            ) : templates.map((tpl) => (
+              <div key={tpl.id} style={{ display: "flex", alignItems: "center" }}>
+                <MenuItem onClick={() => pick(() => onInsert([tpl.section]))} flex>{tpl.name || t("protocols.untitled")}</MenuItem>
+                <button onClick={() => deleteSectionTemplate(tpl.id).catch((e) => console.error(e.message))} title={t("protocols.deleteTemplate")} style={{ ...iconBtn, padding: 6, marginLeft: 4 }}><Trash2 size={12} /></button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+const MenuLabel = ({ children }) => <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", padding: "8px 10px 3px" }}>{children}</div>;
+const MenuItem = ({ children, onClick, flex }) => (
+  <button onClick={onClick} style={{ display: "block", width: flex ? "auto" : "100%", flex: flex ? 1 : "none", textAlign: "left", background: "none", border: "none", color: "#fff", fontSize: 12.5, fontWeight: 600, padding: "8px 10px", borderRadius: 8, cursor: "pointer" }}
+    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}>
+    {children}
+  </button>
+);
+
+/* Modale « Enregistrer comme modèle » : nomme la section et la sauvegarde
+   (partagée au club) avec des ids frais. */
+function SaveTemplateModal({ teamId, section, defaultName, onClose, t }) {
+  const [name, setName] = useState(defaultName);
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true);
+    try { await saveSectionTemplate(teamId, { name, kind: section.type, section: freshSection(section) }); onClose(); }
+    catch (e) { console.error("[saveTemplate]", e.message); setBusy(false); }
+  };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: C.panel, borderRadius: 16, padding: 20 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{t("protocols.saveAsTemplate")}</div>
+        <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t("protocols.templateNamePh")} style={{ ...inp, marginBottom: 14 }} />
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 11, color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>{t("protocols.cancel")}</button>
+          <button onClick={save} disabled={busy} style={{ flex: 1, background: ACCENT, border: "none", borderRadius: 10, padding: 11, color: "#fff", fontWeight: 800, fontSize: 12.5, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{t("protocols.save")}</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
