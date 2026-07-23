@@ -22,7 +22,7 @@ export default function Protocoles({ teamId }) {
   const [confirmDel, setConfirmDel] = useState(null);
 
   const openView = async (row) => {
-    try { const full = await getProgramDoc(row.id); setViewing({ title: full.title, doc: full.doc }); }
+    try { const full = await getProgramDoc(row.id); setViewing({ id: full.id, title: full.title, doc: full.doc }); }
     catch (e) { console.error("[protocols view]", e.message); }
   };
 
@@ -118,7 +118,7 @@ export default function Protocoles({ teamId }) {
         </div>
       )}
 
-      {viewing && <ProgramView doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} />}
+      {viewing && <ProgramView id={viewing.id} doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} />}
 
       {confirmDel && (
         <div onClick={() => setConfirmDel(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>

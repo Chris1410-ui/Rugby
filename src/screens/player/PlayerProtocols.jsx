@@ -15,7 +15,7 @@ export default function PlayerProtocols({ teamId, accent = C.green }) {
   const published = docs.filter((d) => d.status === "published");
 
   const open = async (row) => {
-    try { const full = await getProgramDoc(row.id); setViewing({ title: full.title, doc: full.doc }); }
+    try { const full = await getProgramDoc(row.id); setViewing({ id: full.id, title: full.title, doc: full.doc }); }
     catch (e) { console.error("[player protocols]", e.message); }
   };
 
@@ -47,7 +47,7 @@ export default function PlayerProtocols({ teamId, accent = C.green }) {
         </div>
       )}
 
-      {viewing && <ProgramView doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} />}
+      {viewing && <ProgramView id={viewing.id} doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} />}
     </section>
   );
 }

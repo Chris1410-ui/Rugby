@@ -8,10 +8,16 @@
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
+    },
+    "api/programs/[id]/export.js": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
     }
   },
   "rewrites": [
-    { "source": "/players/:id/report.pdf", "destination": "/api/players/:id/report" }
+    { "source": "/players/:id/report.pdf", "destination": "/api/players/:id/report" },
+    { "source": "/programs/:id/export.pdf", "destination": "/api/programs/:id/export" }
   ],
   "headers": [
     {
