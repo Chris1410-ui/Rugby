@@ -572,6 +572,30 @@
   "player": {
     "activityFab": "Activity",
     "activityFabTitle": "Log an activity",
+    "today": {
+      "week": "Your week",
+      "morningSub": "Well-being · sleep · recovery",
+      "eveningSub": "How the day felt",
+      "session": "Today's session",
+      "sessionSub": "{{count}} session(s) to log",
+      "sessionN": "Session ({{done}}/{{total}})",
+      "freeSession": "Free session",
+      "freeSessionSub": "Build your own on the fly",
+      "activities": "Today's activities",
+      "activitiesSub": "Gym · running · swimming…",
+      "activitiesSave": "Save activities",
+      "activitiesSaved": "Activities saved",
+      "defis": "Today's challenges",
+      "defisSub": "Take on pending challenges",
+      "taches": "Today's tasks",
+      "tachesSub": "What the staff expects",
+      "done": "Done ✓",
+      "toFill": "To do",
+      "swipeClose": "Swipe to close",
+      "noSessionToday": "No session planned today.",
+      "noSessionDay": "No session that day.",
+      "pastReadonly": "Past day — read only"
+    },
     "messages": {
       "staffTitle": "Staff — Strength & conditioning"
     },

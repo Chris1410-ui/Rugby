@@ -572,6 +572,30 @@
   "player": {
     "activityFab": "Activité",
     "activityFabTitle": "Déclarer une activité",
+    "today": {
+      "week": "Ta semaine",
+      "morningSub": "Bien-être · sommeil · récup",
+      "eveningSub": "Ressenti de la journée",
+      "session": "Séance du jour",
+      "sessionSub": "{{count}} séance(s) à logger",
+      "sessionN": "Séance ({{done}}/{{total}})",
+      "freeSession": "Séance libre",
+      "freeSessionSub": "Crée ta séance à la volée",
+      "activities": "Activités du jour",
+      "activitiesSub": "Salle · course · natation…",
+      "activitiesSave": "Enregistrer les activités",
+      "activitiesSaved": "Activités enregistrées",
+      "defis": "Défis du jour",
+      "defisSub": "Relève les défis en attente",
+      "taches": "Tâches du jour",
+      "tachesSub": "Ce que le staff attend",
+      "done": "Fait ✓",
+      "toFill": "À remplir",
+      "swipeClose": "Glisse pour fermer",
+      "noSessionToday": "Aucune séance prévue aujourd'hui.",
+      "noSessionDay": "Aucune séance ce jour.",
+      "pastReadonly": "Jour passé — lecture seule"
+    },
     "messages": {
       "staffTitle": "Staff — Préparateur physique"
     },

@@ -98,7 +98,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <main style={{ flex: 1, padding: 18 }}>
          <PullToRefresh onRefresh={refresh}>
-          {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
+          {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} sessions={sessions} logs={logs} bilans={bilans} badges={{ defis: bDefis, taches: bTaches }} go={setTab} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
           {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
