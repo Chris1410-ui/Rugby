@@ -5,9 +5,9 @@ import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { posDisplay } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
-import { Ring, Overlay } from "../../lib/ui.jsx";
+import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
-import { useMyDay } from "../../data/checkins.js";
+import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
 import { usePreview } from "../../lib/preview.js";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
@@ -27,6 +27,8 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
   const [sheet, setSheet] = useState(null);   // morning | evening | activities | session
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
+  const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
+  const { checkins } = usePlayerCheckins(me.id, 21);
 
   const today = todayISO();
 
@@ -53,6 +55,32 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
   const readiness = day.matin
     ? computeReadiness(wbToWellness(day.matin.wb, day.matin.sleepH) || 0, me.risque, day.matin.sleepH)
     : (me.readiness || 0);
+
+  // Objectif de la semaine : séances faites / prévues ; à défaut, jours renseignés.
+  const goal = useMemo(() => {
+    const ws = sessions.filter((s) => week.includes(s.date) && (s.assignedIds || []).includes(me.id));
+    if (ws.length) {
+      const done = ws.filter((s) => statusOfLog(logs, s.id, me.id) === "done").length;
+      return { kind: "sessions", done, total: ws.length };
+    }
+    const days = new Set((bilans[me.id] || []).filter((b) => week.includes(b.date) && b.moment === "matin").map((b) => b.date));
+    return { kind: "bilans", done: days.size, total: 7 };
+  }, [sessions, logs, bilans, week, me.id]);
+
+  // Séries pour le suivi rapide (sparklines) : readiness / bien-être / charge.
+  const series = useMemo(() => {
+    const matin = [...checkins].reverse().filter((c) => c.moment === "matin"); // ancien → récent
+    const readinessS = matin.map((c) => computeReadiness(wbToWellness(c.wb, c.sleepH) || 0, me.risque, c.sleepH));
+    const wellnessS = matin.map((c) => wbToWellness(c.wb, c.sleepH) || 0);
+    const chargeS = (me._load?.hist || []).slice(-14).map((x) => Math.round(x.au || 0));
+    return { readiness: readinessS, wellness: wellnessS, charge: chargeS };
+  }, [checkins, me.risque, me._load]);
+
+  const metricDefs = {
+    readiness: { label: t("player.bilan.readiness"), pts: series.readiness, color: readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral, value: readiness, max: 100 },
+    wellness: { label: t("player.bilan.ringWellbeing"), pts: series.wellness, color: C.blue, value: me.wellness ?? (series.wellness.at(-1) || 0), max: 50 },
+    charge: { label: t("player.bilan.ringCharge"), pts: series.charge, color: C.teal, value: series.charge.at(-1) ?? 0, max: null },
+  };
 
   const todaySessions = info.daySessions;
   const onSaved = () => refresh();
@@ -94,6 +122,20 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
         </div>
       </div>
 
+      {/* Objectif de la semaine */}
+      <div style={sc({ padding: 14, marginBottom: 14 })}>
+        <div style={{ display: "flex", alignItems: "baseline", marginBottom: 8 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 800, flex: 1 }}>{t("player.today.goalTitle")}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: accent }}>{goal.done}<span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>/{goal.total}</span></span>
+        </div>
+        <div style={{ height: 8, borderRadius: 6, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${Math.min(100, goal.total ? (goal.done / goal.total) * 100 : 0)}%`, background: `linear-gradient(90deg, ${accent}, ${C.teal})`, borderRadius: 6, transition: "width .4s ease" }} />
+        </div>
+        <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>
+          {goal.kind === "sessions" ? t("player.today.goalSessions") : t("player.today.goalBilans")}
+        </div>
+      </div>
+
       {/* Cartes d'action du jour */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <ActionCard emoji="☀️" title={t("player.bilan.morning")} sub={t("player.today.morningSub")} state={day.matin ? "done" : "todo"} accent={accent} onClick={() => setSheet("morning")} t={t} />
@@ -107,6 +149,26 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => go?.("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => go?.("taches")} t={t} />
+      </div>
+
+      {/* Suivi rapide (sparklines) */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "20px 0 10px" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, flex: 1 }}>{t("player.today.tracking")}</div>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{t("player.today.trackingHint")}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+        {["readiness", "wellness", "charge"].map((k) => {
+          const m = metricDefs[k]; const enough = m.pts.length >= 2;
+          return (
+            <button key={k} onClick={() => enough && setMetric(k)} style={sc({ padding: 12, textAlign: "left", cursor: enough ? "pointer" : "default" })}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" }}>{m.label}</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: m.color, margin: "2px 0 4px" }}>{Math.round(m.value)}{m.max === 50 ? <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 700 }}>/50</span> : null}</div>
+              <div style={{ height: 30 }}>
+                {enough ? <LineChart pts={m.pts.slice(-14)} color={m.color} height={30} /> : <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{t("player.today.notEnough")}</div>}
+              </div>
+            </button>
+          );
+        })}
       </div>
       <div style={{ height: 10 }} />
 
@@ -134,6 +196,22 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
             onEvening={() => { setDaySel(null); setSheet("evening"); }}
             onSession={() => { setDaySel(null); setSheet("session"); }}
             t={t} />
+        </Overlay>
+      )}
+
+      {/* ── Détail d'un indicateur (suivi) ── */}
+      {metric && metricDefs[metric] && (
+        <Overlay onClose={() => setMetric(null)} sheet z={315}>
+          <SheetHead title={metricDefs[metric].label} t={t} />
+          <div style={{ padding: "0 18px 24px" }}>
+            <div style={{ fontSize: 30, fontWeight: 900, color: metricDefs[metric].color, marginBottom: 10 }}>
+              {Math.round(metricDefs[metric].value)}{metricDefs[metric].max ? <span style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", fontWeight: 700 }}>/{metricDefs[metric].max}</span> : null}
+            </div>
+            <div style={sc({ padding: 12 })}>
+              <LineChart pts={metricDefs[metric].pts} color={metricDefs[metric].color} height={160} />
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 10, textAlign: "center" }}>{t("player.today.trackingRange", { count: metricDefs[metric].pts.length })}</div>
+          </div>
         </Overlay>
       )}
 
