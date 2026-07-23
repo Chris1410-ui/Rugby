@@ -9,6 +9,7 @@ import {
 } from "../../../lib/program/model.js";
 import ExercisePickerSheet from "../../shared/ExercisePickerSheet.jsx";
 import ProgramView from "../../shared/ProgramView.jsx";
+import AssignmentPanel from "./AssignmentPanel.jsx";
 import { Eye } from "../../../lib/icons.jsx";
 
 const ACCENT = C.coral;
@@ -26,7 +27,7 @@ const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, textTransform
    (Markdown-léger) et sections d'exercices (grille blocs × semaines, cellules
    éditables, ajout libre OU depuis la bibliothèque). Sauvegarde explicite +
    à la fermeture si des changements sont en attente. */
-export default function ProgramEditor({ id, onClose }) {
+export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -175,6 +176,9 @@ export default function ProgramEditor({ id, onClose }) {
           ))}
         </div>
       </Block>
+
+      {/* ── Assignation & cibles individualisées ── */}
+      <AssignmentPanel teamId={teamId} programId={id} players={players} />
 
       {/* ── Sections ── */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "22px 0 10px" }}>

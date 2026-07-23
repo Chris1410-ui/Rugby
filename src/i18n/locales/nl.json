@@ -131,7 +131,21 @@
     "removeRow": "Rij verwijderen",
     "noRows": "Geen oefening. Voeg een vrije rij toe of een uit de bibliotheek.",
     "addRowFree": "Vrije rij",
-    "addFromLibrary": "Uit de bibliotheek"
+    "addFromLibrary": "Uit de bibliotheek",
+    "assignTitle": "Toewijzing & doelen",
+    "assignTeamWide": "Zichtbaar voor de hele club. Richt op een groep of speler om het te beperken en doelen te geven.",
+    "assignTargeted": "Beperkt tot de hieronder gerichte groepen / spelers (staf ziet altijd alles).",
+    "scopeTeam": "Hele club",
+    "scopeAvants": "Voorwaartsen",
+    "scopeArrieres": "Achterspelers",
+    "scopePlayer": "Een speler",
+    "pickPlayer": "Kies een speler…",
+    "trackPh": "Track (optioneel, bijv. Kracht)",
+    "targetLabelPh": "Doel (bijv. Yo-Yo niveau)",
+    "targetValuePh": "Waarde (bijv. 15.5)",
+    "addTarget": "Doel toevoegen",
+    "addAssignment": "Toewijzing toevoegen",
+    "removeAssignment": "Toewijzing verwijderen"
   },
   "nav": {
     "bilan": "Vandaag",

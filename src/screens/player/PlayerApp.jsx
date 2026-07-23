@@ -100,7 +100,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
          <PullToRefresh onRefresh={refresh}>
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
-          {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} accent={ACCENT} />}
+          {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}

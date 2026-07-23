@@ -131,7 +131,21 @@
     "removeRow": "Remove row",
     "noRows": "No exercise. Add a free row or one from the library.",
     "addRowFree": "Free row",
-    "addFromLibrary": "From the library"
+    "addFromLibrary": "From the library",
+    "assignTitle": "Assignment & targets",
+    "assignTeamWide": "Visible to the whole club. Target a group or player to restrict it and give them targets.",
+    "assignTargeted": "Restricted to the groups / players targeted below (staff always see everything).",
+    "scopeTeam": "Whole club",
+    "scopeAvants": "Forwards",
+    "scopeArrieres": "Backs",
+    "scopePlayer": "A player",
+    "pickPlayer": "Choose a player…",
+    "trackPh": "Track (optional, e.g. Power)",
+    "targetLabelPh": "Target (e.g. Yo-Yo level)",
+    "targetValuePh": "Value (e.g. 15.5)",
+    "addTarget": "Add a target",
+    "addAssignment": "Add assignment",
+    "removeAssignment": "Remove assignment"
   },
   "nav": {
     "bilan": "Today",

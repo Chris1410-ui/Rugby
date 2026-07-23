@@ -13,7 +13,7 @@ import ExerciseDetail from "./ExerciseDetail.jsx";
    une iframe isolée — fidèle à l'export/PDF. Les exercices liés sont cliquables
    (postMessage → ouverture de la fiche in-app). Impression navigateur dispo ;
    l'export PDF serveur arrive en PR4. `doc` = contenu { meta, sections }. */
-export default function ProgramView({ doc, title, id, onClose }) {
+export default function ProgramView({ doc, title, id, targets, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
   const iframeRef = useRef(null);
@@ -31,7 +31,7 @@ export default function ProgramView({ doc, title, id, onClose }) {
     return () => { alive = false; };
   }, [doc]);
 
-  const html = useMemo(() => renderProgramHtml(doc, { interactive: true, exercisesByRef: exMap }), [doc, exMap]);
+  const html = useMemo(() => renderProgramHtml(doc, { interactive: true, exercisesByRef: exMap, targets }), [doc, exMap, targets]);
 
   // Clic sur un exercice lié dans l'iframe → ouvre sa fiche.
   useEffect(() => {

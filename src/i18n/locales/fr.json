@@ -131,7 +131,21 @@
     "removeRow": "Supprimer la ligne",
     "noRows": "Aucun exercice. Ajoute une ligne libre ou depuis la bibliothèque.",
     "addRowFree": "Ligne libre",
-    "addFromLibrary": "Depuis la bibliothèque"
+    "addFromLibrary": "Depuis la bibliothèque",
+    "assignTitle": "Assignation & cibles",
+    "assignTeamWide": "Visible par tout le club. Cible un groupe ou un joueur pour le réserver et lui donner des cibles.",
+    "assignTargeted": "Réservé aux groupes / joueurs ciblés ci-dessous (le staff voit toujours tout).",
+    "scopeTeam": "Tout le club",
+    "scopeAvants": "Avants",
+    "scopeArrieres": "Arrières",
+    "scopePlayer": "Un joueur",
+    "pickPlayer": "Choisir un joueur…",
+    "trackPh": "Track (optionnel, ex. Puissance)",
+    "targetLabelPh": "Cible (ex. Palier Yo-Yo)",
+    "targetValuePh": "Valeur (ex. 15.5)",
+    "addTarget": "Ajouter une cible",
+    "addAssignment": "Ajouter l'assignation",
+    "removeAssignment": "Retirer l'assignation"
   },
   "nav": {
     "bilan": "Aujourd'hui",
