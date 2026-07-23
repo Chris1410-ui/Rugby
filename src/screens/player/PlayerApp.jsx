@@ -30,6 +30,7 @@ import Calendrier from "../shared/Calendrier.jsx";
 import Fiche from "../shared/Fiche.jsx";
 import Confidentialite from "../shared/Confidentialite.jsx";
 import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
+import PlayerProtocols from "./PlayerProtocols.jsx";
 
 const ACCENT = C.green;
 
@@ -76,6 +77,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const nav = [
     ["bilan", t("nav.bilan"), Sun, bBilan],
     ["seances", t("nav.seances"), Dumbbell, bSeances],
+    ["protocoles", t("nav.protocols"), FileText],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
@@ -98,6 +100,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
          <PullToRefresh onRefresh={refresh}>
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
+          {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}
