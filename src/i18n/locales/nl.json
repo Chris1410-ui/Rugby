@@ -159,7 +159,9 @@
     "saveAsTemplate": "Als sjabloon opslaan",
     "templateNamePh": "Sjabloonnaam",
     "noSavedTemplates": "Geen opgeslagen sjabloon",
-    "deleteTemplate": "Sjabloon verwijderen"
+    "deleteTemplate": "Sjabloon verwijderen",
+    "fNature": "Aard",
+    "fNatureNone": "— niet opgegeven —"
   },
   "nav": {
     "bilan": "Vandaag",
@@ -1282,7 +1284,8 @@
       "sendBtn": "Naar spelers verzenden",
       "addFromLibrary": "Bibliotheek",
       "restPlaceholder": "rust",
-      "restTitle": "Rust tussen sets (seconden)"
+      "restTitle": "Rust tussen sets (seconden)",
+      "natureTitle": "Aard van de sessie"
     },
     "app": {
       "fabSeance": "＋ Sessie",
@@ -2118,6 +2121,16 @@
       "wrist_extensors": "Polsstrekkers",
       "wrist_flexors": "Polsbuigers",
       "wrists": "Polsen"
+    },
+    "nature": {
+      "force": "Kracht",
+      "conditioning": "Conditie / Cardio",
+      "vitesse": "Snelheid",
+      "prevention": "Preventie",
+      "recuperation": "Herstel",
+      "technique": "Techniek",
+      "mobilite": "Mobiliteit",
+      "autre": "Overig"
     }
   },
   "points": {

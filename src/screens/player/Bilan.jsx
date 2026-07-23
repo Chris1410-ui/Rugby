@@ -6,6 +6,7 @@ import { displayName } from "../../lib/identity.js";
 import { posDisplay } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
 import { WEEKLY_GOAL_DAYS } from "../../lib/badges.js";
+import { effectiveNature, natureLabel } from "../../lib/nature.js";
 import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
 import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
@@ -183,7 +184,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
           return (
             <ActionCard key={s.id} emoji="🏋️"
               title={s.titre || t("player.today.session")}
-              sub={`${sessionCodeLabel(t, s.code)} · ${t("player.today.exoCount", { count: n })}`}
+              sub={`${natureLabel(t, effectiveNature(s.nature, s.code))} · ${sessionCodeLabel(t, s.code)} · ${t("player.today.exoCount", { count: n })}`}
               state={st === "done" ? "done" : "todo"}
               extra={st === "missed" ? t("player.today.stMissed") : st === "postponed" ? t("player.today.stPostponed") : null}
               accent={accent} onClick={() => setOpenSession(s)} t={t} />

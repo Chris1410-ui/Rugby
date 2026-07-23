@@ -159,7 +159,9 @@
     "saveAsTemplate": "Enregistrer comme modèle",
     "templateNamePh": "Nom du modèle",
     "noSavedTemplates": "Aucun modèle enregistré",
-    "deleteTemplate": "Supprimer le modèle"
+    "deleteTemplate": "Supprimer le modèle",
+    "fNature": "Nature",
+    "fNatureNone": "— non précisée —"
   },
   "nav": {
     "bilan": "Aujourd'hui",
@@ -1282,7 +1284,8 @@
       "sendBtn": "Envoyer aux joueurs",
       "addFromLibrary": "Bibliothèque",
       "restPlaceholder": "repos",
-      "restTitle": "Repos entre séries (secondes)"
+      "restTitle": "Repos entre séries (secondes)",
+      "natureTitle": "Nature de la séance"
     },
     "app": {
       "fabSeance": "＋ Séance",
@@ -2118,6 +2121,16 @@
       "wrist_extensors": "Extenseurs du poignet",
       "wrist_flexors": "Fléchisseurs du poignet",
       "wrists": "Poignets"
+    },
+    "nature": {
+      "force": "Force",
+      "conditioning": "Cardio / Conditioning",
+      "vitesse": "Vitesse",
+      "prevention": "Prévention",
+      "recuperation": "Récupération",
+      "technique": "Technique",
+      "mobilite": "Mobilité",
+      "autre": "Autre"
     }
   },
   "points": {

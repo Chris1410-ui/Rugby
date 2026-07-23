@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "./tokens.js";
 import { acwrZ } from "./metrics.js";
+import { effectiveNature, natureColor, natureLabel } from "./nature.js";
 import { Clock, Grid, X } from "./icons.jsx";
 import i18n from "../i18n/config.js";
 import { BUILD_LABEL, checkForUpdate, clearCachesAndReload } from "./buildInfo.js";
@@ -143,6 +144,16 @@ export const KPI = ({ label, value, sub, color }) => (
 export const Tag = ({ c, children, title }) => (
   <span title={title} style={{ background: `${c}22`, color: c, padding: "2px 9px", borderRadius: 6, fontSize: 10, fontWeight: 700, border: `1px solid ${c}44` }}>{children}</span>
 );
+
+/* Pastille de NATURE de séance (force/cardio/vitesse…). `nature` = valeur
+   stockée ; à défaut on dérive du `code` rugby (effectiveNature). Couleur +
+   libellé traduit via lib/nature.js. */
+export const NatureTag = ({ nature, code, style }) => {
+  const { t } = useTranslation();
+  const key = effectiveNature(nature, code);
+  const c = natureColor(key);
+  return <span style={{ background: `${c}22`, color: c, padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, border: `1px solid ${c}55`, whiteSpace: "nowrap", ...style }}>{natureLabel(t, key)}</span>;
+};
 
 export const Pill = ({ v }) => {
   const z = acwrZ(v);

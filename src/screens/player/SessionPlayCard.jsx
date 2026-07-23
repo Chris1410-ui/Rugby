@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
-import { Dot, Tag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
@@ -134,6 +134,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, fontWeight: 800 }}>{fmtShort(s.date)}</span>
             <Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag>
+            <NatureTag nature={s.nature} code={s.code} />
             {s.origin === "libre" && <Tag c={C.viol}>{t("player.session.freeTag")}</Tag>}
             <span style={{ fontSize: 12, fontWeight: 600 }}>{s.titre}</span>
           </div>

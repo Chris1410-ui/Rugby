@@ -96,6 +96,7 @@ export function emptyMeta(weeks = 4) {
     startDate: null,
     endDate: null,
     sessionsPerWeek: null,
+    nature: "",          // nature dominante du protocole (lib/nature.js) ; "" = non précisée
     weeks: w,
     weekLabels: defaultWeekLabels(w),
     mantra: "",

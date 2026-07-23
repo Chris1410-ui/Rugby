@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
+import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
   changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
@@ -137,6 +138,12 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
           </Field>
           <Field label={t("protocols.fSessions")}>
             <input style={inp} type="number" min={0} value={doc.meta.sessionsPerWeek ?? ""} onChange={(e) => setMeta({ sessionsPerWeek: e.target.value === "" ? null : Number(e.target.value) })} placeholder="4" />
+          </Field>
+          <Field label={t("protocols.fNature")}>
+            <select style={inp} value={doc.meta.nature || ""} onChange={(e) => setMeta({ nature: e.target.value })}>
+              <option value="">{t("protocols.fNatureNone")}</option>
+              {NATURES.map((n) => <option key={n} value={n}>{natureLabel(t, n)}</option>)}
+            </select>
           </Field>
           <Field label={t("protocols.fStart")}><input style={inp} type="date" value={doc.meta.startDate || ""} onChange={(e) => setMeta({ startDate: e.target.value || null })} /></Field>
           <Field label={t("protocols.fEnd")}><input style={inp} type="date" value={doc.meta.endDate || ""} onChange={(e) => setMeta({ endDate: e.target.value || null })} /></Field>

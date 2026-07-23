@@ -5,6 +5,7 @@ import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
 import { fmtShort, todayISO, isoDate, statusOfLog } from "../../lib/metrics.js";
 import { WD_ORDER, wdLabel, newExo } from "../../lib/exlib.js";
+import { NATURES, natureLabel } from "../../lib/nature.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video } from "../../lib/icons.jsx";
 import { hasVideo } from "../../lib/youtube.js";
@@ -61,7 +62,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [recMode, setRecMode] = useState("all");
   const [recGroup, setRecGroup] = useState(players[0]?.grp);
   const [recIds, setRecIds] = useState([]);
-  const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", titre: "Séance force", exercises: [newExo()] }]);
+  const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   const [pdfFile, setPdfFile] = useState(null); // PDF source à archiver dans Storage
   const [filesOf, setFilesOf] = useState(null); // programme dont on ouvre les fichiers
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
@@ -71,10 +72,10 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const reset = () => {
     setTitle(""); setStart(todayISO()); setEnd(isoDate(new Date(Date.now() + 13 * 864e5)));
     setRecMode("all"); setRecIds([]); setNote(""); setPdfFile(null);
-    setTemplates([{ weekday: 1, code: "RS", titre: "Séance force", exercises: [newExo()] }]);
+    setTemplates([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   };
   const startNew = () => { reset(); setView("new"); };
-  const addTpl = () => setTemplates((t) => [...t, { weekday: 3, code: "CSB", titre: "Nouvelle séance", exercises: [newExo()] }]);
+  const addTpl = () => setTemplates((t) => [...t, { weekday: 3, code: "CSB", nature: "conditioning", titre: "Nouvelle séance", exercises: [newExo()] }]);
   const setTpl = (i, patch) => setTemplates((t) => t.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const setExo = (ti, ei, patch) => setTemplates((t) => t.map((x, j) => (j === ti ? { ...x, exercises: x.exercises.map((e, k) => (k === ei ? { ...e, ...patch } : e)) } : x)));
   const addExo = (ti) => setTemplates((t) => t.map((x, j) => (j === ti ? { ...x, exercises: [...x.exercises, newExo()] } : x)));
@@ -101,7 +102,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const doSaveRoutine = async () => {
     setNote("");
     if (!title.trim()) return setNote(t("staff.programs.routineErrName"));
-    const cleanT = templates.map((tp) => ({ weekday: Number(tp.weekday), code: tp.code, titre: tp.titre, exercises: tp.exercises.filter((e) => e.name.trim()) })).filter((tp) => tp.exercises.length);
+    const cleanT = templates.map((tp) => ({ weekday: Number(tp.weekday), code: tp.code, nature: tp.nature || null, titre: tp.titre, exercises: tp.exercises.filter((e) => e.name.trim()) })).filter((tp) => tp.exercises.length);
     if (!cleanT.length) return setNote(t("staff.programs.routineErrExo"));
     try { await saveRoutine(teamId, { name: title, templates: cleanT }); setNote(t("staff.programs.routineSaved")); }
     catch (e) { setNote(t("staff.programs.routineErrSave", { err: e.message })); }
@@ -134,7 +135,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     if (recMode === "group" && !recGroup) return setNote(t("staff.programs.errGroup"));
     const assigned = recMode === "all" ? { mode: "all" } : recMode === "group" ? { mode: "group", group: recGroup } : { mode: "players", ids: recIds };
     const cleanT = templates
-      .map((tp) => ({ weekday: Number(tp.weekday), code: tp.code, titre: tp.titre, exercises: tp.exercises.filter((e) => e.name.trim()) }))
+      .map((tp) => ({ weekday: Number(tp.weekday), code: tp.code, nature: tp.nature || null, titre: tp.titre, exercises: tp.exercises.filter((e) => e.name.trim()) }))
       .filter((tp) => tp.exercises.length);
     if (!cleanT.length) return setNote(t("staff.programs.errExo"));
 
@@ -272,6 +273,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <select value={tpl.weekday} onChange={(e) => setTpl(ti, { weekday: Number(e.target.value) })} style={miniSt}>{WD_ORDER.map((v) => <option key={v} value={v}>{wdLabel(v)}</option>)}</select>
             <select value={tpl.code} onChange={(e) => setTpl(ti, { code: e.target.value })} style={miniSt}>{SESSION_CODES.map((c) => <option key={c} value={c}>{c} — {sessionCodeLabel(t, c)}</option>)}</select>
+            <select value={tpl.nature || "force"} onChange={(e) => setTpl(ti, { nature: e.target.value })} title={t("staff.programs.natureTitle")} style={miniSt}>{NATURES.map((n) => <option key={n} value={n}>{natureLabel(t, n)}</option>)}</select>
             <input value={tpl.titre} onChange={(e) => setTpl(ti, { titre: e.target.value })} placeholder={t("staff.programs.titreSeancePlaceholder")} style={{ flex: 1, minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none" }} />
             {templates.length > 1 && <button onClick={() => delTpl(ti)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={15} /></button>}
           </div>

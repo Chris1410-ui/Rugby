@@ -73,6 +73,7 @@ export function expandTemplates({ teamId, start, end, templates, assigned }) {
           team_id: teamId,
           date: isoDate(cur),
           code: tpl.code || "RS",
+          nature: tpl.nature || null,
           titre: tpl.titre || "Séance",
           duration_min: 60,
           exercises: exos,

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
-import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { CloseX, useModalClose, NatureTag } from "../../lib/ui.jsx";
 import { Download, FileText } from "../../lib/icons.jsx";
 import { supabase } from "../../lib/supabase.js";
 import { renderProgramHtml } from "../../lib/program/template.js";
@@ -65,7 +65,10 @@ export default function ProgramView({ doc, title, id, targets, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "#0D1117", zIndex: 400, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: `1px solid ${C.border}`, background: "#0D1117" }}>
-        <div style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800, color: "#E8EDF3", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title || t("protocols.untitled")}</div>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ minWidth: 0, fontSize: 14, fontWeight: 800, color: "#E8EDF3", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title || t("protocols.untitled")}</span>
+          {doc?.meta?.nature && <NatureTag nature={doc.meta.nature} />}
+        </div>
         <button onClick={print} title={t("protocols.print")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", color: "#E8EDF3", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
           <FileText size={15} /> {t("protocols.print")}
         </button>

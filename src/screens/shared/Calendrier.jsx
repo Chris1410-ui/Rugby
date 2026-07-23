@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { isoDate, parseISO, todayISO, statusOfLog } from "../../lib/metrics.js";
-import { Section, Tag } from "../../lib/ui.jsx";
+import { Section, Tag, NatureTag } from "../../lib/ui.jsx";
 import { ChevronRight } from "../../lib/icons.jsx";
 
 /* Calendrier : pastille sur les jours avec séance (verte = faite, ambre = prévue)
@@ -71,7 +71,7 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
               <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{d.toLocaleDateString(localeTag(), { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
               <div style={{ width: 3, height: 30, borderRadius: 2, background: CODES[s.code] || accent }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag>{s.origin === "libre" && <Tag c={C.viol}>{t("player.session.freeTag")}</Tag>}<span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><Tag c={CODES[s.code] || accent} title={sessionCodeLabel(t, s.code)}>{s.code}</Tag><NatureTag nature={s.nature} code={s.code} />{s.origin === "libre" && <Tag c={C.viol}>{t("player.session.freeTag")}</Tag>}<span style={{ fontSize: 13, fontWeight: 700 }}>{s.titre}</span></div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{t("shared.calendar.exercisesCount", { count: s.exercises.length })}</div>
               </div>
               {isJoueur ? (
