@@ -145,7 +145,18 @@
     "targetValuePh": "Value (e.g. 15.5)",
     "addTarget": "Add a target",
     "addAssignment": "Add assignment",
-    "removeAssignment": "Remove assignment"
+    "removeAssignment": "Remove assignment",
+    "addSection": "Add a section",
+    "tplBlank": "Blank",
+    "tplBuiltin": "Templates",
+    "tplMine": "My templates",
+    "tplCardio": "Cardio",
+    "tplRecovery": "Recovery",
+    "tplStrength": "Gym strength",
+    "saveAsTemplate": "Save as template",
+    "templateNamePh": "Template name",
+    "noSavedTemplates": "No saved template",
+    "deleteTemplate": "Delete template"
   },
   "nav": {
     "bilan": "Today",

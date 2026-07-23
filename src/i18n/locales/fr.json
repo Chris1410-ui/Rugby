@@ -145,7 +145,18 @@
     "targetValuePh": "Valeur (ex. 15.5)",
     "addTarget": "Ajouter une cible",
     "addAssignment": "Ajouter l'assignation",
-    "removeAssignment": "Retirer l'assignation"
+    "removeAssignment": "Retirer l'assignation",
+    "addSection": "Ajouter une section",
+    "tplBlank": "Vierge",
+    "tplBuiltin": "Modèles",
+    "tplMine": "Mes modèles",
+    "tplCardio": "Cardio",
+    "tplRecovery": "Récupération",
+    "tplStrength": "Renforcement en salle",
+    "saveAsTemplate": "Enregistrer comme modèle",
+    "templateNamePh": "Nom du modèle",
+    "noSavedTemplates": "Aucun modèle enregistré",
+    "deleteTemplate": "Supprimer le modèle"
   },
   "nav": {
     "bilan": "Aujourd'hui",
