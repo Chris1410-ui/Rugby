@@ -14,17 +14,19 @@ import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
 import SessionPlayCard from "./SessionPlayCard.jsx";
 import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
+import Defis from "./Defis.jsx";
+import Taches from "./Taches.jsx";
 
 /* Tableau de bord « Aujourd'hui » (joueur) — hub du jour : bandeau semaine
    (pastilles d'état par jour) + cartes d'action (bilans, séance, activités,
    défis/tâches). Tout se valide sur place en bottom-sheet, sans changer d'écran.
    Saisie du JOUR MÊME ; jours passés = lecture seule. Formules readiness/points
    INCHANGÉES (on réorganise l'accès, pas le calcul). */
-export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, bilans = {}, badges = {}, go }) {
+export default function Bilan({ me, accent = C.green, players = [], sessions = [], logs = {}, bilans = {}, badges = {} }) {
   const { t } = useTranslation();
   const preview = usePreview();
   const { day, refresh } = useMyDay(me.id);
-  const [sheet, setSheet] = useState(null);   // morning | evening | activities | session
+  const [sheet, setSheet] = useState(null);   // morning | evening | activities | session | defis | taches
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
   const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
@@ -75,6 +77,13 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
     const chargeS = (me._load?.hist || []).slice(-14).map((x) => Math.round(x.au || 0));
     return { readiness: readinessS, wellness: wellnessS, charge: chargeS };
   }, [checkins, me.risque, me._load]);
+
+  // Checkins indexés par jour (pour enrichir le résumé d'un jour passé).
+  const ckByDay = useMemo(() => {
+    const m = {};
+    for (const c of checkins) (m[c.date] ||= {})[c.moment] = c;
+    return m;
+  }, [checkins]);
 
   const metricDefs = {
     readiness: { label: t("player.bilan.readiness"), pts: series.readiness, color: readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral, value: readiness, max: 100 },
@@ -147,8 +156,8 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
         )}
         <span id="activite-jour" />
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
-        <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => go?.("defis")} t={t} />
-        <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => go?.("taches")} t={t} />
+        <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
+        <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
       </div>
 
       {/* Suivi rapide (sparklines) */}
@@ -183,15 +192,23 @@ export default function Bilan({ me, accent = C.green, sessions = [], logs = {}, 
             {todaySessions.length === 0
               ? <div style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12.5, padding: 18 }}>{t("player.today.noSessionToday")}</div>
               : todaySessions.map((s) => <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onSaved={refresh} />)}
+            {!preview && (
+              <button onClick={() => { closeSheet(); setBuilding(true); }} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: `1px dashed ${C.border}`, borderRadius: 11, padding: 12, color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12.5, cursor: "pointer", marginTop: 2 }}>
+                ➕ {t("player.today.addFreeSession")}
+              </button>
+            )}
           </div>
         </Overlay>
       )}
+
+      {sheet === "defis" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Defis me={me} players={players} accent={accent} /></div></Overlay>}
+      {sheet === "taches" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Taches me={me} players={players} accent={accent} /></div></Overlay>}
 
       {/* ── Détail d'un jour ── */}
       {daySel && (
         <Overlay onClose={() => setDaySel(null)} sheet z={315}>
           <SheetHead title={dstr(daySel, { weekday: "long", day: "numeric", month: "long" })} t={t} />
-          <DayDetail isToday={daySel === today} info={dayInfo(daySel)}
+          <DayDetail isToday={daySel === today} info={dayInfo(daySel)} ck={ckByDay[daySel]} me={me}
             onMorning={() => { setDaySel(null); setSheet("morning"); }}
             onEvening={() => { setDaySel(null); setSheet("evening"); }}
             onSession={() => { setDaySel(null); setSheet("session"); }}
@@ -237,7 +254,10 @@ function ActionCard({ emoji, title, sub, state, accent, onClick, badge, t }) {
       ? { txt: t("player.today.toFill"), bg: "rgba(255,255,255,0.06)", bd: C.border, col: "rgba(255,255,255,0.6)" }
       : null;
   return (
-    <button onClick={onClick} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: 14, cursor: "pointer", textAlign: "left", width: "100%" })}>
+    <button onClick={onClick} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: 14, cursor: "pointer", textAlign: "left", width: "100%", transition: "transform .12s ease, border-color .12s ease" })}
+      onPointerDown={(e) => { e.currentTarget.style.transform = "scale(0.985)"; }}
+      onPointerUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      onPointerLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}>
       <span style={{ fontSize: 26, width: 34, textAlign: "center", flexShrink: 0 }}>{emoji}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 800 }}>{title}</div>
@@ -252,10 +272,10 @@ function ActionCard({ emoji, title, sub, state, accent, onClick, badge, t }) {
   );
 }
 
-// Détail d'un jour : aujourd'hui = actions ; passé = résumé lecture seule.
-function DayDetail({ isToday, info, onMorning, onEvening, onSession, t }) {
+// Détail d'un jour : aujourd'hui = actions cliquables ; passé = résumé enrichi (lecture seule).
+function DayDetail({ isToday, info, ck, me, onMorning, onEvening, onSession, t }) {
   const line = (label, done, onClick) => (
-    <button onClick={isToday ? onClick : undefined} disabled={!isToday} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 11, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, width: "100%", textAlign: "left", cursor: isToday ? "pointer" : "default" }}>
+    <button onClick={isToday ? onClick : undefined} disabled={!isToday} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 11, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, width: "100%", textAlign: "left", cursor: isToday ? "pointer" : "default", transition: "background .15s ease" }}>
       <span style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{label}</span>
       <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 7, background: done ? `${C.green}22` : "rgba(255,255,255,0.06)", border: `1px solid ${done ? C.green + "66" : C.border}`, color: done ? C.green : "rgba(255,255,255,0.6)" }}>
         {done ? t("player.bilan.blockDone") : t("player.today.toFill")}
@@ -263,14 +283,60 @@ function DayDetail({ isToday, info, onMorning, onEvening, onSession, t }) {
       {isToday && <ChevronRight size={15} color="rgba(255,255,255,0.35)" />}
     </button>
   );
+
+  if (isToday) {
+    return (
+      <div style={{ padding: "0 18px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
+        {line(t("player.bilan.morning"), info.hasM, onMorning)}
+        {line(t("player.bilan.evening"), info.hasS, onEvening)}
+        {info.sessTotal > 0
+          ? line(t("player.today.sessionN", { done: info.sessDone, total: info.sessTotal }), info.sessDone === info.sessTotal, onSession)
+          : <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", padding: "8px 4px" }}>{t("player.today.noSessionDay")}</div>}
+      </div>
+    );
+  }
+
+  // Jour passé : résumé enrichi en lecture seule (données réelles du bilan matin).
+  const mc = ck?.matin;
+  const readiness = mc ? computeReadiness(wbToWellness(mc.wb, mc.sleepH) || 0, me.risque, mc.sleepH) : null;
+  const wellness = mc ? (wbToWellness(mc.wb, mc.sleepH) || 0) : null;
+  const stat = (label, value, sub, color) => (
+    <div style={{ flex: 1, minWidth: 0, textAlign: "center", padding: "10px 6px", borderRadius: 11, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}` }}>
+      <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.4, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 900, color: color || "#fff", margin: "2px 0" }}>{value}</div>
+      {sub && <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700 }}>{sub}</div>}
+    </div>
+  );
   return (
-    <div style={{ padding: "0 18px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
-      {!isToday && <div style={{ fontSize: 11, color: C.amb, fontWeight: 700, marginBottom: 4 }}>{t("player.today.pastReadonly")}</div>}
-      {line(t("player.bilan.morning"), info.hasM, onMorning)}
-      {line(t("player.bilan.evening"), info.hasS, onEvening)}
-      {info.sessTotal > 0
-        ? line(t("player.today.sessionN", { done: info.sessDone, total: info.sessTotal }), info.sessDone === info.sessTotal, onSession)
-        : <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", padding: "8px 4px" }}>{t("player.today.noSessionDay")}</div>}
+    <div style={{ padding: "0 18px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ fontSize: 11, color: C.amb, fontWeight: 700 }}>{t("player.today.pastReadonly")}</div>
+      {mc ? (
+        <div style={{ display: "flex", gap: 8 }}>
+          {stat(t("player.bilan.readiness"), Math.round(readiness), null, readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral)}
+          {stat(t("player.bilan.ringWellbeing"), `${Math.round(wellness)}`, "/ 50", C.blue)}
+          {stat(t("player.today.sleep"), mc.sleepH != null ? `${mc.sleepH}h` : "—", null, C.teal)}
+        </div>
+      ) : (
+        <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", padding: "6px 4px" }}>{t("player.today.noMorning")}</div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <SummaryRow label={t("player.bilan.evening")} done={info.hasS} t={t} />
+        {info.sessTotal > 0
+          ? <SummaryRow label={t("player.today.sessionN", { done: info.sessDone, total: info.sessTotal })} done={info.sessDone === info.sessTotal} t={t} />
+          : <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", padding: "4px 4px" }}>{t("player.today.noSessionDay")}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Ligne de résumé lecture seule (jour passé) : libellé + pastille fait/absent.
+function SummaryRow({ label, done, t }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 11, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}` }}>
+      <span style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 7, background: done ? `${C.green}22` : "rgba(255,255,255,0.06)", border: `1px solid ${done ? C.green + "66" : C.border}`, color: done ? C.green : "rgba(255,255,255,0.55)" }}>
+        {done ? t("player.bilan.blockDone") : t("player.today.absent")}
+      </span>
     </div>
   );
 }
