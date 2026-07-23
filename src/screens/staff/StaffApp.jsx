@@ -30,6 +30,7 @@ import { useTeamCamps } from "../../data/camps.js";
 import Alertes from "./Alertes.jsx";
 import StaffMessages from "./StaffMessages.jsx";
 import Programmes from "./Programmes.jsx";
+import Protocoles from "./programs/Protocoles.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
 import StaffInvites from "../shared/StaffInvites.jsx";
@@ -96,6 +97,8 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["alertes", t("nav.alertes"), Bell, bAlertes],
     ["messages", t("nav.messages"), MessageSquare, unread],
     ["programmes", t("nav.programmes"), Dumbbell],
+    // Protocoles (constructeur de programmes riches) : staff écrivain uniquement.
+    ...(!readOnly ? [["protocoles", t("nav.protocols"), FileText]] : []),
     ["camps", t("nav.camps"), Flag],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
@@ -130,6 +133,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
+        {tab === "protocoles" && !readOnly && <Protocoles teamId={profile.team_id} />}
         {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
