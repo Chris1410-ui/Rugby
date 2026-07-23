@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../../lib/tokens.js";
-import { Dumbbell, Plus, Trash2, Pencil, Eye, EyeOff, FileText } from "../../../lib/icons.jsx";
+import { Dumbbell, Plus, Trash2, Pencil, Eye, EyeOff, FileText, ExternalLink } from "../../../lib/icons.jsx";
 import { localeTag } from "../../../i18n/locale.js";
 import { useProgramDocs, createProgramDoc, deleteProgramDoc, setProgramStatus, getProgramDoc } from "../../../data/programDocs.js";
 import { emptyProgram } from "../../../lib/program/model.js";
 import ProgramEditor from "./ProgramEditor.jsx";
+import ProgramView from "../../shared/ProgramView.jsx";
 
 const ACCENT = C.coral;
 
@@ -16,8 +17,14 @@ export default function Protocoles({ teamId }) {
   const { t } = useTranslation();
   const { docs, loading, refresh } = useProgramDocs(teamId);
   const [editingId, setEditingId] = useState(null);
+  const [viewing, setViewing] = useState(null); // { title, doc } en consultation
   const [busy, setBusy] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
+
+  const openView = async (row) => {
+    try { const full = await getProgramDoc(row.id); setViewing({ title: full.title, doc: full.doc }); }
+    catch (e) { console.error("[protocols view]", e.message); }
+  };
 
   const createNew = async () => {
     setBusy(true);
@@ -90,6 +97,9 @@ export default function Protocoles({ teamId }) {
                 <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: published ? C.green : C.amb, background: published ? `${C.green}1e` : `${C.amb}1e`, border: `1px solid ${published ? C.green : C.amb}55`, borderRadius: 6, padding: "3px 7px", flexShrink: 0 }}>
                   {published ? t("protocols.statusPublished") : t("protocols.statusDraft")}
                 </span>
+                <button onClick={() => openView(d)} title={t("protocols.view")} style={iconBtn}>
+                  <ExternalLink size={15} />
+                </button>
                 <button onClick={() => togglePublish(d)} title={published ? t("protocols.unpublish") : t("protocols.publish")} style={iconBtn}>
                   {published ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -107,6 +117,8 @@ export default function Protocoles({ teamId }) {
           })}
         </div>
       )}
+
+      {viewing && <ProgramView doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} />}
 
       {confirmDel && (
         <div onClick={() => setConfirmDel(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>

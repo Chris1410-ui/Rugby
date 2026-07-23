@@ -70,6 +70,19 @@ export function useExerciseLibrary({ search = "", bodyPart = "", equipment = "",
   return { exercises: rows, total, loading, pageCount: Math.max(1, Math.ceil((total || 0) / PAGE_SIZE)), refresh: fetch };
 }
 
+/* Charge des exercices par leurs `ref` (lien depuis un protocole) → map
+   { ref: exercice }. Sert à enrichir le rendu (attribution / média) et à ouvrir
+   la fiche. Renvoie {} si aucune ref. */
+export async function getExercisesByRefs(refs) {
+  const list = [...new Set((refs || []).filter(Boolean))];
+  if (!list.length) return {};
+  const { data, error } = await supabase.from("exercise_library").select("*").in("ref", list);
+  if (error) { console.error("[exercise_library byRefs]", error.message); return {}; }
+  const out = {};
+  (data ?? []).forEach((r) => { const ex = dbToExercise(r); out[ex.ref] = ex; });
+  return out;
+}
+
 /* Valeurs distinctes des facettes (partie du corps / équipement / muscle ciblé)
    pour peupler les filtres. Lues une fois au montage. */
 export function useExerciseFacets() {

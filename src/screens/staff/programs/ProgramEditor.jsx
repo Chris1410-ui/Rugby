@@ -8,6 +8,8 @@ import {
   changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
 } from "../../../lib/program/model.js";
 import ExercisePickerSheet from "../../shared/ExercisePickerSheet.jsx";
+import ProgramView from "../../shared/ProgramView.jsx";
+import { Eye } from "../../../lib/icons.jsx";
 
 const ACCENT = C.coral;
 // Couleurs des accents de colonne/chiffre (code → teinte du thème « stade »).
@@ -35,6 +37,7 @@ export default function ProgramEditor({ id, onClose }) {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [picker, setPicker] = useState(null); // index de la section d'exercices ciblée
+  const [preview, setPreview] = useState(false); // aperçu « stade » du document en cours
 
   useEffect(() => {
     let alive = true;
@@ -112,6 +115,7 @@ export default function ProgramEditor({ id, onClose }) {
         <button onClick={back} title={t("protocols.back")} style={{ ...iconBtn, color: "#fff" }}><ChevronLeft size={17} /></button>
         <div style={{ flex: 1, fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title || t("protocols.untitled")}</div>
         {dirty && <span style={{ fontSize: 10.5, color: C.amb, fontWeight: 700 }}>{t("protocols.unsaved")}</span>}
+        <button onClick={() => setPreview(true)} title={t("protocols.preview")} style={{ ...iconBtn, color: "#fff" }}><Eye size={16} /></button>
         <button onClick={save} disabled={saving || !dirty} style={{ background: dirty ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "9px 15px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default" }}>
           {saving ? t("protocols.saving") : t("protocols.save")}
         </button>
@@ -223,6 +227,10 @@ export default function ProgramEditor({ id, onClose }) {
           onClose={() => setPicker(null)}
           isAdded={(ex) => pickedRefs.has(ex.ref)}
         />
+      )}
+
+      {preview && (
+        <ProgramView doc={{ ...doc, meta: { ...doc.meta, weeks } }} title={title} onClose={() => setPreview(false)} />
       )}
     </section>
   );
