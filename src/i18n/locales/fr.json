@@ -2281,6 +2281,8 @@
     "importedStaff": "{{count}} séance(s) créée(s) et assignée(s) au joueur.",
     "alsoArchived": "PDF archivé.",
     "archived": "PDF archivé (aucune séance créée).",
-    "archiveOnly": "Archiver seulement"
+    "archiveOnly": "Archiver seulement",
+    "extractExisting": "Extraire les séances (créer dans le calendrier)",
+    "extractFail": "Extraction impossible : {{err}}"
   }
 }
