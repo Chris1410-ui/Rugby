@@ -1726,7 +1726,15 @@
       "pdfOpenTitle": "Openen",
       "pdfDownloadTitle": "Downloaden",
       "pdfDeleteTitle": "Verwijderen",
-      "pdfTitleSelf": "MIJN PROGRAMMA-PDF'S"
+      "pdfTitleSelf": "MIJN PROGRAMMA-PDF'S",
+      "totemTitle": "Totem (weergavenaam)",
+      "totemDescSelf": "Je bijnaam die overal in de app verschijnt. Uniek binnen je club.",
+      "totemDescStaff": "Weergavenaam van de speler. Uniek binnen de club.",
+      "totemSave": "Totem opslaan",
+      "totemSaved": "Totem opgeslagen.",
+      "totemTaken": "Die totem is al in gebruik in de club — kies een andere.",
+      "totemNotAllowed": "Actie niet toegestaan.",
+      "totemRequired": "Totem mag niet leeg zijn."
     },
     "error": {
       "title": "Er is een fout opgetreden",

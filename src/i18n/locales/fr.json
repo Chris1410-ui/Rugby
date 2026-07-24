@@ -1726,7 +1726,15 @@
       "pdfOpenTitle": "Ouvrir",
       "pdfDownloadTitle": "Télécharger",
       "pdfDeleteTitle": "Supprimer",
-      "pdfTitleSelf": "MES PDF DE PROGRAMME"
+      "pdfTitleSelf": "MES PDF DE PROGRAMME",
+      "totemTitle": "Totem (pseudo affiché)",
+      "totemDescSelf": "Ton pseudo visible partout dans l’app. Unique dans ton club.",
+      "totemDescStaff": "Pseudo affiché du joueur. Unique dans le club.",
+      "totemSave": "Enregistrer le totem",
+      "totemSaved": "Totem enregistré.",
+      "totemTaken": "Ce totem est déjà pris dans le club — choisis-en un autre.",
+      "totemNotAllowed": "Action non autorisée.",
+      "totemRequired": "Le totem ne peut pas être vide."
     },
     "error": {
       "title": "Une erreur est survenue",

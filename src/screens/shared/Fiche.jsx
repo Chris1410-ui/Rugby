@@ -13,7 +13,8 @@ import { createProgramDoc } from "../../data/programDocs.js";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
-import { updatePlayer, resetPlayerPassword, setMyInitials } from "../../data/players.js";
+import { updatePlayer, resetPlayerPassword, setMyInitials, setMyTotem, setPlayerTotem, listTeamTotems } from "../../data/players.js";
+import TotemPicker from "./TotemPicker.jsx";
 import { openPlayerReport } from "../../data/report.js";
 import { useTestCampaigns } from "../../data/tests.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
@@ -181,6 +182,54 @@ function SelfInitials({ player }) {
         <button onClick={save} disabled={busy || !dirty} style={{ background: dirty ? C.green : "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "10px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("shared.fiche.selfSave")}</button>
       </div>
       {msg && <div style={{ fontSize: 11, color: msg === t("shared.fiche.selfSaved") ? C.green : C.coral, marginTop: 8 }}>{msg}</div>}
+    </div>
+  );
+}
+
+/* Éditeur de TOTEM — sa propre fiche (joueur) ou toute fiche du club (staff).
+   Unicité (team_id, totem) insensible casse/espaces garantie serveur (RPC
+   set_my_totem / set_player_totem, migration 0071) : collision → refus + on
+   propose une alternative libre. Le staff charge les totems du club pour exclure
+   du tirage ; le joueur ne voit pas ceux des autres (RLS) → le serveur tranche. */
+function TotemEditor({ player, self }) {
+  const { t } = useTranslation();
+  const [val, setVal] = useState(player.name || "");
+  const [taken, setTaken] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [ok, setOk] = useState(false);
+  useEffect(() => { setVal(player.name || ""); }, [player.name]);
+  useEffect(() => {
+    if (self || !player.team) return; // joueur : pas d'accès aux autres totems
+    let alive = true;
+    listTeamTotems(player.team, player.id).then((l) => { if (alive) setTaken(l); }).catch(() => { /* lecture best-effort */ });
+    return () => { alive = false; };
+  }, [self, player.team, player.id]);
+
+  const clean = val.trim();
+  const dirty = clean && clean.toLowerCase() !== (player.name || "").trim().toLowerCase();
+  const save = async () => {
+    setBusy(true); setMsg(""); setOk(false);
+    try {
+      const set = self ? await setMyTotem(clean) : await setPlayerTotem(player.id, clean);
+      setVal(set); setOk(true); setMsg(t("shared.fiche.totemSaved"));
+    } catch (e) {
+      const m = e.message || "";
+      setMsg(/TOTEM_TAKEN/.test(m) ? t("shared.fiche.totemTaken")
+        : /NOT_ALLOWED/.test(m) ? t("shared.fiche.totemNotAllowed")
+        : /TOTEM_REQUIRED/.test(m) ? t("shared.fiche.totemRequired")
+        : (m || t("shared.fiche.selfFail")));
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div style={sc({ padding: 14, marginBottom: 12 })}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>{t("shared.fiche.totemTitle")}</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.5, marginBottom: 10 }}>{self ? t("shared.fiche.totemDescSelf") : t("shared.fiche.totemDescStaff")}</div>
+      <TotemPicker value={val} onChange={(v) => { setVal(v); setMsg(""); setOk(false); }} accent={C.viol} taken={taken} />
+      <button onClick={save} disabled={busy || !dirty} style={{ width: "100%", background: dirty ? C.green : "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "10px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("shared.fiche.totemSave")}</button>
+      {msg && <div style={{ fontSize: 11, color: ok ? C.green : C.coral, marginTop: 8 }}>{msg}</div>}
     </div>
   );
 }
@@ -444,6 +493,10 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
       {/* Rapport de performance PDF : staff sur toute fiche de l'équipe,
           joueur sur la sienne. Autorisation vérifiée côté serveur. */}
       {(canEdit || self) && <ReportButton player={player} />}
+
+      {/* Totem : modifiable par le joueur (sa fiche) et par le staff écrivain
+          (toute fiche de son club). Unicité garantie serveur. */}
+      {(self || canEdit) && <TotemEditor player={player} self={self} />}
 
       {/* Le joueur saisit / modifie SES initiales (affichées « Totem (I.F.) »
           partout). Réservé à sa propre fiche. */}
