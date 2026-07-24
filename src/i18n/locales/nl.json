@@ -212,7 +212,8 @@
     "profileIncompleteBody": "Je account ({{email}}) is geverifieerd, maar de configuratie is onvolledig (rol of clubkoppeling ontbreekt). Neem contact op met de staf om je toegang te voltooien.",
     "readOnlyBanner": "Alleen-lezen modus — coach. Volledig cluboverzicht, zonder wijzigen.",
     "playerNotLinked": "Je spelersprofiel is nog niet aan de selectie gekoppeld. Neem contact op met de staf.",
-    "notifications": "Meldingen"
+    "notifications": "Meldingen",
+    "finalizingInvite": "Je account afronden…"
   },
   "onboarding": {
     "skip": "Overslaan",

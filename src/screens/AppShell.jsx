@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/useAuth.jsx";
+import { acceptClubInvitation, readPendingInvite, clearPendingInvite } from "../data/clubInvitations.js";
 import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
 import { Bell } from "../lib/icons.jsx";
 import { BuildTag } from "../lib/ui.jsx";
@@ -29,6 +30,35 @@ export default function AppShell() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [tourReplay, setTourReplay] = useState(false);   // « Revoir le tutoriel » (menu)
   const [tourDismissed, setTourDismissed] = useState(false); // masque immédiat le temps du refresh profil
+  // Filet d'acceptation d'invitation : true tant qu'une invitation stockée reste à
+  // finaliser (évite un flash « Profil introuvable » avant que l'effet ne tourne).
+  const [inviteFinalizing, setInviteFinalizing] = useState(() => !!readPendingInvite());
+
+  // Compte authentifié SANS profil + invitation en attente stockée → (re)tente
+  // l'acceptation puis recharge le profil. Rattrape les cas où le chemin
+  // signUp→session→accept a été rompu (email déjà inscrit, reconnexion, 1er essai
+  // raté). Aucune boucle : succès → profil présent ; échec terminal → token purgé.
+  useEffect(() => {
+    if (!profileLoaded || profile) { setInviteFinalizing(false); return; }
+    const pend = readPendingInvite();
+    if (!pend) { setInviteFinalizing(false); return; }
+    let alive = true;
+    setInviteFinalizing(true);
+    (async () => {
+      try {
+        await acceptClubInvitation(pend.token, pend.payload || {});
+        clearPendingInvite();
+        if (alive) await refreshProfile();
+      } catch (e) {
+        // Terminal (invite invalide/mismatch/déjà prise, données joueur manquantes)
+        // → on purge le token et on laisse l'écran d'aide s'afficher.
+        if (["INVITE_INVALID", "INVITE_EMAIL_MISMATCH", "ALREADY_CLAIMED", "BIRTHDATE_REQUIRED", "GUARDIAN_REQUIRED", "CONSENT_REQUIRED"].includes(e?.message)) clearPendingInvite();
+      } finally {
+        if (alive) setInviteFinalizing(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [profileLoaded, profile, refreshProfile]);
 
   // Échec de chargement du profil (timeout + retries épuisés) : écran d'erreur
   // explicite avec des issues de secours — JAMAIS un spinner infini.
@@ -50,6 +80,8 @@ export default function AppShell() {
     );
   }
   if (!profile && !profileLoaded) return <Centered>{t("shell.loadingProfile")}</Centered>;
+  // Acceptation d'invitation en cours de finalisation → spinner dédié (pas « introuvable »).
+  if (!profile && inviteFinalizing) return <Centered>{t("shell.finalizingInvite")}</Centered>;
   if (!profile) {
     return (
       <Centered>

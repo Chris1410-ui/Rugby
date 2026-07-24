@@ -212,7 +212,8 @@
     "profileIncompleteBody": "Ton compte ({{email}}) est bien authentifié, mais sa configuration est incomplète (rôle ou rattachement à un club manquant). Contacte le staff pour finaliser ton accès.",
     "readOnlyBanner": "Mode lecture seule — coach. Consultation complète du club, sans modification.",
     "playerNotLinked": "Ton profil joueur n'est pas encore lié à l'effectif. Contacte le staff.",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "finalizingInvite": "Finalisation de ton compte…"
   },
   "onboarding": {
     "skip": "Passer",
