@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, CODES, sc, SESSION_CODES, sessionCodeLabel } from "../../lib/tokens.js";
-import { displayName } from "../../lib/identity.js";
-import { grpLabel } from "../../lib/positions.js";
 import { fmtShort, todayISO, isoDate, statusOfLog } from "../../lib/metrics.js";
 import { WD_ORDER, wdLabel, newExo } from "../../lib/exlib.js";
 import { NATURES, natureLabel, natureColor } from "../../lib/nature.js";
@@ -11,7 +9,8 @@ import { Section, Tag } from "../../lib/ui.jsx";
 import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video, Pencil, Eye } from "../../lib/icons.jsx";
 import { hasVideo } from "../../lib/youtube.js";
 import { usePrograms, createProgram, updateProgram, deleteProgram } from "../../data/programs.js";
-import { resolveAssignedIds } from "../../data/sessions.js";
+import { resolveAssignedIds, buildAssigned, assignedToSelection } from "../../data/sessions.js";
+import RecipientSelect from "../shared/RecipientSelect.jsx";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { useExercises } from "../../data/exercises.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
@@ -98,9 +97,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [title, setTitle] = useState("");
   const [start, setStart] = useState(todayISO());
   const [end, setEnd] = useState(isoDate(new Date(Date.now() + 13 * 864e5)));
-  const [recMode, setRecMode] = useState("all");
-  const [recGroup, setRecGroup] = useState(players[0]?.grp);
-  const [recIds, setRecIds] = useState([]);
+  const [rec, setRec] = useState({ all: true, groups: [], ids: [] });
   const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   const [pdfFile, setPdfFile] = useState(null); // PDF source à archiver dans Storage
   const [pdfReview, setPdfReview] = useState(null); // résultat de parse en attente de validation
@@ -110,14 +107,12 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [viewing, setViewing] = useState(null);      // programme ouvert en consultation (lecteur)
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
 
-  const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
-
   // ── Anti-surcharge : charge DÉJÀ prévue du périmètre de destinataires ──
-  // Ensemble des joueurs ciblés (all / ligne / joueurs) selon le mode en cours.
-  const recipientIds = useMemo(() => {
-    const assigned = recMode === "all" ? { mode: "all" } : recMode === "group" ? { mode: "group", group: recGroup } : { mode: "players", ids: recIds };
-    return new Set(resolveAssignedIds(assigned, players));
-  }, [recMode, recGroup, recIds, players]);
+  // Ensemble des joueurs ciblés (sélection combinée lignes + joueurs).
+  const recipientIds = useMemo(
+    () => new Set(resolveAssignedIds(buildAssigned(rec), players)),
+    [rec, players],
+  );
 
   // Agrégation des séances existantes de ces joueurs, par date × nature, sur la
   // plage [start, end] (les camps sont comptés : leurs séances sont des sessions
@@ -129,7 +124,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
 
   const reset = () => {
     setTitle(""); setStart(todayISO()); setEnd(isoDate(new Date(Date.now() + 13 * 864e5)));
-    setRecMode("all"); setRecIds([]); setNote(""); setPdfFile(null); setEditingId(null);
+    setRec({ all: true, groups: [], ids: [] }); setNote(""); setPdfFile(null); setEditingId(null);
     setTemplates([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   };
   const startNew = () => { reset(); setView("new"); };
@@ -141,10 +136,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     setTitle(pr.title || "");
     setStart(pr.start || todayISO());
     setEnd(pr.end || isoDate(new Date(Date.now() + 13 * 864e5)));
-    const a = pr.assigned || { mode: "all" };
-    setRecMode(a.mode || "all");
-    setRecGroup(a.mode === "group" ? a.group : (players[0]?.grp));
-    setRecIds(a.mode === "players" ? (a.ids || []) : []);
+    setRec(assignedToSelection(pr.assigned));
     setTemplates((pr.templates || []).map((tp) => ({ ...tp, nature: tp.nature || "force", exercises: (tp.exercises || []).map((e) => ({ ...newExo(), ...e })) })));
     setViewing(null);
     setView("new");
@@ -212,9 +204,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     // Validations explicites (fini l'échec silencieux du bouton)
     if (!title.trim()) return setNote(t("staff.programs.errTitle"));
     if (!start || !end || start > end) return setNote(t("staff.programs.errDates"));
-    if (recMode === "players" && recIds.length === 0) return setNote(t("staff.programs.errPlayers"));
-    if (recMode === "group" && !recGroup) return setNote(t("staff.programs.errGroup"));
-    const assigned = recMode === "all" ? { mode: "all" } : recMode === "group" ? { mode: "group", group: recGroup } : { mode: "players", ids: recIds };
+    const assigned = buildAssigned(rec);
     const cleanT = templates
       .map((tp) => ({ weekday: Number(tp.weekday), code: tp.code, nature: tp.nature || null, titre: tp.titre, exercises: tp.exercises.filter((e) => e.name.trim()) }))
       .filter((tp) => tp.exercises.length);
@@ -348,23 +338,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
       </Section>
 
       <Section title={t("staff.programs.sectionRecipients")}>
-        <div style={{ display: "flex", gap: 6, marginBottom: recMode === "all" ? 0 : 10 }}>
-          {[["all", t("staff.programs.destAll")], ["group", t("staff.programs.destGroup")], ["players", t("staff.programs.destPlayers")]].map(([v, l]) => (
-            <button key={v} onClick={() => setRecMode(v)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: recMode === v ? accent : "rgba(255,255,255,0.07)", color: "#fff" }}>{l}</button>
-          ))}
-        </div>
-        {recMode === "group" && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {grps.map((g) => <button key={g} onClick={() => setRecGroup(g)} style={{ padding: "6px 12px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: recGroup === g ? accent : "rgba(255,255,255,0.07)", color: "#fff" }}>{grpLabel(g)}</button>)}
-          </div>
-        )}
-        {recMode === "players" && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxHeight: 160, overflowY: "auto" }}>
-            {players.map((p) => { const on = recIds.includes(p.id); return (
-              <button key={p.id} onClick={() => setRecIds((s) => (on ? s.filter((x) => x !== p.id) : [...s, p.id]))} style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${on ? accent : C.border}`, fontSize: 10, fontWeight: 700, cursor: "pointer", background: on ? `${accent}33` : "transparent", color: "#fff" }}>#{p.num} {displayName(p)}</button>
-            ); })}
-          </div>
-        )}
+        <RecipientSelect players={players} value={rec} onChange={setRec} accent={accent} />
       </Section>
 
       {templates.map((tpl, ti) => (

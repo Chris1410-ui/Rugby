@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
-import { displayName } from "../../lib/identity.js";
-import { grpLabel } from "../../lib/positions.js";
 import { Section, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { ClipboardList, Plus, X, Trash2, Send, Bell } from "../../lib/icons.jsx";
 import { QUESTION_BANK, QCATS, QTYPES, bankById, newQid } from "../../lib/questionnaires.js";
-import { resolveAssignedIds } from "../../data/sessions.js";
+import { resolveAssignedIds, buildAssigned } from "../../data/sessions.js";
+import RecipientSelect from "../shared/RecipientSelect.jsx";
 import { useTeamQuestionnaires, useTeamAssignments, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire, sendQuestionnaire, remindQuestionnaire } from "../../data/questionnaires.js";
 import QuestionnaireResponses from "./QuestionnaireResponses.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
@@ -185,24 +184,17 @@ function CustomQuestion({ onAdd, onCancel }) {
 function SendModal({ questionnaire, teamId, players, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
-  const [mode, setMode] = useState("all");
-  const [group, setGroup] = useState("");
-  const [ids, setIds] = useState([]);
+  const [rec, setRec] = useState({ all: true, groups: [], ids: [] });
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
-  const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
-  const toggle = (id) => setIds((v) => v.includes(id) ? v.filter((x) => x !== id) : [...v, id]);
 
   const doSend = async () => {
-    const assigned = mode === "group" ? { mode: "group", group: group || grps[0] } : mode === "players" ? { mode: "players", ids } : { mode: "all" };
-    const targetIds = resolveAssignedIds(assigned, players);
+    const targetIds = resolveAssignedIds(buildAssigned(rec), players);
     if (targetIds.length === 0) return setNote(t("staff.questionnaires.noRecipient"));
     setBusy(true); setNote("");
     try { await sendQuestionnaire(questionnaire.id, teamId, targetIds); setNote(t("staff.questionnaires.sent", { count: targetIds.length })); setTimeout(onClose, 800); }
     catch (e) { setNote(t("staff.questionnaires.sendErr", { err: e.message || "" })); setBusy(false); }
   };
-
-  const pill = (on) => ({ padding: "6px 11px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: on ? accent : "rgba(255,255,255,0.07)", color: "#fff" });
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
@@ -212,21 +204,9 @@ function SendModal({ questionnaire, teamId, players, onClose }) {
           <CloseX onClose={onClose} />
         </div>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, marginBottom: 6 }}>{t("staff.questionnaires.recipients")}</div>
-        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-          {[["all", t("staff.questionnaires.destAll")], ["group", t("staff.questionnaires.destGroup")], ["players", t("staff.questionnaires.destPlayers")]].map(([v, l]) => <button key={v} onClick={() => setMode(v)} style={pill(mode === v)}>{l}</button>)}
-        </div>
-        {mode === "group" && (
-          <select value={group || grps[0] || ""} onChange={(e) => setGroup(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark", marginBottom: 10 }}>
-            {grps.map((g) => <option key={g} value={g}>{grpLabel(g)}</option>)}
-          </select>
-        )}
-        {mode === "players" && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxHeight: 200, overflowY: "auto", marginBottom: 10 }}>
-            {players.map((p) => <button key={p.id} onClick={() => toggle(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{displayName(p)}</button>)}
-          </div>
-        )}
+        <div style={{ marginBottom: 10 }}><RecipientSelect players={players} value={rec} onChange={setRec} accent={accent} /></div>
         {note && <div style={{ fontSize: 12, marginBottom: 10, color: note.includes("✓") ? C.green : C.amb }}>{note}</div>}
-        <button onClick={doSend} disabled={busy || (mode === "players" && ids.length === 0)} style={{ width: "100%", background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Send size={14} /> {t("staff.questionnaires.send")}</button>
+        <button onClick={doSend} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Send size={14} /> {t("staff.questionnaires.send")}</button>
       </div>
     </div>
   );

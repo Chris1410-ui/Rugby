@@ -6,10 +6,38 @@ import { supabase } from "../lib/supabase.js";
 
 // Résout la liste des joueurs assignés à partir de `assigned` + effectif.
 // mode 'open' = inscription libre → destinataires = joueurs déjà inscrits (ids).
+// mode 'mix'  = COMBINÉ : union(lignes `groups`) ∪ `ids`, dédupliquée (l'ordre et
+//               l'unicité viennent du filtrage sur l'effectif).
 export function resolveAssignedIds(assigned, roster) {
   if (!assigned || assigned.mode === "all" || !assigned.mode) return roster.map((p) => p.id);
   if (assigned.mode === "group") return roster.filter((p) => p.grp === assigned.group).map((p) => p.id);
+  if (assigned.mode === "mix") {
+    const groups = new Set(assigned.groups || []);
+    const ids = new Set(assigned.ids || []);
+    return roster.filter((p) => groups.has(p.grp) || ids.has(p.id)).map((p) => p.id);
+  }
   return assigned.ids || []; // 'players' ou 'open'
+}
+
+/* Construit le jsonb `assigned` depuis une sélection ADDITIVE (sélecteur combiné) :
+   - « Toute l'équipe » → {mode:'all'} ;
+   - sinon → {mode:'mix', groups, ids} (nettoyé + dédupliqué).
+   Repli prudent : rien de sélectionné → {mode:'all'} (personne d'oublié). */
+export function buildAssigned({ all = false, groups = [], ids = [] } = {}) {
+  const g = [...new Set((groups || []).filter(Boolean))];
+  const i = [...new Set((ids || []).filter(Boolean))];
+  if (all || (g.length === 0 && i.length === 0)) return { mode: "all" };
+  return { mode: "mix", groups: g, ids: i };
+}
+
+/* Décompose un `assigned` existant vers la forme du sélecteur (pré-remplissage
+   à l'édition). Gère les anciens modes (group/players) → mix équivalent. */
+export function assignedToSelection(assigned) {
+  const a = assigned || { mode: "all" };
+  if (!a.mode || a.mode === "all") return { all: true, groups: [], ids: [] };
+  if (a.mode === "group") return { all: false, groups: a.group ? [a.group] : [], ids: [] };
+  if (a.mode === "mix") return { all: false, groups: a.groups || [], ids: a.ids || [] };
+  return { all: false, groups: [], ids: a.ids || [] }; // players / open
 }
 
 // Auto-inscription du joueur connecté à une séance ouverte (mode 'open').
