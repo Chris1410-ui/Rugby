@@ -1909,7 +1909,9 @@
       "errBirthdate": "Voer je geboortedatum in.",
       "inviteAlreadyClaimed": "Dit spelersprofiel is al door een ander account geclaimd.",
       "backToSignin": "Terug naar aanmelden",
-      "inviteOnlyNote": "Registratie alleen op uitnodiging. Vraag je club om een link."
+      "inviteOnlyNote": "Registratie alleen op uitnodiging. Vraag je club om een link.",
+      "joinInvalid": "Deze uitnodigingslink is ongeldig of verlopen.",
+      "joinAlreadyMember": "Dit account is al aan een club gekoppeld."
     },
     "link": {
       "expired": "De reset-link is verlopen. Vraag hieronder een nieuwe e-mail aan.",

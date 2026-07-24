@@ -4,11 +4,13 @@ import { supabase } from "../lib/supabase.js";
 import { useAuth } from "./useAuth.jsx";
 import { requestPasswordReset } from "../data/players.js";
 import { acceptClubInvitation, peekClubInvitation, isMinor, storePendingInvite, clearPendingInvite } from "../data/clubInvitations.js";
+import { peekInviteCode, joinClubWithCode, storePendingJoin, clearPendingJoin } from "../data/clubCodes.js";
 import { listClubs, precheckMembership, requestClubMembership } from "../data/membership.js";
 import { C, FONT } from "../lib/tokens.js";
 import { pwdStrength } from "../lib/password.js";
 import { POLICY_VERSION } from "../lib/policy.js";
 import PrivacyPolicy from "../screens/shared/PrivacyPolicy.jsx";
+import TotemPicker from "../screens/shared/TotemPicker.jsx";
 import { Eye, EyeOff, Loader, Shield } from "../lib/icons.jsx";
 
 const wrap = {
@@ -41,12 +43,18 @@ export default function LoginScreen() {
   // Lien d'invitation (?invite=<token>) : parcours d'acceptation dédié (staff ou
   // joueur selon peek) où le rôle/club viennent de l'invite (serveur), jamais du
   // formulaire.
-  const inviteToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("invite") : null;
-  // Entrée publique = connexion + acceptation d'invitation. Le self-signup avec
-  // rattachement à un club est retiré (le trigger n'attache plus rien) : on rejoint
-  // un club UNIQUEMENT via un lien d'invitation validé par un admin.
-  const [step, setStep] = useState(inviteToken ? "invite" : "signin"); // invite | signin (role/details : hérités, inatteignables)
-  const [inviteRole, setInviteRole] = useState(null); // rôle porté par l'invitation (peek)
+  const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const inviteToken = params.get("invite");
+  // Lien d'adhésion partagé par club (?join=<code>, modèle Twizzit) : code joueur
+  // OU staff, le club + le type viennent du code (serveur), jamais du formulaire.
+  const joinToken = !inviteToken ? params.get("join") : null;
+  const isJoin = !!joinToken;
+  const entryToken = inviteToken || joinToken;
+  // Entrée publique = connexion + acceptation d'invitation (nominative ?invite=
+  // ou code partagé ?join=). On rejoint un club UNIQUEMENT via un de ces liens.
+  const [step, setStep] = useState(entryToken ? "invite" : "signin"); // invite | signin
+  const [inviteRole, setInviteRole] = useState(null); // rôle porté par le lien (peek)
+  const [inviteClub, setInviteClub] = useState(""); // libellé club (peek du code partagé)
   const [invitePeekErr, setInvitePeekErr] = useState(false);
   const [birthdate, setBirthdate] = useState(""); // acceptation joueur : décide majeur/mineur
   const [fullName, setFullName] = useState(""); // nom d'affichage (acceptation staff)
@@ -75,24 +83,30 @@ export default function LoginScreen() {
   const sCol = st.score <= 2 ? C.coral : st.score <= 4 ? C.amb : C.green;
   const sLab = st.score <= 2 ? t("auth.reset.strengthWeak") : st.score <= 4 ? t("auth.reset.strengthMed") : t("auth.reset.strengthStrong");
 
-  // Aperçu de l'invitation (rôle + club) pour adapter le formulaire (staff/joueur).
+  // Aperçu du lien (rôle + club) pour adapter le formulaire (staff/joueur).
+  // ?invite= = invitation nominative ; ?join= = code partagé (kind player/staff).
   useEffect(() => {
-    if (!inviteToken) return;
+    if (!entryToken) return;
     let alive = true;
-    peekClubInvitation(inviteToken)
-      .then((inv) => { if (alive) (inv ? setInviteRole(inv.role) : setInvitePeekErr(true)); })
+    const peek = isJoin
+      ? peekInviteCode(joinToken).then((c) => (c ? { role: c.kind === "player" ? "joueur" : c.role, club: c.club } : null))
+      : peekClubInvitation(inviteToken).then((inv) => (inv ? { role: inv.role } : null));
+    peek
+      .then((r) => { if (!alive) return; if (r) { setInviteRole(r.role); setInviteClub(r.club || ""); } else setInvitePeekErr(true); })
       .catch(() => { if (alive) setInvitePeekErr(true); });
     return () => { alive = false; };
-  }, [inviteToken]);
+  }, [entryToken, isJoin, inviteToken, joinToken]);
 
   const reset = () => {
     setErr(""); setInfo(""); setPwd(""); setPwd2(""); clearLinkError();
   };
 
-  // ── ACCEPTATION D'INVITATION ──
-  // Le compte est créé SANS rôle (le trigger ne pose pas de profil) ; c'est la
-  // fonction serveur accept_club_invitation qui élève le profil au rôle/club portés
-  // par l'invite. Le rôle ne transite jamais par le client.
+  // ── ADHÉSION VIA LIEN (invitation nominative ?invite= OU code partagé ?join=) ──
+  // Le club + le rôle viennent TOUJOURS du lien (serveur), jamais du formulaire.
+  // Le profil (role + team_id) est créé côté serveur → l'utilisateur atterrit
+  // direct dans l'app. Le token/code est persisté avant signUp : si l'adhésion
+  // ne peut aboutir tout de suite (email déjà inscrit → signUp sans session), le
+  // filet de AppShell la rejoue une fois authentifié (plus de « Profil introuvable »).
   const doInviteSignUp = async () => {
     reset();
     const isPlayer = inviteRole === "joueur";
@@ -102,6 +116,7 @@ export default function LoginScreen() {
     if (!st.valid) return setErr(t("auth.reset.errWeak"));
     if (pwd !== pwd2) return setErr(t("auth.reset.errMismatch"));
     if (isPlayer) {
+      if (isJoin && !totem.trim()) return setErr(t("auth.signup.errTotem"));
       if (!birthdate) return setErr(t("auth.login.errBirthdate"));
       if (minor) {
         if (!guardianName.trim()) return setErr(t("auth.login.errGuardianName"));
@@ -111,33 +126,33 @@ export default function LoginScreen() {
     }
     if (!policyOk) return setErr(t("auth.login.errPolicy"));
     setBusy(true);
-    // Persiste le token AVANT signUp : si l'acceptation ne peut aboutir tout de
-    // suite (email déjà inscrit → signUp sans session, reconnexion nécessaire), le
-    // filet de sécurité de l'app la ré-appliquera une fois authentifié.
-    const acceptPayload = isPlayer
-      ? { birthdate, guardianName: guardianName.trim(), guardianEmail: guardianEmail.trim(), policyVersion: POLICY_VERSION, consent }
+    // Payload d'adhésion (joueur : totem/initiales/consentement ; staff : rien).
+    const payload = isPlayer
+      ? { totem: totem.trim(), initials: initials.trim(), birthdate, guardianName: guardianName.trim(), guardianEmail: guardianEmail.trim(), policyVersion: POLICY_VERSION, consent }
       : {};
-    storePendingInvite(inviteToken, acceptPayload);
+    if (isJoin) storePendingJoin(joinToken, payload); else storePendingInvite(inviteToken, payload);
     const meta = isPlayer ? { policy_version: POLICY_VERSION } : { full_name: fullName.trim(), policy_version: POLICY_VERSION };
     const { data, error } = await supabase.auth.signUp({ email: email.trim(), password: pwd, options: { data: meta } });
     if (error) { setBusy(false); return setErr(error.message); }
-    // Pas de session immédiate (email déjà inscrit / confirmation requise) : on
-    // invite à se connecter — l'acceptation stockée sera finalisée après connexion.
     if (!data.session) { setBusy(false); return setInfo(t("auth.login.inviteNeedsSignin")); }
     try {
-      await acceptClubInvitation(inviteToken, acceptPayload);
+      if (isJoin) await joinClubWithCode(joinToken, payload);
+      else await acceptClubInvitation(inviteToken, payload);
     } catch (e) {
       setBusy(false);
-      const m = e.message;
-      // Erreurs terminales : le token stocké ne servira plus → on le purge.
-      if (["INVITE_INVALID", "INVITE_EMAIL_MISMATCH", "ALREADY_CLAIMED"].includes(m)) clearPendingInvite();
-      return setErr(m === "INVITE_INVALID" ? t("auth.login.inviteInvalid")
+      const m = e.message || "";
+      const terminal = ["INVITE_INVALID", "INVITE_EMAIL_MISMATCH", "ALREADY_CLAIMED", "CODE_INVALID", "ALREADY_MEMBER"];
+      if (terminal.includes(m)) { clearPendingJoin(); clearPendingInvite(); }
+      return setErr(/CODE_INVALID/.test(m) ? t("auth.login.joinInvalid")
+        : /ALREADY_MEMBER/.test(m) ? t("auth.login.joinAlreadyMember")
+        : /TOTEM_TAKEN/.test(m) ? t("auth.signup.errTotemTaken")
+        : /CONSENT_REQUIRED/.test(m) ? t("auth.login.errConsent")
+        : m === "INVITE_INVALID" ? t("auth.login.inviteInvalid")
         : m === "INVITE_EMAIL_MISMATCH" ? t("auth.login.inviteEmailMismatch")
         : m === "ALREADY_CLAIMED" ? t("auth.login.inviteAlreadyClaimed")
         : t("auth.login.inviteError", { err: m }));
     }
-    // Rattachement appliqué : token consommé, reload sur URL propre → profil élevé.
-    clearPendingInvite();
+    clearPendingJoin(); clearPendingInvite();
     window.location.href = window.location.origin;
   };
 
@@ -275,6 +290,10 @@ export default function LoginScreen() {
             <div style={{ textAlign: "center", padding: 18, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>{t("common.loading")}</div>
           ) : (
             <>
+              {/* Club + type verrouillés par le lien (non modifiables). */}
+              {inviteClub && (
+                <div style={{ fontSize: 12.5, fontWeight: 800, textAlign: "center", color: "#fff", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", marginBottom: 12 }}>{inviteClub}</div>
+              )}
               {!isPlayer && (
                 <>
                   <div style={label}>{t("auth.login.nameLabel")}</div>
@@ -301,6 +320,16 @@ export default function LoginScreen() {
                 </div>
               )}
               <input type={showPwd ? "text" : "password"} value={pwd2} onChange={(e) => { setPwd2(e.target.value); setErr(""); }} placeholder={t("auth.reset.confirmPlaceholder")} autoComplete="new-password" style={input(pwd2 && pwd !== pwd2)} />
+
+              {/* Code partagé joueur (?join=) : totem + initiales (comme l'auto-inscription). */}
+              {isJoin && isPlayer && (
+                <>
+                  <div style={label}>{t("auth.signup.totemLabel")}</div>
+                  <TotemPicker value={totem} onChange={(v) => { setTotem(v); setErr(""); }} accent={C.green} />
+                  <div style={label}>{t("auth.signup.initialsLabel")}</div>
+                  <input value={initials} onChange={(e) => { setInitials(e.target.value); setErr(""); }} placeholder="I.F." maxLength={8} style={input(false)} />
+                </>
+              )}
 
               {isPlayer && (
                 <>

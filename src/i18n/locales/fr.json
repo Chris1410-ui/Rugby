@@ -1909,7 +1909,9 @@
       "errBirthdate": "Indique ta date de naissance.",
       "inviteAlreadyClaimed": "Ce profil joueur a déjà été revendiqué par un autre compte.",
       "backToSignin": "Retour à la connexion",
-      "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club."
+      "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club.",
+      "joinInvalid": "Ce lien d’invitation est invalide ou expiré.",
+      "joinAlreadyMember": "Ce compte est déjà rattaché à un club."
     },
     "link": {
       "expired": "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.",

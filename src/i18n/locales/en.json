@@ -1909,7 +1909,9 @@
       "errBirthdate": "Enter your date of birth.",
       "inviteAlreadyClaimed": "This player profile has already been claimed by another account.",
       "backToSignin": "Back to sign in",
-      "inviteOnlyNote": "Registration is by invitation only. Ask your club for a link."
+      "inviteOnlyNote": "Registration is by invitation only. Ask your club for a link.",
+      "joinInvalid": "This invitation link is invalid or expired.",
+      "joinAlreadyMember": "This account is already linked to a club."
     },
     "link": {
       "expired": "The reset link has expired. Request a new email below.",

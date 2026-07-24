@@ -9,6 +9,25 @@ import { supabase } from "../lib/supabase.js";
 // Lien d'adhésion partagé (distinct de ?invite=<token> des invitations nominatives).
 export const joinLink = (code) => `${window.location.origin}/?join=${code}`;
 
+/* Adhésion par code EN ATTENTE, persistée localement — même rôle que le pending
+   d'invitation nominative : permet à join_club_with_code de ré-aboutir si le
+   chemin heureux (signUp → session → join) est rompu (email déjà inscrit,
+   reconnexion). Le filet de AppShell la rejoue une fois authentifié. */
+const PENDING_JOIN_KEY = "pending_club_join";
+export function storePendingJoin(code, payload = {}) {
+  if (!code) return;
+  try { localStorage.setItem(PENDING_JOIN_KEY, JSON.stringify({ code, payload })); } catch { /* stockage indispo */ }
+}
+export function readPendingJoin() {
+  try {
+    const r = JSON.parse(localStorage.getItem(PENDING_JOIN_KEY) || "null");
+    return r && r.code ? { code: r.code, payload: r.payload || {} } : null;
+  } catch { return null; }
+}
+export function clearPendingJoin() {
+  try { localStorage.removeItem(PENDING_JOIN_KEY); } catch { /* noop */ }
+}
+
 // Aperçu public (pré-remplit l'écran d'inscription) : { valid, kind, role, teamId, club }.
 export async function peekInviteCode(code) {
   const { data, error } = await supabase.rpc("peek_invite_code", { p_code: (code || "").trim() });
