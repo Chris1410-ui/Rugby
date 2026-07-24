@@ -2275,6 +2275,12 @@
     },
     "openBtn": "Importer un PDF",
     "importedPlayer": "{{count}} séance(s) ajoutée(s) à ton calendrier.",
-    "importErr": "Échec de l'import : {{err}}"
+    "importErr": "Échec de l'import : {{err}}",
+    "addProgram": "Ajouter un programme PDF",
+    "ficheNote": "Le PDF est analysé : aperçu + validation avant de créer les séances datées dans le calendrier (le fichier d'origine est aussi archivé).",
+    "importedStaff": "{{count}} séance(s) créée(s) et assignée(s) au joueur.",
+    "alsoArchived": "PDF archivé.",
+    "archived": "PDF archivé (aucune séance créée).",
+    "archiveOnly": "Archiver seulement"
   }
 }

@@ -7,7 +7,7 @@ import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/
 import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload } from "../../lib/icons.jsx";
 import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } from "../../data/storage.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
-import { importProgramForSelf } from "../../data/freeSessions.js";
+import { importProgramForSelf, importProgramForPlayer } from "../../data/freeSessions.js";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
@@ -204,7 +204,8 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
   const [files, setFiles] = useState([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [importResult, setImportResult] = useState(null); // aperçu PDF en attente de validation (joueur)
+  const [importResult, setImportResult] = useState(null); // aperçu PDF en attente de validation
+  const [pendingFile, setPendingFile] = useState(null);   // PDF choisi (à archiver après validation)
   const [importMsg, setImportMsg] = useState("");
 
   const refresh = async () => {
@@ -214,33 +215,44 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
   };
   useEffect(() => { refresh(); }, [player?.id, hasTarget]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onAdd = async (e) => {
+  // Ajout d'un programme PDF (flux unifié) : on parse d'abord → aperçu/validation
+  // → création des séances datées + archivage du fichier. Le joueur crée pour
+  // lui-même (RPC), le staff pour le joueur de la fiche (écriture directe).
+  const onPick = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // permet de re-sélectionner le même fichier
     if (!file) return;
     if (file.type !== "application/pdf") { setErr(t("shared.fiche.pdfOnly")); return; }
-    setBusy(true); setErr("");
-    try { await uploadPlayerPdf(player.team, player.id, file); await refresh(); }
-    catch (ex) { setErr(ex.message === "PDF_ONLY" ? t("shared.fiche.pdfOnly") : t("shared.fiche.pdfUploadFail", { err: ex.message || "" })); }
+    setBusy(true); setErr(""); setImportMsg("");
+    setPendingFile(file);
+    try { setImportResult(await parseProgramPdf(file)); }
+    catch (ex) { setPendingFile(null); setErr(ex.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("staff.programs.pdfUnrecognized")); }
     setBusy(false);
   };
-  // Import « intelligent » (joueur) : parse le PDF → aperçu/validation → séances.
-  const onImportPick = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    if (file.type !== "application/pdf") { setErr(t("shared.fiche.pdfOnly")); return; }
-    setBusy(true); setErr(""); setImportMsg("");
-    try { setImportResult(await parseProgramPdf(file)); }
-    catch (ex) { setErr(ex.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("staff.programs.pdfUnrecognized")); }
-    setBusy(false);
+  // Archive (best-effort) le PDF d'origine dans le bucket privé du joueur.
+  const archive = async () => {
+    if (!pendingFile) return true;
+    try { await uploadPlayerPdf(player.team, player.id, pendingFile); return true; }
+    catch { return false; }
   };
   const confirmImport = async (sessions, opts) => {
     try {
-      const n = await importProgramForSelf(sessions, opts);
-      setImportResult(null);
-      setImportMsg(t("pdfImport.importedPlayer", { count: n }));
+      const n = self
+        ? await importProgramForSelf(sessions, opts)
+        : await importProgramForPlayer(player.id, player.team, sessions, opts);
+      const archived = await archive();
+      setImportResult(null); setPendingFile(null);
+      await refresh();
+      setImportMsg((self ? t("pdfImport.importedPlayer", { count: n }) : t("pdfImport.importedStaff", { count: n }))
+        + (archived ? " " + t("pdfImport.alsoArchived") : ""));
     } catch (ex) { setErr(t("pdfImport.importErr", { err: ex.message || "" })); }
+  };
+  // Archiver seulement (PDF non reconnu comme programme, ou choix explicite).
+  const archiveOnly = async () => {
+    const ok = await archive();
+    setImportResult(null); setPendingFile(null);
+    await refresh();
+    if (ok) setImportMsg(t("pdfImport.archived")); else setErr(t("shared.fiche.pdfUploadFail", { err: "" }));
   };
   const openFile = async (path, download) => {
     try { const url = await playerFileUrl(path, { download }); window.open(url, "_blank", "noopener"); }
@@ -261,23 +273,17 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     <div style={sc({ padding: 14, marginBottom: 12 })}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <div style={{ flex: 1, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, display: "flex", alignItems: "center", gap: 6 }}><FileText size={13} /> {self ? t("shared.fiche.pdfTitleSelf") : t("shared.fiche.pdfTitle")}</div>
-        {self && (
-          <label style={{ display: "flex", alignItems: "center", gap: 6, background: `${C.green}22`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: "6px 12px", color: C.green, fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
-            <FileText size={13} /> {t("pdfImport.openBtn")}
-            <input type="file" accept="application/pdf" onChange={onImportPick} disabled={busy} style={{ display: "none" }} />
-          </label>
-        )}
         {canAdd && (
-          <label style={{ display: "flex", alignItems: "center", gap: 6, background: C.viol, borderRadius: 8, padding: "6px 12px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
-            <Upload size={13} /> {busy ? t("shared.fiche.pdfSending") : t("shared.fiche.pdfAdd")}
-            <input type="file" accept="application/pdf" onChange={onAdd} disabled={busy} style={{ display: "none" }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: `${C.green}22`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: "6px 12px", color: C.green, fontSize: 11, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+            <Upload size={13} /> {busy ? t("shared.fiche.pdfSending") : t("pdfImport.addProgram")}
+            <input type="file" accept="application/pdf" onChange={onPick} disabled={busy} style={{ display: "none" }} />
           </label>
         )}
       </div>
-      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginBottom: 10, lineHeight: 1.5 }}>{t("shared.fiche.pdfNote")}</div>
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginBottom: 10, lineHeight: 1.5 }}>{t("pdfImport.ficheNote")}</div>
       {importMsg && <div style={{ fontSize: 11, color: C.green, marginBottom: 8 }}>{importMsg}</div>}
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
-      {importResult && <PdfImportReview result={importResult} withPlan onCancel={() => setImportResult(null)} onConfirm={confirmImport} />}
+      {importResult && <PdfImportReview result={importResult} withPlan onCancel={() => { setImportResult(null); setPendingFile(null); }} onConfirm={confirmImport} onArchiveOnly={archiveOnly} />}
       {files.length === 0 ? (
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.pdfEmpty")}</div>
       ) : (

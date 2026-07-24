@@ -74,3 +74,26 @@ export async function importProgramForSelf(sessions, { startDate, weeks } = {}) 
   if (error) throw error;
   return data; // nombre de séances créées
 }
+
+/* Import PDF par le STAFF sur la fiche d'un joueur : matérialise les séances
+   datées ASSIGNÉES à ce joueur. Le staff a le droit d'écrire sur `sessions`
+   (RLS can_write) → insertion directe (pas de RPC joueur). origin='import'. */
+export async function importProgramForPlayer(playerId, teamId, sessions, { startDate, weeks } = {}) {
+  if (!playerId || !teamId) throw new Error("NO_TARGET");
+  const rows = expandProgramToRows(sessions, startDate, weeks);
+  if (!rows.length) throw new Error("NO_ROWS");
+  const payload = rows.map((r) => ({
+    team_id: teamId,
+    date: r.date,
+    code: r.code || "RS",
+    nature: r.nature || null,
+    titre: r.titre || "Séance importée",
+    duration_min: 60,
+    exercises: r.exercises,
+    assigned: { mode: "players", ids: [playerId] },
+    origin: "import",
+  }));
+  const { error } = await supabase.from("sessions").insert(payload);
+  if (error) throw error;
+  return payload.length; // nombre de séances créées
+}
