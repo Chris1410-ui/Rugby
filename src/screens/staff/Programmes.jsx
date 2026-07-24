@@ -16,6 +16,7 @@ import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js"
 import { useExercises } from "../../data/exercises.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
 import PdfImportReview from "../shared/PdfImportReview.jsx";
+import BulkPdfImport from "./BulkPdfImport.jsx";
 import { programFolder, uploadFile } from "../../data/storage.js";
 import ProgramFiles from "./ProgramFiles.jsx";
 import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
@@ -103,6 +104,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [templates, setTemplates] = useState([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   const [pdfFile, setPdfFile] = useState(null); // PDF source à archiver dans Storage
   const [pdfReview, setPdfReview] = useState(null); // résultat de parse en attente de validation
+  const [bulk, setBulk] = useState(false); // traitement en masse des PDF joueurs stockés
   const [filesOf, setFilesOf] = useState(null); // programme dont on ouvre les fichiers
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
 
@@ -233,6 +235,12 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           </label>
         </div>
         )}
+        {!readOnly && (
+          <button onClick={() => setBulk(true)} style={{ width: "100%", marginBottom: 14, background: `${C.green}18`, border: `1px solid ${C.green}55`, borderRadius: 10, padding: 11, color: C.green, fontWeight: 700, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <ClipboardList size={15} /> {t("staff.programs.bulkImportBtn")}
+          </button>
+        )}
+        {bulk && <BulkPdfImport teamId={teamId} players={players} onClose={() => setBulk(false)} />}
 
         {note && (
           <div style={sc({ marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", background: note.includes("✓") ? `${C.green}1a` : `${C.amb}1a`, borderColor: note.includes("✓") ? `${C.green}66` : `${C.amb}66` })}>{note}</div>

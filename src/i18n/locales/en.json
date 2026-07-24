@@ -1288,7 +1288,8 @@
       "natureTitle": "Session nature",
       "overloadSame": "Already {{count}}× {{nature}} on {{days}}/{{total}} day(s) — mind the overload",
       "overloadBusy": "{{days}}/{{total}} day(s) already loaded",
-      "overloadClear": "No activity planned those days"
+      "overloadClear": "No activity planned those days",
+      "bulkImportBtn": "Bulk-import players' PDFs"
     },
     "app": {
       "fabSeance": "＋ Session",
@@ -2283,6 +2284,13 @@
     "archived": "PDF archived (no session created).",
     "archiveOnly": "Archive only",
     "extractExisting": "Extract sessions (create in calendar)",
-    "extractFail": "Extraction failed: {{err}}"
+    "extractFail": "Extraction failed: {{err}}",
+    "stop": "Stop",
+    "skip": "Skip",
+    "bulkScanning": "Scanning players' files…",
+    "bulkParsing": "Reading PDF…",
+    "bulkEmpty": "No PDF stored for any player.",
+    "bulkDoneTitle": "Processing complete",
+    "bulkDoneSummary": "{{files}} PDF(s) imported · {{sessions}} session(s) created · {{skipped}} skipped."
   }
 }
