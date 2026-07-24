@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose, NatureTag } from "../../lib/ui.jsx";
-import { Download, FileText } from "../../lib/icons.jsx";
+import { Download, FileText, Pencil } from "../../lib/icons.jsx";
 import { supabase } from "../../lib/supabase.js";
 import { renderProgramHtml } from "../../lib/program/template.js";
 import { slugify } from "../../lib/program/model.js";
@@ -13,7 +13,7 @@ import ExerciseDetail from "./ExerciseDetail.jsx";
    une iframe isolée — fidèle à l'export/PDF. Les exercices liés sont cliquables
    (postMessage → ouverture de la fiche in-app). Impression navigateur dispo ;
    l'export PDF serveur arrive en PR4. `doc` = contenu { meta, sections }. */
-export default function ProgramView({ doc, title, id, targets, onClose }) {
+export default function ProgramView({ doc, title, id, targets, onClose, onEdit }) {
   const { t } = useTranslation();
   useModalClose(onClose);
   const iframeRef = useRef(null);
@@ -69,6 +69,11 @@ export default function ProgramView({ doc, title, id, targets, onClose }) {
           <span style={{ minWidth: 0, fontSize: 14, fontWeight: 800, color: "#E8EDF3", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title || t("protocols.untitled")}</span>
           {doc?.meta?.nature && <NatureTag nature={doc.meta.nature} />}
         </div>
+        {onEdit && (
+          <button onClick={onEdit} title={t("protocols.edit")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${C.coral}18`, border: `1px solid ${C.coral}66`, borderRadius: 9, padding: "8px 12px", color: C.coral, fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+            <Pencil size={15} /> {t("protocols.edit")}
+          </button>
+        )}
         <button onClick={print} title={t("protocols.print")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", color: "#E8EDF3", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
           <FileText size={15} /> {t("protocols.print")}
         </button>

@@ -86,7 +86,7 @@ export default function Protocoles({ teamId, players = [] }) {
             const published = d.status === "published";
             return (
               <div key={d.id} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px" })}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div onClick={() => openView(d)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }} title={t("protocols.view")}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.title || t("protocols.untitled")}</div>
                   <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 2, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {d.category && <span>{d.category}</span>}
@@ -118,7 +118,7 @@ export default function Protocoles({ teamId, players = [] }) {
         </div>
       )}
 
-      {viewing && <ProgramView id={viewing.id} doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} />}
+      {viewing && <ProgramView id={viewing.id} doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} onEdit={() => { const vid = viewing.id; setViewing(null); setEditingId(vid); }} />}
 
       {confirmDel && (
         <div onClick={() => setConfirmDel(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>

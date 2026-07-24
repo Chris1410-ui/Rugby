@@ -6,7 +6,8 @@ import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
-  changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
+  emptyChecklistSection, emptyWeekCalendarSection, emptyCardioSection, emptyTableSection,
+  WEEKDAY_NAMES, changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
 } from "../../../lib/program/model.js";
 import { BUILTIN_SECTION_TEMPLATES, freshSection } from "../../../lib/program/sectionTemplates.js";
 import { useTeamSectionTemplates, saveSectionTemplate, deleteSectionTemplate } from "../../../data/sectionTemplates.js";
@@ -86,7 +87,15 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const delFact = (i) => setDoc((d) => { d.meta.facts.splice(i, 1); return d; });
 
   // Sections -----------------------------------------------------------------
-  const addSection = (type) => setDoc((d) => { d.sections.push(type === "narrative" ? emptyNarrativeSection() : emptyExerciseSection(weeks)); return d; });
+  const SECTION_FACTORY = {
+    narrative: () => emptyNarrativeSection(),
+    exercises: () => emptyExerciseSection(weeks),
+    checklist: () => emptyChecklistSection(),
+    weekcalendar: () => emptyWeekCalendarSection(),
+    cardio: () => emptyCardioSection(),
+    table: () => emptyTableSection(),
+  };
+  const addSection = (type) => setDoc((d) => { d.sections.push((SECTION_FACTORY[type] || SECTION_FACTORY.narrative)()); return d; });
   // Insère une ou plusieurs sections (modèle) avec des ids frais.
   const insertSections = (list) => setDoc((d) => { (list || []).forEach((s) => d.sections.push(freshSection(s))); return d; });
   const setSection = (i, patch) => setDoc((d) => { d.sections[i] = { ...d.sections[i], ...patch }; return d; });
@@ -208,7 +217,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
             {/* En-tête de section */}
             <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 10 }}>
               <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: s.type === "narrative" ? C.blue : ACCENT, background: s.type === "narrative" ? `${C.blue}1e` : `${ACCENT}1e`, borderRadius: 6, padding: "3px 7px" }}>
-                {s.type === "narrative" ? t("protocols.typeNarrative") : t("protocols.typeExercises")}
+                {t(`protocols.type_${s.type}`, { defaultValue: t("protocols.typeExercises") })}
               </span>
               <input style={{ ...inp, width: 54, flexShrink: 0, textAlign: "center" }} value={s.num} onChange={(e) => setSection(si, { num: e.target.value })} placeholder="01" />
               <input style={{ ...inp, flex: 1 }} value={s.title} onChange={(e) => setSection(si, { title: e.target.value })} placeholder={t("protocols.sectionTitlePh")} />
@@ -221,9 +230,17 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
 
             {s.type === "narrative" ? (
               <>
-                <textarea style={{ ...inp, minHeight: 130, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }} value={s.body} onChange={(e) => setSection(si, { body: e.target.value })} placeholder={t("protocols.bodyPh")} />
+                <textarea style={{ ...inp, minHeight: 130, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }} value={s.body || ""} onChange={(e) => setSection(si, { body: e.target.value })} placeholder={t("protocols.bodyPh")} />
                 <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.45)", marginTop: 5 }}>{t("protocols.markdownHint")}</div>
               </>
+            ) : s.type === "checklist" ? (
+              <ChecklistEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
+            ) : s.type === "weekcalendar" ? (
+              <WeekCalendarEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
+            ) : s.type === "cardio" ? (
+              <CardioEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
+            ) : s.type === "table" ? (
+              <TableEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : (
               <ExerciseGrid
                 section={s} weeks={weeks} t={t}
@@ -280,6 +297,10 @@ function AddSectionMenu({ weeks, teamId, onBlank, onInsert, t }) {
             <MenuLabel>{t("protocols.tplBlank")}</MenuLabel>
             <MenuItem onClick={() => pick(() => onBlank("narrative"))}>{t("protocols.addNarrative")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("exercises"))}>{t("protocols.addExercises")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("checklist"))}>{t("protocols.type_checklist")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("weekcalendar"))}>{t("protocols.type_weekcalendar")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("cardio"))}>{t("protocols.type_cardio")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("table"))}>{t("protocols.type_table")}</MenuItem>
             <MenuLabel>{t("protocols.tplBuiltin")}</MenuLabel>
             {BUILTIN_SECTION_TEMPLATES.map((tpl) => (
               <MenuItem key={tpl.id} onClick={() => pick(() => onInsert(tpl.build(weeks)))}>{t(tpl.nameKey)}</MenuItem>
@@ -393,6 +414,111 @@ function ExerciseGrid({ section, weeks, t, onAddFree, onLibrary, onRow, onCell, 
         <button onClick={onAddFree} style={miniBtn}><Plus size={13} /> {t("protocols.addRowFree")}</button>
         <button onClick={onLibrary} style={{ ...miniBtn, borderColor: `${C.green}66`, color: C.green }}><Search size={13} /> {t("protocols.addFromLibrary")}</button>
       </div>
+    </div>
+  );
+}
+
+/* Éditeur CHECKLIST : badge + liste de points à cocher. */
+function ChecklistEditor({ section, t, onPatch }) {
+  const items = Array.isArray(section.items) ? section.items : [];
+  const setItem = (i, v) => onPatch({ items: items.map((x, j) => (j === i ? v : x)) });
+  const addItem = () => onPatch({ items: [...items, ""] });
+  const delItem = (i) => onPatch({ items: items.filter((_, j) => j !== i) });
+  return (
+    <div>
+      <Field label={t("protocols.clBadge")}><input style={inp} value={section.badge || ""} onChange={(e) => onPatch({ badge: e.target.value })} placeholder={t("protocols.clBadgePh")} /></Field>
+      {items.map((it, i) => (
+        <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center" }}>
+          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, flexShrink: 0 }}>☐</span>
+          <input style={{ ...inp, flex: 1 }} value={it} onChange={(e) => setItem(i, e.target.value)} placeholder={t("protocols.clItemPh")} />
+          <button onClick={() => delItem(i)} title={t("protocols.remove")} style={iconBtn}><Trash2 size={14} /></button>
+        </div>
+      ))}
+      <button onClick={addItem} style={miniBtn}><Plus size={13} /> {t("protocols.clAddItem")}</button>
+    </div>
+  );
+}
+
+/* Éditeur SEMAINE TYPE : jours (Lun→Dim) avec intitulé, nature, repos/optionnel. */
+const WD_ORDER = [1, 2, 3, 4, 5, 6, 0];
+function WeekCalendarEditor({ section, t, onPatch }) {
+  const days = Array.isArray(section.days) ? section.days : [];
+  const setDay = (i, patch) => onPatch({ days: days.map((d, j) => (j === i ? { ...d, ...patch } : d)) });
+  const addDay = () => onPatch({ days: [...days, { weekday: WD_ORDER.find((wd) => !days.some((d) => d.weekday === wd)) ?? 1, label: "", nature: "", optional: false, off: false }] });
+  const delDay = (i) => onPatch({ days: days.filter((_, j) => j !== i) });
+  return (
+    <div>
+      {days.map((d, i) => (
+        <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <select style={{ ...inp, width: 92, flexShrink: 0 }} value={d.weekday ?? 1} onChange={(e) => setDay(i, { weekday: Number(e.target.value) })}>
+            {WD_ORDER.map((wd) => <option key={wd} value={wd}>{WEEKDAY_NAMES[wd]}</option>)}
+          </select>
+          <input style={{ ...inp, flex: 1, minWidth: 120 }} value={d.label || ""} onChange={(e) => setDay(i, { label: e.target.value })} placeholder={t("protocols.wcLabelPh")} />
+          <select style={{ ...inp, width: 120, flexShrink: 0 }} value={d.off ? "off" : (d.nature || "")} onChange={(e) => (e.target.value === "off" ? setDay(i, { off: true, nature: "" }) : setDay(i, { off: false, nature: e.target.value }))}>
+            <option value="">{t("protocols.fNatureNone")}</option>
+            {NATURES.map((n) => <option key={n} value={n}>{natureLabel(t, n)}</option>)}
+            <option value="off">{t("protocols.wcOff")}</option>
+          </select>
+          <button onClick={() => delDay(i)} title={t("protocols.remove")} style={iconBtn}><Trash2 size={14} /></button>
+        </div>
+      ))}
+      <button onClick={addDay} style={miniBtn}><Plus size={13} /> {t("protocols.wcAddDay")}</button>
+    </div>
+  );
+}
+
+/* Éditeur CARDIO : blocs { nom, modalité, cible, note }. */
+function CardioEditor({ section, t, onPatch }) {
+  const items = Array.isArray(section.items) ? section.items : [];
+  const setItem = (i, patch) => onPatch({ items: items.map((x, j) => (j === i ? { ...x, ...patch } : x)) });
+  const addItem = () => onPatch({ items: [...items, { name: "", kind: "", target: "", note: "" }] });
+  const delItem = (i) => onPatch({ items: items.filter((_, j) => j !== i) });
+  return (
+    <div>
+      {items.map((it, i) => (
+        <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <input style={{ ...inp, flex: "1 1 130px" }} value={it.name || ""} onChange={(e) => setItem(i, { name: e.target.value })} placeholder={t("protocols.cardioNamePh")} />
+          <input style={{ ...inp, width: 110, flexShrink: 0 }} value={it.kind || ""} onChange={(e) => setItem(i, { kind: e.target.value })} placeholder={t("protocols.cardioKindPh")} />
+          <input style={{ ...inp, width: 130, flexShrink: 0 }} value={it.target || ""} onChange={(e) => setItem(i, { target: e.target.value })} placeholder={t("protocols.cardioTargetPh")} />
+          <button onClick={() => delItem(i)} title={t("protocols.remove")} style={iconBtn}><Trash2 size={14} /></button>
+        </div>
+      ))}
+      <button onClick={addItem} style={miniBtn}><Plus size={13} /> {t("protocols.cardioAdd")}</button>
+    </div>
+  );
+}
+
+/* Éditeur TABLEAU générique : colonnes + lignes. */
+function TableEditor({ section, t, onPatch }) {
+  const columns = Array.isArray(section.columns) ? section.columns : [];
+  const rows = Array.isArray(section.rows) ? section.rows : [];
+  const norm = (r) => columns.map((_, c) => (Array.isArray(r) ? r[c] ?? "" : ""));
+  const setCol = (c, v) => onPatch({ columns: columns.map((x, j) => (j === c ? v : x)) });
+  const addCol = () => onPatch({ columns: [...columns, ""], rows: rows.map((r) => [...norm(r), ""]) });
+  const delCol = (c) => onPatch({ columns: columns.filter((_, j) => j !== c), rows: rows.map((r) => norm(r).filter((_, j) => j !== c)) });
+  const setCell = (ri, c, v) => onPatch({ rows: rows.map((r, j) => (j === ri ? norm(r).map((x, k) => (k === c ? v : x)) : r)) });
+  const addRow = () => onPatch({ rows: [...rows, columns.map(() => "")] });
+  const delRow = (ri) => onPatch({ rows: rows.filter((_, j) => j !== ri) });
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+        {columns.map((col, c) => (
+          <div key={c} style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 120 }}>
+            <input style={{ ...inp, fontWeight: 700 }} value={col} onChange={(e) => setCol(c, e.target.value)} placeholder={t("protocols.tblColPh")} />
+            <button onClick={() => delCol(c)} title={t("protocols.tblDelCol")} style={{ ...miniBtn, justifyContent: "center" }}><Trash2 size={12} /></button>
+          </div>
+        ))}
+        <button onClick={addCol} style={{ ...miniBtn, alignSelf: "flex-start" }}><Plus size={13} /> {t("protocols.tblAddCol")}</button>
+      </div>
+      {rows.map((r, ri) => (
+        <div key={ri} style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center" }}>
+          {columns.map((_, c) => (
+            <input key={c} style={{ ...inp, minWidth: 120 }} value={(Array.isArray(r) ? r[c] : "") || ""} onChange={(e) => setCell(ri, c, e.target.value)} />
+          ))}
+          <button onClick={() => delRow(ri)} title={t("protocols.remove")} style={iconBtn}><Trash2 size={14} /></button>
+        </div>
+      ))}
+      <button onClick={addRow} style={miniBtn}><Plus size={13} /> {t("protocols.tblAddRow")}</button>
     </div>
   );
 }
