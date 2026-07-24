@@ -5,7 +5,8 @@ import { WD_ORDER, wdLabel, newExo } from "../../lib/exlib.js";
 import { NATURES, natureLabel } from "../../lib/nature.js";
 import { todayISO } from "../../lib/metrics.js";
 import { Overlay, CloseX } from "../../lib/ui.jsx";
-import { Plus, X } from "../../lib/icons.jsx";
+import { Plus, X, FileText, Sparkles } from "../../lib/icons.jsx";
+import ProgramView from "./ProgramView.jsx";
 
 /* Aperçu & VALIDATION obligatoires d'un import PDF (parse faillible). Affiche le
    résultat éditable (séances / exercices), signale les avertissements et les
@@ -19,11 +20,15 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
   const [sessions, setSessions] = useState(() =>
     (result?.sessions || []).map((s) => ({ ...s, exercises: (s.exercises || []).map((e) => ({ ...newExo(), ...e })) })));
   const [startDate, setStartDate] = useState(todayISO());
-  const [weeks, setWeeks] = useState(4);
+  const [weeks, setWeeks] = useState(() => Number(result?.doc?.meta?.weeks) || 4);
   const [busy, setBusy] = useState(false);
+  const [showDoc, setShowDoc] = useState(false);
 
   const unread = result?.unread || [];
   const warnings = result?.warnings || [];
+  const doc = result?.doc || null;                 // protocole riche (mode IA)
+  const confidence = result?.confidence;           // 0..1 (mode IA)
+  const confPct = typeof confidence === "number" ? Math.round(confidence * 100) : null;
 
   const setS = (i, patch) => setSessions((arr) => arr.map((s, j) => (j === i ? { ...s, ...patch } : s)));
   const delS = (i) => setSessions((arr) => arr.filter((_, j) => j !== i));
@@ -31,9 +36,12 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
   const delE = (si, ei) => setSessions((arr) => arr.map((s, j) => (j === si ? { ...s, exercises: s.exercises.filter((_, k) => k !== ei) } : s)));
   const addE = (si) => setSessions((arr) => arr.map((s, j) => (j === si ? { ...s, exercises: [...s.exercises, newExo()] } : s)));
 
-  const warnMsg = (w) => t(`pdfImport.warn.${w.code}`, { titre: w.titre, count: w.count, defaultValue: "" });
+  // Avertissement IA (texte libre déjà rédigé) ou avertissement regex (clé i18n).
+  const warnMsg = (w) => (w.code === "ai" ? w.text : t(`pdfImport.warn.${w.code}`, { titre: w.titre, count: w.count, defaultValue: "" }));
   const total = sessions.reduce((a, s) => a + s.exercises.filter((e) => (e.name || "").trim()).length, 0);
-  const canConfirm = sessions.length > 0 && total > 0 && !busy && (!withPlan || startDate);
+  // En mode IA, on peut enregistrer le protocole seul (doc) même sans séance datable.
+  const hasContent = (sessions.length > 0 && total > 0) || !!doc;
+  const canConfirm = hasContent && !busy && (!withPlan || startDate || !sessions.length);
 
   const confirm = async () => {
     // Ne garde que les séances/exos non vides — mais rien n'est écrit ici : on
@@ -41,9 +49,10 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
     const clean = sessions
       .map((s) => ({ weekday: Number(s.weekday) || 0, nature: s.nature || "", code: s.code || "RS", titre: (s.titre || "").trim() || t("pdfImport.defaultSession"), exercises: s.exercises.filter((e) => (e.name || "").trim()) }))
       .filter((s) => s.exercises.length);
-    if (!clean.length) return;
     setBusy(true);
-    try { await onConfirm(clean, withPlan ? { startDate, weeks: Number(weeks) || 4 } : undefined); }
+    // En mode IA, le protocole (doc) est enregistrable même sans séance datable :
+    // on transmet doc au parent (3e argument) qui crée le program_doc + matérialise.
+    try { await onConfirm(clean, withPlan ? { startDate, weeks: Number(weeks) || 4 } : undefined, doc); }
     finally { setBusy(false); }
   };
 
@@ -58,6 +67,22 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
       </div>
 
       <div style={{ padding: "0 16px 20px", maxHeight: "72vh", overflowY: "auto" }}>
+        {/* Bandeau IA : analyse sémantique + confiance + aperçu fidèle du protocole */}
+        {doc && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(56,210,230,0.1)", border: `1px solid ${C.teal}55`, borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+            <Sparkles size={16} color={C.teal} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: "#E8EDF3" }}>{t("pdfImport.aiTitle")}</div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.65)", marginTop: 1 }}>
+                {confPct != null ? t("pdfImport.aiConfidence", { pct: confPct }) : t("pdfImport.aiIntro")}
+              </div>
+            </div>
+            <button onClick={() => setShowDoc(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 11px", color: "#E8EDF3", fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+              <FileText size={13} /> {t("pdfImport.aiPreview")}
+            </button>
+          </div>
+        )}
+
         {/* Avertissements */}
         {warnings.length > 0 && (
           <div style={{ background: `${C.amb}14`, border: `1px solid ${C.amb}44`, borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
@@ -66,7 +91,7 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
         )}
 
         {sessions.length === 0 && (
-          <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>{t("pdfImport.noSession")}</div>
+          <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12.5 })}>{doc ? t("pdfImport.docOnly") : t("pdfImport.noSession")}</div>
         )}
 
         {/* Séances éditables */}
@@ -129,9 +154,12 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
           <button onClick={() => { setBusy(true); Promise.resolve(onArchiveOnly()).finally(() => setBusy(false)); }} disabled={busy} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12.5, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>{t("pdfImport.archiveOnly")}</button>
         )}
         <button onClick={confirm} disabled={!canConfirm} style={{ flex: 2, background: canConfirm ? C.green : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: canConfirm ? "pointer" : "default", opacity: canConfirm ? 1 : 0.6 }}>
-          {t("pdfImport.confirm", { count: sessions.length })}
+          {doc && !sessions.length ? t("pdfImport.confirmDoc") : t("pdfImport.confirm", { count: sessions.length })}
         </button>
       </div>
+
+      {/* Aperçu FIDÈLE du protocole (même rendu que la consultation/PDF). */}
+      {showDoc && doc && <ProgramView doc={doc} title={doc?.meta?.title || t("protocols.untitled")} onClose={() => setShowDoc(false)} />}
     </Overlay>
   );
 }

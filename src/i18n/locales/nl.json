@@ -2291,6 +2291,13 @@
     "bulkParsing": "PDF lezen…",
     "bulkEmpty": "Geen PDF opgeslagen bij spelers.",
     "bulkDoneTitle": "Verwerking voltooid",
-    "bulkDoneSummary": "{{files}} PDF(s) geïmporteerd · {{sessions}} sessie(s) aangemaakt · {{skipped}} overgeslagen."
+    "bulkDoneSummary": "{{files}} PDF(s) geïmporteerd · {{sessions}} sessie(s) aangemaakt · {{skipped}} overgeslagen.",
+    "aiTitle": "AI-analyse van het programma",
+    "aiIntro": "Gestructureerd door AI — controleer vóór opslaan.",
+    "aiConfidence": "Betrouwbaarheid analyse: {{pct}}%. Controleer vóór opslaan.",
+    "aiPreview": "Protocol bekijken",
+    "docOnly": "Geen dateerbare sessie gevonden — alleen het protocol wordt opgeslagen.",
+    "confirmDoc": "Protocol opslaan",
+    "alsoProtocol": "Protocol opgeslagen."
   }
 }

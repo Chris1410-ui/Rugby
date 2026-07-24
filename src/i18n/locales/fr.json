@@ -2291,6 +2291,13 @@
     "bulkParsing": "Lecture du PDF…",
     "bulkEmpty": "Aucun PDF stocké chez les joueurs.",
     "bulkDoneTitle": "Traitement terminé",
-    "bulkDoneSummary": "{{files}} PDF importé(s) · {{sessions}} séance(s) créée(s) · {{skipped}} passé(s)."
+    "bulkDoneSummary": "{{files}} PDF importé(s) · {{sessions}} séance(s) créée(s) · {{skipped}} passé(s).",
+    "aiTitle": "Analyse IA du programme",
+    "aiIntro": "Structuré par l’IA — vérifie avant d’enregistrer.",
+    "aiConfidence": "Confiance de l’analyse : {{pct}} %. Vérifie avant d’enregistrer.",
+    "aiPreview": "Voir le protocole",
+    "docOnly": "Aucune séance datable détectée — seul le protocole sera enregistré.",
+    "confirmDoc": "Enregistrer le protocole",
+    "alsoProtocol": "Protocole enregistré."
   }
 }

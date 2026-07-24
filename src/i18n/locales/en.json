@@ -2291,6 +2291,13 @@
     "bulkParsing": "Reading PDF…",
     "bulkEmpty": "No PDF stored for any player.",
     "bulkDoneTitle": "Processing complete",
-    "bulkDoneSummary": "{{files}} PDF(s) imported · {{sessions}} session(s) created · {{skipped}} skipped."
+    "bulkDoneSummary": "{{files}} PDF(s) imported · {{sessions}} session(s) created · {{skipped}} skipped.",
+    "aiTitle": "AI program analysis",
+    "aiIntro": "Structured by AI — review before saving.",
+    "aiConfidence": "Analysis confidence: {{pct}}%. Review before saving.",
+    "aiPreview": "View protocol",
+    "docOnly": "No datable session detected — only the protocol will be saved.",
+    "confirmDoc": "Save protocol",
+    "alsoProtocol": "Protocol saved."
   }
 }

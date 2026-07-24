@@ -4,8 +4,9 @@ import { C } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { Overlay } from "../../lib/ui.jsx";
 import { listPlayerFiles, playerFileUrl } from "../../data/storage.js";
-import { parseProgramPdf } from "../../lib/pdf.js";
+import { parseProgramSmart } from "../../data/programImport.js";
 import { importProgramForPlayer } from "../../data/freeSessions.js";
+import { createProgramDoc } from "../../data/programDocs.js";
 import PdfImportReview from "../shared/PdfImportReview.jsx";
 
 /* Traitement EN MASSE des PDF de programme déjà stockés (staff écrivain).
@@ -58,7 +59,7 @@ export default function BulkPdfImport({ teamId, players = [], onClose }) {
       try {
         const url = await playerFileUrl(queue[idx].path, { download: true });
         const blob = await (await fetch(url)).blob();
-        const r = await parseProgramPdf(blob);
+        const r = await parseProgramSmart(blob, { weeks: 4, filename: queue[idx].name });
         if (active) setResult(r);
       } catch (e) {
         if (active) setErr(e.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("pdfImport.extractFail", { err: e.message || "" }));
@@ -68,9 +69,14 @@ export default function BulkPdfImport({ teamId, players = [], onClose }) {
   }, [queue, idx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const next = (patch) => { setStats((s) => ({ ...s, ...patch(s) })); setIdx((i) => i + 1); };
-  const onConfirm = async (sessions, opts) => {
+  const onConfirm = async (sessions, opts, doc) => {
     const item = queue[idx];
-    const n = await importProgramForPlayer(item.playerId, teamId, sessions, opts);
+    const n = sessions.length ? await importProgramForPlayer(item.playerId, teamId, sessions, opts) : 0;
+    // Protocole riche associé (best-effort) — le staff a le droit d'écrire.
+    if (doc) {
+      try { await createProgramDoc(teamId, { title: doc?.meta?.title || item.playerName, weeks: doc?.meta?.weeks, doc, status: "draft" }); }
+      catch { /* n'empêche pas la matérialisation des séances */ }
+    }
     next((s) => ({ sessions: s.sessions + n, files: s.files + 1 }));
   };
   const skip = () => next((s) => ({ skipped: s.skipped + 1 }));
