@@ -1379,7 +1379,9 @@
     },
     "totem": {
       "placeholder": "Your totem (e.g. Minotaur)",
-      "randomTitle": "Random totem"
+      "randomTitle": "Random totem",
+      "taken": "Totem already taken",
+      "useAlt": "Use “{{totem}}”"
     },
     "veille": {
       "byTheme": "WATCH BY THEME",
