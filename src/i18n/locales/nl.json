@@ -1379,7 +1379,9 @@
     },
     "totem": {
       "placeholder": "Jouw totem (bijv. Minotaurus)",
-      "randomTitle": "Willekeurige totem"
+      "randomTitle": "Willekeurige totem",
+      "taken": "Totem al in gebruik",
+      "useAlt": "Gebruik “{{totem}}”"
     },
     "veille": {
       "byTheme": "MONITORING PER THEMA",

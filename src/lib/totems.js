@@ -24,6 +24,16 @@ export function randomTotem(seedIndex) {
   return TOTEMS[i];
 }
 
+/* Totem aléatoire DISPONIBLE : le tirage ne pioche QUE parmi les totems non pris
+   (insensible casse/espaces). Si la banque est épuisée pour ce club, repli sur
+   freeTotem (suffixe numéroté unique) → ne renvoie jamais un totem déjà pris. */
+export function randomFreeTotem(taken = []) {
+  const used = new Set([...taken].map((x) => String(x).trim().toLowerCase()).filter(Boolean));
+  const pool = TOTEMS.filter((x) => !used.has(x.toLowerCase()));
+  if (pool.length) return pool[Math.floor(Math.random() * pool.length)];
+  return freeTotem(taken);
+}
+
 /* Renvoie un totem libre par rapport à un ensemble de totems déjà pris
    (comparaison insensible à la casse). Essaie le souhait, puis un totem inutilisé
    de la banque, puis un suffixe numéroté. Miroir client de la fonction SQL

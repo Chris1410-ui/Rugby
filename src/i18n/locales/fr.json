@@ -1379,7 +1379,9 @@
     },
     "totem": {
       "placeholder": "Ton totem (ex. Minotaure)",
-      "randomTitle": "Totem aléatoire"
+      "randomTitle": "Totem aléatoire",
+      "taken": "Totem déjà pris",
+      "useAlt": "Utiliser « {{totem}} »"
     },
     "veille": {
       "byTheme": "VEILLE PAR THÈME",

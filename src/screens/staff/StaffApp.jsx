@@ -370,7 +370,7 @@ function AddPlayerModal({ teamId, players = [], onClose }) {
           <CloseX onClose={onClose} />
         </div>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 12 }}>{t("staff.app.totemHint1")}<b>{t("staff.app.totemHintBold")}</b>{t("staff.app.totemHint2")}</div>
-        <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} />
+        <TotemPicker value={name} onChange={(v) => { setName(v); setErr(""); }} accent={C.coral} taken={players.map((p) => p.name)} />
         <div style={{ display: "flex", gap: 8 }}>
           <select value={posIdx} onChange={(e) => setPosIdx(Number(e.target.value))} style={{ ...inp, flex: 2 }}>
             {POS_GROUPS.map((grp) => (

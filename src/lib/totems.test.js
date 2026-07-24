@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TOTEMS, randomTotem, freeTotem, isTotemTaken } from "./totems.js";
+import { TOTEMS, randomTotem, randomFreeTotem, freeTotem, isTotemTaken } from "./totems.js";
 
 describe("totems", () => {
   it("liste non vide et sans doublon", () => {
@@ -47,5 +47,24 @@ describe("freeTotem — propose un totem libre", () => {
     const taken = ["Minotaure", "renard futé", "SANGLIER"];
     const res = freeTotem(taken, "Renard futé");
     expect(taken.map((t) => t.toLowerCase())).not.toContain(res.toLowerCase());
+  });
+});
+
+describe("randomFreeTotem — tirage aléatoire parmi les disponibles", () => {
+  it("ne pioche jamais un totem déjà pris (insensible casse/espaces)", () => {
+    const taken = ["  minotaure ", "LYNX"];
+    for (let i = 0; i < 40; i++) {
+      const res = randomFreeTotem(taken);
+      expect(["minotaure", "lynx"]).not.toContain(res.trim().toLowerCase());
+    }
+  });
+  it("pioche dans la banque tant qu'il reste des totems libres", () => {
+    const res = randomFreeTotem(["Lynx"]);
+    expect(TOTEMS).toContain(res);
+  });
+  it("banque épuisée → repli suffixe numéroté unique (jamais un pris)", () => {
+    const res = randomFreeTotem(TOTEMS);
+    expect(TOTEMS.map((t) => t.toLowerCase())).not.toContain(res.toLowerCase());
+    expect(res).toMatch(/ \d+$/);
   });
 });
