@@ -2275,6 +2275,12 @@
     },
     "openBtn": "Import a PDF",
     "importedPlayer": "{{count}} session(s) added to your calendar.",
-    "importErr": "Import failed: {{err}}"
+    "importErr": "Import failed: {{err}}",
+    "addProgram": "Add a program PDF",
+    "ficheNote": "The PDF is parsed: preview + validation before creating dated sessions in the calendar (the original file is also archived).",
+    "importedStaff": "{{count}} session(s) created and assigned to the player.",
+    "alsoArchived": "PDF archived.",
+    "archived": "PDF archived (no session created).",
+    "archiveOnly": "Archive only"
   }
 }

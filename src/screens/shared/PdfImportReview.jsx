@@ -14,7 +14,7 @@ import { Plus, X } from "../../lib/icons.jsx";
    (sessions, { startDate, weeks }). En mode staff, onConfirm reçoit (sessions). */
 const mini = { background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none" };
 
-export default function PdfImportReview({ result, withPlan = false, onCancel, onConfirm }) {
+export default function PdfImportReview({ result, withPlan = false, onCancel, onConfirm, onArchiveOnly }) {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState(() =>
     (result?.sessions || []).map((s) => ({ ...s, exercises: (s.exercises || []).map((e) => ({ ...newExo(), ...e })) })));
@@ -122,6 +122,9 @@ export default function PdfImportReview({ result, withPlan = false, onCancel, on
       {/* Barre d'action */}
       <div style={{ display: "flex", gap: 10, padding: "10px 16px 16px", borderTop: `1px solid ${C.border}` }}>
         <button onClick={onCancel} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>{t("pdfImport.cancel")}</button>
+        {onArchiveOnly && (
+          <button onClick={() => { setBusy(true); Promise.resolve(onArchiveOnly()).finally(() => setBusy(false)); }} disabled={busy} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12.5, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>{t("pdfImport.archiveOnly")}</button>
+        )}
         <button onClick={confirm} disabled={!canConfirm} style={{ flex: 2, background: canConfirm ? C.green : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: canConfirm ? "pointer" : "default", opacity: canConfirm ? 1 : 0.6 }}>
           {t("pdfImport.confirm", { count: sessions.length })}
         </button>

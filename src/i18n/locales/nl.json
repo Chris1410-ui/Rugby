@@ -2275,6 +2275,12 @@
     },
     "openBtn": "PDF importeren",
     "importedPlayer": "{{count}} sessie(s) aan je kalender toegevoegd.",
-    "importErr": "Import mislukt: {{err}}"
+    "importErr": "Import mislukt: {{err}}",
+    "addProgram": "Programma-PDF toevoegen",
+    "ficheNote": "De PDF wordt geanalyseerd: voorbeeld + validatie voordat gedateerde sessies in de kalender worden aangemaakt (het originele bestand wordt ook gearchiveerd).",
+    "importedStaff": "{{count}} sessie(s) aangemaakt en toegewezen aan de speler.",
+    "alsoArchived": "PDF gearchiveerd.",
+    "archived": "PDF gearchiveerd (geen sessie aangemaakt).",
+    "archiveOnly": "Alleen archiveren"
   }
 }
