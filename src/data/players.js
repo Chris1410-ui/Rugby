@@ -125,6 +125,32 @@ export async function setMyInitials(initials) {
   if (error) throw error;
 }
 
+/* Modification du TOTEM (unicité par club garantie côté serveur, cf. 0071).
+   - setMyTotem       : le joueur change SON totem (sa fiche).
+   - setPlayerTotem   : le staff change le totem d'un joueur de SON club.
+   Lève 'TOTEM_TAKEN' si déjà pris (l'appelant propose une alternative). */
+export async function setMyTotem(totem) {
+  const { data, error } = await supabase.rpc("set_my_totem", { p_totem: (totem || "").trim() });
+  if (error) throw error;
+  return data; // totem effectivement enregistré
+}
+export async function setPlayerTotem(playerId, totem) {
+  const { data, error } = await supabase.rpc("set_player_totem", { p_player: playerId, p_totem: (totem || "").trim() });
+  if (error) throw error;
+  return data;
+}
+
+/* Totems déjà pris dans un club (pour exclure du tirage/alternative côté staff).
+   Le joueur ne peut pas lire les totems des autres (RLS) → réservé au staff. */
+export async function listTeamTotems(teamId, exceptId = null) {
+  if (!teamId) return [];
+  let q = supabase.from("players").select("id, name").eq("team_id", teamId);
+  if (exceptId) q = q.neq("id", exceptId);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []).map((r) => r.name).filter(Boolean);
+}
+
 /* Mise à jour d'un joueur (staff). `patch` en colonnes DB (snake_case). */
 export async function updatePlayer(id, patch) {
   const { error } = await supabase.from("players").update(patch).eq("id", id);

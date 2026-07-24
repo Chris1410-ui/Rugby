@@ -1726,7 +1726,15 @@
       "pdfOpenTitle": "Open",
       "pdfDownloadTitle": "Download",
       "pdfDeleteTitle": "Delete",
-      "pdfTitleSelf": "MY PROGRAM PDFS"
+      "pdfTitleSelf": "MY PROGRAM PDFS",
+      "totemTitle": "Totem (display name)",
+      "totemDescSelf": "Your nickname shown everywhere in the app. Unique within your club.",
+      "totemDescStaff": "Player’s display nickname. Unique within the club.",
+      "totemSave": "Save totem",
+      "totemSaved": "Totem saved.",
+      "totemTaken": "That totem is already taken in the club — pick another.",
+      "totemNotAllowed": "Action not allowed.",
+      "totemRequired": "Totem cannot be empty."
     },
     "error": {
       "title": "An error occurred",
