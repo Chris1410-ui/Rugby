@@ -1311,7 +1311,14 @@
       "overloadSame": "Already {{count}}× {{nature}} on {{days}}/{{total}} day(s) — mind the overload",
       "overloadBusy": "{{days}}/{{total}} day(s) already loaded",
       "overloadClear": "No activity planned those days",
-      "bulkImportBtn": "Bulk-import players' PDFs"
+      "bulkImportBtn": "Bulk-import players' PDFs",
+      "updated": "Program updated ✓ ({{count}} upcoming sessions)",
+      "openTitle": "Open program",
+      "editTitle": "Edit",
+      "editingBanner": "Editing an existing program",
+      "saveEdit": "Save changes",
+      "editBtn": "Edit",
+      "noExo": "No exercise"
     },
     "app": {
       "fabSeance": "＋ Session",

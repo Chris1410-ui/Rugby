@@ -114,6 +114,48 @@ export async function createProgram(teamId, { title, start, end, assigned, templ
   return { program: dbToProgram(prog), count: sessions.length };
 }
 
+/* Édition d'un programme existant : met à jour l'entrée + RÉ-MATÉRIALISE les
+   séances FUTURES (≥ aujourd'hui) depuis les nouveaux modèles/dates. Préserve
+   l'historique : les séances passées et les séances futures DÉJÀ loggées ne sont
+   pas touchées ; seules les séances futures NON loggées sont remplacées. */
+export async function updateProgram(teamId, id, { title, start, end, assigned, templates }, { today } = {}) {
+  const t0 = today || isoDate(new Date());
+
+  const { error: uErr } = await supabase
+    .from("programs")
+    .update({ title: (title || "").trim(), start_date: start, end_date: end, assigned, templates })
+    .eq("id", id);
+  if (uErr) throw uErr;
+
+  // Séances futures de ce programme (id + date), pour distinguer loggées / non.
+  const { data: fut, error: fErr } = await supabase
+    .from("sessions").select("id, date").eq("program_id", id).gte("date", t0);
+  if (fErr) throw fErr;
+  const futIds = (fut ?? []).map((r) => r.id);
+  let loggedIds = new Set();
+  if (futIds.length) {
+    const { data: lg } = await supabase.from("session_logs").select("session_id").in("session_id", futIds);
+    loggedIds = new Set((lg ?? []).map((r) => r.session_id));
+  }
+  const keptDates = new Set((fut ?? []).filter((r) => loggedIds.has(r.id)).map((r) => r.date));
+  const toDelete = futIds.filter((sid) => !loggedIds.has(sid));
+  if (toDelete.length) {
+    const { error: dErr } = await supabase.from("sessions").delete().in("id", toDelete);
+    if (dErr) throw dErr;
+  }
+
+  // Re-matérialise les occurrences futures (hors dates déjà couvertes par une
+  // séance loggée préservée → pas de doublon).
+  const rows = expandTemplates({ teamId, start, end, templates, assigned })
+    .filter((r) => r.date >= t0 && !keptDates.has(r.date))
+    .map((r) => ({ ...r, program_id: id }));
+  if (rows.length) {
+    const { error: iErr } = await supabase.from("sessions").insert(rows);
+    if (iErr) throw iErr;
+  }
+  return rows.length;
+}
+
 export async function deleteProgram(id) {
   const { error } = await supabase.from("programs").delete().eq("id", id); // cascade sessions
   if (error) throw error;

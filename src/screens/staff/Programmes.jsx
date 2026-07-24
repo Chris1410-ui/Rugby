@@ -8,9 +8,9 @@ import { WD_ORDER, wdLabel, newExo } from "../../lib/exlib.js";
 import { NATURES, natureLabel, natureColor } from "../../lib/nature.js";
 import { weekdayDatesInRange, aggregateLoadByDate, overlapForWeekday } from "../../lib/overload.js";
 import { Section, Tag } from "../../lib/ui.jsx";
-import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video } from "../../lib/icons.jsx";
+import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video, Pencil, Eye } from "../../lib/icons.jsx";
 import { hasVideo } from "../../lib/youtube.js";
-import { usePrograms, createProgram, deleteProgram } from "../../data/programs.js";
+import { usePrograms, createProgram, updateProgram, deleteProgram } from "../../data/programs.js";
 import { resolveAssignedIds } from "../../data/sessions.js";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { useExercises } from "../../data/exercises.js";
@@ -106,6 +106,8 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [pdfReview, setPdfReview] = useState(null); // résultat de parse en attente de validation
   const [bulk, setBulk] = useState(false); // traitement en masse des PDF joueurs stockés
   const [filesOf, setFilesOf] = useState(null); // programme dont on ouvre les fichiers
+  const [editingId, setEditingId] = useState(null); // programme en cours d'édition (null = création)
+  const [viewing, setViewing] = useState(null);      // programme ouvert en consultation (lecteur)
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
 
   const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
@@ -127,10 +129,26 @@ export default function Programmes({ teamId, players, sessions, logs }) {
 
   const reset = () => {
     setTitle(""); setStart(todayISO()); setEnd(isoDate(new Date(Date.now() + 13 * 864e5)));
-    setRecMode("all"); setRecIds([]); setNote(""); setPdfFile(null);
+    setRecMode("all"); setRecIds([]); setNote(""); setPdfFile(null); setEditingId(null);
     setTemplates([{ weekday: 1, code: "RS", nature: "force", titre: "Séance force", exercises: [newExo()] }]);
   };
   const startNew = () => { reset(); setView("new"); };
+
+  // Ouvre un programme EXISTANT dans le constructeur, pré-rempli (édition en place).
+  const loadForEdit = (pr) => {
+    reset();
+    setEditingId(pr.id);
+    setTitle(pr.title || "");
+    setStart(pr.start || todayISO());
+    setEnd(pr.end || isoDate(new Date(Date.now() + 13 * 864e5)));
+    const a = pr.assigned || { mode: "all" };
+    setRecMode(a.mode || "all");
+    setRecGroup(a.mode === "group" ? a.group : (players[0]?.grp));
+    setRecIds(a.mode === "players" ? (a.ids || []) : []);
+    setTemplates((pr.templates || []).map((tp) => ({ ...tp, nature: tp.nature || "force", exercises: (tp.exercises || []).map((e) => ({ ...newExo(), ...e })) })));
+    setViewing(null);
+    setView("new");
+  };
   const addTpl = () => setTemplates((t) => [...t, { weekday: 3, code: "CSB", nature: "conditioning", titre: "Nouvelle séance", exercises: [newExo()] }]);
   const setTpl = (i, patch) => setTemplates((t) => t.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const setExo = (ti, ei, patch) => setTemplates((t) => t.map((x, j) => (j === ti ? { ...x, exercises: x.exercises.map((e, k) => (k === ei ? { ...e, ...patch } : e)) } : x)));
@@ -204,14 +222,22 @@ export default function Programmes({ teamId, players, sessions, logs }) {
 
     setBusy(true);
     try {
-      const { program, count } = await createProgram(teamId, { title, start, end, assigned, templates: cleanT, source: pdfFile ? "pdf" : "manuel" });
-      // Archive le PDF source dans le bucket privé (non bloquant)
-      if (pdfFile) {
-        try { await uploadFile(programFolder(teamId, program.id), pdfFile); }
-        catch (upErr) { console.error("[upload pdf]", upErr.message); }
+      if (editingId) {
+        // Édition en place : met à jour l'entrée + re-matérialise les séances
+        // futures non loggées (l'historique loggé est préservé).
+        const count = await updateProgram(teamId, editingId, { title, start, end, assigned, templates: cleanT }, { today: todayISO() });
+        setView("list"); reset();
+        setNote(t("staff.programs.updated", { count }));
+      } else {
+        const { program, count } = await createProgram(teamId, { title, start, end, assigned, templates: cleanT, source: pdfFile ? "pdf" : "manuel" });
+        // Archive le PDF source dans le bucket privé (non bloquant)
+        if (pdfFile) {
+          try { await uploadFile(programFolder(teamId, program.id), pdfFile); }
+          catch (upErr) { console.error("[upload pdf]", upErr.message); }
+        }
+        setView("list"); reset();
+        setNote(t("staff.programs.sent", { count }));
       }
-      setView("list"); reset();
-      setNote(t("staff.programs.sent", { count }));
     } catch (e) {
       if (e.code === "no-sessions" || e.message === "no-sessions")
         setNote(t("staff.programs.errNoSessions"));
@@ -275,7 +301,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           return (
             <div key={pr.id} style={sc({ marginBottom: 10 })}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <div style={{ flex: 1 }}>
+                <div onClick={() => setViewing(pr)} style={{ flex: 1, cursor: "pointer" }} title={t("staff.programs.openTitle")}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 14, fontWeight: 800 }}>{pr.title}</span>{pr.source === "pdf" && <Tag c={C.viol}>PDF</Tag>}{/* i18n-ok: format */}
                   </div>
@@ -285,6 +311,8 @@ export default function Programmes({ teamId, players, sessions, logs }) {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={() => setViewing(pr)} title={t("staff.programs.openTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}><Eye size={14} /></button>
+                  {!readOnly && <button onClick={() => loadForEdit(pr)} title={t("staff.programs.editTitle")} style={{ background: `${accent}14`, border: `1px solid ${accent}66`, borderRadius: 8, padding: 7, color: accent, cursor: "pointer", display: "flex" }}><Pencil size={14} /></button>}
                   <button onClick={() => setFilesOf(pr)} title={t("staff.programs.filesTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex" }}><Paperclip size={14} /></button>
                   {!readOnly && <button onClick={() => deleteProgram(pr.id)} title={t("staff.programs.deleteTitle")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.56)", padding: 4 }}><X size={16} /></button>}
                 </div>
@@ -299,6 +327,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           );
         })}
         {filesOf && <ProgramFiles teamId={teamId} program={filesOf} onClose={() => setFilesOf(null)} />}
+        {viewing && <ProgramConsult program={viewing} readOnly={readOnly} onEdit={() => loadForEdit(viewing)} onClose={() => setViewing(null)} t={t} />}
       </div>
     );
   }
@@ -306,7 +335,8 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   // ── BUILDER ──
   return (
     <div>
-      <button onClick={() => setView("list")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", marginBottom: 12 }}>← {t("staff.programs.back")}</button>
+      <button onClick={() => { setView("list"); reset(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", marginBottom: 12 }}>← {t("staff.programs.back")}</button>
+      {editingId && <div style={{ fontSize: 13, fontWeight: 800, color: accent, marginBottom: 10 }}>{t("staff.programs.editingBanner")}</div>}
       {note && <div style={sc({ background: `${C.amb}1a`, borderColor: `${C.amb}55`, marginBottom: 12, fontSize: 11, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 })}>{note}</div>}
 
       <Section title={t("staff.programs.sectionProgram")}>
@@ -371,7 +401,54 @@ export default function Programmes({ teamId, players, sessions, logs }) {
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         <button onClick={doSaveRoutine} disabled={!title.trim()} style={{ flex: "0 0 auto", background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 12, padding: "0 16px", color: C.viol, fontWeight: 700, fontSize: 12, cursor: title.trim() ? "pointer" : "default", opacity: title.trim() ? 1 : 0.5, display: "flex", alignItems: "center", gap: 6 }}><ClipboardList size={14} /> {t("staff.programs.routineBtn")}</button>
-        <button onClick={send} disabled={!title.trim() || busy} style={{ flex: 1, background: title.trim() ? C.green : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 14, color: "#fff", fontWeight: 700, fontSize: 14, cursor: title.trim() ? "pointer" : "default", opacity: title.trim() && !busy ? 1 : 0.6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Send size={16} /> {busy ? t("staff.programs.sending") : t("staff.programs.sendBtn")}</button>
+        <button onClick={send} disabled={!title.trim() || busy} style={{ flex: 1, background: title.trim() ? C.green : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 14, color: "#fff", fontWeight: 700, fontSize: 14, cursor: title.trim() ? "pointer" : "default", opacity: title.trim() && !busy ? 1 : 0.6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Send size={16} /> {busy ? t("staff.programs.sending") : editingId ? t("staff.programs.saveEdit") : t("staff.programs.sendBtn")}</button>
+      </div>
+    </div>
+  );
+}
+
+/* Lecteur (consultation) d'un programme existant : plage de dates + séances par
+   jour (intitulé, code, exercices), en lecture seule. Bouton « Modifier » pour
+   le staff écrivain → rouvre le constructeur pré-rempli. */
+function ProgramConsult({ program, readOnly, onEdit, onClose, t }) {
+  const accent = C.green;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "88vh", overflowY: "auto", background: C.panel, borderRadius: 16, padding: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{program.title}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{fmtShort(program.start)} → {fmtShort(program.end)}</div>
+          </div>
+          {!readOnly && (
+            <button onClick={onEdit} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${accent}18`, border: `1px solid ${accent}66`, borderRadius: 9, padding: "8px 12px", color: accent, fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}><Pencil size={14} /> {t("staff.programs.editBtn")}</button>
+          )}
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.55)", padding: 4, display: "flex" }}><X size={18} /></button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+          {(program.templates || []).map((tp, i) => (
+            <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                <Tag c={CODES[tp.code] || accent}>{wdLabel(Number(tp.weekday))}</Tag>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{tp.titre}</span>
+                {tp.nature && <Tag c={natureColor(tp.nature)}>{natureLabel(t, tp.nature)}</Tag>}
+              </div>
+              {(tp.exercises || []).length === 0 ? (
+                <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)" }}>{t("staff.programs.noExo")}</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {tp.exercises.map((e, j) => (
+                    <div key={j} style={{ display: "flex", gap: 8, fontSize: 12, color: "rgba(255,255,255,0.85)", borderTop: j ? `1px solid ${C.border2}` : "none", paddingTop: j ? 4 : 0 }}>
+                      <span style={{ flex: 1, minWidth: 0 }}>{e.name}</span>
+                      <span style={{ color: "rgba(255,255,255,0.55)", flexShrink: 0 }}>{[e.sets && e.reps ? `${e.sets}×${e.reps}` : "", e.charge, e.rest ? `${e.rest}s` : ""].filter(Boolean).join(" · ")}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

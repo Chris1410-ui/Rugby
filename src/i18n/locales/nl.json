@@ -1311,7 +1311,14 @@
       "overloadSame": "Al {{count}}× {{nature}} op {{days}}/{{total}} dag(en) — let op overbelasting",
       "overloadBusy": "{{days}}/{{total}} dag(en) al belast",
       "overloadClear": "Geen activiteit gepland die dagen",
-      "bulkImportBtn": "Speler-PDF's in bulk importeren"
+      "bulkImportBtn": "Speler-PDF's in bulk importeren",
+      "updated": "Programma bijgewerkt ✓ ({{count}} komende sessies)",
+      "openTitle": "Programma openen",
+      "editTitle": "Bewerken",
+      "editingBanner": "Een bestaand programma bewerken",
+      "saveEdit": "Wijzigingen opslaan",
+      "editBtn": "Bewerken",
+      "noExo": "Geen oefening"
     },
     "app": {
       "fabSeance": "＋ Sessie",
