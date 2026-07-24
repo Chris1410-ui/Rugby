@@ -43,4 +43,13 @@ describe("expandTemplates (matérialisation des séances)", () => {
     const out = expandTemplates({ teamId: "r_u18", start: "2026-07-27", end: "2026-07-13", templates: [tpl()], assigned: { mode: "all" } });
     expect(out).toEqual([]);
   });
+
+  // updateProgram ré-matérialise UNIQUEMENT les occurrences futures (≥ today) :
+  // le filtre par date préserve le passé (séances déjà écoulées / loggées).
+  it("le filtre futur ne conserve que les occurrences ≥ aujourd'hui", () => {
+    const out = expandTemplates({ teamId: "r_u18", start: "2026-07-06", end: "2026-07-20", templates: [tpl({ weekday: 1 })], assigned: { mode: "all" } });
+    expect(out.map((s) => s.date)).toEqual(["2026-07-06", "2026-07-13", "2026-07-20"]);
+    const today = "2026-07-13";
+    expect(out.filter((s) => s.date >= today).map((s) => s.date)).toEqual(["2026-07-13", "2026-07-20"]);
+  });
 });

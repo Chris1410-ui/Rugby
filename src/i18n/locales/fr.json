@@ -1311,7 +1311,14 @@
       "overloadSame": "Déjà {{count}}× {{nature}} sur {{days}}/{{total}} jour(s) — attention à la surcharge",
       "overloadBusy": "{{days}}/{{total}} jour(s) déjà chargé(s)",
       "overloadClear": "Aucune activité prévue ces jours-là",
-      "bulkImportBtn": "Importer les PDF des joueurs (en masse)"
+      "bulkImportBtn": "Importer les PDF des joueurs (en masse)",
+      "updated": "Programme mis à jour ✓ ({{count}} séances à venir)",
+      "openTitle": "Ouvrir le programme",
+      "editTitle": "Modifier",
+      "editingBanner": "Modification d’un programme existant",
+      "saveEdit": "Enregistrer les modifications",
+      "editBtn": "Modifier",
+      "noExo": "Aucun exercice"
     },
     "app": {
       "fabSeance": "＋ Séance",
