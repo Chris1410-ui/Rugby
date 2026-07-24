@@ -5,7 +5,8 @@ import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel, posDisplay } from "../../lib/positions.js";
 import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel, alertText, alertCat } from "../../lib/metrics.js";
-import { Ring, Section, KPI, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Ring, Section, KPI, Tag, CloseX, useModalClose, EstimatedBadge } from "../../lib/ui.jsx";
+import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
 import { usePlayerCheckins, bilanEventsOf } from "../../data/checkins.js";
 import { useReadOnly } from "../../lib/readonly.js";
@@ -85,7 +86,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, background: C.navy, borderRadius: 18, padding: 18, maxHeight: "92vh", overflowY: "auto" }}>
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, position: "sticky", top: 0, zIndex: 5, background: C.navy, paddingBottom: 8 }}>
-          <Ring val={player.readiness} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label={t("shared.report.ready")} size={58} sw={5} />
+          <Ring val={readinessReady(player) ? player.readiness : "—"} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label={t("shared.report.ready")} size={58} sw={5} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>{displayName(player)}{player.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>{t("shared.report.demoBadge")}</span>}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>#{player.num ?? "—"} · {posDisplay(t, player.pos)} · {grpLabel(player.grp)}</div>
@@ -193,7 +194,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
         {/* Charge */}
         <Section title={t("shared.report.loadTitle")}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
-            <KPI label={t("shared.report.kpiAcwr")} value={player.acwr?.toFixed?.(2) ?? player.acwr} color={zone.c} sub={zoneLabel(t, zone)} />
+            <KPI label={t("shared.report.kpiAcwr")} value={player.acwr?.toFixed?.(2) ?? player.acwr} color={acwrEstimated(player) ? C.gray : zone.c} sub={acwrEstimated(player) ? `${zoneLabel(t, zone)} · ${t("reliability.estimated")}` : zoneLabel(t, zone)} />
             <KPI label={t("shared.report.kpiLoad7d")} value={player.charge7j} sub={t("shared.report.subUa")} color={C.coral} />
             <KPI label={t("shared.report.kpiMonotony")} value={player.monotonie} color={player.monotonie > 2 ? C.amb : C.green} />
             <KPI label={t("shared.report.kpiStrain")} value={player.strain} color={C.viol} />
