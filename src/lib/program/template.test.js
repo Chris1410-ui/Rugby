@@ -94,3 +94,24 @@ describe("renderProgramHtml", () => {
     expect(html).toContain("id=\"musculation-1\"");
   });
 });
+
+describe("rendu — nouveaux types de sections", () => {
+  it("checklist, weekcalendar, cardio, table sont rendus", () => {
+    const doc = normalizeProgram({ meta: { title: "P" }, sections: [
+      { type: "checklist", title: "Échauffement", badge: "~11 min", items: ["Foam roller"] },
+      { type: "weekcalendar", title: "Semaine type", days: [{ day: "lundi", label: "Muscu 1", nature: "force" }] },
+      { type: "cardio", title: "Cardio", items: [{ name: "Base aérobie", kind: "base", target: "30 min" }] },
+      { type: "table", title: "Paliers", columns: ["Poste", "Palier"], rows: [["Pilier", "16.1"]] },
+    ] }, 4);
+    const html = renderProgramHtml(doc);
+    expect(html).toContain("chk-badge");
+    expect(html).toContain("Foam roller");
+    expect(html).toContain("wcal");
+    expect(html).toContain("Muscu 1");
+    expect(html).toContain("Force"); // pastille de nature
+    expect(html).toContain("cardio-row");
+    expect(html).toContain("Base aérobie");
+    expect(html).toContain("gtable");
+    expect(html).toContain("Pilier");
+  });
+});

@@ -102,3 +102,43 @@ describe("protocole — toc", () => {
     expect(t[1].anchor).toBe("musculation-1");
   });
 });
+
+describe("protocole — nouveaux types de sections", () => {
+  it("checklist : conserve badge + items (texte ou {text})", () => {
+    const p = normalizeProgram({ sections: [{ type: "checklist", title: "Échauffement", badge: "~11 min", items: ["Foam roller", { text: "Activation" }, ""] }] }, 4);
+    const s = p.sections[0];
+    expect(s.type).toBe("checklist");
+    expect(s.badge).toBe("~11 min");
+    expect(s.items).toEqual(["Foam roller", "Activation", ""]);
+  });
+
+  it("weekcalendar : mappe le jour (nom ou index) → weekday et garde nature/flags", () => {
+    const p = normalizeProgram({ sections: [{ type: "weekcalendar", title: "Semaine type", days: [
+      { day: "lundi", label: "Muscu 1", nature: "force" },
+      { weekday: 0, label: "OFF", nature: "recuperation", off: true },
+      { day: "inconnu" }, // sans weekday ni label → écarté
+    ] }] }, 4);
+    const s = p.sections[0];
+    expect(s.type).toBe("weekcalendar");
+    expect(s.days).toHaveLength(2);
+    expect(s.days[0]).toMatchObject({ weekday: 1, label: "Muscu 1", nature: "force", off: false });
+    expect(s.days[1]).toMatchObject({ weekday: 0, off: true });
+  });
+
+  it("cardio : garde name/kind/target/note", () => {
+    const p = normalizeProgram({ sections: [{ type: "cardio", title: "Cardio", items: [{ name: "Base aérobie", kind: "base", target: "30 min Z2" }] }] }, 4);
+    expect(p.sections[0].items[0]).toMatchObject({ name: "Base aérobie", kind: "base", target: "30 min Z2" });
+  });
+
+  it("table : colonnes + lignes préservées", () => {
+    const p = normalizeProgram({ sections: [{ type: "table", title: "Paliers", columns: ["Poste", "Palier"], rows: [["Pilier", "16.1"]] }] }, 4);
+    expect(p.sections[0].columns).toEqual(["Poste", "Palier"]);
+    expect(p.sections[0].rows[0]).toEqual(["Pilier", "16.1"]);
+  });
+
+  it("type inconnu avec rows → traité comme exercices (aucun contenu perdu)", () => {
+    const p = normalizeProgram({ sections: [{ type: "wat", rows: [{ name: "Squat" }] }] }, 2);
+    expect(p.sections[0].type).toBe("exercises");
+    expect(p.sections[0].rows[0].name).toBe("Squat");
+  });
+});

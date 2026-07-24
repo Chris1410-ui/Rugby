@@ -14,7 +14,16 @@ export const MAX_WEEKS = 12;
 // ambre (volume/force), fumée (affûtage), rouge (obligatoire), vert (validé).
 export const ACCENTS = ["c", "a", "m", "r", "v"];
 
-export const SECTION_TYPES = ["narrative", "exercises"];
+export const SECTION_TYPES = ["narrative", "exercises", "checklist", "weekcalendar", "cardio", "table"];
+
+// Jours (semaine type / weekcalendar). Lundi=1 … Dimanche=0 (getDay JS).
+export const WEEKDAY_NAMES = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const DAY_TO_WD = { dimanche: 0, lundi: 1, mardi: 2, mercredi: 3, jeudi: 4, vendredi: 5, samedi: 6 };
+export function dayToWeekday(d) {
+  if (typeof d === "number" && d >= 0 && d <= 6) return d;
+  const k = String(d || "").trim().toLowerCase();
+  return k in DAY_TO_WD ? DAY_TO_WD[k] : null;
+}
 
 export const uid = () =>
   globalThis.crypto?.randomUUID?.() || `p${Math.random().toString(36).slice(2, 10)}`;
@@ -84,6 +93,20 @@ export function emptyNarrativeSection() {
   return { id: uid(), type: "narrative", num: "", title: "", subtitle: "", body: "" };
 }
 
+// ── Nouveaux types (fidélité d'import : échauffement, semaine type, cardio, tableaux) ──
+export function emptyChecklistSection() {
+  return { id: uid(), type: "checklist", num: "", title: "", subtitle: "", badge: "", items: [""] };
+}
+export function emptyWeekCalendarSection() {
+  return { id: uid(), type: "weekcalendar", num: "", title: "", subtitle: "", days: [] };
+}
+export function emptyCardioSection() {
+  return { id: uid(), type: "cardio", num: "", title: "", subtitle: "", items: [{ name: "", kind: "", target: "", note: "" }] };
+}
+export function emptyTableSection() {
+  return { id: uid(), type: "table", num: "", title: "", subtitle: "", columns: ["", ""], rows: [["", ""]] };
+}
+
 export function emptyMeta(weeks = 4) {
   const w = clampWeeks(weeks);
   return {
@@ -133,29 +156,62 @@ function normalizeRow(row, w) {
   };
 }
 
-function normalizeSection(sec, w) {
-  const s = sec || {};
-  if (s.type === "narrative") {
-    return {
-      id: s.id || uid(), type: "narrative",
-      num: typeof s.num === "string" ? s.num : "",
-      title: typeof s.title === "string" ? s.title : "",
-      subtitle: typeof s.subtitle === "string" ? s.subtitle : "",
-      body: typeof s.body === "string" ? s.body : "",
-    };
-  }
-  // défaut : section d'exercices
+const asStr = (v) => (typeof v === "string" ? v : "");
+const head = (s) => ({ id: s.id || uid(), num: asStr(s.num), title: asStr(s.title), subtitle: asStr(s.subtitle) });
+
+function normalizeChecklist(s) {
+  return { ...head(s), type: "checklist", badge: asStr(s.badge),
+    items: (Array.isArray(s.items) ? s.items : []).map((x) => (typeof x === "string" ? x : asStr(x?.text))).filter((x) => x != null) };
+}
+function normalizeWeekCalendar(s) {
+  const days = (Array.isArray(s.days) ? s.days : []).map((d) => ({
+    weekday: dayToWeekday(d?.weekday ?? d?.day),
+    label: asStr(d?.label),
+    nature: asStr(d?.nature),
+    optional: Boolean(d?.optional),
+    off: Boolean(d?.off),
+  })).filter((d) => d.weekday != null || d.label);
+  return { ...head(s), type: "weekcalendar", days };
+}
+function normalizeCardio(s) {
+  return { ...head(s), type: "cardio",
+    items: (Array.isArray(s.items) ? s.items : []).map((it) => ({
+      name: asStr(it?.name), kind: asStr(it?.kind), target: asStr(it?.target), note: asStr(it?.note),
+    })).filter((it) => it.name || it.target) };
+}
+function normalizeTable(s) {
+  const cols = (Array.isArray(s.columns) ? s.columns : []).map(asStr);
+  const rows = (Array.isArray(s.rows) ? s.rows : []).map((r) => (Array.isArray(r) ? r.map(asStr) : []));
+  return { ...head(s), type: "table", columns: cols, rows };
+}
+function normalizeExercises(s, w) {
   const labels = Array.isArray(s.weekLabels) && s.weekLabels.length ? s.weekLabels : defaultWeekLabels(w);
   const accents = Array.isArray(s.weekAccents) && s.weekAccents.length ? s.weekAccents : defaultWeekAccents(w);
   return {
-    id: s.id || uid(), type: "exercises",
-    num: typeof s.num === "string" ? s.num : "",
-    title: typeof s.title === "string" ? s.title : "",
-    subtitle: typeof s.subtitle === "string" ? s.subtitle : "",
+    ...head(s), type: "exercises",
     weekLabels: Array.from({ length: w }, (_, i) => labels[i] ?? `S${i + 1}`),
     weekAccents: Array.from({ length: w }, (_, i) => (ACCENTS.includes(accents[i]) ? accents[i] : "c")),
     rows: (Array.isArray(s.rows) ? s.rows : []).map((r) => normalizeRow(r, w)),
   };
+}
+
+function normalizeSection(sec, w) {
+  const s = sec || {};
+  switch (s.type) {
+    case "narrative": return { ...head(s), type: "narrative", body: asStr(s.body) };
+    case "checklist": return normalizeChecklist(s);
+    case "weekcalendar": return normalizeWeekCalendar(s);
+    case "cardio": return normalizeCardio(s);
+    case "table": return normalizeTable(s);
+    case "exercises": return normalizeExercises(s, w);
+    default:
+      // Type inconnu : on préserve au mieux (rows → exercices, items → checklist,
+      // sinon narrative) pour ne pas perdre de contenu importé.
+      if (Array.isArray(s.rows)) return normalizeExercises(s, w);
+      if (Array.isArray(s.days)) return normalizeWeekCalendar(s);
+      if (Array.isArray(s.items)) return normalizeChecklist(s);
+      return { ...head(s), type: "narrative", body: asStr(s.body) };
+  }
 }
 
 /* Répare/complète un document pour un nombre de semaines donné : garantit meta,
