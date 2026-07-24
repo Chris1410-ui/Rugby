@@ -2319,5 +2319,18 @@
     "estimatedHint": "Estimé — repose sur les valeurs de référence, pas encore assez de saisies réelles.",
     "noBilan": "Pas encore de bilan",
     "acwrEstimatedLegend": "* estimé — pas assez de séances loggées pour un ACWR fiable."
+  },
+  "clubCodes": {
+    "title": "Liens d’invitation du club",
+    "subtitle": "Deux liens partagés : un pour les joueurs, un pour le staff. Chaque lien rattache automatiquement à ce club.",
+    "playerLink": "Lien joueur",
+    "staffLink": "Lien staff",
+    "copyLink": "Copier le lien",
+    "regen": "Régénérer",
+    "revoke": "Révoquer",
+    "activate": "Activer",
+    "revoked": "Révoqué",
+    "expiry": "Expire le",
+    "noExpiry": "Sans expiration"
   }
 }

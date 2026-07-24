@@ -2319,5 +2319,18 @@
     "estimatedHint": "Geschat — gebaseerd op referentiewaarden, nog niet genoeg echte invoer.",
     "noBilan": "Nog geen check-in",
     "acwrEstimatedLegend": "* geschat — niet genoeg gelogde sessies voor een betrouwbare ACWR."
+  },
+  "clubCodes": {
+    "title": "Uitnodigingslinks van de club",
+    "subtitle": "Twee gedeelde links: één voor spelers, één voor staff. Elke link koppelt automatisch aan deze club.",
+    "playerLink": "Spelerslink",
+    "staffLink": "Stafflink",
+    "copyLink": "Link kopiëren",
+    "regen": "Vernieuwen",
+    "revoke": "Intrekken",
+    "activate": "Activeren",
+    "revoked": "Ingetrokken",
+    "expiry": "Verloopt op",
+    "noExpiry": "Geen vervaldatum"
   }
 }

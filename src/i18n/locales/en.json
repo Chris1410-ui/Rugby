@@ -2319,5 +2319,18 @@
     "estimatedHint": "Estimated — based on reference values, not enough real entries yet.",
     "noBilan": "No check-in yet",
     "acwrEstimatedLegend": "* estimated — not enough logged sessions for a reliable ACWR."
+  },
+  "clubCodes": {
+    "title": "Club invitation links",
+    "subtitle": "Two shared links: one for players, one for staff. Each link auto-attaches to this club.",
+    "playerLink": "Player link",
+    "staffLink": "Staff link",
+    "copyLink": "Copy link",
+    "regen": "Regenerate",
+    "revoke": "Revoke",
+    "activate": "Activate",
+    "revoked": "Revoked",
+    "expiry": "Expires on",
+    "noExpiry": "No expiry"
   }
 }
