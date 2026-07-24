@@ -212,7 +212,8 @@
     "profileIncompleteBody": "Your account ({{email}}) is authenticated, but its setup is incomplete (missing role or club link). Contact the staff to finalise your access.",
     "readOnlyBanner": "Read-only mode — coach. Full club view, no editing.",
     "playerNotLinked": "Your player profile isn't linked to the squad yet. Contact the staff.",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "finalizingInvite": "Finalizing your account…"
   },
   "onboarding": {
     "skip": "Skip",

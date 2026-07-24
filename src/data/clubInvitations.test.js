@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { createClubInvitation, inviteLink, isMinor } from "./clubInvitations.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { createClubInvitation, inviteLink, isMinor, storePendingInvite, readPendingInvite, clearPendingInvite } from "./clubInvitations.js";
 
 describe("invitations de club (helpers)", () => {
   it("refuse une cible incomplète AVANT tout accès réseau", async () => {
@@ -20,5 +20,40 @@ describe("invitations de club (helpers)", () => {
     globalThis.window = { location: { origin: "https://app.test" } };
     expect(inviteLink("abc123")).toBe("https://app.test/?invite=abc123");
     globalThis.window = prev;
+  });
+});
+
+describe("invitation en attente (persistance token — filet d'acceptation)", () => {
+  // Stub localStorage (environnement Node des tests data/).
+  beforeEach(() => {
+    const store = new Map();
+    globalThis.localStorage = {
+      getItem: (k) => (store.has(k) ? store.get(k) : null),
+      setItem: (k, v) => store.set(k, String(v)),
+      removeItem: (k) => store.delete(k),
+    };
+    clearPendingInvite();
+  });
+
+  it("store → read restitue token + payload", () => {
+    storePendingInvite("tok123", { birthdate: "2000-01-01", consent: true });
+    expect(readPendingInvite()).toEqual({ token: "tok123", payload: { birthdate: "2000-01-01", consent: true } });
+  });
+  it("staff : payload vide par défaut", () => {
+    storePendingInvite("tokStaff");
+    expect(readPendingInvite()).toEqual({ token: "tokStaff", payload: {} });
+  });
+  it("clear supprime l'invitation en attente", () => {
+    storePendingInvite("tok");
+    clearPendingInvite();
+    expect(readPendingInvite()).toBeNull();
+  });
+  it("ne stocke rien sans token (no-op)", () => {
+    storePendingInvite("", { a: 1 });
+    expect(readPendingInvite()).toBeNull();
+  });
+  it("read tolère un stockage vide/corrompu", () => {
+    localStorage.setItem("pending_club_invite", "{pas du json");
+    expect(readPendingInvite()).toBeNull();
   });
 });

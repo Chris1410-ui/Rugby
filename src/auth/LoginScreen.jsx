@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase.js";
 import { useAuth } from "./useAuth.jsx";
 import { requestPasswordReset } from "../data/players.js";
-import { acceptClubInvitation, peekClubInvitation, isMinor } from "../data/clubInvitations.js";
+import { acceptClubInvitation, peekClubInvitation, isMinor, storePendingInvite, clearPendingInvite } from "../data/clubInvitations.js";
 import { listClubs, precheckMembership, requestClubMembership } from "../data/membership.js";
 import { C, FONT } from "../lib/tokens.js";
 import { pwdStrength } from "../lib/password.js";
@@ -111,23 +111,33 @@ export default function LoginScreen() {
     }
     if (!policyOk) return setErr(t("auth.login.errPolicy"));
     setBusy(true);
+    // Persiste le token AVANT signUp : si l'acceptation ne peut aboutir tout de
+    // suite (email déjà inscrit → signUp sans session, reconnexion nécessaire), le
+    // filet de sécurité de l'app la ré-appliquera une fois authentifié.
+    const acceptPayload = isPlayer
+      ? { birthdate, guardianName: guardianName.trim(), guardianEmail: guardianEmail.trim(), policyVersion: POLICY_VERSION, consent }
+      : {};
+    storePendingInvite(inviteToken, acceptPayload);
     const meta = isPlayer ? { policy_version: POLICY_VERSION } : { full_name: fullName.trim(), policy_version: POLICY_VERSION };
     const { data, error } = await supabase.auth.signUp({ email: email.trim(), password: pwd, options: { data: meta } });
     if (error) { setBusy(false); return setErr(error.message); }
+    // Pas de session immédiate (email déjà inscrit / confirmation requise) : on
+    // invite à se connecter — l'acceptation stockée sera finalisée après connexion.
     if (!data.session) { setBusy(false); return setInfo(t("auth.login.inviteNeedsSignin")); }
     try {
-      await acceptClubInvitation(inviteToken, isPlayer
-        ? { birthdate, guardianName: guardianName.trim(), guardianEmail: guardianEmail.trim(), policyVersion: POLICY_VERSION, consent }
-        : {});
+      await acceptClubInvitation(inviteToken, acceptPayload);
     } catch (e) {
       setBusy(false);
       const m = e.message;
+      // Erreurs terminales : le token stocké ne servira plus → on le purge.
+      if (["INVITE_INVALID", "INVITE_EMAIL_MISMATCH", "ALREADY_CLAIMED"].includes(m)) clearPendingInvite();
       return setErr(m === "INVITE_INVALID" ? t("auth.login.inviteInvalid")
         : m === "INVITE_EMAIL_MISMATCH" ? t("auth.login.inviteEmailMismatch")
         : m === "ALREADY_CLAIMED" ? t("auth.login.inviteAlreadyClaimed")
         : t("auth.login.inviteError", { err: m }));
     }
-    // Rattachement appliqué : reload sur une URL propre (sans ?invite) → profil élevé.
+    // Rattachement appliqué : token consommé, reload sur URL propre → profil élevé.
+    clearPendingInvite();
     window.location.href = window.location.origin;
   };
 

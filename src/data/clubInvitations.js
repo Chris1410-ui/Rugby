@@ -11,6 +11,26 @@ const genToken = () =>
 
 export const inviteLink = (token) => `${window.location.origin}/?invite=${token}`;
 
+/* Invitation EN ATTENTE d'acceptation, persistée localement. Le token ne vit que
+   dans l'URL initiale (?invite=…) : on le mémorise pour que l'acceptation puisse
+   ré-aboutir même si le chemin heureux (signUp → session → accept) est rompu —
+   email déjà inscrit (signUp renvoie sans session), reconnexion, 1er essai raté.
+   `payload` porte les infos joueur (naissance/consentement) collectées au signup. */
+const PENDING_INVITE_KEY = "pending_club_invite";
+export function storePendingInvite(token, payload = {}) {
+  if (!token) return;
+  try { localStorage.setItem(PENDING_INVITE_KEY, JSON.stringify({ token, payload })); } catch { /* stockage indispo */ }
+}
+export function readPendingInvite() {
+  try {
+    const r = JSON.parse(localStorage.getItem(PENDING_INVITE_KEY) || "null");
+    return r && r.token ? { token: r.token, payload: r.payload || {} } : null;
+  } catch { return null; }
+}
+export function clearPendingInvite() {
+  try { localStorage.removeItem(PENDING_INVITE_KEY); } catch { /* noop */ }
+}
+
 function dbToInvite(r) {
   return {
     id: r.id, clubId: r.club_id, role: r.role, email: r.email || null,
