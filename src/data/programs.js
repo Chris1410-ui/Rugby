@@ -86,6 +86,25 @@ export function expandTemplates({ teamId, start, end, templates, assigned }) {
   return out;
 }
 
+/* Décide, à l'ÉDITION d'un programme, le sort des séances futures (≥ today) :
+   - non loggées → SUPPRIMÉES puis re-matérialisées depuis les nouveaux modèles ;
+   - déjà loggées → CONSERVÉES (contenu + historique préservés), mais leurs
+     DESTINATAIRES (`assigned`) doivent être mis à jour — sinon un joueur ajouté
+     après coup n'apparaît jamais sur une occurrence déjà loggée (il ne verrait
+     pas sa carte). C'est le bug corrigé ici : la préservation ne doit figer que
+     le contenu réalisé, pas la liste des destinataires.
+   Fonction PURE (testable). `future` = [{id, date}] ; `expanded` = expandTemplates(). */
+export function planProgramUpdate({ future = [], loggedIds, today, expanded = [] }) {
+  const isLogged = (id) => (loggedIds instanceof Set ? loggedIds.has(id) : (loggedIds || []).includes(id));
+  const kept = future.filter((r) => isLogged(r.id));
+  const keptDates = new Set(kept.map((r) => r.date));
+  return {
+    toDelete: future.filter((r) => !isLogged(r.id)).map((r) => r.id),
+    keptLoggedIds: kept.map((r) => r.id),
+    toInsert: expanded.filter((r) => r.date >= today && !keptDates.has(r.date)),
+  };
+}
+
 export async function createProgram(teamId, { title, start, end, assigned, templates, source }) {
   // Matérialise D'ABORD : si aucune séance ne serait générée (dates ne couvrant
   // aucun jour choisi, ou aucun exercice nommé), on échoue AVANT d'insérer le
@@ -137,18 +156,24 @@ export async function updateProgram(teamId, id, { title, start, end, assigned, t
     const { data: lg } = await supabase.from("session_logs").select("session_id").in("session_id", futIds);
     loggedIds = new Set((lg ?? []).map((r) => r.session_id));
   }
-  const keptDates = new Set((fut ?? []).filter((r) => loggedIds.has(r.id)).map((r) => r.date));
-  const toDelete = futIds.filter((sid) => !loggedIds.has(sid));
+
+  const expanded = expandTemplates({ teamId, start, end, templates, assigned });
+  const { toDelete, keptLoggedIds, toInsert } = planProgramUpdate({ future: fut ?? [], loggedIds, today: t0, expanded });
+
   if (toDelete.length) {
     const { error: dErr } = await supabase.from("sessions").delete().in("id", toDelete);
     if (dErr) throw dErr;
   }
-
+  // Séances futures DÉJÀ loggées : contenu + historique préservés, mais on
+  // PROPAGE la nouvelle liste de destinataires (sinon un joueur ajouté après
+  // coup ne verrait jamais sa carte sur ces occurrences).
+  if (keptLoggedIds.length) {
+    const { error: upErr } = await supabase.from("sessions").update({ assigned }).in("id", keptLoggedIds);
+    if (upErr) throw upErr;
+  }
   // Re-matérialise les occurrences futures (hors dates déjà couvertes par une
   // séance loggée préservée → pas de doublon).
-  const rows = expandTemplates({ teamId, start, end, templates, assigned })
-    .filter((r) => r.date >= t0 && !keptDates.has(r.date))
-    .map((r) => ({ ...r, program_id: id }));
+  const rows = toInsert.map((r) => ({ ...r, program_id: id }));
   if (rows.length) {
     const { error: iErr } = await supabase.from("sessions").insert(rows);
     if (iErr) throw iErr;
