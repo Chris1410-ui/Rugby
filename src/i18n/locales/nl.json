@@ -1342,7 +1342,8 @@
       "alertsTitle": "Meldingen · {{count}}",
       "alertsTab": "→ tabblad Meldingen",
       "noAlerts": "Geen melding. 👌",
-      "invitePlayer": "Deze speler uitnodigen"
+      "invitePlayer": "Deze speler uitnodigen",
+      "kpiReadinessSub": "{{n}} echt"
     },
     "invites": {
       "title": "Staf-uitnodigingen",
@@ -2299,5 +2300,11 @@
     "docOnly": "Geen dateerbare sessie gevonden — alleen het protocol wordt opgeslagen.",
     "confirmDoc": "Protocol opslaan",
     "alsoProtocol": "Protocol opgeslagen."
+  },
+  "reliability": {
+    "estimated": "geschat",
+    "estimatedHint": "Geschat — gebaseerd op referentiewaarden, nog niet genoeg echte invoer.",
+    "noBilan": "Nog geen check-in",
+    "acwrEstimatedLegend": "* geschat — niet genoeg gelogde sessies voor een betrouwbare ACWR."
   }
 }

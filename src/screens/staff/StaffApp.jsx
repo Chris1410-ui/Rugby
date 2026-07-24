@@ -18,7 +18,8 @@ import { useAlertStatus } from "../../data/alerts.js";
 import { staffTaskToConfirm, staffQuestionnaireTodo, activeAlertsCount } from "../../lib/badges.js";
 import { addPlayer, usePasswordResetRequests, markResetHandled } from "../../data/players.js";
 import { generateDemoPlayers, deleteDemoPlayers } from "../../data/demo.js";
-import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose, EstimatedBadge } from "../../lib/ui.jsx";
+import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
 import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check } from "../../lib/icons.jsx";
@@ -305,8 +306,8 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, p.pos)} · {grpLabel(p.grp)}</div>
               </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral }}>{p.readiness}</div>
+              <div style={{ textAlign: "center" }} title={readinessReady(p) ? undefined : t("reliability.noBilan")}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: readinessReady(p) ? (p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral) : "rgba(255,255,255,0.4)" }}>{readinessReady(p) ? p.readiness : "—"}</div>
                 <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>{t("staff.app.ready")}</div>
               </div>
               {!readOnly && !p.ownerUid && !p.isDemo && (
@@ -320,7 +321,10 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
               <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title={t("staff.app.reportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
                 <Activity size={15} />
               </button>
-              <Pill v={p.acwr} />
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <Pill v={p.acwr} />
+                {acwrEstimated(p) && <EstimatedBadge />}
+              </div>
             </div>
           ))}
         </div>
@@ -391,6 +395,10 @@ function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
   if (!players.length) return <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>{t("staff.app.noData")}</div>;
   const avg = (k) => Math.round(players.reduce((a, p) => a + (p[k] || 0), 0) / players.length);
   const live = players.filter((p) => p._live).length;
+  // Readiness d'équipe : moyenne des SEULS readiness réels (bilan du matin saisi)
+  // — sinon on afficherait la moyenne des scores par défaut (seed), trompeuse.
+  const realReady = players.filter(readinessReady);
+  const avgReadyReal = realReady.length ? Math.round(realReady.reduce((a, p) => a + (p.readiness || 0), 0) / realReady.length) : null;
   const alerts = buildAlerts(players, sessions, logs, checkins);
   const top = alerts.slice(0, 4);
   const byId = (pid) => players.find((p) => p.id === pid);
@@ -398,7 +406,7 @@ function Aujourdhui({ players, sessions, logs, checkins, activities = {} }) {
     <section>
       <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{t("staff.app.today", { date: new Date().toLocaleDateString(localeTag(), { weekday: "long", day: "numeric", month: "long" }) })}</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
-        <KPI label={t("staff.app.kpiReadiness")} value={avg("readiness")} color={avg("readiness") > 70 ? C.green : avg("readiness") > 50 ? C.amb : C.coral} />
+        <KPI label={t("staff.app.kpiReadiness")} value={avgReadyReal ?? "—"} sub={avgReadyReal == null ? t("reliability.noBilan") : t("staff.app.kpiReadinessSub", { n: realReady.length })} color={avgReadyReal == null ? C.gray : avgReadyReal > 70 ? C.green : avgReadyReal > 50 ? C.amb : C.coral} />
         <KPI label={t("staff.app.kpiWellness")} value={`${avg("wellness")}/50`} color={C.blue} />
         <KPI label={t("staff.app.kpiBilans")} value={`${live}/${players.length}`} sub={t("staff.app.kpiBilansSub")} color={C.viol} />
       </div>

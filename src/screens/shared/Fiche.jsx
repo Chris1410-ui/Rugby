@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { grpLabel, posDisplay } from "../../lib/positions.js";
 import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
-import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
+import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose, EstimatedBadge } from "../../lib/ui.jsx";
+import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload, Calendar } from "../../lib/icons.jsx";
 import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } from "../../data/storage.js";
 import { parseProgramSmart } from "../../data/programImport.js";
@@ -418,7 +419,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
     <div>
       {/* identité + readiness */}
       <div style={sc({ display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 12 })}>
-        <Ring val={player.readiness} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label={t("shared.fiche.readinessLabel")} size={72} sw={6} />
+        <Ring val={readinessReady(player) ? player.readiness : "—"} max={100} color={player.readiness > 70 ? C.green : player.readiness > 50 ? C.amb : C.coral} label={t("shared.fiche.readinessLabel")} size={72} sw={6} />
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)" }}>{edit ? <input value={d.num ?? ""} onChange={(e) => setD((p) => ({ ...p, num: e.target.value }))} style={{ ...inp, width: 44, textAlign: "center" }} /> : (player.num ?? "—")}</span>
@@ -434,6 +435,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <Pill v={player.acwr} /><Tag c={acwrZ(player.acwr).c}>{zoneLabel(t, acwrZ(player.acwr))}</Tag>
+            {acwrEstimated(player) && <EstimatedBadge />}
             {player._live && <Tag c={C.green}>{t("shared.fiche.todayCheckin")}</Tag>}
           </div>
         </div>
@@ -461,7 +463,7 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
             <KPI label={t("shared.fiche.kpiWellness")} value={live ? `${player.wellness}/50` : "—"} sub={live ? "" : t("shared.fiche.notEncoded")} color={live ? triC(player.wellness, 35, 25) : C.gray} />
             <KPI label={t("shared.fiche.kpiSleep")} value={live ? player.sleep : "—"} sub={live ? t("shared.fiche.sleepSub") : t("shared.fiche.notEncoded")} color={live ? triC(player.sleep, 7.5, 6.5) : C.gray} />
             <KPI label={t("shared.fiche.kpiLoad7d")} value={player.charge7j} sub={t("shared.fiche.loadSub", { label: ch.lk ? t(ch.lk) : "—" })} color={ch.c} />
-            <KPI label={t("shared.fiche.kpiAcwr")} value={player.acwr.toFixed(2)} sub={z.l} color={z.c} />
+            <KPI label={t("shared.fiche.kpiAcwr")} value={player.acwr.toFixed(2)} sub={acwrEstimated(player) ? `${zoneLabel(t, z)} · ${t("reliability.estimated")}` : zoneLabel(t, z)} color={acwrEstimated(player) ? C.gray : z.c} />
             <KPI label={t("shared.fiche.kpiDispo")} value={`${player.dispo}%`} color={triC(player.dispo, 85, 70)} />
           </div>
         );

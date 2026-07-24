@@ -1342,7 +1342,8 @@
       "alertsTitle": "Alertes · {{count}}",
       "alertsTab": "→ onglet Alertes",
       "noAlerts": "Aucune alerte. 👌",
-      "invitePlayer": "Inviter ce joueur"
+      "invitePlayer": "Inviter ce joueur",
+      "kpiReadinessSub": "{{n}} réels"
     },
     "invites": {
       "title": "Invitations staff",
@@ -2299,5 +2300,11 @@
     "docOnly": "Aucune séance datable détectée — seul le protocole sera enregistré.",
     "confirmDoc": "Enregistrer le protocole",
     "alsoProtocol": "Protocole enregistré."
+  },
+  "reliability": {
+    "estimated": "estimé",
+    "estimatedHint": "Estimé — repose sur les valeurs de référence, pas encore assez de saisies réelles.",
+    "noBilan": "Pas encore de bilan",
+    "acwrEstimatedLegend": "* estimé — pas assez de séances loggées pour un ACWR fiable."
   }
 }

@@ -78,9 +78,12 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   }, [today]);
 
   const info = dayInfo(today);
-  const readiness = day.matin
+  // Readiness RÉEL uniquement : sans bilan du matin saisi aujourd'hui, on
+  // n'affiche pas un score par défaut (seed) → « — » (formule inchangée).
+  const hasMorning = !!day.matin;
+  const readiness = hasMorning
     ? computeReadiness(wbToWellness(day.matin.wb, day.matin.sleepH) || 0, me.risque, day.matin.sleepH)
-    : (me.readiness || 0);
+    : 0;
 
   // Objectif de la semaine : nombre de JOURS avec ≥ 1 séance validée / cible (3).
   const goal = useMemo(() => {
@@ -105,7 +108,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   }, [checkins]);
 
   const metricDefs = {
-    readiness: { label: t("player.bilan.readiness"), pts: series.readiness, color: readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral, value: readiness, max: 100 },
+    readiness: { label: t("player.bilan.readiness"), pts: series.readiness, color: readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral, value: hasMorning ? readiness : "—", max: 100 },
     wellness: { label: t("player.bilan.ringWellbeing"), pts: series.wellness, color: C.blue, value: me.wellness ?? (series.wellness.at(-1) || 0), max: 50 },
     charge: { label: t("player.bilan.ringCharge"), pts: series.charge, color: C.teal, value: series.charge.at(-1) ?? 0, max: null },
   };
@@ -137,7 +140,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
     <div>
       {/* En-tête : readiness + identité + date */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 14 }}>
-        <Ring val={readiness} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
+        <Ring val={hasMorning ? readiness : "—"} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
             {t("player.bilan.today")} · {dstr(today, { weekday: "long", day: "numeric", month: "long" })}

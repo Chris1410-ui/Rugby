@@ -160,6 +160,21 @@ export const Pill = ({ v }) => {
   return <span style={{ background: z.c, color: "#fff", padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{v.toFixed(2)}</span>;
 };
 
+/* Badge « estimé » (transparence des données) — indicateur gris NEUTRE apposé à
+   une valeur qui repose sur le seed et non sur de vraies saisies (cf.
+   lib/reliability.js). Ne colore rien, ne change aucun calcul. */
+export const EstimatedBadge = ({ style, title }) => {
+  const { t } = useTranslation();
+  return (
+    <span
+      title={title || t("reliability.estimatedHint")}
+      style={{ background: "rgba(148,162,178,0.16)", color: C.gray, padding: "1px 7px", borderRadius: 6, fontSize: 9.5, fontWeight: 700, border: "1px solid rgba(148,162,178,0.4)", whiteSpace: "nowrap", ...style }}
+    >
+      {t("reliability.estimated")}
+    </span>
+  );
+};
+
 export const Dot = ({ s }) => {
   const m = { done: { c: C.green, t: "✓" }, missed: { c: C.coral, t: "✗" }, postponed: { c: C.gray, t: "⤴" }, pending: { c: "rgba(255,255,255,0.15)", t: "◦" } };
   const i = m[s] || m.pending;
@@ -169,13 +184,17 @@ export const Dot = ({ s }) => {
 export const Ring = ({ val, max, color, label, size = 64, sw = 5, suffix = "" }) => {
   const r = size / 2 - sw;
   const circ = 2 * Math.PI * r;
-  const off = circ * (1 - Math.min(val, max) / max);
+  // Valeur non numérique (ex. « — » pas de bilan) → anneau vide gris, pas de
+  // secteur coloré : on n'habille jamais une valeur absente comme une mesure.
+  const num = Number(val);
+  const finite = Number.isFinite(num);
+  const off = finite ? circ * (1 - Math.min(num, max) / max) : circ;
   return (
     <div style={{ textAlign: "center" }}>
       <svg width={size} height={size}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={sw} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ transform: "rotate(-90deg)", transformOrigin: "50% 50%", transition: "stroke-dashoffset .6s" }} />
-        <text x={size / 2} y={size / 2 + 1} textAnchor="middle" fill="#fff" fontSize={size * 0.26} fontWeight="800">{val}{suffix}</text>
+        {finite && <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ transform: "rotate(-90deg)", transformOrigin: "50% 50%", transition: "stroke-dashoffset .6s" }} />}
+        <text x={size / 2} y={size / 2 + 1} textAnchor="middle" fill={finite ? "#fff" : "rgba(255,255,255,0.4)"} fontSize={size * 0.26} fontWeight="800">{finite ? `${val}${suffix}` : "—"}</text>
       </svg>
       <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginTop: 2, fontWeight: 600 }}>{label}</div>
     </div>
