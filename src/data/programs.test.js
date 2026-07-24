@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { expandTemplates } from "./programs.js";
+import { expandTemplates, planProgramUpdate } from "./programs.js";
 
 /* #3 — envoi de programme. `expandTemplates` matérialise les séances datées.
    Le bouton « Envoyer » échouait silencieusement quand rien n'était généré
@@ -51,5 +51,40 @@ describe("expandTemplates (matérialisation des séances)", () => {
     expect(out.map((s) => s.date)).toEqual(["2026-07-06", "2026-07-13", "2026-07-20"]);
     const today = "2026-07-13";
     expect(out.filter((s) => s.date >= today).map((s) => s.date)).toEqual(["2026-07-13", "2026-07-20"]);
+  });
+});
+
+/* Bug : un joueur ajouté aux destinataires à l'édition n'apparaissait pas sur une
+   occurrence future DÉJÀ loggée (elle était préservée telle quelle, anciens
+   destinataires gelés). planProgramUpdate doit RENVOYER cette séance dans
+   keptLoggedIds (→ son `assigned` sera mis à jour) et NE PAS la ré-insérer. */
+describe("planProgramUpdate (édition : historique préservé, destinataires propagés)", () => {
+  const future = [
+    { id: "s24", date: "2026-07-24" }, // déjà loggée
+    { id: "s31", date: "2026-07-31" }, // non loggée
+  ];
+  const expanded = [
+    { date: "2026-07-24", assigned: { mode: "mix" } },
+    { date: "2026-07-31", assigned: { mode: "mix" } },
+    { date: "2026-08-07", assigned: { mode: "mix" } },
+  ];
+
+  it("séance loggée conservée (destinataires à mettre à jour), non-loggée supprimée + ré-insérée", () => {
+    const plan = planProgramUpdate({ future, loggedIds: new Set(["s24"]), today: "2026-07-24", expanded });
+    expect(plan.keptLoggedIds).toEqual(["s24"]);                                   // 24/07 préservée → assigned propagé
+    expect(plan.toDelete).toEqual(["s31"]);                                        // 31/07 non loggée → supprimée
+    expect(plan.toInsert.map((r) => r.date)).toEqual(["2026-07-31", "2026-08-07"]); // 24/07 exclue (kept) → pas de doublon
+  });
+
+  it("aucune séance loggée → tout est supprimé/ré-inséré (comportement inchangé)", () => {
+    const plan = planProgramUpdate({ future, loggedIds: new Set(), today: "2026-07-24", expanded });
+    expect(plan.keptLoggedIds).toEqual([]);
+    expect(plan.toDelete).toEqual(["s24", "s31"]);
+    expect(plan.toInsert.map((r) => r.date)).toEqual(["2026-07-24", "2026-07-31", "2026-08-07"]);
+  });
+
+  it("accepte loggedIds sous forme de tableau (pas seulement Set)", () => {
+    const plan = planProgramUpdate({ future, loggedIds: ["s24"], today: "2026-07-24", expanded });
+    expect(plan.keptLoggedIds).toEqual(["s24"]);
   });
 });
