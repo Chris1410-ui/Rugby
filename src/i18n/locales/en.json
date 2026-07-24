@@ -2360,5 +2360,12 @@
     "revoked": "Revoked",
     "expiry": "Expires on",
     "noExpiry": "No expiry"
+  },
+  "recipients": {
+    "all": "Whole team",
+    "addPlayers": "+ Players ({{count}})",
+    "noPlayers": "No player",
+    "viaLine": "via line",
+    "recap": "{{count}} recipient(s)"
   }
 }

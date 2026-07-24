@@ -7,10 +7,22 @@ import { fmtShort } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { ClipboardList, Plus, CheckCircle, Trash2, Calendar } from "../../lib/icons.jsx";
 import { useTeamTasks, useTeamTaskCompletions, createTask, deleteTask, confirmTask, refuseTask } from "../../data/tasks.js";
+import { buildAssigned } from "../../data/sessions.js";
+import RecipientSelect from "../shared/RecipientSelect.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
-const modeLabel = (a, t) => a?.mode === "group" ? t("staff.tasks.modeGroup", { group: grpLabel(a.group) }) : a?.mode === "players" ? t("staff.tasks.modePlayers", { count: (a.ids || []).length }) : t("staff.tasks.modeAll");
+// Libellé du destinataire (Tag). Gère le mode COMBINÉ `mix` : lignes + « n joueurs ».
+const modeLabel = (a, t) => {
+  if (a?.mode === "group") return t("staff.tasks.modeGroup", { group: grpLabel(a.group) });
+  if (a?.mode === "players") return t("staff.tasks.modePlayers", { count: (a.ids || []).length });
+  if (a?.mode === "mix") {
+    const parts = (a.groups || []).map(grpLabel);
+    if ((a.ids || []).length) parts.push(t("staff.tasks.modePlayers", { count: a.ids.length }));
+    return parts.join(" + ") || t("staff.tasks.modeAll");
+  }
+  return t("staff.tasks.modeAll");
+};
 
 /* Onglet « Tâches » (staff/owner) : créer des tâches + suivre la validation en
    2 temps (joueur « Fait » → coach « Valider »/« Refuser »). */
@@ -49,20 +61,14 @@ export default function Taches({ teamId, players = [], openNew = false }) {
 function TaskForm({ teamId, players, onDone, onCancel }) {
   const { t } = useTranslation();
   const [f, setF] = useState({ titre: "", description: "", lieu: "", echeance: "" });
-  const [mode, setMode] = useState("all");
-  const [group, setGroup] = useState("");
-  const [ids, setIds] = useState([]);
+  const [rec, setRec] = useState({ all: true, groups: [], ids: [] });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark", marginBottom: 8 };
-
-  const toggleId = (id) => setIds((v) => v.includes(id) ? v.filter((x) => x !== id) : [...v, id]);
 
   const save = async () => {
     if (!f.titre.trim()) return setErr(t("staff.tasks.errTitle"));
-    const assigned = mode === "group" ? { mode: "group", group: group || grps[0] } : mode === "players" ? { mode: "players", ids } : { mode: "all" };
-    if (mode === "players" && ids.length === 0) return setErr(t("staff.tasks.errPlayer"));
+    const assigned = buildAssigned(rec);
     setBusy(true); setErr("");
     try { await createTask(teamId, { ...f, echeance: f.echeance || null, assigned }); onDone(); }
     catch (e) { setErr(t("staff.tasks.errSave", { err: e.message || t("staff.tasks.errSaveRetry") })); setBusy(false); }
@@ -78,23 +84,7 @@ function TaskForm({ teamId, players, onDone, onCancel }) {
       </div>
 
       <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 0.5, margin: "2px 0 6px" }}>{t("staff.tasks.recipients")}</div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
-        {[["all", t("staff.tasks.modeAll")], ["group", t("staff.tasks.destGroup")], ["players", t("staff.tasks.destPlayers")]].map(([v, l]) => (
-          <button key={v} onClick={() => setMode(v)} style={{ padding: "6px 11px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: mode === v ? accent : "rgba(255,255,255,0.07)", color: "#fff" }}>{l}</button>
-        ))}
-      </div>
-      {mode === "group" && (
-        <select value={group || grps[0] || ""} onChange={(e) => setGroup(e.target.value)} style={inp}>
-          {grps.map((g) => <option key={g} value={g}>{grpLabel(g)}</option>)}
-        </select>
-      )}
-      {mode === "players" && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxHeight: 160, overflowY: "auto", marginBottom: 8 }}>
-          {players.map((p) => (
-            <button key={p.id} onClick={() => toggleId(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{displayName(p)}</button>
-          ))}
-        </div>
-      )}
+      <div style={{ marginBottom: 8 }}><RecipientSelect players={players} value={rec} onChange={setRec} accent={accent} /></div>
 
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
       <div style={{ display: "flex", gap: 8 }}>

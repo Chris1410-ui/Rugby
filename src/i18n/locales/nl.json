@@ -2360,5 +2360,12 @@
     "revoked": "Ingetrokken",
     "expiry": "Verloopt op",
     "noExpiry": "Geen vervaldatum"
+  },
+  "recipients": {
+    "all": "Hele team",
+    "addPlayers": "+ Spelers ({{count}})",
+    "noPlayers": "Geen speler",
+    "viaLine": "via linie",
+    "recap": "{{count}} ontvanger(s)"
   }
 }

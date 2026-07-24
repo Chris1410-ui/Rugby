@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
-import { displayName } from "../../lib/identity.js";
-import { grpLabel } from "../../lib/positions.js";
 import { todayISO } from "../../lib/metrics.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
@@ -12,6 +10,8 @@ import {
   useTeamChallenges, useTeamChallengeCompletions, useTeamChallengeStats,
   createChallenge, createChallengesBulk, deleteChallenge, confirmChallenge, refuseChallenge, updateChallenge,
 } from "../../data/challenges.js";
+import { buildAssigned, assignedToSelection } from "../../data/sessions.js";
+import RecipientSelect from "../shared/RecipientSelect.jsx";
 import ChallengeCard from "../shared/ChallengeCard.jsx";
 import ChallengeDetail from "../shared/ChallengeDetail.jsx";
 
@@ -164,19 +164,17 @@ function DefiForm({ teamId, players, initial = null, onClose }) {
   const [d, setD] = useState(() => initial
     ? { titre: initial.titre || "", description: initial.description || "", points: initial.points ?? 10, heure: initial.heure || "", lieu: initial.lieu || "", materiel: (initial.materiel || []).join(", "), echeance: initial.echeance || "", banner: initial.banner || "flame", badge: initial.badge || "🏆" }
     : { titre: "", description: "", points: 10, heure: "", lieu: "", materiel: "", echeance: "", banner: "flame", badge: "🏆" });
-  const [mode, setMode] = useState(initial?.assigned?.mode || "all");
-  const [group, setGroup] = useState(initial?.assigned?.group || "avants");
-  const [ids, setIds] = useState(initial?.assigned?.ids || []);
+  // Destinataires : sélection ADDITIVE (lignes + joueurs) OU « inscription libre »
+  // (open) — cette dernière n'est pas cumulable, d'où un interrupteur distinct.
+  const [open, setOpen] = useState(initial?.assigned?.mode === "open");
+  const [rec, setRec] = useState(() => assignedToSelection(initial?.assigned));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const grps = [...new Set(players.map((p) => p.grp).filter(Boolean))];
   const set = (k, v) => { setD((p) => ({ ...p, [k]: v })); setErr(""); };
-  const toggle = (id) => setIds((v) => v.includes(id) ? v.filter((x) => x !== id) : [...v, id]);
 
   const save = async () => {
     if (!d.titre.trim()) return setErr(t("staff.challenges.errTitle"));
-    const assigned = mode === "group" ? { mode: "group", group } : mode === "players" ? { mode: "players", ids } : mode === "open" ? { mode: "open" } : { mode: "all" };
-    if (mode === "players" && ids.length === 0) return setErr(t("staff.challenges.errPlayer"));
+    const assigned = open ? { mode: "open" } : buildAssigned(rec);
     setBusy(true); setErr("");
     const fields = { ...d, materiel: parseMateriel(d.materiel), assigned };
     try {
@@ -244,18 +242,9 @@ function DefiForm({ teamId, players, initial = null, onClose }) {
 
         <div style={lbl}>{t("staff.challenges.lblRecipients")}</div>
         <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-          {[["all", t("staff.challenges.destAll")], ["group", t("staff.challenges.destGroup")], ["players", t("staff.challenges.destPlayers")], ["open", t("staff.challenges.destOpen")]].map(([v, l]) => <button key={v} onClick={() => setMode(v)} style={pill(mode === v)}>{l}</button>)}
+          <button onClick={() => setOpen((o) => !o)} style={pill(open)}>{t("staff.challenges.destOpen")}</button>
         </div>
-        {mode === "group" && (
-          <select value={group} onChange={(e) => setGroup(e.target.value)} style={{ ...inp, colorScheme: "dark" }}>
-            {grps.map((g) => <option key={g} value={g}>{grpLabel(g)}</option>)}
-          </select>
-        )}
-        {mode === "players" && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxHeight: 160, overflowY: "auto", marginBottom: 10 }}>
-            {players.map((p) => <button key={p.id} onClick={() => toggle(p.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1px solid ${ids.includes(p.id) ? accent : C.border}`, background: ids.includes(p.id) ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{displayName(p)}</button>)}
-          </div>
-        )}
+        {!open && <div style={{ marginBottom: 10 }}><RecipientSelect players={players} value={rec} onChange={setRec} accent={accent} /></div>}
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
         <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : editing ? t("staff.challenges.saveEdit") : t("staff.challenges.saveNew")}</button>
