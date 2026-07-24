@@ -6,8 +6,9 @@ import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload, Calendar } from "../../lib/icons.jsx";
 import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } from "../../data/storage.js";
-import { parseProgramPdf } from "../../lib/pdf.js";
+import { parseProgramSmart } from "../../data/programImport.js";
 import { importProgramForSelf, importProgramForPlayer } from "../../data/freeSessions.js";
+import { createProgramDoc } from "../../data/programDocs.js";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
@@ -225,7 +226,7 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     if (file.type !== "application/pdf") { setErr(t("shared.fiche.pdfOnly")); return; }
     setBusy(true); setErr(""); setImportMsg("");
     setPendingFile(file);
-    try { setImportResult(await parseProgramPdf(file)); }
+    try { setImportResult(await parseProgramSmart(file, { weeks: 4, filename: file.name })); }
     catch (ex) { setPendingFile(null); setErr(ex.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("staff.programs.pdfUnrecognized")); }
     setBusy(false);
   };
@@ -235,15 +236,31 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     try { await uploadPlayerPdf(player.team, player.id, pendingFile); return true; }
     catch { return false; }
   };
-  const confirmImport = async (sessions, opts) => {
+  const confirmImport = async (sessions, opts, doc) => {
     try {
-      const n = self
-        ? await importProgramForSelf(sessions, opts)
-        : await importProgramForPlayer(player.id, player.team, sessions, opts);
+      // 1) Séances datées (calendrier + anti-surcharge). Peut être vide en mode IA
+      // (protocole seul) → on n'écrit alors aucune séance.
+      let n = 0;
+      if (sessions.length) {
+        n = self
+          ? await importProgramForSelf(sessions, opts)
+          : await importProgramForPlayer(player.id, player.team, sessions, opts);
+      }
+      // 2) Protocole riche (rendu fidèle, consultable). Réservé au staff écrivain
+      // (RLS program_docs) : best-effort, un échec ne bloque pas les séances.
+      let docSaved = false;
+      if (doc && !self) {
+        try {
+          await createProgramDoc(player.team, { title: doc?.meta?.title || t("protocols.untitled"), weeks: doc?.meta?.weeks, doc, status: "draft" });
+          docSaved = true;
+        } catch { /* RLS / réseau : on garde les séances */ }
+      }
       const archived = await archive();
       setImportResult(null); setPendingFile(null);
       await refresh();
-      setImportMsg((self ? t("pdfImport.importedPlayer", { count: n }) : t("pdfImport.importedStaff", { count: n }))
+      const base = self ? t("pdfImport.importedPlayer", { count: n }) : t("pdfImport.importedStaff", { count: n });
+      setImportMsg(base
+        + (docSaved ? " " + t("pdfImport.alsoProtocol") : "")
         + (archived ? " " + t("pdfImport.alsoArchived") : ""));
     } catch (ex) { setErr(t("pdfImport.importErr", { err: ex.message || "" })); }
   };
@@ -261,7 +278,7 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     try {
       const url = await playerFileUrl(f.path, { download: true });
       const blob = await (await fetch(url)).blob();
-      setImportResult(await parseProgramPdf(blob));
+      setImportResult(await parseProgramSmart(blob, { weeks: 4, filename: f.name }));
     } catch (ex) { setErr(ex.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("pdfImport.extractFail", { err: ex.message || "" })); }
     setBusy(false);
   };
