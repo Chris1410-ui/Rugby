@@ -2281,6 +2281,8 @@
     "importedStaff": "{{count}} sessie(s) aangemaakt en toegewezen aan de speler.",
     "alsoArchived": "PDF gearchiveerd.",
     "archived": "PDF gearchiveerd (geen sessie aangemaakt).",
-    "archiveOnly": "Alleen archiveren"
+    "archiveOnly": "Alleen archiveren",
+    "extractExisting": "Sessies extraheren (in kalender aanmaken)",
+    "extractFail": "Extractie mislukt: {{err}}"
   }
 }

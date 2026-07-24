@@ -4,7 +4,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { grpLabel, posDisplay } from "../../lib/positions.js";
 import { acwrZ, fmtShort, zoneLabel } from "../../lib/metrics.js";
 import { Ring, Section, Pill, Tag, KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload } from "../../lib/icons.jsx";
+import { CheckCircle, Eye, EyeOff, Lock, ExternalLink, Download, Trash2, FileText, Upload, Calendar } from "../../lib/icons.jsx";
 import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } from "../../data/storage.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
 import { importProgramForSelf, importProgramForPlayer } from "../../data/freeSessions.js";
@@ -254,6 +254,17 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
     await refresh();
     if (ok) setImportMsg(t("pdfImport.archived")); else setErr(t("shared.fiche.pdfUploadFail", { err: "" }));
   };
+  // Rétroactif : extraire les séances d'un PDF DÉJÀ stocké (joueurs existants).
+  // Télécharge le fichier → aperçu/validation → création (sans ré-archivage).
+  const extractExisting = async (f) => {
+    setBusy(true); setErr(""); setImportMsg(""); setPendingFile(null);
+    try {
+      const url = await playerFileUrl(f.path, { download: true });
+      const blob = await (await fetch(url)).blob();
+      setImportResult(await parseProgramPdf(blob));
+    } catch (ex) { setErr(ex.message === "no-pdfjs" ? t("staff.programs.pdfNoLib") : t("pdfImport.extractFail", { err: ex.message || "" })); }
+    setBusy(false);
+  };
   const openFile = async (path, download) => {
     try { const url = await playerFileUrl(path, { download }); window.open(url, "_blank", "noopener"); }
     catch (ex) { setErr(ex.message || String(ex)); }
@@ -294,6 +305,7 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
                 <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cleanName(f.name)}</div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{t("shared.fiche.pdfAddedOn", { date: fmtShort(f.created) })}{f.size ? ` · ${fmtBytes(f.size)}` : ""}</div>
               </div>
+              {canAdd && <button onClick={() => extractExisting(f)} disabled={busy} title={t("pdfImport.extractExisting")} style={{ ...iconBtn, color: C.green, borderColor: `${C.green}66`, background: `${C.green}18` }}><Calendar size={15} /></button>}
               <button onClick={() => openFile(f.path, false)} title={t("shared.fiche.pdfOpenTitle")} style={iconBtn}><ExternalLink size={15} /></button>
               <button onClick={() => openFile(f.path, true)} title={t("shared.fiche.pdfDownloadTitle")} style={iconBtn}><Download size={15} /></button>
               {canDelete && <button onClick={() => del(f.path)} disabled={busy} title={t("shared.fiche.pdfDeleteTitle")} style={{ ...iconBtn, color: C.coral }}><Trash2 size={15} /></button>}
