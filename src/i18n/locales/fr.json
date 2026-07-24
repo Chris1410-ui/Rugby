@@ -161,7 +161,28 @@
     "noSavedTemplates": "Aucun modèle enregistré",
     "deleteTemplate": "Supprimer le modèle",
     "fNature": "Nature",
-    "fNatureNone": "— non précisée —"
+    "fNatureNone": "— non précisée —",
+    "type_narrative": "Narratif",
+    "type_exercises": "Exercices",
+    "type_checklist": "Checklist",
+    "type_weekcalendar": "Semaine type",
+    "type_cardio": "Cardio",
+    "type_table": "Tableau",
+    "clBadge": "Badge (optionnel)",
+    "clBadgePh": "10 min · à chaque séance",
+    "clItemPh": "Point à cocher",
+    "clAddItem": "Ajouter un point",
+    "wcLabelPh": "Contenu du jour",
+    "wcOff": "Repos",
+    "wcAddDay": "Ajouter un jour",
+    "cardioNamePh": "Bloc / intitulé",
+    "cardioKindPh": "Modalité",
+    "cardioTargetPh": "Cible (ex. 20 min Z2)",
+    "cardioAdd": "Ajouter un bloc",
+    "tblColPh": "Colonne",
+    "tblDelCol": "Supprimer la colonne",
+    "tblAddCol": "Colonne",
+    "tblAddRow": "Ajouter une ligne"
   },
   "nav": {
     "bilan": "Aujourd'hui",
@@ -1909,7 +1930,9 @@
       "errBirthdate": "Indique ta date de naissance.",
       "inviteAlreadyClaimed": "Ce profil joueur a déjà été revendiqué par un autre compte.",
       "backToSignin": "Retour à la connexion",
-      "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club."
+      "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club.",
+      "joinInvalid": "Ce lien d’invitation est invalide ou expiré.",
+      "joinAlreadyMember": "Ce compte est déjà rattaché à un club."
     },
     "link": {
       "expired": "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.",
@@ -2317,5 +2340,18 @@
     "estimatedHint": "Estimé — repose sur les valeurs de référence, pas encore assez de saisies réelles.",
     "noBilan": "Pas encore de bilan",
     "acwrEstimatedLegend": "* estimé — pas assez de séances loggées pour un ACWR fiable."
+  },
+  "clubCodes": {
+    "title": "Liens d’invitation du club",
+    "subtitle": "Deux liens partagés : un pour les joueurs, un pour le staff. Chaque lien rattache automatiquement à ce club.",
+    "playerLink": "Lien joueur",
+    "staffLink": "Lien staff",
+    "copyLink": "Copier le lien",
+    "regen": "Régénérer",
+    "revoke": "Révoquer",
+    "activate": "Activer",
+    "revoked": "Révoqué",
+    "expiry": "Expire le",
+    "noExpiry": "Sans expiration"
   }
 }

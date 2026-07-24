@@ -161,7 +161,28 @@
     "noSavedTemplates": "No saved template",
     "deleteTemplate": "Delete template",
     "fNature": "Nature",
-    "fNatureNone": "— unspecified —"
+    "fNatureNone": "— unspecified —",
+    "type_narrative": "Narrative",
+    "type_exercises": "Exercises",
+    "type_checklist": "Checklist",
+    "type_weekcalendar": "Weekly plan",
+    "type_cardio": "Cardio",
+    "type_table": "Table",
+    "clBadge": "Badge (optional)",
+    "clBadgePh": "10 min · every session",
+    "clItemPh": "Checklist item",
+    "clAddItem": "Add item",
+    "wcLabelPh": "Day content",
+    "wcOff": "Rest",
+    "wcAddDay": "Add day",
+    "cardioNamePh": "Block / name",
+    "cardioKindPh": "Modality",
+    "cardioTargetPh": "Target (e.g. 20 min Z2)",
+    "cardioAdd": "Add block",
+    "tblColPh": "Column",
+    "tblDelCol": "Delete column",
+    "tblAddCol": "Column",
+    "tblAddRow": "Add row"
   },
   "nav": {
     "bilan": "Today",
@@ -1909,7 +1930,9 @@
       "errBirthdate": "Enter your date of birth.",
       "inviteAlreadyClaimed": "This player profile has already been claimed by another account.",
       "backToSignin": "Back to sign in",
-      "inviteOnlyNote": "Registration is by invitation only. Ask your club for a link."
+      "inviteOnlyNote": "Registration is by invitation only. Ask your club for a link.",
+      "joinInvalid": "This invitation link is invalid or expired.",
+      "joinAlreadyMember": "This account is already linked to a club."
     },
     "link": {
       "expired": "The reset link has expired. Request a new email below.",
@@ -2317,5 +2340,18 @@
     "estimatedHint": "Estimated — based on reference values, not enough real entries yet.",
     "noBilan": "No check-in yet",
     "acwrEstimatedLegend": "* estimated — not enough logged sessions for a reliable ACWR."
+  },
+  "clubCodes": {
+    "title": "Club invitation links",
+    "subtitle": "Two shared links: one for players, one for staff. Each link auto-attaches to this club.",
+    "playerLink": "Player link",
+    "staffLink": "Staff link",
+    "copyLink": "Copy link",
+    "regen": "Regenerate",
+    "revoke": "Revoke",
+    "activate": "Activate",
+    "revoked": "Revoked",
+    "expiry": "Expires on",
+    "noExpiry": "No expiry"
   }
 }

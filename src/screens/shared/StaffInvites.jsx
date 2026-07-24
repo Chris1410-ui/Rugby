@@ -5,6 +5,7 @@ import { Section } from "../../lib/ui.jsx";
 import { Plus, Trash2, Check, Shield } from "../../lib/icons.jsx";
 import { fmtShort } from "../../lib/metrics.js";
 import { useClubInvitations, createClubInvitation, revokeClubInvitation, inviteLink, sendInvitationEmail } from "../../data/clubInvitations.js";
+import ClubInviteCodes from "./ClubInviteCodes.jsx";
 
 const accent = C.coral;
 const STAFF_INVITE_ROLES = ["preparateur", "medical", "coach"];
@@ -61,6 +62,10 @@ export default function StaffInvites({ teamId }) {
       </div>
       <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, marginBottom: 14 }}>{t("staff.invites.subtitle")}</div>
 
+      {/* Liens partagés joueur / staff (modèle Twizzit). */}
+      <ClubInviteCodes teamId={teamId} />
+
+      {/* Invitations nominatives par email (conservées, ciblage + Resend). */}
       <Section title={t("staff.invites.newTitle")}>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", fontWeight: 700, marginBottom: 5 }}>{t("staff.invites.roleLabel")}</div>
         <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>

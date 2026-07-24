@@ -161,7 +161,28 @@
     "noSavedTemplates": "Geen opgeslagen sjabloon",
     "deleteTemplate": "Sjabloon verwijderen",
     "fNature": "Aard",
-    "fNatureNone": "— niet opgegeven —"
+    "fNatureNone": "— niet opgegeven —",
+    "type_narrative": "Tekst",
+    "type_exercises": "Oefeningen",
+    "type_checklist": "Checklist",
+    "type_weekcalendar": "Weekschema",
+    "type_cardio": "Cardio",
+    "type_table": "Tabel",
+    "clBadge": "Badge (optioneel)",
+    "clBadgePh": "10 min · elke sessie",
+    "clItemPh": "Checklistpunt",
+    "clAddItem": "Punt toevoegen",
+    "wcLabelPh": "Daginhoud",
+    "wcOff": "Rust",
+    "wcAddDay": "Dag toevoegen",
+    "cardioNamePh": "Blok / naam",
+    "cardioKindPh": "Modaliteit",
+    "cardioTargetPh": "Doel (bv. 20 min Z2)",
+    "cardioAdd": "Blok toevoegen",
+    "tblColPh": "Kolom",
+    "tblDelCol": "Kolom verwijderen",
+    "tblAddCol": "Kolom",
+    "tblAddRow": "Rij toevoegen"
   },
   "nav": {
     "bilan": "Vandaag",
@@ -1909,7 +1930,9 @@
       "errBirthdate": "Voer je geboortedatum in.",
       "inviteAlreadyClaimed": "Dit spelersprofiel is al door een ander account geclaimd.",
       "backToSignin": "Terug naar aanmelden",
-      "inviteOnlyNote": "Registratie alleen op uitnodiging. Vraag je club om een link."
+      "inviteOnlyNote": "Registratie alleen op uitnodiging. Vraag je club om een link.",
+      "joinInvalid": "Deze uitnodigingslink is ongeldig of verlopen.",
+      "joinAlreadyMember": "Dit account is al aan een club gekoppeld."
     },
     "link": {
       "expired": "De reset-link is verlopen. Vraag hieronder een nieuwe e-mail aan.",
@@ -2317,5 +2340,18 @@
     "estimatedHint": "Geschat — gebaseerd op referentiewaarden, nog niet genoeg echte invoer.",
     "noBilan": "Nog geen check-in",
     "acwrEstimatedLegend": "* geschat — niet genoeg gelogde sessies voor een betrouwbare ACWR."
+  },
+  "clubCodes": {
+    "title": "Uitnodigingslinks van de club",
+    "subtitle": "Twee gedeelde links: één voor spelers, één voor staff. Elke link koppelt automatisch aan deze club.",
+    "playerLink": "Spelerslink",
+    "staffLink": "Stafflink",
+    "copyLink": "Link kopiëren",
+    "regen": "Vernieuwen",
+    "revoke": "Intrekken",
+    "activate": "Activeren",
+    "revoked": "Ingetrokken",
+    "expiry": "Verloopt op",
+    "noExpiry": "Geen vervaldatum"
   }
 }
