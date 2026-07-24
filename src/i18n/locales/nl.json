@@ -1288,7 +1288,8 @@
       "natureTitle": "Aard van de sessie",
       "overloadSame": "Al {{count}}× {{nature}} op {{days}}/{{total}} dag(en) — let op overbelasting",
       "overloadBusy": "{{days}}/{{total}} dag(en) al belast",
-      "overloadClear": "Geen activiteit gepland die dagen"
+      "overloadClear": "Geen activiteit gepland die dagen",
+      "bulkImportBtn": "Speler-PDF's in bulk importeren"
     },
     "app": {
       "fabSeance": "＋ Sessie",
@@ -2283,6 +2284,13 @@
     "archived": "PDF gearchiveerd (geen sessie aangemaakt).",
     "archiveOnly": "Alleen archiveren",
     "extractExisting": "Sessies extraheren (in kalender aanmaken)",
-    "extractFail": "Extractie mislukt: {{err}}"
+    "extractFail": "Extractie mislukt: {{err}}",
+    "stop": "Stoppen",
+    "skip": "Overslaan",
+    "bulkScanning": "Spelersbestanden scannen…",
+    "bulkParsing": "PDF lezen…",
+    "bulkEmpty": "Geen PDF opgeslagen bij spelers.",
+    "bulkDoneTitle": "Verwerking voltooid",
+    "bulkDoneSummary": "{{files}} PDF(s) geïmporteerd · {{sessions}} sessie(s) aangemaakt · {{skipped}} overgeslagen."
   }
 }

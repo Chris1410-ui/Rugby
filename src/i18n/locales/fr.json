@@ -1288,7 +1288,8 @@
       "natureTitle": "Nature de la séance",
       "overloadSame": "Déjà {{count}}× {{nature}} sur {{days}}/{{total}} jour(s) — attention à la surcharge",
       "overloadBusy": "{{days}}/{{total}} jour(s) déjà chargé(s)",
-      "overloadClear": "Aucune activité prévue ces jours-là"
+      "overloadClear": "Aucune activité prévue ces jours-là",
+      "bulkImportBtn": "Importer les PDF des joueurs (en masse)"
     },
     "app": {
       "fabSeance": "＋ Séance",
@@ -2283,6 +2284,13 @@
     "archived": "PDF archivé (aucune séance créée).",
     "archiveOnly": "Archiver seulement",
     "extractExisting": "Extraire les séances (créer dans le calendrier)",
-    "extractFail": "Extraction impossible : {{err}}"
+    "extractFail": "Extraction impossible : {{err}}",
+    "stop": "Arrêter",
+    "skip": "Passer",
+    "bulkScanning": "Analyse des fichiers des joueurs…",
+    "bulkParsing": "Lecture du PDF…",
+    "bulkEmpty": "Aucun PDF stocké chez les joueurs.",
+    "bulkDoneTitle": "Traitement terminé",
+    "bulkDoneSummary": "{{files}} PDF importé(s) · {{sessions}} séance(s) créée(s) · {{skipped}} passé(s)."
   }
 }
