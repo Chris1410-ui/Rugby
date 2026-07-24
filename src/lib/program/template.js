@@ -99,12 +99,67 @@ function exerciseTable(s, opts) {
     + `</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
+// ── Nouveaux types de sections (fidélité d'import) ──
+// Couleur + libellé FR d'une nature (template pur, sans i18n).
+const NAT = {
+  force: { c: "#E8A33D", l: "Force" }, conditioning: { c: "#38D2E6", l: "Cardio" }, vitesse: { c: "#38D2E6", l: "Vitesse" },
+  prevention: { c: "#E8A33D", l: "Prévention" }, recuperation: { c: "#4FBF7B", l: "Récup" },
+  technique: { c: "#94A2B2", l: "Technique" }, mobilite: { c: "#94A2B2", l: "Mobilité" }, autre: { c: "#94A2B2", l: "Autre" },
+};
+const natChip = (nature) => {
+  if (!nature) return "";
+  const n = NAT[nature] || NAT.autre;
+  return `<span class="ncell" style="color:${n.c};border-color:${n.c}55;background:${n.c}1f">${n.l}</span>`;
+};
+const WD_ORDER = [1, 2, 3, 4, 5, 6, 0];
+const WD_SHORT = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+
+function checklistBody(s) {
+  const badge = s.badge ? `<span class="chk-badge">${escapeHtml(s.badge)}</span>` : "";
+  const items = (s.items || []).filter((x) => String(x).trim()).map((x) => `<li>${mdInline(x)}</li>`).join("");
+  return `<div class="chk-wrap">${badge}<ul class="chk">${items}</ul></div>`;
+}
+function weekCalendarBody(s) {
+  const cols = WD_ORDER.map((wd) => {
+    const entries = (s.days || []).filter((d) => d.weekday === wd);
+    const inner = entries.length
+      ? entries.map((e) => {
+          const cls = e.off ? " wcal-off" : "";
+          const opt = e.optional ? `<span class="wcal-opt">option</span>` : "";
+          return `<div class="wcal-act${cls}">${natChip(e.nature)}<div class="wcal-lbl">${escapeHtml(e.label)}${opt}</div></div>`;
+        }).join("")
+      : `<div class="wcal-act wcal-empty">—</div>`;
+    return `<div class="wcal-col"><div class="wcal-day">${WD_SHORT[wd]}</div>${inner}</div>`;
+  }).join("");
+  return `<div class="wcal-scroll"><div class="wcal">${cols}</div></div>`;
+}
+function cardioBody(s) {
+  const items = (s.items || []).map((it) => {
+    const k = it.kind ? `<span class="cardio-k">${escapeHtml(it.kind)}</span>` : "";
+    const tgt = it.target ? `<span class="cardio-t mono">${escapeHtml(it.target)}</span>` : "";
+    const note = it.note ? `<div class="cardio-n">${escapeHtml(it.note)}</div>` : "";
+    return `<div class="cardio-row"><div class="cardio-h"><span class="cardio-name">${escapeHtml(it.name)}</span>${k}${tgt}</div>${note}</div>`;
+  }).join("");
+  return `<div class="cardio">${items}</div>`;
+}
+function genericTable(s) {
+  const cols = (s.columns || []).map((c) => `<th>${escapeHtml(c)}</th>`).join("");
+  const rows = (s.rows || []).map((r) => `<tr>${(r || []).map((c, j) => `<td class="${j === 0 ? "" : "mono"}">${escapeHtml(c)}</td>`).join("")}</tr>`).join("");
+  return `<div class="tblx-scroll"><table class="tblx gtable">${cols ? `<thead><tr>${cols}</tr></thead>` : ""}<tbody>${rows}</tbody></table></div>`;
+}
+
 function renderSection(s, i, opts) {
   const anchor = `${slugify(s.title)}-${i}`;
   const anchorNum = String(i + 1).padStart(2, "0");
-  const body = s.type === "narrative"
-    ? `<div class="md">${mdBody(s.body)}</div>`
-    : exerciseTable(s, opts);
+  let body;
+  switch (s.type) {
+    case "narrative": body = `<div class="md">${mdBody(s.body)}</div>`; break;
+    case "checklist": body = checklistBody(s); break;
+    case "weekcalendar": body = weekCalendarBody(s); break;
+    case "cardio": body = cardioBody(s); break;
+    case "table": body = genericTable(s); break;
+    default: body = exerciseTable(s, opts);
+  }
   return `<section id="${anchor}"><div class="wrap"><div class="rv in">${sectionHead(s, anchorNum)}${body}</div></div></section>`;
 }
 
@@ -232,6 +287,29 @@ section{padding:66px 0;border-bottom:1px solid var(--line-2)}
 .tgt-item .tv{font-family:'Anton';font-size:1.5rem;line-height:1;color:var(--cyan)}
 .tgt-item .tl{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fumee);margin-top:6px}
 .peak{color:var(--ambre);font-weight:700}
+.chk-badge{display:inline-block;font-family:'Oswald';font-weight:600;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);border:1px solid var(--cyan-d);border-radius:100px;padding:5px 13px;margin-bottom:14px}
+.chk{list-style:none;max-width:72ch}
+.chk li{color:var(--fumee);font-size:.95rem;padding-left:26px;position:relative;margin-bottom:9px}
+.chk li::before{content:"✓";position:absolute;left:0;top:0;color:var(--vert);font-weight:700;font-family:'JetBrains Mono'}
+.chk li b{color:var(--craie)}
+.cardio{display:flex;flex-direction:column;gap:10px;max-width:82ch}
+.cardio-row{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:12px;padding:12px 16px}
+.cardio-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cardio-name{font-family:'Oswald';font-weight:600;font-size:1rem}
+.cardio-k{font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);border:1px solid var(--cyan-d);border-radius:6px;padding:2px 8px}
+.cardio-t{color:var(--ambre);font-size:.85rem}
+.cardio-n{color:var(--fumee);font-size:.85rem;margin-top:6px}
+.wcal-scroll{overflow-x:auto;border-radius:12px}
+.wcal{display:grid;grid-template-columns:repeat(7,minmax(118px,1fr));gap:8px;min-width:760px}
+.wcal-col{border:1px solid var(--line);border-radius:10px;padding:8px;background:rgba(255,255,255,.02)}
+.wcal-day{font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;color:var(--fumee);text-align:center;margin-bottom:8px}
+.wcal-act{border-radius:8px;padding:8px;background:rgba(255,255,255,.03);margin-bottom:6px;text-align:center}
+.wcal-act:last-child{margin-bottom:0}
+.wcal-act.wcal-empty{color:var(--fumee);opacity:.45;background:none}
+.wcal-act.wcal-off{opacity:.6}
+.wcal-lbl{font-size:.78rem;margin-top:5px;color:var(--craie);line-height:1.3}
+.wcal-opt{display:block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fumee);margin-top:2px}
+.ncell{display:inline-block;font-family:'Oswald';font-weight:600;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid;border-radius:5px;padding:1px 6px}
 .exlink{color:var(--craie);text-decoration:none;border-bottom:1px dotted var(--cyan);cursor:pointer}
 .exlink:hover{color:var(--cyan)}
 .exlinked{border-bottom:1px dotted var(--cyan-d)}
