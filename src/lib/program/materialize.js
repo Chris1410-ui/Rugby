@@ -24,7 +24,7 @@ export const codeForNature = (n) => NATURE_CODE[n] || "RS";
 
 // Cellule de semaine « 4×8 R7 » / « 3x10 » → { sets, reps }. Le reste (repos,
 // étoile de pic…) reste dans le protocole ; ici on ne garde que sets×reps.
-function parseScheme(text) {
+export function parseScheme(text) {
   const m = String(text || "").match(/(\d+)\s*[x×*]\s*(\d+(?:\s*[-–]\s*\d+)?)/);
   if (!m) return { sets: "", reps: "" };
   return { sets: m[1], reps: m[2].replace(/\s+/g, "").replace(/–/g, "-") };
