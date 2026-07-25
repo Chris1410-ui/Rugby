@@ -12,6 +12,7 @@ import { importProgramForSelf, importProgramForPlayer } from "../../data/freeSes
 import { createProgramDoc } from "../../data/programDocs.js";
 import { addAssignment } from "../../data/programAssignments.js";
 import PlayerPrograms from "./PlayerPrograms.jsx";
+import PlayerSessionHistory from "./PlayerSessionHistory.jsx";
 import Player1RM from "./Player1RM.jsx";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
@@ -514,6 +515,8 @@ export default function Fiche({ player, canEdit = false, self = false, players =
       <PlayerProgramFiles player={player} self={self} canAdd={self || canEdit} canDelete={self || canEdit} />
 
       <PlayerPrograms player={player} players={players} canEdit={canEdit} />
+
+      <PlayerSessionHistory player={player} players={players} />
 
       <Player1RM player={player} self={self} canEdit={canEdit} />
 

@@ -1508,15 +1508,19 @@
     },
     "calendar": {
       "legendDone": "gedaan",
-      "legendPlanned": "gepland",
+      "legendMissed": "gemist",
+      "legendPlanned": "te doen",
       "mySessions": "MIJN SESSIES",
       "agenda": "AGENDA · SESSIES",
       "empty": "Geen sessie gepland.",
       "exercisesCount": "{{count}} oefeningen",
       "tagDone": "Gedaan",
       "tagMissed": "Gemist",
+      "tagTodo": "Te doen",
+      "tagPostponed": "Uitgesteld",
       "tagToValidate": "Te valideren",
-      "tagUpcoming": "Binnenkort"
+      "tagUpcoming": "Binnenkort",
+      "rpe": "RPE {{rpe}}"
     },
     "conversation": {
       "withPlayer": "Gesprek met de speler",
@@ -1716,6 +1720,14 @@
       "treat": "✓ Afhandelen"
     },
     "fiche": {
+      "sessHistTitle": "SESSIEGESCHIEDENIS",
+      "sessHistEmpty": "Geen sessies voor deze speler.",
+      "sessHistRate": "{{rate}}% voltooid",
+      "sessHistDone": "{{count}} ✓",
+      "sessHistMissed": "{{count}} ✗",
+      "sessHistTodo": "{{count}} te doen",
+      "sessHistMore": "Toon {{count}} meer",
+      "sessHistLess": "Minder tonen",
       "qTitle": "VRAGENLIJSTEN · {{count}}",
       "questions_one": "{{count}} vraag",
       "questions_other": "{{count}} vragen",

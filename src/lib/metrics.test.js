@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import i18n from "../i18n/config.js";
 import {
   acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
-  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, alertText, alertCat,
+  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, alertText, alertCat, sessionDisplayState,
 } from "./metrics.js";
 
 beforeAll(async () => { await i18n.changeLanguage("fr"); });
@@ -293,5 +293,22 @@ describe("alertText / alertCat — résolution i18n (FR)", () => {
   });
   it("traduit la catégorie", () => {
     expect(alertCat(t, "wellbeing")).toBe("Bien-être");
+  });
+});
+
+describe("sessionDisplayState — état d'affichage d'une séance", () => {
+  const today = "2026-07-25";
+  it("réalisée / manquée / reportée depuis le log", () => {
+    expect(sessionDisplayState("done", "2026-07-20", today)).toBe("done");
+    expect(sessionDisplayState("missed", "2026-07-30", today)).toBe("missed");
+    expect(sessionDisplayState("postponed", "2026-07-30", today)).toBe("postponed");
+  });
+  it("pending futur ou aujourd'hui = à faire", () => {
+    expect(sessionDisplayState("pending", "2026-07-30", today)).toBe("todo");
+    expect(sessionDisplayState("pending", today, today)).toBe("todo");
+  });
+  it("pending passé = manquée (cohérent avec le score)", () => {
+    expect(sessionDisplayState("pending", "2026-07-20", today)).toBe("missed");
+    expect(sessionDisplayState(undefined, "2026-07-20", today)).toBe("missed");
   });
 });
