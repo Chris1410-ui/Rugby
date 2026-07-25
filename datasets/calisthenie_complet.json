@@ -1,0 +1,4793 @@
+{
+  "schema": "calisthenics-library/1.0",
+  "genere_le": "2026-07-25",
+  "langue": "fr",
+  "resume": {
+    "exercices": 176,
+    "progressions": 8,
+    "seances": 13,
+    "programmes": 4,
+    "sections_guide": 8
+  },
+  "referentiels": {
+    "categories": [
+      "push",
+      "pull",
+      "jambes",
+      "core",
+      "cardio",
+      "mobilite",
+      "equilibre",
+      "skill"
+    ],
+    "types": [
+      "basique",
+      "skill_statique",
+      "skill_dynamique",
+      "freestyle",
+      "mobilite"
+    ],
+    "equipements": [
+      "aucun",
+      "barre_traction",
+      "barres_paralleles",
+      "anneaux",
+      "chaise_banc",
+      "roue_abdominale",
+      "mur"
+    ],
+    "niveaux": [
+      "debutant",
+      "intermediaire",
+      "avance",
+      "expert"
+    ],
+    "familles_progression": [
+      "handstand",
+      "hspu",
+      "front_lever",
+      "back_lever",
+      "human_flag",
+      "planche",
+      "muscle_up",
+      "pistol"
+    ],
+    "mesures": [
+      "reps",
+      "temps"
+    ]
+  },
+  "sources": [
+    {
+      "id": "thefitnessphantom_12w",
+      "url": "https://thefitnessphantom.com/12-week-calisthenics-program-with-pdf"
+    },
+    {
+      "id": "calisthenics_family_guide",
+      "ref": "Calisthenics Training Guide – Calisthenics Family (noms d'exercices uniquement)"
+    }
+  ],
+  "mentions_legales": "Les noms d exercices sont des donnees factuelles. Le guide et les modeles de seances sont des contenus originaux, ni reproduction ni traduction d un ouvrage existant.",
+  "guide": {
+    "titre": "Guide de calisthénie",
+    "sections": [
+      {
+        "ordre": 1,
+        "titre": "Ce qu'est la calisthénie",
+        "slug": "ce_qu_est_la_calisth_nie",
+        "contenu_markdown": "Le mot vient du grec *kallos* (beauté) et *sthenos* (force) : littéralement, « la belle force ». Concrètement, c'est l'entraînement de force qui utilise le poids du corps comme seule charge. On y distingue trois familles de pratique :\n\n**Les basiques.** Traction, pompe, dip, squat, gainage. Ce sont les mouvements qui construisent la masse musculaire et la force générale. Ils restent le socle du travail quel que soit le niveau — un pratiquant avancé ne les abandonne jamais, il les rend plus difficiles.\n\n**Les skills (figures).** Des positions tenues à un angle donné contre la gravité : équilibre sur les mains, front lever, back lever, drapeau humain, planche. On parle de *statiques* ou de figures « bras tendus ». Certaines figures sont au contraire *dynamiques* : le muscle up, le handstand push-up, le passage du L-sit à l'équilibre.\n\n**Le freestyle.** L'enchaînement libre de figures explosives et de statiques, sur lequel reposent la plupart des compétitions. C'est un aboutissement, pas un point de départ.\n\nCes trois familles ne s'opposent pas : les basiques nourrissent les skills, et les skills rendent les basiques plus faciles."
+      },
+      {
+        "ordre": 2,
+        "titre": "Les quatre qualités à développer",
+        "slug": "les_quatre_qualit_s_d_velopper",
+        "contenu_markdown": "Un pratiquant qui progresse durablement travaille quatre choses en parallèle.\n\n| Qualité | Ce que c'est | Comment on l'entraîne |\n|---|---|---|\n| **Force** | Produire de la tension avec les bras fléchis, en mouvement | Tractions, dips, pompes, HSPU, muscle up |\n| **Skills** | Tenir une position bras tendus contre la gravité | Statiques, progressions par paliers |\n| **Souplesse** | Longueur des muscles | Étirements en flexion avant, en extension dorsale, ischios, épaules |\n| **Mobilité** | Amplitude de mouvement des articulations | Mobilité d'épaules, de poignets, de hanches |\n\nLa confusion la plus fréquente porte sur les deux dernières : la **souplesse** dépend des muscles, la **mobilité** de l'articulation elle-même. Un ATR bien aligné demande de la souplesse d'épaules ; un *skin the cat* demande de la mobilité de l'épaule. Les deux se travaillent différemment.\n\nCes qualités se renforcent mutuellement. Progresser à l'équilibre aide la planche. Devenir fort en dips aide les handstand push-ups. Gagner en souplesse d'ischios rend le back lever plus droit."
+      },
+      {
+        "ordre": 3,
+        "titre": "Les principes d'entraînement",
+        "slug": "les_principes_d_entra_nement",
+        "contenu_markdown": "Ce sont les règles d'adaptation du corps. Elles ne sont pas propres à la calisthénie, mais elles s'y appliquent avec une force particulière.\n\n**Régularité.** Les résultats se comptent en mois et en années, pas en semaines. Une figure comme l'ATR aligné ou la planche demande souvent plus d'un an. Les coupures longues et répétées sont ce qui empêche le plus de gens de progresser.\n\n**Fréquence.** Pour apprendre un geste, la répétition fréquente compte plus que la durée d'une séance. Mieux vaut travailler l'équilibre 20 minutes quatre fois par semaine qu'une heure le dimanche. C'est un apprentissage moteur autant qu'un travail de force.\n\n**Objectifs limités.** Deux à trois skills maximum sur un cycle donné, plus quelques exercices de force. Vouloir tout travailler en même temps, c'est avancer d'un centimètre partout.\n\n**Spécificité.** Le corps s'adapte dans la direction où on le charge. Renforcer son gainage ne donne pas un back lever : il faut pratiquer le back lever lui-même, et l'entourer d'exercices qui le servent.\n\n**Surcharge progressive.** Chaque cycle doit demander un peu plus que le précédent : une seconde de plus, une répétition de plus, un levier plus long, une amplitude plus grande. Sans augmentation de la contrainte, il n'y a pas de raison de s'adapter.\n\n**Paliers.** Ne cherche pas à étirer une même variante à l'infini. Si tu tiens 20 secondes de front lever groupé, passe à la variante suivante plutôt que de viser 60 secondes. Le nouveau stimulus fait plus progresser que la durée.\n\n**Rendement décroissant.** Les premiers progrès sont rapides, puis ils ralentissent jusqu'au plateau. C'est normal. On le contourne en changeant de stimulus : nouvelle variante, nouvel angle, nouveau format. Travailler par blocs de 8 à 12 semaines permet d'anticiper ce moment.\n\n**Réversibilité.** Ce qui se construit se perd à peu près aussi vite. La force et les skills se dégradent plus vite que la souplesse et la mobilité. Une semaine de coupure après deux mois de travail est bénéfique ; au-delà de deux semaines sans raison, on recule.\n\n**Suivi.** Note tes résultats. Un carnet ou l'historique de l'app suffit : tu commences chaque séance en sachant précisément quel chiffre battre. C'est le mécanisme le plus simple pour appliquer la surcharge progressive sans y penser."
+      },
+      {
+        "ordre": 4,
+        "titre": "Construire une séance",
+        "slug": "construire_une_s_ance",
+        "contenu_markdown": "**Échauffement (8-10 min).** Élévation cardiaque, puis mobilité ciblée sur les articulations sollicitées — poignets et épaules avant toute séance de poussée ou d'ATR, hanches avant les jambes. Termine par des séries légères du premier exercice.\n\n**Ordre des exercices.** Du plus exigeant au moins exigeant sur le plan nerveux :\n1. Skills et statiques (à faire frais, jamais en fin de séance)\n2. Force lourde en poussée et en tirage\n3. Volume d'assistance\n4. Gainage\n5. Étirements ou retour au calme\n\n**Séries, répétitions, repos.**\n\n| Objectif | Format | Repos |\n|---|---|---|\n| Skill / statique | 4-6 séries de 10-30 s, loin de l'échec | 90-150 s |\n| Force max | 4-6 séries de 3-6 reps | 2-3 min |\n| Hypertrophie | 3-4 séries de 8-15 reps | 60-90 s |\n| Endurance / circuit | 3-5 tours, 30-60 s par exercice | 15-30 s entre exercices |\n\n**Règle des statiques :** la série s'arrête quand la position se dégrade, pas quand tu tombes. Une tenue de 12 secondes propre vaut mieux qu'une de 20 secondes cassée — c'est la position propre que le corps apprend."
+      },
+      {
+        "ordre": 5,
+        "titre": "Modèles de semaine",
+        "slug": "mod_les_de_semaine",
+        "contenu_markdown": "Quatre organisations, du plus simple au plus spécialisé. Elles sont détaillées dans le fichier de séances.\n\n**Débutant — 3 jours full body.** Le corps entier trois fois par semaine, un jour sur deux. C'est le format le plus efficace quand on part de zéro : fréquence élevée sur chaque mouvement, récupération suffisante.\n\n**Push / Pull / Jambes.** Poussée, tirage, jambes, plus un jour de gainage et un jour de cardio. Simple à organiser, mais la frontière poussée/tirage est artificielle en calisthénie : un muscle up sollicite le dos, les épaules et les bras dans le même mouvement.\n\n**Haut / Bas.** Alterne haut et bas du corps. Utile pour rééquilibrer un déséquilibre entre les deux, ou quand on veut cinq séances par semaine sans surcharger le haut du corps.\n\n**Skill / Force en alternance.** L'organisation la plus adaptée dès qu'on vise des figures : un jour bras tendus (statiques), un jour bras fléchis (force dynamique), séparés par de la récupération active. Chaque type revient deux fois par semaine, et comme les deux se nourrissent mutuellement, la figure visée est indirectement travaillée quatre fois.\n\n**En complément — la pratique quotidienne.** Une ou plusieurs mini-sessions par jour d'un même exercice, toujours très loin de l'échec (50-60 % du max). Idéal pour l'ATR ou les tenues de gainage. Ça ne remplace pas un programme, ça s'y ajoute.\n\n**En complément — le circuit.** Enchaîner les exercices sans pause. Format à privilégier quand le temps manque ou en déplacement. Varie les angles et mélange dynamique et statique dans un même circuit."
+      },
+      {
+        "ordre": 6,
+        "titre": "Progresser sur une figure",
+        "slug": "progresser_sur_une_figure",
+        "contenu_markdown": "Chaque figure se décompose en paliers, du plus court levier au plus long. Le principe est toujours le même : plus le corps est ramassé, plus la figure est facile ; plus il s'allonge, plus le bras de levier augmente.\n\n- **Équilibre sur les mains** : frog stand → dos au mur → ventre au mur → équilibre libre → entrées en force\n- **Front lever** : groupé → groupé avancé → écarté → complet\n- **Back lever** : groupé → une jambe → écarté → complet\n- **Drapeau humain** : tenue verticale tête en bas → tenue verticale tête en haut → groupé → une jambe → complet\n- **Planche** : elbow planche → groupée → écartée → complète\n- **Muscle up** : tractions explosives → avec élan → strict → aux anneaux\n- **Handstand push-up** : pompes piquées → au mur → ventre au mur → libre\n- **Pistol squat** : assisté → complet → barre basse → barre haute → lesté\n\nNe passe au palier suivant que lorsque le palier actuel est solide et propre — une tenue de 15-20 secondes maîtrisée est un bon repère."
+      },
+      {
+        "ordre": 7,
+        "titre": "Récupération, alimentation, hydratation",
+        "slug": "r_cup_ration_alimentation_hydratation",
+        "contenu_markdown": "**Récupération.** 48 h entre deux sollicitations lourdes du même groupe. En calisthénie, presque tous les exercices engagent épaules, dos, bras et gainage : les jours de repos ne sont pas optionnels. Le sommeil reste le levier de récupération le plus puissant.\n\n**Poids de corps.** En calisthénie, la charge à déplacer, c'est toi. Un rapport force/poids favorable rend mécaniquement les figures plus accessibles. Cela ne veut pas dire chercher la maigreur : la masse musculaire est ce qui produit la force. L'approche raisonnable est de manger suffisamment pour soutenir l'entraînement et la construction musculaire, sans excédent important et prolongé.\n\n**Protéines.** Les recommandations pour les sportifs de force se situent autour de 1,6 à 2,2 g par kilo de poids de corps et par jour, répartis sur la journée. Sources : viande, poisson, œufs, produits laitiers, légumineuses, tofu, céréales complètes, oléagineux.\n\n**Glucides.** La principale source d'énergie à l'effort. Privilégie les glucides complexes (riz, pâtes complètes, flocons d'avoine, pommes de terre, légumineuses) autour des séances, plutôt que les sucres rapides.\n\n**Lipides.** Environ 20 à 35 % des apports quotidiens, en privilégiant les graisses insaturées (huiles végétales, oléagineux, poissons gras).\n\n**Hydratation.** 1,5 à 2 L par jour en base, davantage à l'entraînement : compte environ 1 L supplémentaire par heure d'effort intense.\n\n**Compléments.** Ils complètent une alimentation variée, ils ne la remplacent pas. La vitamine D est le supplément le plus souvent justifié sous nos latitudes en hiver.\n\n> Ces repères sont d'ordre général. Pour un besoin individuel — pathologie, régime particulier, perte ou prise de poids importante — l'avis d'un médecin ou d'un diététicien reste indispensable."
+      },
+      {
+        "ordre": 8,
+        "titre": "Sécurité",
+        "slug": "s_curit",
+        "contenu_markdown": "- Fais examiner par un professionnel de santé toute douleur articulaire qui persiste : épaules, coudes et poignets sont les zones les plus exposées en calisthénie.\n- Échauffe systématiquement les poignets avant tout appui au sol ou aux barres.\n- Ne travaille jamais une statique jusqu'à la chute : les sorties de position non contrôlées sont la première cause de blessure.\n- Apprends l'ATR près d'un mur ou avec une sortie en roulade avant de tenter le libre.\n- Le lest (tractions, dips, pompes lestées) vient après la maîtrise du mouvement au poids du corps, pas avant.\n- En cas de doute sur ton aptitude à l'effort, consulte un médecin avant de commencer.\n\n---\n\n*Ce guide est un contenu original rédigé pour accompagner la bibliothèque d'exercices de l'application. Il n'est ni une reproduction ni une traduction d'un ouvrage existant.*"
+      }
+    ]
+  },
+  "exercices": [
+    {
+      "id": 1,
+      "nom": "Tractions pronation",
+      "nom_en": "Pull-ups",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 2,
+      "nom": "Tractions supination",
+      "nom_en": "Chin-ups",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 3,
+      "nom": "Tractions archer",
+      "nom_en": "Archer Pull-ups",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 4,
+      "nom": "Tractions négatives",
+      "nom_en": "Negative Pull-ups",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 5,
+      "nom": "L Pull-up",
+      "nom_en": "L Pull-up",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps",
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 6,
+      "nom": "Rowing australien",
+      "nom_en": "Inverted Rows",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 7,
+      "nom": "Rowing aux anneaux",
+      "nom_en": "Ring Rows",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 8,
+      "nom": "Renegade row",
+      "nom_en": "Renegade Rows",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "abdos",
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 9,
+      "nom": "Superman pull",
+      "nom_en": "Superman Pull",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "lombaires"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 10,
+      "nom": "Front lever groupé",
+      "nom_en": "Tuck Front Lever",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "skill_statique",
+      "famille": "front_lever",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 11,
+      "nom": "Skin the cat",
+      "nom_en": "Skin The Cat",
+      "categorie": "pull",
+      "muscles": [
+        "dos",
+        "epaules"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 12,
+      "nom": "Curl au poids du corps",
+      "nom_en": "Bodyweight Curls",
+      "categorie": "pull",
+      "muscles": [
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 13,
+      "nom": "Haussements d'épaules suspendu",
+      "nom_en": "Hanging Scapula Shrugs",
+      "categorie": "pull",
+      "muscles": [
+        "trapezes",
+        "dos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 14,
+      "nom": "Élévations IYT au sol",
+      "nom_en": "Lying IYT Raises",
+      "categorie": "pull",
+      "muscles": [
+        "epaules",
+        "dos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 15,
+      "nom": "Soulevé de terre au poids du corps",
+      "nom_en": "Bodyweight Deadlift",
+      "categorie": "pull",
+      "muscles": [
+        "ischios",
+        "fessiers",
+        "lombaires"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 16,
+      "nom": "Pompes",
+      "nom_en": "Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "triceps",
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 17,
+      "nom": "Pompes déclinées",
+      "nom_en": "Decline Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "epaules"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 18,
+      "nom": "Pompes diamant",
+      "nom_en": "Diamond Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "triceps",
+        "pectoraux"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 19,
+      "nom": "Pompes prise serrée",
+      "nom_en": "Close Grip Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "triceps",
+        "pectoraux"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 20,
+      "nom": "Pompes archer",
+      "nom_en": "Archer Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 21,
+      "nom": "Pompes archer australiennes",
+      "nom_en": "Archer Australian Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "dos",
+        "pectoraux"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 22,
+      "nom": "Pompes piquées",
+      "nom_en": "Pike Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "epaules",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": "hspu",
+      "niveau_progression": 1,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 23,
+      "nom": "Pompes dive bomber",
+      "nom_en": "Dive Bomber Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "epaules",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 24,
+      "nom": "Pompes décalées",
+      "nom_en": "Staggered Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 25,
+      "nom": "Pompes négatives",
+      "nom_en": "Negative Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 26,
+      "nom": "Pompes pseudo planche",
+      "nom_en": "Pseudo Planche Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "epaules",
+        "pectoraux"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": "planche",
+      "niveau_progression": 0,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 27,
+      "nom": "HSPU au mur",
+      "nom_en": "Wall Handstand Push-ups",
+      "categorie": "push",
+      "muscles": [
+        "epaules",
+        "triceps"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "skill_dynamique",
+      "famille": "hspu",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 28,
+      "nom": "Dips aux barres",
+      "nom_en": "Bar Dips",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "triceps",
+        "epaules"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 29,
+      "nom": "Dips aux anneaux",
+      "nom_en": "Ring Dips",
+      "categorie": "push",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 30,
+      "nom": "Dips sur chaise / banc",
+      "nom_en": "Bench / Chair Dips",
+      "categorie": "push",
+      "muscles": [
+        "triceps",
+        "epaules"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 31,
+      "nom": "Dips au sol",
+      "nom_en": "Floor Dips",
+      "categorie": "push",
+      "muscles": [
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 32,
+      "nom": "Extension triceps au poids du corps",
+      "nom_en": "Bodyweight Triceps Extension",
+      "categorie": "push",
+      "muscles": [
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 33,
+      "nom": "Extension triceps en planche",
+      "nom_en": "Plank Triceps Extension",
+      "categorie": "push",
+      "muscles": [
+        "triceps",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 34,
+      "nom": "Push press au poids du corps",
+      "nom_en": "Push Press",
+      "categorie": "push",
+      "muscles": [
+        "epaules",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 35,
+      "nom": "Élévations latérales au poids du corps",
+      "nom_en": "Bodyweight Lateral Raises",
+      "categorie": "push",
+      "muscles": [
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 36,
+      "nom": "Squats",
+      "nom_en": "Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 37,
+      "nom": "Squats latéraux",
+      "nom_en": "Side / Lateral Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "adducteurs",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 38,
+      "nom": "Squats archer",
+      "nom_en": "Archer Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "adducteurs"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 39,
+      "nom": "Pistol squats",
+      "nom_en": "Pistol Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": "pistol",
+      "niveau_progression": 2,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 40,
+      "nom": "Squats bulgares",
+      "nom_en": "Bulgarian Split Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 41,
+      "nom": "Split squats",
+      "nom_en": "Split Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 42,
+      "nom": "Sissy squats",
+      "nom_en": "Sissy Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 43,
+      "nom": "Squats plié",
+      "nom_en": "Plie Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "adducteurs",
+        "quadriceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 44,
+      "nom": "Squats sumo",
+      "nom_en": "Sumo Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "adducteurs",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 45,
+      "nom": "Pop squats",
+      "nom_en": "Pop Squats",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 46,
+      "nom": "Squats sautés",
+      "nom_en": "Squat Jumps",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers",
+        "mollets"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 47,
+      "nom": "Fentes croisées (curtsy)",
+      "nom_en": "Curtsy Lunges",
+      "categorie": "jambes",
+      "muscles": [
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 48,
+      "nom": "Fentes arrière",
+      "nom_en": "Reverse Lunges",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 49,
+      "nom": "Fentes latérales",
+      "nom_en": "Lateral Lunges",
+      "categorie": "jambes",
+      "muscles": [
+        "adducteurs",
+        "quadriceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 50,
+      "nom": "Fentes sautées",
+      "nom_en": "Jumping Lunges",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 51,
+      "nom": "Kickbacks fessiers",
+      "nom_en": "Glute Kickbacks",
+      "categorie": "jambes",
+      "muscles": [
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 52,
+      "nom": "Pont fessier",
+      "nom_en": "Glute Bridge",
+      "categorie": "jambes",
+      "muscles": [
+        "fessiers",
+        "ischios"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 53,
+      "nom": "Pont fessier unilatéral",
+      "nom_en": "Single-leg Bridge",
+      "categorie": "jambes",
+      "muscles": [
+        "fessiers",
+        "ischios"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 54,
+      "nom": "Frog pumps",
+      "nom_en": "Frog Pumps",
+      "categorie": "jambes",
+      "muscles": [
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 55,
+      "nom": "Soulevé de terre unilatéral",
+      "nom_en": "Single-Leg Deadlift",
+      "categorie": "jambes",
+      "muscles": [
+        "ischios",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 56,
+      "nom": "Extensions mollets",
+      "nom_en": "Calf Raises",
+      "categorie": "jambes",
+      "muscles": [
+        "mollets"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 57,
+      "nom": "Donkey calf raises",
+      "nom_en": "Donkey Calf Raises",
+      "categorie": "jambes",
+      "muscles": [
+        "mollets"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 58,
+      "nom": "Chaise au mur sur pointes",
+      "nom_en": "Tip Toe Wall Sit",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps",
+        "mollets"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 59,
+      "nom": "Chaise au mur talons levés",
+      "nom_en": "Heel Raised Wall Sit",
+      "categorie": "jambes",
+      "muscles": [
+        "quadriceps"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 60,
+      "nom": "Crunchs",
+      "nom_en": "Crunches",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 61,
+      "nom": "Crunchs inversés",
+      "nom_en": "Reverse Crunches",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 62,
+      "nom": "Hollow body crunch",
+      "nom_en": "Hollow Body Crunch",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 63,
+      "nom": "Crunchs bicyclette",
+      "nom_en": "Bicycle Crunches",
+      "categorie": "core",
+      "muscles": [
+        "abdos",
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 64,
+      "nom": "Dead bug",
+      "nom_en": "Dead Bug Crunch",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 65,
+      "nom": "Relevés de buste",
+      "nom_en": "Sit-ups",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 66,
+      "nom": "V-ups",
+      "nom_en": "V Ups",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 67,
+      "nom": "V-up hold",
+      "nom_en": "V-Up Hold",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 68,
+      "nom": "Tuck-up unilatéral",
+      "nom_en": "Single-Leg Tuck-up",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 69,
+      "nom": "Relevés de jambes suspendu",
+      "nom_en": "Hanging Leg Raises",
+      "categorie": "core",
+      "muscles": [
+        "abdos",
+        "flechisseurs_hanche"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 70,
+      "nom": "Relevés de genoux suspendu",
+      "nom_en": "Hanging Knee Raises",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 71,
+      "nom": "Genoux aux coudes suspendu",
+      "nom_en": "Hanging Knees to Elbows",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 72,
+      "nom": "Toes to bar",
+      "nom_en": "Toes to Bar",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 73,
+      "nom": "L-sit",
+      "nom_en": "L-Sit",
+      "categorie": "core",
+      "muscles": [
+        "abdos",
+        "quadriceps"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 74,
+      "nom": "Dragon flag",
+      "nom_en": "Dragon Flag",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 75,
+      "nom": "Essuie-glaces",
+      "nom_en": "Windshield Wipers",
+      "categorie": "core",
+      "muscles": [
+        "obliques",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 76,
+      "nom": "Russian twist",
+      "nom_en": "Russian Twist",
+      "categorie": "core",
+      "muscles": [
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 77,
+      "nom": "Talons alternés",
+      "nom_en": "Alternating Heel Taps",
+      "categorie": "core",
+      "muscles": [
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 78,
+      "nom": "Battements de jambes",
+      "nom_en": "Flutter Kicks",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 79,
+      "nom": "Gainage ventral",
+      "nom_en": "Plank",
+      "categorie": "core",
+      "muscles": [
+        "abdos",
+        "lombaires"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 80,
+      "nom": "Gainage latéral",
+      "nom_en": "Side Plank",
+      "categorie": "core",
+      "muscles": [
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 81,
+      "nom": "Rotations de hanche en gainage latéral",
+      "nom_en": "Side Plank Hip Dips",
+      "categorie": "core",
+      "muscles": [
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 82,
+      "nom": "Touches d'épaules en planche",
+      "nom_en": "Shoulder Taps",
+      "categorie": "core",
+      "muscles": [
+        "abdos",
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 83,
+      "nom": "Touches de genoux en planche haute",
+      "nom_en": "High Plank Knee Taps",
+      "categorie": "core",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 84,
+      "nom": "Spider plank crunch",
+      "nom_en": "Spider Plank Crunch",
+      "categorie": "core",
+      "muscles": [
+        "obliques",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 85,
+      "nom": "Bird dog plank",
+      "nom_en": "Bird Dog Plank",
+      "categorie": "core",
+      "muscles": [
+        "lombaires",
+        "abdos",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 86,
+      "nom": "Roue abdominale",
+      "nom_en": "Ab Wheel Rollout",
+      "categorie": "core",
+      "muscles": [
+        "abdos",
+        "dos"
+      ],
+      "equipement": "roue_abdominale",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 87,
+      "nom": "Jumping jacks",
+      "nom_en": "Jumping Jacks",
+      "categorie": "cardio",
+      "muscles": [
+        "corps_entier"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 88,
+      "nom": "Burpees",
+      "nom_en": "Burpees",
+      "categorie": "cardio",
+      "muscles": [
+        "corps_entier"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 89,
+      "nom": "Mountain climbers",
+      "nom_en": "Mountain Climbers",
+      "categorie": "cardio",
+      "muscles": [
+        "abdos",
+        "corps_entier"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 90,
+      "nom": "Mountain climbers croisés",
+      "nom_en": "Crossbody Mountain Climbers",
+      "categorie": "cardio",
+      "muscles": [
+        "obliques",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 91,
+      "nom": "Montées de genoux",
+      "nom_en": "High Knee Runs",
+      "categorie": "cardio",
+      "muscles": [
+        "quadriceps",
+        "mollets"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 92,
+      "nom": "Touches genoux hauts",
+      "nom_en": "High Knee Taps",
+      "categorie": "cardio",
+      "muscles": [
+        "quadriceps",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 93,
+      "nom": "Talons-fesses",
+      "nom_en": "Butt Kicks",
+      "categorie": "cardio",
+      "muscles": [
+        "ischios",
+        "mollets"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 94,
+      "nom": "Shadow boxing",
+      "nom_en": "Shadow Punches",
+      "categorie": "cardio",
+      "muscles": [
+        "epaules",
+        "corps_entier"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 95,
+      "nom": "Équilibre sur les mains contre le mur",
+      "nom_en": "Supported Handstand Hold",
+      "categorie": "equilibre",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 96,
+      "nom": "Gainage latéral statique",
+      "nom_en": "Side Plank Hold",
+      "categorie": "equilibre",
+      "muscles": [
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 97,
+      "nom": "Posture du corbeau",
+      "nom_en": "Crane Pose",
+      "categorie": "equilibre",
+      "muscles": [
+        "epaules",
+        "abdos",
+        "avant_bras"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "avance",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 98,
+      "nom": "Bird dog",
+      "nom_en": "Bird Dog",
+      "categorie": "equilibre",
+      "muscles": [
+        "lombaires",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "basique",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 99,
+      "nom": "Étirement du pigeon",
+      "nom_en": "Pigeon Pose / Stretch",
+      "categorie": "mobilite",
+      "muscles": [
+        "hanches",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 100,
+      "nom": "Chien tête en bas",
+      "nom_en": "Downward Facing Dog",
+      "categorie": "mobilite",
+      "muscles": [
+        "ischios",
+        "mollets",
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 101,
+      "nom": "Chien tête en haut",
+      "nom_en": "Upward Facing Dog",
+      "categorie": "mobilite",
+      "muscles": [
+        "abdos",
+        "pectoraux",
+        "lombaires"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 102,
+      "nom": "Posture du dauphin",
+      "nom_en": "Dolphin Pose",
+      "categorie": "mobilite",
+      "muscles": [
+        "epaules",
+        "ischios"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 103,
+      "nom": "Étirement papillon",
+      "nom_en": "Butterfly Stretch",
+      "categorie": "mobilite",
+      "muscles": [
+        "adducteurs",
+        "hanches"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 104,
+      "nom": "Flexion avant debout",
+      "nom_en": "Forward Fold",
+      "categorie": "mobilite",
+      "muscles": [
+        "ischios",
+        "lombaires"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 105,
+      "nom": "Posture du chameau",
+      "nom_en": "Camel Pose",
+      "categorie": "mobilite",
+      "muscles": [
+        "quadriceps",
+        "abdos",
+        "pectoraux"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 106,
+      "nom": "Posture de l'enfant",
+      "nom_en": "Child's Pose",
+      "categorie": "mobilite",
+      "muscles": [
+        "dos",
+        "hanches"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 107,
+      "nom": "Torsion vertébrale allongée",
+      "nom_en": "Supine Spinal Twist",
+      "categorie": "mobilite",
+      "muscles": [
+        "dos",
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 108,
+      "nom": "Essuie-glaces allongés (mobilité)",
+      "nom_en": "Lying Windshield Wiper",
+      "categorie": "mobilite",
+      "muscles": [
+        "hanches",
+        "obliques"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 109,
+      "nom": "World's greatest stretch",
+      "nom_en": "World's Greatest Stretch",
+      "categorie": "mobilite",
+      "muscles": [
+        "hanches",
+        "dos",
+        "ischios"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "type": "mobilite",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "thefitnessphantom_12w"
+      ]
+    },
+    {
+      "id": 110,
+      "nom": "Frog stand",
+      "nom_en": "Frog Stand",
+      "categorie": "skill",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos",
+        "avant_bras"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": "handstand",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 111,
+      "nom": "ATR dos au mur",
+      "nom_en": "Wall Handstand (back to wall)",
+      "categorie": "skill",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": "handstand",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 112,
+      "nom": "ATR ventre au mur",
+      "nom_en": "Reverse Wall Handstand",
+      "categorie": "skill",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "handstand",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 113,
+      "nom": "ATR libre",
+      "nom_en": "Freestanding Handstand",
+      "categorie": "skill",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "avance",
+      "famille": "handstand",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 114,
+      "nom": "L-sit to handstand",
+      "nom_en": "L-sit to Handstand",
+      "categorie": "skill",
+      "type": "skill_dynamique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "handstand",
+      "niveau_progression": 5,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 115,
+      "nom": "Press to handstand",
+      "nom_en": "Press to Handstand",
+      "categorie": "skill",
+      "type": "skill_dynamique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": "handstand",
+      "niveau_progression": 6,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 117,
+      "nom": "HSPU ventre au mur",
+      "nom_en": "Reverse Wall HS Push-ups",
+      "categorie": "push",
+      "type": "skill_dynamique",
+      "muscles": [
+        "epaules",
+        "triceps"
+      ],
+      "equipement": "mur",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "hspu",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 118,
+      "nom": "HSPU libre",
+      "nom_en": "Free Handstand Push-ups",
+      "categorie": "push",
+      "type": "skill_dynamique",
+      "muscles": [
+        "epaules",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": "hspu",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 120,
+      "nom": "Front lever groupé avancé",
+      "nom_en": "Advanced Tuck Front Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "front_lever",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 121,
+      "nom": "Front lever écarté",
+      "nom_en": "Straddle Front Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "avance",
+      "famille": "front_lever",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 122,
+      "nom": "Front lever complet",
+      "nom_en": "Full Front Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "expert",
+      "famille": "front_lever",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 123,
+      "nom": "Front lever raises",
+      "nom_en": "Front Lever Raises",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "abdos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "front_lever",
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 124,
+      "nom": "Back lever groupé",
+      "nom_en": "Tuck Back Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "epaules",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "back_lever",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 125,
+      "nom": "Back lever une jambe",
+      "nom_en": "One Leg Back Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "epaules"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "back_lever",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 126,
+      "nom": "Back lever écarté",
+      "nom_en": "Straddle Back Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "epaules"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "avance",
+      "famille": "back_lever",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 127,
+      "nom": "Back lever complet",
+      "nom_en": "Full Back Lever",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "dos",
+        "epaules"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "expert",
+      "famille": "back_lever",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 128,
+      "nom": "Back lever drops",
+      "nom_en": "Back Lever Drops",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "epaules"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "back_lever",
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 129,
+      "nom": "Vertical down hold",
+      "nom_en": "Vertical Down Hold",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "obliques",
+        "dos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "human_flag",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 130,
+      "nom": "Vertical up hold",
+      "nom_en": "Vertical Up Hold",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "obliques"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "human_flag",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 131,
+      "nom": "Human flag groupé",
+      "nom_en": "Tucked Human Flag",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "obliques",
+        "dos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "avance",
+      "famille": "human_flag",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 132,
+      "nom": "Human flag une jambe",
+      "nom_en": "One Leg Human Flag",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "obliques"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "avance",
+      "famille": "human_flag",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 133,
+      "nom": "Human flag complet",
+      "nom_en": "Full Human Flag",
+      "categorie": "pull",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "obliques",
+        "dos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "temps",
+      "niveau": "expert",
+      "famille": "human_flag",
+      "niveau_progression": 5,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 134,
+      "nom": "Elbow planche",
+      "nom_en": "Elbow Planche",
+      "categorie": "push",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": "planche",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 135,
+      "nom": "Planche groupée",
+      "nom_en": "Tuck Planche",
+      "categorie": "push",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "avance",
+      "famille": "planche",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 136,
+      "nom": "Planche écartée",
+      "nom_en": "Straddle Planche",
+      "categorie": "push",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "expert",
+      "famille": "planche",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 137,
+      "nom": "Planche complète",
+      "nom_en": "Full Planche",
+      "categorie": "push",
+      "type": "skill_statique",
+      "muscles": [
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "expert",
+      "famille": "planche",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 138,
+      "nom": "Tractions explosives",
+      "nom_en": "Explosive Pull-ups",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": "muscle_up",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 139,
+      "nom": "Muscle up avec élan",
+      "nom_en": "Kipping Muscle Up",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "muscle_up",
+      "niveau_progression": 2,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 140,
+      "nom": "Muscle up strict",
+      "nom_en": "Strict Muscle Up",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": "muscle_up",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 141,
+      "nom": "Muscle up aux anneaux",
+      "nom_en": "Ring Muscle Up",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": "muscle_up",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 142,
+      "nom": "360 muscle up",
+      "nom_en": "360 Muscle Up",
+      "categorie": "pull",
+      "type": "freestyle",
+      "muscles": [
+        "dos",
+        "corps_entier"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 143,
+      "nom": "Shrimp flip",
+      "nom_en": "Shrimp Flip",
+      "categorie": "pull",
+      "type": "freestyle",
+      "muscles": [
+        "corps_entier"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 144,
+      "nom": "Switchblade",
+      "nom_en": "Switchblade",
+      "categorie": "pull",
+      "type": "freestyle",
+      "muscles": [
+        "corps_entier"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 145,
+      "nom": "Impossible dip",
+      "nom_en": "Impossible Dip",
+      "categorie": "push",
+      "type": "skill_dynamique",
+      "muscles": [
+        "triceps",
+        "pectoraux",
+        "epaules"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 146,
+      "nom": "Pompes inclinées",
+      "nom_en": "Incline Push-ups",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 147,
+      "nom": "Pompes claquées",
+      "nom_en": "Clap Push-ups",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 148,
+      "nom": "Pompes tigerbend",
+      "nom_en": "Tigerbend Push-ups",
+      "categorie": "push",
+      "type": "skill_dynamique",
+      "muscles": [
+        "triceps",
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 149,
+      "nom": "Pompes aux anneaux",
+      "nom_en": "Ring Push-ups",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "abdos"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 150,
+      "nom": "Pompes profondes aux anneaux",
+      "nom_en": "Deep Ring Push-ups",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 151,
+      "nom": "Tenue basse de pompe",
+      "nom_en": "Push-up Hold",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 152,
+      "nom": "Dips à la barre droite",
+      "nom_en": "Straight Bar Dips",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 153,
+      "nom": "Dips profonds barre droite",
+      "nom_en": "Deep Straight Bar Dips",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 154,
+      "nom": "Dips profonds aux anneaux",
+      "nom_en": "Deep Ring Dips",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 155,
+      "nom": "Russian dips",
+      "nom_en": "Russian Dips",
+      "categorie": "push",
+      "type": "skill_dynamique",
+      "muscles": [
+        "triceps"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 156,
+      "nom": "Dips lestés",
+      "nom_en": "Weighted Dips",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "barres_paralleles",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 157,
+      "nom": "Pompes lestées",
+      "nom_en": "Weighted Push-ups",
+      "categorie": "push",
+      "type": "basique",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 158,
+      "nom": "Tractions prise large",
+      "nom_en": "Wide Grip Pull-ups",
+      "categorie": "pull",
+      "type": "basique",
+      "muscles": [
+        "dos"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 159,
+      "nom": "Tractions aux anneaux",
+      "nom_en": "Ring Pull-ups",
+      "categorie": "pull",
+      "type": "basique",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 160,
+      "nom": "Rowing australien aux anneaux",
+      "nom_en": "Australian Ring Pull-ups",
+      "categorie": "pull",
+      "type": "basique",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 161,
+      "nom": "Tractions typewriter",
+      "nom_en": "Typewriter Pull-ups",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 162,
+      "nom": "Tractions lestées",
+      "nom_en": "Weighted Pull-ups",
+      "categorie": "pull",
+      "type": "basique",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 163,
+      "nom": "Tenue haute de traction",
+      "nom_en": "Pull-up Hold",
+      "categorie": "pull",
+      "type": "basique",
+      "muscles": [
+        "dos",
+        "biceps"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 164,
+      "nom": "Pelican curls",
+      "nom_en": "Pelican Curls",
+      "categorie": "pull",
+      "type": "skill_dynamique",
+      "muscles": [
+        "biceps",
+        "pectoraux"
+      ],
+      "equipement": "anneaux",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 165,
+      "nom": "Box jumps",
+      "nom_en": "Box Jumps",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers",
+        "mollets"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 166,
+      "nom": "Fentes marchées",
+      "nom_en": "Walking Lunges",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 167,
+      "nom": "Squats profonds",
+      "nom_en": "Deep Squats",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 168,
+      "nom": "Pistol squat assisté",
+      "nom_en": "Assisted Pistol Squat",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "famille": "pistol",
+      "niveau_progression": 1,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 169,
+      "nom": "Pistol squat barre basse",
+      "nom_en": "Low Bar Pistol Squat",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "pistol",
+      "niveau_progression": 3,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 170,
+      "nom": "Pistol squat barre haute",
+      "nom_en": "High Bar Pistol Squat",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "expert",
+      "famille": "pistol",
+      "niveau_progression": 4,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 171,
+      "nom": "Pistol squat lesté",
+      "nom_en": "Weighted Pistol Squat",
+      "categorie": "jambes",
+      "type": "basique",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": true,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": "pistol",
+      "niveau_progression": 5,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 172,
+      "nom": "Hollow body hold",
+      "nom_en": "Hollow Body Hold",
+      "categorie": "core",
+      "type": "skill_statique",
+      "muscles": [
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 173,
+      "nom": "Superman hold",
+      "nom_en": "Superman Hold",
+      "categorie": "core",
+      "type": "skill_statique",
+      "muscles": [
+        "lombaires",
+        "fessiers"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 174,
+      "nom": "L-sit suspendu",
+      "nom_en": "Hanging L-sit",
+      "categorie": "core",
+      "type": "skill_statique",
+      "muscles": [
+        "abdos",
+        "flechisseurs_hanche"
+      ],
+      "equipement": "barre_traction",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 175,
+      "nom": "Dragon fly",
+      "nom_en": "Dragon Fly",
+      "categorie": "core",
+      "type": "skill_dynamique",
+      "muscles": [
+        "abdos",
+        "lombaires"
+      ],
+      "equipement": "chaise_banc",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "avance",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 176,
+      "nom": "Pont / extension dorsale",
+      "nom_en": "Back Bending / Bridge",
+      "categorie": "mobilite",
+      "type": "mobilite",
+      "muscles": [
+        "dos",
+        "epaules",
+        "abdos"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "intermediaire",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 177,
+      "nom": "Mobilité d'épaules (dislocates)",
+      "nom_en": "Shoulder Mobility / Dislocates",
+      "categorie": "mobilite",
+      "type": "mobilite",
+      "muscles": [
+        "epaules"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "reps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    },
+    {
+      "id": 178,
+      "nom": "Mobilité de poignets",
+      "nom_en": "Wrist Mobility Routine",
+      "categorie": "mobilite",
+      "type": "mobilite",
+      "muscles": [
+        "avant_bras",
+        "poignets"
+      ],
+      "equipement": "aucun",
+      "unilateral": false,
+      "mesure": "temps",
+      "niveau": "debutant",
+      "famille": null,
+      "niveau_progression": null,
+      "sources": [
+        "calisthenics_family_guide"
+      ]
+    }
+  ],
+  "progressions": [
+    {
+      "famille": "handstand",
+      "titre": "Équilibre sur les mains",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 110,
+          "nom": "Frog stand",
+          "nom_en": "Frog Stand"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 111,
+          "nom": "ATR dos au mur",
+          "nom_en": "Wall Handstand (back to wall)"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 112,
+          "nom": "ATR ventre au mur",
+          "nom_en": "Reverse Wall Handstand"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 113,
+          "nom": "ATR libre",
+          "nom_en": "Freestanding Handstand"
+        },
+        {
+          "niveau": 5,
+          "exercice_id": 114,
+          "nom": "L-sit to handstand",
+          "nom_en": "L-sit to Handstand"
+        },
+        {
+          "niveau": 6,
+          "exercice_id": 115,
+          "nom": "Press to handstand",
+          "nom_en": "Press to Handstand"
+        }
+      ]
+    },
+    {
+      "famille": "hspu",
+      "titre": "Handstand push-up",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 22,
+          "nom": "Pompes piquées",
+          "nom_en": "Pike Push-ups"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 27,
+          "nom": "HSPU au mur",
+          "nom_en": "Wall Handstand Push-ups"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 117,
+          "nom": "HSPU ventre au mur",
+          "nom_en": "Reverse Wall HS Push-ups"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 118,
+          "nom": "HSPU libre",
+          "nom_en": "Free Handstand Push-ups"
+        }
+      ]
+    },
+    {
+      "famille": "front_lever",
+      "titre": "Front lever",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 10,
+          "nom": "Front lever groupé",
+          "nom_en": "Tuck Front Lever"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 120,
+          "nom": "Front lever groupé avancé",
+          "nom_en": "Advanced Tuck Front Lever"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 121,
+          "nom": "Front lever écarté",
+          "nom_en": "Straddle Front Lever"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 122,
+          "nom": "Front lever complet",
+          "nom_en": "Full Front Lever"
+        }
+      ]
+    },
+    {
+      "famille": "back_lever",
+      "titre": "Back lever",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 124,
+          "nom": "Back lever groupé",
+          "nom_en": "Tuck Back Lever"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 125,
+          "nom": "Back lever une jambe",
+          "nom_en": "One Leg Back Lever"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 126,
+          "nom": "Back lever écarté",
+          "nom_en": "Straddle Back Lever"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 127,
+          "nom": "Back lever complet",
+          "nom_en": "Full Back Lever"
+        }
+      ]
+    },
+    {
+      "famille": "human_flag",
+      "titre": "Drapeau humain",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 129,
+          "nom": "Vertical down hold",
+          "nom_en": "Vertical Down Hold"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 130,
+          "nom": "Vertical up hold",
+          "nom_en": "Vertical Up Hold"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 131,
+          "nom": "Human flag groupé",
+          "nom_en": "Tucked Human Flag"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 132,
+          "nom": "Human flag une jambe",
+          "nom_en": "One Leg Human Flag"
+        },
+        {
+          "niveau": 5,
+          "exercice_id": 133,
+          "nom": "Human flag complet",
+          "nom_en": "Full Human Flag"
+        }
+      ]
+    },
+    {
+      "famille": "planche",
+      "titre": "Planche",
+      "etapes": [
+        {
+          "niveau": 0,
+          "exercice_id": 26,
+          "nom": "Pompes pseudo planche",
+          "nom_en": "Pseudo Planche Push-ups"
+        },
+        {
+          "niveau": 1,
+          "exercice_id": 134,
+          "nom": "Elbow planche",
+          "nom_en": "Elbow Planche"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 135,
+          "nom": "Planche groupée",
+          "nom_en": "Tuck Planche"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 136,
+          "nom": "Planche écartée",
+          "nom_en": "Straddle Planche"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 137,
+          "nom": "Planche complète",
+          "nom_en": "Full Planche"
+        }
+      ]
+    },
+    {
+      "famille": "muscle_up",
+      "titre": "Muscle up",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 138,
+          "nom": "Tractions explosives",
+          "nom_en": "Explosive Pull-ups"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 139,
+          "nom": "Muscle up avec élan",
+          "nom_en": "Kipping Muscle Up"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 140,
+          "nom": "Muscle up strict",
+          "nom_en": "Strict Muscle Up"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 141,
+          "nom": "Muscle up aux anneaux",
+          "nom_en": "Ring Muscle Up"
+        }
+      ]
+    },
+    {
+      "famille": "pistol",
+      "titre": "Pistol squat",
+      "etapes": [
+        {
+          "niveau": 1,
+          "exercice_id": 168,
+          "nom": "Pistol squat assisté",
+          "nom_en": "Assisted Pistol Squat"
+        },
+        {
+          "niveau": 2,
+          "exercice_id": 39,
+          "nom": "Pistol squats",
+          "nom_en": "Pistol Squats"
+        },
+        {
+          "niveau": 3,
+          "exercice_id": 169,
+          "nom": "Pistol squat barre basse",
+          "nom_en": "Low Bar Pistol Squat"
+        },
+        {
+          "niveau": 4,
+          "exercice_id": 170,
+          "nom": "Pistol squat barre haute",
+          "nom_en": "High Bar Pistol Squat"
+        },
+        {
+          "niveau": 5,
+          "exercice_id": 171,
+          "nom": "Pistol squat lesté",
+          "nom_en": "Weighted Pistol Squat"
+        }
+      ]
+    }
+  ],
+  "seances": [
+    {
+      "id": "full_body_A",
+      "titre": "Full body A",
+      "objectif": "Construire les bases (débutant)",
+      "duree_min": 40,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 1,
+          "nom": "Tractions pronation",
+          "nom_en": "Pull-ups",
+          "series": 4,
+          "prescription": "3-8 (ou négatives)",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 16,
+          "nom": "Pompes",
+          "nom_en": "Push-ups",
+          "series": 4,
+          "prescription": "8-15",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 36,
+          "nom": "Squats",
+          "nom_en": "Squats",
+          "series": 3,
+          "prescription": "15-20",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 30,
+          "nom": "Dips sur chaise / banc",
+          "nom_en": "Bench / Chair Dips",
+          "series": 3,
+          "prescription": "8-15",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 6,
+          "nom": "Rowing australien",
+          "nom_en": "Inverted Rows",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 172,
+          "nom": "Hollow body hold",
+          "nom_en": "Hollow Body Hold",
+          "series": 3,
+          "prescription": "20-40 s",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 79,
+          "nom": "Gainage ventral",
+          "nom_en": "Plank",
+          "series": 3,
+          "prescription": "30-60 s",
+          "repos_sec": 60
+        }
+      ]
+    },
+    {
+      "id": "full_body_B",
+      "titre": "Full body B",
+      "objectif": "Construire les bases (débutant)",
+      "duree_min": 40,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 2,
+          "nom": "Tractions supination",
+          "nom_en": "Chin-ups",
+          "series": 4,
+          "prescription": "3-8",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 22,
+          "nom": "Pompes piquées",
+          "nom_en": "Pike Push-ups",
+          "series": 3,
+          "prescription": "6-12",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 40,
+          "nom": "Squats bulgares",
+          "nom_en": "Bulgarian Split Squats",
+          "series": 3,
+          "prescription": "8-12 / jambe",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 160,
+          "nom": "Rowing australien aux anneaux",
+          "nom_en": "Australian Ring Pull-ups",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 52,
+          "nom": "Pont fessier",
+          "nom_en": "Glute Bridge",
+          "series": 3,
+          "prescription": "12-20",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 70,
+          "nom": "Relevés de genoux suspendu",
+          "nom_en": "Hanging Knee Raises",
+          "series": 3,
+          "prescription": "8-15",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 80,
+          "nom": "Gainage latéral",
+          "nom_en": "Side Plank",
+          "series": 3,
+          "prescription": "30 s / côté",
+          "repos_sec": 45
+        }
+      ]
+    },
+    {
+      "id": "push",
+      "titre": "Push — pectoraux, épaules, triceps",
+      "objectif": "Force en poussée",
+      "duree_min": 45,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 27,
+          "nom": "HSPU au mur",
+          "nom_en": "Wall Handstand Push-ups",
+          "series": 4,
+          "prescription": "3-8",
+          "repos_sec": 150
+        },
+        {
+          "exercice_id": 28,
+          "nom": "Dips aux barres",
+          "nom_en": "Bar Dips",
+          "series": 4,
+          "prescription": "6-12",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 20,
+          "nom": "Pompes archer",
+          "nom_en": "Archer Push-ups",
+          "series": 3,
+          "prescription": "6-10 / côté",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 18,
+          "nom": "Pompes diamant",
+          "nom_en": "Diamond Push-ups",
+          "series": 3,
+          "prescription": "8-15",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 33,
+          "nom": "Extension triceps en planche",
+          "nom_en": "Plank Triceps Extension",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 151,
+          "nom": "Tenue basse de pompe",
+          "nom_en": "Push-up Hold",
+          "series": 2,
+          "prescription": "20-30 s",
+          "repos_sec": 60
+        }
+      ]
+    },
+    {
+      "id": "pull",
+      "titre": "Pull — dos, biceps, arrière d'épaules",
+      "objectif": "Force en tirage",
+      "duree_min": 45,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 1,
+          "nom": "Tractions pronation",
+          "nom_en": "Pull-ups",
+          "series": 4,
+          "prescription": "4-10",
+          "repos_sec": 150
+        },
+        {
+          "exercice_id": 6,
+          "nom": "Rowing australien",
+          "nom_en": "Inverted Rows",
+          "series": 4,
+          "prescription": "8-15",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 2,
+          "nom": "Tractions supination",
+          "nom_en": "Chin-ups",
+          "series": 3,
+          "prescription": "4-10",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 13,
+          "nom": "Haussements d'épaules suspendu",
+          "nom_en": "Hanging Scapula Shrugs",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 12,
+          "nom": "Curl au poids du corps",
+          "nom_en": "Bodyweight Curls",
+          "series": 3,
+          "prescription": "6-12",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 9,
+          "nom": "Superman pull",
+          "nom_en": "Superman Pull",
+          "series": 3,
+          "prescription": "12-15",
+          "repos_sec": 60
+        }
+      ]
+    },
+    {
+      "id": "jambes",
+      "titre": "Jambes & fessiers",
+      "objectif": "Force et équilibre du bas du corps",
+      "duree_min": 40,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 168,
+          "nom": "Pistol squat assisté",
+          "nom_en": "Assisted Pistol Squat",
+          "series": 4,
+          "prescription": "6-10 / jambe",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 40,
+          "nom": "Squats bulgares",
+          "nom_en": "Bulgarian Split Squats",
+          "series": 3,
+          "prescription": "8-12 / jambe",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 47,
+          "nom": "Fentes croisées (curtsy)",
+          "nom_en": "Curtsy Lunges",
+          "series": 3,
+          "prescription": "10-12 / jambe",
+          "repos_sec": 75
+        },
+        {
+          "exercice_id": 53,
+          "nom": "Pont fessier unilatéral",
+          "nom_en": "Single-leg Bridge",
+          "series": 3,
+          "prescription": "12-15 / jambe",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 42,
+          "nom": "Sissy squats",
+          "nom_en": "Sissy Squats",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 75
+        },
+        {
+          "exercice_id": 56,
+          "nom": "Extensions mollets",
+          "nom_en": "Calf Raises",
+          "series": 3,
+          "prescription": "15-25",
+          "repos_sec": 45
+        }
+      ]
+    },
+    {
+      "id": "haut_du_corps",
+      "titre": "Haut du corps (upper)",
+      "objectif": "Volume global haut du corps",
+      "duree_min": 50,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 1,
+          "nom": "Tractions pronation",
+          "nom_en": "Pull-ups",
+          "series": 4,
+          "prescription": "4-10",
+          "repos_sec": 150
+        },
+        {
+          "exercice_id": 28,
+          "nom": "Dips aux barres",
+          "nom_en": "Bar Dips",
+          "series": 4,
+          "prescription": "6-12",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 6,
+          "nom": "Rowing australien",
+          "nom_en": "Inverted Rows",
+          "series": 3,
+          "prescription": "10-15",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 16,
+          "nom": "Pompes",
+          "nom_en": "Push-ups",
+          "series": 3,
+          "prescription": "12-20",
+          "repos_sec": 75
+        },
+        {
+          "exercice_id": 22,
+          "nom": "Pompes piquées",
+          "nom_en": "Pike Push-ups",
+          "series": 3,
+          "prescription": "6-12",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 70,
+          "nom": "Relevés de genoux suspendu",
+          "nom_en": "Hanging Knee Raises",
+          "series": 3,
+          "prescription": "10-15",
+          "repos_sec": 60
+        }
+      ]
+    },
+    {
+      "id": "bas_du_corps",
+      "titre": "Bas du corps (lower)",
+      "objectif": "Volume global bas du corps",
+      "duree_min": 40,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 46,
+          "nom": "Squats sautés",
+          "nom_en": "Squat Jumps",
+          "series": 3,
+          "prescription": "10-15",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 48,
+          "nom": "Fentes arrière",
+          "nom_en": "Reverse Lunges",
+          "series": 3,
+          "prescription": "10 / jambe",
+          "repos_sec": 75
+        },
+        {
+          "exercice_id": 54,
+          "nom": "Frog pumps",
+          "nom_en": "Frog Pumps",
+          "series": 3,
+          "prescription": "15-20",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 42,
+          "nom": "Sissy squats",
+          "nom_en": "Sissy Squats",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 75
+        },
+        {
+          "exercice_id": 58,
+          "nom": "Chaise au mur sur pointes",
+          "nom_en": "Tip Toe Wall Sit",
+          "series": 3,
+          "prescription": "30-45 s",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 57,
+          "nom": "Donkey calf raises",
+          "nom_en": "Donkey Calf Raises",
+          "series": 3,
+          "prescription": "15-20",
+          "repos_sec": 45
+        }
+      ]
+    },
+    {
+      "id": "skill_bras_tendus",
+      "titre": "Skill — bras tendus",
+      "objectif": "Travail des statiques (front/back lever, ATR, planche)",
+      "duree_min": 45,
+      "format": "temps",
+      "exercices": [
+        {
+          "exercice_id": 111,
+          "nom": "ATR dos au mur",
+          "nom_en": "Wall Handstand (back to wall)",
+          "series": 5,
+          "prescription": "20-45 s",
+          "repos_sec": 90,
+          "note": "Choisis UNE famille de skill et reste dessus 8-12 semaines"
+        },
+        {
+          "exercice_id": 10,
+          "nom": "Front lever groupé",
+          "nom_en": "Tuck Front Lever",
+          "series": 5,
+          "prescription": "8-20 s",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 124,
+          "nom": "Back lever groupé",
+          "nom_en": "Tuck Back Lever",
+          "series": 4,
+          "prescription": "10-20 s",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 134,
+          "nom": "Elbow planche",
+          "nom_en": "Elbow Planche",
+          "series": 4,
+          "prescription": "10-20 s",
+          "repos_sec": 90
+        },
+        {
+          "exercice_id": 172,
+          "nom": "Hollow body hold",
+          "nom_en": "Hollow Body Hold",
+          "series": 3,
+          "prescription": "30-45 s",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 173,
+          "nom": "Superman hold",
+          "nom_en": "Superman Hold",
+          "series": 3,
+          "prescription": "20-30 s",
+          "repos_sec": 60
+        }
+      ],
+      "note": "Séance à faire frais, en début de semaine. Qualité > fatigue : arrête la série dès que la position se dégrade."
+    },
+    {
+      "id": "force_bras_flechis",
+      "titre": "Force — bras fléchis",
+      "objectif": "Force dynamique et progression vers muscle up / HSPU",
+      "duree_min": 45,
+      "format": "series",
+      "exercices": [
+        {
+          "exercice_id": 138,
+          "nom": "Tractions explosives",
+          "nom_en": "Explosive Pull-ups",
+          "series": 5,
+          "prescription": "3-5",
+          "repos_sec": 150
+        },
+        {
+          "exercice_id": 27,
+          "nom": "HSPU au mur",
+          "nom_en": "Wall Handstand Push-ups",
+          "series": 4,
+          "prescription": "3-8",
+          "repos_sec": 150
+        },
+        {
+          "exercice_id": 28,
+          "nom": "Dips aux barres",
+          "nom_en": "Bar Dips",
+          "series": 4,
+          "prescription": "6-12",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 1,
+          "nom": "Tractions pronation",
+          "nom_en": "Pull-ups",
+          "series": 4,
+          "prescription": "4-10",
+          "repos_sec": 120
+        },
+        {
+          "exercice_id": 16,
+          "nom": "Pompes",
+          "nom_en": "Push-ups",
+          "series": 3,
+          "prescription": "12-20",
+          "repos_sec": 75
+        },
+        {
+          "exercice_id": 36,
+          "nom": "Squats",
+          "nom_en": "Squats",
+          "series": 3,
+          "prescription": "15-20",
+          "repos_sec": 75
+        }
+      ]
+    },
+    {
+      "id": "circuit_core",
+      "titre": "Circuit core",
+      "objectif": "Gainage dynamique + statique",
+      "duree_min": 25,
+      "format": "circuit",
+      "exercices": [
+        {
+          "exercice_id": 175,
+          "nom": "Dragon fly",
+          "nom_en": "Dragon Fly",
+          "series": 3,
+          "prescription": "6-8",
+          "repos_sec": 45
+        },
+        {
+          "exercice_id": 75,
+          "nom": "Essuie-glaces",
+          "nom_en": "Windshield Wipers",
+          "series": 3,
+          "prescription": "8 / côté",
+          "repos_sec": 45
+        },
+        {
+          "exercice_id": 66,
+          "nom": "V-ups",
+          "nom_en": "V Ups",
+          "series": 3,
+          "prescription": "8-12",
+          "repos_sec": 45
+        },
+        {
+          "exercice_id": 174,
+          "nom": "L-sit suspendu",
+          "nom_en": "Hanging L-sit",
+          "series": 3,
+          "prescription": "max",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 172,
+          "nom": "Hollow body hold",
+          "nom_en": "Hollow Body Hold",
+          "series": 3,
+          "prescription": "max",
+          "repos_sec": 60
+        }
+      ],
+      "note": "2 tours dynamiques puis 2 tours statiques, 60-90 s entre les tours."
+    },
+    {
+      "id": "circuit_cardio",
+      "titre": "Circuit cardio / dépense",
+      "objectif": "Endurance et dépense énergétique",
+      "duree_min": 20,
+      "format": "circuit",
+      "exercices": [
+        {
+          "exercice_id": 87,
+          "nom": "Jumping jacks",
+          "nom_en": "Jumping Jacks",
+          "series": 4,
+          "prescription": "30 s",
+          "repos_sec": 15
+        },
+        {
+          "exercice_id": 88,
+          "nom": "Burpees",
+          "nom_en": "Burpees",
+          "series": 4,
+          "prescription": "8-10",
+          "repos_sec": 15
+        },
+        {
+          "exercice_id": 89,
+          "nom": "Mountain climbers",
+          "nom_en": "Mountain Climbers",
+          "series": 4,
+          "prescription": "30 s",
+          "repos_sec": 15
+        },
+        {
+          "exercice_id": 91,
+          "nom": "Montées de genoux",
+          "nom_en": "High Knee Runs",
+          "series": 4,
+          "prescription": "20 s",
+          "repos_sec": 15
+        },
+        {
+          "exercice_id": 46,
+          "nom": "Squats sautés",
+          "nom_en": "Squat Jumps",
+          "series": 4,
+          "prescription": "10-15",
+          "repos_sec": 15
+        },
+        {
+          "exercice_id": 82,
+          "nom": "Touches d'épaules en planche",
+          "nom_en": "Shoulder Taps",
+          "series": 4,
+          "prescription": "20",
+          "repos_sec": 60
+        }
+      ],
+      "note": "Enchaîne les exercices sans pause, 60 s de récupération entre les tours."
+    },
+    {
+      "id": "mobilite",
+      "titre": "Souplesse & mobilité",
+      "objectif": "Amplitude articulaire et longueur musculaire",
+      "duree_min": 25,
+      "format": "etirements",
+      "exercices": [
+        {
+          "exercice_id": 177,
+          "nom": "Mobilité d'épaules (dislocates)",
+          "nom_en": "Shoulder Mobility / Dislocates",
+          "series": 2,
+          "prescription": "10-15",
+          "repos_sec": 30
+        },
+        {
+          "exercice_id": 178,
+          "nom": "Mobilité de poignets",
+          "nom_en": "Wrist Mobility Routine",
+          "series": 1,
+          "prescription": "2-3 min",
+          "repos_sec": 0
+        },
+        {
+          "exercice_id": 100,
+          "nom": "Chien tête en bas",
+          "nom_en": "Downward Facing Dog",
+          "series": 2,
+          "prescription": "45 s",
+          "repos_sec": 20
+        },
+        {
+          "exercice_id": 104,
+          "nom": "Flexion avant debout",
+          "nom_en": "Forward Fold",
+          "series": 2,
+          "prescription": "60 s",
+          "repos_sec": 20
+        },
+        {
+          "exercice_id": 176,
+          "nom": "Pont / extension dorsale",
+          "nom_en": "Back Bending / Bridge",
+          "series": 3,
+          "prescription": "30 s",
+          "repos_sec": 45
+        },
+        {
+          "exercice_id": 99,
+          "nom": "Étirement du pigeon",
+          "nom_en": "Pigeon Pose / Stretch",
+          "series": 2,
+          "prescription": "60 s / côté",
+          "repos_sec": 20
+        },
+        {
+          "exercice_id": 103,
+          "nom": "Étirement papillon",
+          "nom_en": "Butterfly Stretch",
+          "series": 2,
+          "prescription": "60 s",
+          "repos_sec": 20
+        },
+        {
+          "exercice_id": 106,
+          "nom": "Posture de l'enfant",
+          "nom_en": "Child's Pose",
+          "series": 1,
+          "prescription": "60 s",
+          "repos_sec": 0
+        }
+      ],
+      "note": "2 à 3 fois par semaine, 15-30 min. Les étirements en flexion avant et en extension dorsale sont les plus rentables pour la calisthénie."
+    },
+    {
+      "id": "pratique_quotidienne",
+      "titre": "Pratique quotidienne (greasing the groove)",
+      "objectif": "Fréquence sans fatigue",
+      "duree_min": 10,
+      "format": "pratique",
+      "exercices": [
+        {
+          "exercice_id": 111,
+          "nom": "ATR dos au mur",
+          "nom_en": "Wall Handstand (back to wall)",
+          "series": 3,
+          "prescription": "30 s",
+          "repos_sec": 60
+        },
+        {
+          "exercice_id": 172,
+          "nom": "Hollow body hold",
+          "nom_en": "Hollow Body Hold",
+          "series": 3,
+          "prescription": "30 s",
+          "repos_sec": 60
+        }
+      ],
+      "note": "1 à 3 mini-sessions par jour, toujours loin de l'échec (50-60 % de ton max). Se cumule avec n'importe quel programme."
+    }
+  ],
+  "programmes": [
+    {
+      "id": "debutant_3j",
+      "titre": "Débutant — 3 jours full body",
+      "duree_semaines": 8,
+      "public": "Aucun prérequis",
+      "semaine": [
+        {
+          "jour": 1,
+          "seance": "full_body_A"
+        },
+        {
+          "jour": 2,
+          "seance": "repos"
+        },
+        {
+          "jour": 3,
+          "seance": "full_body_B"
+        },
+        {
+          "jour": 4,
+          "seance": "mobilite"
+        },
+        {
+          "jour": 5,
+          "seance": "full_body_A"
+        },
+        {
+          "jour": 6,
+          "seance": "repos"
+        },
+        {
+          "jour": 7,
+          "seance": "repos"
+        }
+      ]
+    },
+    {
+      "id": "ppl_5j",
+      "titre": "Push / Pull / Jambes",
+      "duree_semaines": 8,
+      "public": "Sait faire 5 tractions et 15 pompes",
+      "semaine": [
+        {
+          "jour": 1,
+          "seance": "push"
+        },
+        {
+          "jour": 2,
+          "seance": "pull"
+        },
+        {
+          "jour": 3,
+          "seance": "jambes"
+        },
+        {
+          "jour": 4,
+          "seance": "circuit_core"
+        },
+        {
+          "jour": 5,
+          "seance": "mobilite"
+        },
+        {
+          "jour": 6,
+          "seance": "circuit_cardio"
+        },
+        {
+          "jour": 7,
+          "seance": "repos"
+        }
+      ]
+    },
+    {
+      "id": "upper_lower_5j",
+      "titre": "Haut / Bas",
+      "duree_semaines": 8,
+      "public": "Intermédiaire",
+      "semaine": [
+        {
+          "jour": 1,
+          "seance": "haut_du_corps"
+        },
+        {
+          "jour": 2,
+          "seance": "bas_du_corps"
+        },
+        {
+          "jour": 3,
+          "seance": "haut_du_corps"
+        },
+        {
+          "jour": 4,
+          "seance": "bas_du_corps"
+        },
+        {
+          "jour": 5,
+          "seance": "haut_du_corps"
+        },
+        {
+          "jour": 6,
+          "seance": "circuit_cardio"
+        },
+        {
+          "jour": 7,
+          "seance": "repos"
+        }
+      ]
+    },
+    {
+      "id": "skill_force_4j",
+      "titre": "Skill / Force en alternance",
+      "duree_semaines": 12,
+      "public": "Objectif skills (ATR, front lever, muscle up)",
+      "principe": "Alterner un jour de travail bras tendus (statiques) et un jour de force bras fléchis, séparés par des jours de récupération active. Chaque type de séance revient 2 fois par semaine.",
+      "semaine": [
+        {
+          "jour": 1,
+          "seance": "skill_bras_tendus"
+        },
+        {
+          "jour": 2,
+          "seance": "mobilite"
+        },
+        {
+          "jour": 3,
+          "seance": "force_bras_flechis"
+        },
+        {
+          "jour": 4,
+          "seance": "mobilite"
+        },
+        {
+          "jour": 5,
+          "seance": "skill_bras_tendus"
+        },
+        {
+          "jour": 6,
+          "seance": "mobilite"
+        },
+        {
+          "jour": 7,
+          "seance": "force_bras_flechis"
+        }
+      ]
+    }
+  ]
+}
