@@ -858,6 +858,10 @@
       "protocolLoading": "Opening…",
       "weekN": "Week {{n}}",
       "setYour1RM": "set your {{movement}} 1RM",
+      "exInfo": "Exercise details",
+      "set1rmTitle": "Your 1RM — {{movement}}",
+      "set1rmHint": "Enter your max load (1 rep) to compute %-based loads.",
+      "set1rmSave": "Save",
       "deleteFree": "Delete this free session"
     },
     "freeSession": {
@@ -2492,5 +2496,10 @@
     "errValue": "Enter a valid 1RM.",
     "errSubmax": "Enter weight and reps.",
     "errSave": "Failed: {{err}}"
+  },
+  "exInfo": {
+    "loading": "Loading…",
+    "notFound": "No details for this exercise in the library.",
+    "noSteps": "No detailed instructions for this exercise."
   }
 }

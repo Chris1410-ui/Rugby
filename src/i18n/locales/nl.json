@@ -858,6 +858,10 @@
       "protocolLoading": "Openen…",
       "weekN": "Week {{n}}",
       "setYour1RM": "vul je 1RM {{movement}} in",
+      "exInfo": "Oefeningdetails",
+      "set1rmTitle": "Jouw 1RM — {{movement}}",
+      "set1rmHint": "Voer je maximale belasting (1 herhaling) in om %-belastingen te berekenen.",
+      "set1rmSave": "Opslaan",
       "deleteFree": "Deze vrije sessie verwijderen"
     },
     "freeSession": {
@@ -2492,5 +2496,10 @@
     "errValue": "Voer een geldig 1RM in.",
     "errSubmax": "Voer gewicht en herhalingen in.",
     "errSave": "Mislukt: {{err}}"
+  },
+  "exInfo": {
+    "loading": "Laden…",
+    "notFound": "Geen details voor deze oefening in de bibliotheek.",
+    "noSteps": "Geen gedetailleerde instructies voor deze oefening."
   }
 }

@@ -83,6 +83,18 @@ export async function getExercisesByRefs(refs) {
   return out;
 }
 
+/* Fiche bibliothèque par NOM (les exos de séance ne portent pas de `ref`) :
+   correspondance exacte insensible à la casse, repli partiel. Renvoie null si
+   aucun exercice ne correspond. */
+export async function getExerciseByName(name) {
+  const n = (name || "").trim();
+  if (!n) return null;
+  const { data } = await supabase.from("exercise_library").select("*").ilike("name", n).limit(1);
+  if (data && data.length) return dbToExercise(data[0]);
+  const { data: d2 } = await supabase.from("exercise_library").select("*").ilike("name", `%${n}%`).limit(1);
+  return d2 && d2.length ? dbToExercise(d2[0]) : null;
+}
+
 /* Valeurs distinctes des facettes (partie du corps / équipement / muscle ciblé)
    pour peupler les filtres. Lues une fois au montage. */
 export function useExerciseFacets() {
