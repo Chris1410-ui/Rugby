@@ -2367,5 +2367,28 @@
     "noPlayers": "Aucun joueur",
     "viaLine": "via ligne",
     "recap": "{{count}} destinataire(s)"
+  },
+  "catalog": {
+    "title": "Catalogue du club",
+    "empty": "Aucune section-type pour l’instant. Verse un protocole pour alimenter le catalogue.",
+    "verse": "Verser les sections au catalogue",
+    "verseDone": "✓ {{total}} section(s) analysée(s) — {{created}} ajoutée(s), {{merged}} déjà connue(s).",
+    "verseEmpty": "Aucune section réutilisable détectée dans ce protocole.",
+    "verseErr": "⚠ Échec du versement : {{err}}",
+    "usageTitle": "Nombre de reprises",
+    "kind": {
+      "warmup": "Échauffement",
+      "strength": "Renforcement",
+      "superset": "Superset",
+      "cardio": "Cardio",
+      "prevention": "Prévention",
+      "mobility": "Mobilité",
+      "recovery": "Récupération",
+      "checklist": "Checklist",
+      "planning": "Semaine type",
+      "table": "Tableau",
+      "note": "Note",
+      "other": "Section"
+    }
   }
 }

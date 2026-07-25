@@ -2367,5 +2367,28 @@
     "noPlayers": "No player",
     "viaLine": "via line",
     "recap": "{{count}} recipient(s)"
+  },
+  "catalog": {
+    "title": "Club catalogue",
+    "empty": "No section type yet. Contribute a protocol to feed the catalogue.",
+    "verse": "Add sections to the catalogue",
+    "verseDone": "✓ {{total}} section(s) analysed — {{created}} added, {{merged}} already known.",
+    "verseEmpty": "No reusable section detected in this protocol.",
+    "verseErr": "⚠ Contribution failed: {{err}}",
+    "usageTitle": "Reuse count",
+    "kind": {
+      "warmup": "Warm-up",
+      "strength": "Strength",
+      "superset": "Superset",
+      "cardio": "Cardio",
+      "prevention": "Prevention",
+      "mobility": "Mobility",
+      "recovery": "Recovery",
+      "checklist": "Checklist",
+      "planning": "Week plan",
+      "table": "Table",
+      "note": "Note",
+      "other": "Section"
+    }
   }
 }
