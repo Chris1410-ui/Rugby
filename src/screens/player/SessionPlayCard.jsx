@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen } from "../../lib/icons.jsx";
+import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
   e1RM, SET_TYPES, nextSetType, parseSetsN,
@@ -12,6 +12,7 @@ import {
 import { saveLog } from "../../data/logs.js";
 import { getProgramDoc } from "../../data/programDocs.js";
 import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
+import { useExercisePerf } from "../../data/exercisePerf.js";
 import { summarize1RM, computeLoadKg, movementIdentity } from "../../lib/oneRM.js";
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
@@ -379,12 +380,46 @@ function ExerciseVideo({ url, accent }) {
   );
 }
 
+// Une barre horizontale de comparaison (valeur rapportée au max de la vue).
+function CmpBar({ label, sub, value, max, color, unit }) {
+  const pct = value > 0 && max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0;
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>{label}{sub ? <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}> · {sub}</span> : null}</span>
+        <span style={{ fontSize: 11, fontWeight: 800, color }}>{value != null ? `${value} ${unit}` : "—"}</span>
+      </div>
+      <div style={{ height: 8, borderRadius: 6, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 6, transition: "width .3s" }} />
+      </div>
+    </div>
+  );
+}
+
+/* Vue joueur d'un exercice : progression personnelle (issue de exercise_perf,
+   donc du réalisé) + comparaison ANONYMISÉE moi / ma ligne / mon équipe. Les
+   moyennes ligne/équipe ne sont renvoyées par le serveur qu'à partir de 5
+   joueurs (k-anonymat) ; en deçà, on affiche un message, jamais de valeur. */
 function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
+  const { series, agg, loading } = useExercisePerf(exName, true);
+
+  // Série personnelle depuis exercise_perf ; repli sur l'historique client
+  // (compatibilité d'anciens logs) si le serveur ne renvoie rien.
+  const srvPts = (series || []).map((s) => s.est1rm || s.topKg || 0).filter((v) => v > 0);
   const hist = exerciseHistory(logs, sessions, pid, exName);
-  const pts = hist.map((h) => h.best1rm || h.top);
-  const rec = { top: Math.max(0, ...hist.map((h) => h.top)), oneRM: Math.max(0, ...hist.map((h) => h.best1rm)) };
+  const pts = srvPts.length >= 2 ? srvPts : hist.map((h) => h.best1rm || h.top);
+  const rec = series && series.length
+    ? { top: Math.max(0, ...series.map((s) => s.topKg || 0)), oneRM: Math.max(0, ...series.map((s) => s.est1rm || 0)) }
+    : { top: Math.max(0, ...hist.map((h) => h.top)), oneRM: Math.max(0, ...hist.map((h) => h.best1rm)) };
+
+  const me = agg?.me;
+  const lineAgg = agg?.lineAgg;
+  const teamAgg = agg?.teamAgg;
+  const cmpMax = Math.max(me?.orm || 0, lineAgg?.orm || 0, teamAgg?.orm || 0);
+  const hasCmp = (me?.orm || 0) > 0 && (lineAgg || teamAgg);
+
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "80vh", overflowY: "auto" }}>
@@ -392,6 +427,7 @@ function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
           <div><div style={{ fontSize: 15, fontWeight: 800 }}>{exName}</div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("player.session.progressSub")}</div></div>
           <CloseX onClose={onClose} />
         </div>
+
         {pts.length >= 2 ? (
           <>
             <LineChart pts={pts} color={accent} height={130} />
@@ -403,6 +439,34 @@ function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
         ) : (
           <div style={{ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.6)", fontSize: 12 }}>{t("player.session.notEnoughHistory")}</div>
         )}
+
+        {/* Comparaison anonymisée */}
+        <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+            <Users size={13} style={{ color: "rgba(255,255,255,0.7)" }} />
+            <span style={{ fontSize: 12, fontWeight: 800 }}>{t("player.session.cmpTitle")}</span>
+          </div>
+          <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>{t("player.session.cmpSub")}</div>
+
+          {loading && !agg ? (
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", padding: "8px 0" }}>{t("common.loading")}</div>
+          ) : hasCmp ? (
+            <>
+              <CmpBar label={t("player.session.cmpMe")} value={me.orm} max={cmpMax} color={accent} unit={t("player.session.kg")} />
+              {lineAgg
+                ? <CmpBar label={t("player.session.cmpLine")} sub={t("player.session.cmpPlayers", { count: lineAgg.n })} value={lineAgg.orm} max={cmpMax} color={C.teal} unit={t("player.session.kg")} />
+                : <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>{t("player.session.cmpLine")} — {t("player.session.cmpKanon")}</div>}
+              {teamAgg
+                ? <CmpBar label={t("player.session.cmpTeam")} sub={t("player.session.cmpPlayers", { count: teamAgg.n })} value={teamAgg.orm} max={cmpMax} color={C.viol} unit={t("player.session.kg")} />
+                : <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{t("player.session.cmpTeam")} — {t("player.session.cmpKanon")}</div>}
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", marginTop: 6 }}>{t("player.session.cmpBasis")}</div>
+            </>
+          ) : (me?.orm || 0) > 0 ? (
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>{t("player.session.cmpKanonFull")}</div>
+          ) : (
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{t("player.session.cmpNoData")}</div>
+          )}
+        </div>
       </div>
     </div>
   );
