@@ -216,6 +216,8 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
           <div key={s.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14 }}>
             {/* En-tête de section */}
             <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 10 }}>
+              {/* Position dans le protocole (ordre) + flèches monter/descendre. */}
+              <span title={t("protocols.position")} style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.08)", borderRadius: 6, padding: "3px 7px", flexShrink: 0, minWidth: 20, textAlign: "center" }}>{si + 1}</span>
               <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: s.type === "narrative" ? C.blue : ACCENT, background: s.type === "narrative" ? `${C.blue}1e` : `${ACCENT}1e`, borderRadius: 6, padding: "3px 7px" }}>
                 {t(`protocols.type_${s.type}`, { defaultValue: t("protocols.typeExercises") })}
               </span>

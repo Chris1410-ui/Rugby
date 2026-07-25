@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveSlots, planDocToSessions } from "./planMaterialize.js";
+import { deriveSlots, planDocToSessions, toSessionRows } from "./planMaterialize.js";
 
 const dow = (iso) => new Date(`${iso}T00:00:00`).getDay();
 
@@ -95,5 +95,20 @@ describe("planDocToSessions — déroulé S1→Sn sur les vraies semaines", () =
     const { rows } = planDocToSessions(docGrid, { startDate: "2026-08-03", weeks: 3 });
     expect(rows).toHaveLength(3); // 1 créneau (grille) × 3 semaines
     expect(rows[0].exercises[0].name).toBe("Back Squat");
+  });
+});
+
+describe("toSessionRows — payload avec lien maintenu vers la source", () => {
+  const slot = { weekday: 3, label: "Bloc force", nature: "force", code: "RS", rows: squatRows };
+  it("chaque séance porte plan_id, program_doc_id, source_week, assigned, origin='plan'", () => {
+    const { rows } = planDocToSessions(docGrid, { startDate: "2026-08-03", weeks: 2, slots: [slot] });
+    const assigned = { mode: "mix", groups: ["avants"], ids: ["p1"] };
+    const payload = toSessionRows(rows, { teamId: "r_u18", planId: "PLAN", programDocId: "DOC", assigned });
+    expect(payload).toHaveLength(2);
+    payload.forEach((p, i) => {
+      expect(p).toMatchObject({ team_id: "r_u18", plan_id: "PLAN", program_doc_id: "DOC", origin: "plan", assigned });
+      expect(p.source_week).toBe(i + 1);
+      expect(p.source_label).toBe("Bloc force");
+    });
   });
 });

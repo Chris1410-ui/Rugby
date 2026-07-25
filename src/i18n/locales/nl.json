@@ -66,6 +66,10 @@
     "pdfErr": "Mislukt — opnieuw",
     "preview": "Voorbeeld",
     "weeksN": "{{count}} wk",
+    "plannedRange": "Gepland {{from}} → {{to}} · {{count}} sessie(s)",
+    "notPlanned": "Niet gepland",
+    "planBtn": "Dit protocol inplannen",
+    "position": "Positie — ▲▼ pijlen om te herordenen",
     "updatedAt": "Bewerkt op {{date}}",
     "statusDraft": "Concept",
     "statusPublished": "Gepubliceerd",
@@ -2415,5 +2419,22 @@
     "saveNow": "Opslaan",
     "saving": "Opslaan…",
     "saveErr": "Mislukt: {{err}}"
+  },
+  "plan": {
+    "title": "Inplannen — {{name}}",
+    "start": "Startdatum",
+    "weeks": "Weken",
+    "slots": "Sessies van de week (dag)",
+    "noSlots": "Dit protocol heeft geen planbare sessie (geen weekschema, geen oefeningenraster). Voeg er een toe voordat je inplant.",
+    "recipients": "Ontvangers",
+    "preview": "{{count}} sessie(s) · {{recipients}} ontvanger(s)",
+    "overload": "{{count}} dag(en) al belast voor deze ontvangers",
+    "clampNote": "De periode overschrijdt de progressie van het protocol: het laatste blok wordt herhaald.",
+    "generate": "{{count}} sessie(s) genereren",
+    "generating": "Genereren…",
+    "done": "✓ {{count}} sessie(s) ingepland",
+    "errDate": "Kies een startdatum.",
+    "errEmpty": "Geen sessie om te genereren (controleer de slots en periode).",
+    "errSave": "Mislukt: {{err}}"
   }
 }

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../../lib/tokens.js";
-import { Dumbbell, Plus, Trash2, Pencil, Eye, EyeOff, FileText, ExternalLink, BookOpen, Sparkles } from "../../../lib/icons.jsx";
+import { Dumbbell, Plus, Trash2, Pencil, Eye, EyeOff, FileText, ExternalLink, BookOpen, Sparkles, Calendar } from "../../../lib/icons.jsx";
 import { localeTag } from "../../../i18n/locale.js";
+import { fmtShort } from "../../../lib/metrics.js";
 import { useProgramDocs, createProgramDoc, deleteProgramDoc, setProgramStatus, getProgramDoc } from "../../../data/programDocs.js";
 import { getClubId, verseDocToCatalog, useClubCatalog, deleteCatalogEntry } from "../../../data/catalog.js";
+import { usePlannedSummary } from "../../../data/programPlans.js";
 import { emptyProgram } from "../../../lib/program/model.js";
 import ProgramEditor from "./ProgramEditor.jsx";
+import PlanDialog from "./PlanDialog.jsx";
 import ProgramView from "../../shared/ProgramView.jsx";
 
 const ACCENT = C.coral;
@@ -17,10 +20,17 @@ const ACCENT = C.coral;
 export default function Protocoles({ teamId, players = [] }) {
   const { t } = useTranslation();
   const { docs, loading, refresh } = useProgramDocs(teamId);
+  const { byDoc: planned, refresh: refreshPlanned } = usePlannedSummary(teamId);
   const [editingId, setEditingId] = useState(null);
   const [viewing, setViewing] = useState(null); // { title, doc } en consultation
+  const [planning, setPlanning] = useState(null); // { id, doc } protocole à planifier
   const [busy, setBusy] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
+
+  const openPlan = async (row) => {
+    try { const full = await getProgramDoc(row.id); setPlanning({ id: full.id, doc: full.doc }); }
+    catch (e) { console.error("[protocols plan]", e.message); }
+  };
   const [clubId, setClubId] = useState(null);   // club auquel est ancré le catalogue
   const [flash, setFlash] = useState("");        // récap du versement au catalogue
   const [showCatalog, setShowCatalog] = useState(false);
@@ -120,9 +130,14 @@ export default function Protocoles({ teamId, players = [] }) {
               <div key={d.id} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px" })}>
                 <div onClick={() => openView(d)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }} title={t("protocols.view")}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.title || t("protocols.untitled")}</div>
-                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 2, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 2, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                     {d.category && <span>{d.category}</span>}
                     <span>{t("protocols.weeksN", { count: d.weeks })}</span>
+                    {planned[d.id] ? (
+                      <span style={{ fontWeight: 800, color: C.green, background: `${C.green}18`, border: `1px solid ${C.green}55`, borderRadius: 5, padding: "1px 6px" }}>{t("protocols.plannedRange", { from: fmtShort(planned[d.id].min), to: fmtShort(planned[d.id].max), count: planned[d.id].count })}</span>
+                    ) : (
+                      <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.4)", border: `1px solid ${C.border}`, borderRadius: 5, padding: "1px 6px" }}>{t("protocols.notPlanned")}</span>
+                    )}
                     {d.updatedAt && <span>{t("protocols.updatedAt", { date: new Date(d.updatedAt).toLocaleDateString(localeTag()) })}</span>}
                   </div>
                 </div>
@@ -141,6 +156,9 @@ export default function Protocoles({ teamId, players = [] }) {
                 <button onClick={() => verse(d)} disabled={busy || !clubId} title={t("catalog.verse")} style={{ ...iconBtn, color: C.viol, borderColor: `${C.viol}66`, background: `${C.viol}14` }}>
                   <Sparkles size={15} />
                 </button>
+                <button onClick={() => openPlan(d)} title={t("protocols.planBtn")} style={{ ...iconBtn, color: C.green, borderColor: `${C.green}66`, background: `${C.green}14` }}>
+                  <Calendar size={15} />
+                </button>
                 <button onClick={() => setEditingId(d.id)} title={t("protocols.edit")} style={{ ...iconBtn, color: ACCENT, borderColor: `${ACCENT}66`, background: `${ACCENT}14` }}>
                   <Pencil size={15} />
                 </button>
@@ -154,6 +172,8 @@ export default function Protocoles({ teamId, players = [] }) {
       )}
 
       {viewing && <ProgramView id={viewing.id} doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} onEdit={() => { const vid = viewing.id; setViewing(null); setEditingId(vid); }} />}
+
+      {planning && <PlanDialog doc={planning.doc} programDocId={planning.id} teamId={teamId} players={players} onClose={(created, msg) => { setPlanning(null); if (created) { refreshPlanned(); setFlash(msg || ""); setTimeout(() => setFlash(""), 5000); } }} />}
 
       {confirmDel && (
         <div onClick={() => setConfirmDel(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>

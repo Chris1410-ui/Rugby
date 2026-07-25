@@ -127,3 +127,24 @@ export function planDocToSessions(doc, { startDate, weeks, slots } = {}) {
   rows.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   return { rows, warnings };
 }
+
+/* Lignes générées → payload d'insertion `sessions`, avec le LIEN maintenu vers la
+   source (plan_id, program_doc_id, source_week, source_label) et origin='plan'.
+   Pur (pas de réseau) → testable. */
+export function toSessionRows(genRows, { teamId, planId, programDocId, assigned } = {}) {
+  return (genRows || []).map((r) => ({
+    team_id: teamId,
+    date: r.date,
+    code: r.code || "RS",
+    nature: r.nature || null,
+    titre: r.titre || "Séance",
+    duration_min: r.duration_min || 60,
+    exercises: r.exercises || [],
+    assigned: assigned || { mode: "all" },
+    origin: "plan",
+    plan_id: planId,
+    program_doc_id: programDocId,
+    source_week: r.source_week ?? null,
+    source_label: r.source_label ?? null,
+  }));
+}

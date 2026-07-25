@@ -66,6 +66,10 @@
     "pdfErr": "Échec — réessayer",
     "preview": "Aperçu",
     "weeksN": "{{count}} sem.",
+    "plannedRange": "Planifié {{from}} → {{to}} · {{count}} séance(s)",
+    "notPlanned": "Non planifié",
+    "planBtn": "Planifier ce protocole",
+    "position": "Position — flèches ▲▼ pour réordonner",
     "updatedAt": "Modifié le {{date}}",
     "statusDraft": "Brouillon",
     "statusPublished": "Publié",
@@ -2415,5 +2419,22 @@
     "saveNow": "Enregistrer",
     "saving": "Enregistrement…",
     "saveErr": "Échec : {{err}}"
+  },
+  "plan": {
+    "title": "Planifier — {{name}}",
+    "start": "Date de début",
+    "weeks": "Semaines",
+    "slots": "Séances de la semaine (jour)",
+    "noSlots": "Ce protocole n'a pas de séance datable (ni semaine type, ni grille d'exercices). Ajoute-en une avant de planifier.",
+    "recipients": "Destinataires",
+    "preview": "{{count}} séance(s) · {{recipients}} destinataire(s)",
+    "overload": "{{count}} jour(s) déjà chargé(s) pour ces destinataires",
+    "clampNote": "La période dépasse la progression du protocole : le dernier bloc est répété.",
+    "generate": "Générer {{count}} séance(s)",
+    "generating": "Génération…",
+    "done": "✓ {{count}} séance(s) planifiée(s)",
+    "errDate": "Choisis une date de début.",
+    "errEmpty": "Aucune séance à générer (vérifie les créneaux et la période).",
+    "errSave": "Échec : {{err}}"
   }
 }

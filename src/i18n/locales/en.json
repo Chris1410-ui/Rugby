@@ -66,6 +66,10 @@
     "pdfErr": "Failed — retry",
     "preview": "Preview",
     "weeksN": "{{count}} wk",
+    "plannedRange": "Planned {{from}} → {{to}} · {{count}} session(s)",
+    "notPlanned": "Not planned",
+    "planBtn": "Schedule this protocol",
+    "position": "Position — ▲▼ arrows to reorder",
     "updatedAt": "Edited {{date}}",
     "statusDraft": "Draft",
     "statusPublished": "Published",
@@ -2415,5 +2419,22 @@
     "saveNow": "Save",
     "saving": "Saving…",
     "saveErr": "Failed: {{err}}"
+  },
+  "plan": {
+    "title": "Schedule — {{name}}",
+    "start": "Start date",
+    "weeks": "Weeks",
+    "slots": "Weekly sessions (day)",
+    "noSlots": "This protocol has no schedulable session (no week plan, no exercise grid). Add one before scheduling.",
+    "recipients": "Recipients",
+    "preview": "{{count}} session(s) · {{recipients}} recipient(s)",
+    "overload": "{{count}} day(s) already loaded for these recipients",
+    "clampNote": "The period exceeds the protocol's progression: the last block is repeated.",
+    "generate": "Generate {{count}} session(s)",
+    "generating": "Generating…",
+    "done": "✓ {{count}} session(s) scheduled",
+    "errDate": "Pick a start date.",
+    "errEmpty": "No session to generate (check the slots and period).",
+    "errSave": "Failed: {{err}}"
   }
 }
