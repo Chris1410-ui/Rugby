@@ -42,6 +42,7 @@ import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
+import ReferenceDocs from "./ReferenceDocs.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
@@ -107,6 +108,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["defis", t("nav.defis"), Flame, bDefis],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
     ["exos", t("nav.exos"), BookOpen],
+    ...(!readOnly ? [["refdocs", t("nav.refdocs"), FileText]] : []),
     ["exercices", t("nav.exercices"), Grid],
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
@@ -143,6 +145,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
         {tab === "exos" && <Bibliotheque teamId={profile.team_id} />}
+        {tab === "refdocs" && !readOnly && <ReferenceDocs teamId={profile.team_id} />}
         {tab === "exercices" && <ExerciseLibrary />}
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
