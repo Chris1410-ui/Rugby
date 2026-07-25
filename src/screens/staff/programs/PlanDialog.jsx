@@ -7,6 +7,7 @@ import { todayISO, fmtShort } from "../../../lib/metrics.js";
 import { WD_ORDER, wdLabel } from "../../../lib/exlib.js";
 import { deriveSlots, planDocToSessions } from "../../../lib/program/planMaterialize.js";
 import { buildAssigned, resolveAssignedIds, assignedToSelection, useTeamSessions } from "../../../data/sessions.js";
+import { useTeamTrainings } from "../../../data/trainings.js";
 import { aggregateLoadByDate } from "../../../lib/overload.js";
 import { createPlan, updatePlan } from "../../../data/programPlans.js";
 import RecipientSelect from "../../shared/RecipientSelect.jsx";
@@ -20,6 +21,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
   const { t } = useTranslation();
   useModalClose(() => onClose(false));
   const { sessions } = useTeamSessions(teamId, players);
+  const { trainings } = useTeamTrainings(teamId, players);
   const editing = Boolean(initial);
 
   const defaultWeeks = Math.max(1, Math.min(12, Number(doc?.meta?.weeks) || 4));
@@ -41,10 +43,10 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
     if (!rows.length) return [];
     const ids = new Set(resolveAssignedIds(assigned, players));
     const end = rows[rows.length - 1].date;
-    const load = aggregateLoadByDate(sessions, ids, startDate, end);
+    const load = aggregateLoadByDate(sessions, ids, startDate, end, trainings);
     const seen = new Set();
     return rows.map((r) => r.date).filter((d) => { if (seen.has(d)) return false; seen.add(d); return load[d]; });
-  }, [rows, assigned, players, sessions, startDate]);
+  }, [rows, assigned, players, sessions, trainings, startDate]);
 
   const recipientCount = useMemo(() => resolveAssignedIds(assigned, players).length, [assigned, players]);
 

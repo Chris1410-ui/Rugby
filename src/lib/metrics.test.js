@@ -296,6 +296,23 @@ describe("alertText / alertCat — résolution i18n (FR)", () => {
   });
 });
 
+describe("computePoints — présence aux convocations (events datés, barème séance)", () => {
+  const p = { id: "p1", acwr: 1.4 }; // hors zones ACWR (pas de bonus/malus) → total neutre
+  const conv = (events) => computePoints(p, [], {}, [], [], [], [], [], [], events);
+  it("présent = +15 (présence +10, ponctualité +5)", () => {
+    expect(conv([{ kind: "present", date: "2026-07-20" }]).pts).toBe(115); // base 100 + 15
+  });
+  it("retard = +10 (présent, sans bonus de ponctualité)", () => {
+    expect(conv([{ kind: "late", date: "2026-07-20" }]).pts).toBe(110);
+  });
+  it("absence non annoncée = -15", () => {
+    expect(conv([{ kind: "absentUnannounced", date: "2026-07-20" }]).pts).toBe(85);
+  });
+  it("sans convocations : total inchangé", () => {
+    expect(conv([]).pts).toBe(100);
+  });
+});
+
 describe("sessionDisplayState — état d'affichage d'une séance", () => {
   const today = "2026-07-25";
   it("réalisée / manquée / reportée depuis le log", () => {

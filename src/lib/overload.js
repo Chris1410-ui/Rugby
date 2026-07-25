@@ -25,15 +25,21 @@ export function weekdayDatesInRange(startISO, endISO, weekday) {
 // `sessions` = séances enrichies (assignedIds, nature, code, date). `recipientIds`
 // = Set d'ids ciblés. Les séances de camp sont comptées (ce sont des sessions
 // datées) ; les protocoles ne sont pas datés → hors périmètre.
-export function aggregateLoadByDate(sessions, recipientIds, startISO, endISO) {
+export function aggregateLoadByDate(sessions, recipientIds, startISO, endISO, trainings = []) {
   const m = {};
   if (!recipientIds || !recipientIds.size || !startISO || !endISO) return m;
+  const bump = (date, nat) => { (m[date] = m[date] || {}); m[date][nat] = (m[date][nat] || 0) + 1; };
   for (const s of sessions || []) {
     if (s.date < startISO || s.date > endISO) continue;
     if (!(s.assignedIds || []).some((id) => recipientIds.has(id))) continue;
-    const nat = effectiveNature(s.nature, s.code);
-    (m[s.date] = m[s.date] || {});
-    m[s.date][nat] = (m[s.date][nat] || 0) + 1;
+    bump(s.date, effectiveNature(s.nature, s.code));
+  }
+  // Les convocations (entraînements collectifs) sont des événements datés qui
+  // chargent aussi le joueur → comptées dans l'anti-surcharge, par nature.
+  for (const tr of trainings || []) {
+    if (tr.date < startISO || tr.date > endISO) continue;
+    if (!(tr.assignedIds || []).some((id) => recipientIds.has(id))) continue;
+    bump(tr.date, effectiveNature(tr.nature, null));
   }
   return m;
 }

@@ -22,6 +22,7 @@ import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
 import ProgramView from "../shared/ProgramView.jsx";
 import Defis from "./Defis.jsx";
 import Taches from "./Taches.jsx";
+import Convocations from "./Convocations.jsx";
 
 /* Tableau de bord « Aujourd'hui » (joueur) — hub du jour : bandeau semaine
    (pastilles d'état par jour) + cartes d'action (bilans, séances/programmes
@@ -218,6 +219,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
+        {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
       </div>
 
       {/* Suivi rapide (sparklines) */}
@@ -265,6 +267,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
 
       {sheet === "defis" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Defis me={me} players={players} accent={accent} /></div></Overlay>}
       {sheet === "taches" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Taches me={me} players={players} accent={accent} /></div></Overlay>}
+      {sheet === "convocations" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Convocations me={me} players={players} accent={accent} /></div></Overlay>}
 
       {/* ── Détail d'un jour ── */}
       {daySel && (
