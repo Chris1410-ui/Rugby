@@ -682,6 +682,18 @@
       "confirmed": "🏅 Confirmed by the coach · +2 points",
       "doneSection": "COMPLETED"
     },
+    "convocations": {
+      "title": "Call-ups",
+      "empty": "No call-ups yet.",
+      "pastTitle": "PAST",
+      "noTimePlace": "Time and place to be set",
+      "present": "Present",
+      "late": "Late",
+      "absent": "Absent",
+      "reasonPlaceholder": "Reason (optional)",
+      "etaPlaceholder": "Estimated arrival time",
+      "answered": "Your reply: {{state}}"
+    },
     "defis": {
       "title": "Challenges",
       "empty": "No challenges yet.",
@@ -1557,7 +1569,9 @@
       "tagPostponed": "Postponed",
       "tagToValidate": "To validate",
       "tagUpcoming": "Upcoming",
-      "rpe": "RPE {{rpe}}"
+      "rpe": "RPE {{rpe}}",
+      "convocations": "CALL-UPS",
+      "convToAnswer": "To answer"
     },
     "conversation": {
       "withPlayer": "Conversation with the player",

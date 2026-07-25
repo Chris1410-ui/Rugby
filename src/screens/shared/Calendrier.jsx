@@ -12,11 +12,16 @@ const STATE_RANK = { done: 3, missed: 2, postponed: 1, todo: 0 };
 /* Calendrier : la vraie trace d'activité. Pastille colorée par état (réalisée /
    manquée / à faire / reportée) + agenda avec RPE sur les séances réalisées.
    `meId` → vue joueur (ses séances) ; sinon vue staff (toutes). */
-export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.coral }) {
+export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.coral, trainings = [], attendance = {} }) {
   const { t } = useTranslation();
   const isJoueur = !!meId;
   const mySessions = isJoueur ? sessions.filter((s) => s.assignedIds.includes(meId)) : sessions;
   const today = todayISO();
+
+  // Convocations (entraînements collectifs) — affichées à côté des séances.
+  const convByDay = {};
+  (trainings || []).forEach((tr) => { convByDay[tr.date] = (convByDay[tr.date] || 0) + 1; });
+  const convResp = (tr) => (isJoueur ? attendance?.[tr.id]?.[meId]?.playerResponse : null);
 
   // État par jour (le plus fort prime). Joueur : son état ; staff : réalisée si
   // au moins un joueur a validé, sinon « à faire » (prévue).
@@ -61,9 +66,12 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
             const col = stt ? STATE_COLOR[stt] : null;
             const isToday = iso === today;
             return (
-              <div key={"d" + i} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, background: isToday ? "rgba(255,255,255,0.1)" : col ? `${col}1e` : "transparent", border: isToday ? `1px solid ${accent}` : "1px solid transparent" }}>
-                <span style={{ fontSize: 11, fontWeight: isToday ? 800 : 500, color: col ? "#fff" : "rgba(255,255,255,0.55)" }}>{d}</span>
-                {col && <span style={{ width: 5, height: 5, borderRadius: 3, background: col }} />}
+              <div key={"d" + i} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, background: isToday ? "rgba(255,255,255,0.1)" : col ? `${col}1e` : convByDay[iso] ? `${C.viol}1e` : "transparent", border: isToday ? `1px solid ${accent}` : "1px solid transparent" }}>
+                <span style={{ fontSize: 11, fontWeight: isToday ? 800 : 500, color: col || convByDay[iso] ? "#fff" : "rgba(255,255,255,0.55)" }}>{d}</span>
+                <div style={{ display: "flex", gap: 2, height: 5 }}>
+                  {col && <span style={{ width: 5, height: 5, borderRadius: 3, background: col }} />}
+                  {convByDay[iso] && <span style={{ width: 5, height: 5, borderRadius: 3, background: C.viol }} />}
+                </div>
               </div>
             );
           })}
@@ -98,6 +106,29 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
           );
         })}
       </Section>
+
+      {trainings.length > 0 && (
+        <Section title={t("shared.calendar.convocations")}>
+          {[...trainings].sort((a, b) => a.date.localeCompare(b.date)).map((tr) => {
+            const d = parseISO(tr.date);
+            const resp = convResp(tr);
+            const col = resp === "present" ? C.green : resp === "late" ? C.amb : resp === "absent" ? C.coral : C.viol;
+            return (
+              <div key={tr.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.border2}` }}>
+                <div style={{ textAlign: "center", width: 42 }}><div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)" }}>{d.toLocaleDateString(localeTag(), { month: "short" })}</div><div style={{ fontSize: 18, fontWeight: 800 }}>{d.getDate()}</div></div>
+                <div style={{ width: 3, height: 30, borderRadius: 2, background: col }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>{tr.nature && <NatureTag nature={tr.nature} />}<span style={{ fontSize: 13, fontWeight: 700 }}>{tr.titre || t("staff.convocations.untitled")}</span></div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{[tr.heure, tr.lieu].filter(Boolean).join(" · ")}</div>
+                </div>
+                {isJoueur && (resp
+                  ? <Tag c={col}>{t(`staff.convocations.state.${resp}`)}</Tag>
+                  : <Tag c={C.viol}>{t("shared.calendar.convToAnswer")}</Tag>)}
+              </div>
+            );
+          })}
+        </Section>
+      )}
     </div>
   );
 }
