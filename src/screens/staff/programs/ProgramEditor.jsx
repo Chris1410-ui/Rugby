@@ -17,6 +17,8 @@ import {
 import { BUILTIN_SECTION_TEMPLATES, freshSection } from "../../../lib/program/sectionTemplates.js";
 import { useTeamSectionTemplates, saveSectionTemplate, deleteSectionTemplate } from "../../../data/sectionTemplates.js";
 import ExercisePickerSheet from "../../shared/ExercisePickerSheet.jsx";
+import ExerciseAutocomplete from "../../shared/ExerciseAutocomplete.jsx";
+import { createCustomExercise, incrementExerciseUsage } from "../../../data/exerciseLibrary.js";
 import ProgramView from "../../shared/ProgramView.jsx";
 import AssignmentPanel from "./AssignmentPanel.jsx";
 import { Eye } from "../../../lib/icons.jsx";
@@ -73,7 +75,26 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const save = async (promptReplan = false) => {
     setSaving(true);
     try {
-      await updateProgramDoc(id, { title, category, status, weeks, doc: { ...doc, meta: { ...doc.meta, weeks } } });
+      // Auto-alimentation : chaque nom d'exercice non lié est rattaché à la
+      // bibliothèque (exo existant retrouvé, sinon créé en perso club — dédup
+      // côté serveur). Les liens `exerciseId` sont persistés dans le doc, et le
+      // compteur d'usage est incrémenté (les plus utilisés remontent en autocomplétion).
+      const linked = clone(doc);
+      const usedIds = [];
+      for (const sec of linked.sections || []) {
+        for (const row of sec.rows || []) {
+          const nm = (row.name || "").trim();
+          if (!nm) continue;
+          if (!row.exerciseId && !row.exerciseRef) {
+            try { const eid = await createCustomExercise(nm); if (eid) row.exerciseId = eid; }
+            catch (e) { console.warn("[autolib]", nm, e.message); }
+          }
+          if (row.exerciseId) usedIds.push(row.exerciseId);
+        }
+      }
+      await updateProgramDoc(id, { title, category, status, weeks, doc: { ...linked, meta: { ...linked.meta, weeks } } });
+      setDocState(linked); // reflète les liens (🔗) dans l'UI
+      incrementExerciseUsage(usedIds); // non bloquant
       setDirty(false);
       // Si le protocole est planifié, proposer de répercuter sur les séances
       // futures non réalisées (jamais sur une séance déjà validée).
@@ -498,8 +519,14 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                   <input value={r.block} onChange={(e) => onRow(ri, { block: e.target.value })} placeholder="A1" style={{ ...cellInput, textAlign: "center", fontWeight: 700 }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center" }}>
-                  {r.exerciseRef && <span title={t("protocols.linked")} style={{ fontSize: 11, marginLeft: 6, color: C.green, flexShrink: 0 }}>🔗</span>}
-                  <input value={r.name} onChange={(e) => onRow(ri, { name: e.target.value })} placeholder={t("protocols.exercisePh")} style={cellInput} />
+                  {(r.exerciseId || r.exerciseRef) && <span title={t("protocols.linked")} style={{ fontSize: 11, marginLeft: 6, color: C.green, flexShrink: 0 }}>🔗</span>}
+                  <ExerciseAutocomplete
+                    value={r.name}
+                    onChange={(v) => onRow(ri, { name: v })}
+                    onPick={(it) => onRow(ri, it ? { exerciseId: it.id, exerciseRef: null } : { exerciseId: null })}
+                    placeholder={t("protocols.exercisePh")}
+                    style={cellInput}
+                  />
                   {/* Mouvement de référence du % (sélecteur ; vide = ce mouvement). */}
                   <RmRefPicker value={r.rmRef || ""} onChange={(v) => onRow(ri, { rmRef: v })} t={t} />
                 </div>

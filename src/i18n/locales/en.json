@@ -2586,5 +2586,8 @@
     "loading": "Loading…",
     "notFound": "No details for this exercise in the library.",
     "noSteps": "No detailed instructions for this exercise."
+  },
+  "exAuto": {
+    "custom": "custom"
   }
 }

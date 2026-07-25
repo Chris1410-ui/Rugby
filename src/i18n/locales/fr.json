@@ -2586,5 +2586,8 @@
     "loading": "Chargement…",
     "notFound": "Aucune fiche pour cet exercice dans la bibliothèque.",
     "noSteps": "Pas d'instructions détaillées pour cet exercice."
+  },
+  "exAuto": {
+    "custom": "perso"
   }
 }
