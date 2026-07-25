@@ -2367,5 +2367,28 @@
     "noPlayers": "Geen speler",
     "viaLine": "via linie",
     "recap": "{{count}} ontvanger(s)"
+  },
+  "catalog": {
+    "title": "Clubcatalogus",
+    "empty": "Nog geen sectietype. Draag een protocol bij om de catalogus te vullen.",
+    "verse": "Secties aan de catalogus toevoegen",
+    "verseDone": "✓ {{total}} sectie(s) geanalyseerd — {{created}} toegevoegd, {{merged}} al bekend.",
+    "verseEmpty": "Geen herbruikbare sectie gedetecteerd in dit protocol.",
+    "verseErr": "⚠ Bijdrage mislukt: {{err}}",
+    "usageTitle": "Aantal hergebruiken",
+    "kind": {
+      "warmup": "Opwarming",
+      "strength": "Krachttraining",
+      "superset": "Superset",
+      "cardio": "Cardio",
+      "prevention": "Preventie",
+      "mobility": "Mobiliteit",
+      "recovery": "Herstel",
+      "checklist": "Checklist",
+      "planning": "Weekschema",
+      "table": "Tabel",
+      "note": "Notitie",
+      "other": "Sectie"
+    }
   }
 }
