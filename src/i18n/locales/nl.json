@@ -682,6 +682,18 @@
       "confirmed": "🏅 Bevestigd door de coach · +2 punten",
       "doneSection": "VOLTOOID"
     },
+    "convocations": {
+      "title": "Oproepingen",
+      "empty": "Nog geen oproepingen.",
+      "pastTitle": "VOORBIJE",
+      "noTimePlace": "Tijd en plaats nog te bepalen",
+      "present": "Aanwezig",
+      "late": "Te laat",
+      "absent": "Afwezig",
+      "reasonPlaceholder": "Reden (optioneel)",
+      "etaPlaceholder": "Geschatte aankomsttijd",
+      "answered": "Jouw antwoord: {{state}}"
+    },
     "defis": {
       "title": "Uitdagingen",
       "empty": "Nog geen uitdagingen.",
@@ -1557,7 +1569,9 @@
       "tagPostponed": "Uitgesteld",
       "tagToValidate": "Te valideren",
       "tagUpcoming": "Binnenkort",
-      "rpe": "RPE {{rpe}}"
+      "rpe": "RPE {{rpe}}",
+      "convocations": "OPROEPINGEN",
+      "convToAnswer": "Te beantwoorden"
     },
     "conversation": {
       "withPlayer": "Gesprek met de speler",

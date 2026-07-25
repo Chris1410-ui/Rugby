@@ -682,6 +682,18 @@
       "confirmed": "🏅 Confirmée par le coach · +2 points",
       "doneSection": "TERMINÉES"
     },
+    "convocations": {
+      "title": "Convocations",
+      "empty": "Aucune convocation pour l'instant.",
+      "pastTitle": "PASSÉES",
+      "noTimePlace": "Horaire et lieu à préciser",
+      "present": "Présent",
+      "late": "En retard",
+      "absent": "Absent",
+      "reasonPlaceholder": "Motif (optionnel)",
+      "etaPlaceholder": "Heure d'arrivée estimée",
+      "answered": "Ta réponse : {{state}}"
+    },
     "defis": {
       "title": "Défis",
       "empty": "Aucun défi pour le moment.",
@@ -1557,7 +1569,9 @@
       "tagPostponed": "Reportée",
       "tagToValidate": "À valider",
       "tagUpcoming": "À venir",
-      "rpe": "RPE {{rpe}}"
+      "rpe": "RPE {{rpe}}",
+      "convocations": "CONVOCATIONS",
+      "convToAnswer": "À répondre"
     },
     "conversation": {
       "withPlayer": "Conversation avec le joueur",

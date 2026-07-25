@@ -7,6 +7,7 @@ import { useThread } from "../../data/messages.js";
 import { useMyQuestionnaires } from "../../data/questionnaires.js";
 import { useTeamTasks, useMyTaskCompletions } from "../../data/tasks.js";
 import { useTeamChallenges, useMyChallengeCompletions } from "../../data/challenges.js";
+import { useTeamTrainings, useTeamAttendance } from "../../data/trainings.js";
 import { useMyDay } from "../../data/checkins.js";
 import { playerSessionTodo, playerTaskTodo, questionnaireTodo, bilanTodo, playerChallengeTodo } from "../../lib/badges.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
@@ -14,7 +15,7 @@ import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles, Grid } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles, Grid, Send } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
 import Taches from "./Taches.jsx";
 import Questionnaires from "./Questionnaires.jsx";
@@ -23,6 +24,7 @@ import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
 import Crew from "./Crew.jsx";
 import Defis from "./Defis.jsx";
+import Convocations from "./Convocations.jsx";
 import Meditation from "./meditation/Meditation.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Classement from "../shared/Classement.jsx";
@@ -59,6 +61,10 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const bQuest = questionnaireTodo(myQ);
   const bBilan = bilanTodo(day);
   const bDefis = playerChallengeTodo(challenges, statutByChallenge, me?.id);
+  // Convocations à venir sans réponse (RLS → seulement les miennes).
+  const { trainings } = useTeamTrainings(profile.team_id, players);
+  const { byTraining: convAtt } = useTeamAttendance(profile.team_id);
+  const bConv = trainings.filter((tr) => tr.date >= today && !convAtt?.[tr.id]?.[me?.id]?.playerResponse).length;
   const mobile = useIsMobile();
 
   if (loading && !me) {
@@ -80,6 +86,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["protocoles", t("nav.protocols"), FileText],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
+    ["convocations", t("nav.convocations"), Send, bConv],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
     ["messages", t("nav.messages"), MessageSquare, unread],
     ["equipe", t("nav.equipe"), Users],
@@ -103,6 +110,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
+          {tab === "convocations" && <Convocations me={me} players={players} accent={ACCENT} />}
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
@@ -110,7 +118,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "meditation" && <Meditation me={me} accent={ACCENT} />}
           {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={false} accent={ACCENT} />}
           {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} me={me} accent={ACCENT} />}
-          {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} />}
+          {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} trainings={trainings} attendance={convAtt} />}
           {tab === "fiche" && <Fiche player={me} canEdit={false} self />}
           {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}
           {tab === "donnees" && <Confidentialite player={me} self />}
