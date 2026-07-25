@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../../lib/tokens.js";
 import { Dumbbell, Plus, Trash2, Pencil, Eye, EyeOff, FileText, ExternalLink, BookOpen, Sparkles, Calendar } from "../../../lib/icons.jsx";
 import { localeTag } from "../../../i18n/locale.js";
-import { fmtShort } from "../../../lib/metrics.js";
+import { fmtShort, todayISO } from "../../../lib/metrics.js";
 import { useProgramDocs, createProgramDoc, deleteProgramDoc, setProgramStatus, getProgramDoc } from "../../../data/programDocs.js";
 import { getClubId, verseDocToCatalog, useClubCatalog, deleteCatalogEntry } from "../../../data/catalog.js";
-import { usePlannedSummary } from "../../../data/programPlans.js";
+import { usePlannedSummary, plansForDoc, deletePlan } from "../../../data/programPlans.js";
 import { emptyProgram } from "../../../lib/program/model.js";
 import ProgramEditor from "./ProgramEditor.jsx";
 import PlanDialog from "./PlanDialog.jsx";
@@ -24,12 +24,17 @@ export default function Protocoles({ teamId, players = [] }) {
   const [editingId, setEditingId] = useState(null);
   const [viewing, setViewing] = useState(null); // { title, doc } en consultation
   const [planning, setPlanning] = useState(null); // { id, doc } protocole à planifier
+  const [managing, setManaging] = useState(null); // { docId, doc } gestion des plans
   const [busy, setBusy] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
 
   const openPlan = async (row) => {
     try { const full = await getProgramDoc(row.id); setPlanning({ id: full.id, doc: full.doc }); }
     catch (e) { console.error("[protocols plan]", e.message); }
+  };
+  const openManage = async (row) => {
+    try { const full = await getProgramDoc(row.id); setManaging({ docId: full.id, doc: full.doc }); }
+    catch (e) { console.error("[protocols manage]", e.message); }
   };
   const [clubId, setClubId] = useState(null);   // club auquel est ancré le catalogue
   const [flash, setFlash] = useState("");        // récap du versement au catalogue
@@ -134,7 +139,7 @@ export default function Protocoles({ teamId, players = [] }) {
                     {d.category && <span>{d.category}</span>}
                     <span>{t("protocols.weeksN", { count: d.weeks })}</span>
                     {planned[d.id] ? (
-                      <span style={{ fontWeight: 800, color: C.green, background: `${C.green}18`, border: `1px solid ${C.green}55`, borderRadius: 5, padding: "1px 6px" }}>{t("protocols.plannedRange", { from: fmtShort(planned[d.id].min), to: fmtShort(planned[d.id].max), count: planned[d.id].count })}</span>
+                      <span onClick={(e) => { e.stopPropagation(); openManage(d); }} title={t("protocols.managePlans")} style={{ fontWeight: 800, color: C.green, background: `${C.green}18`, border: `1px solid ${C.green}55`, borderRadius: 5, padding: "1px 6px", cursor: "pointer" }}>{t("protocols.plannedRange", { from: fmtShort(planned[d.id].min), to: fmtShort(planned[d.id].max), count: planned[d.id].count })}</span>
                     ) : (
                       <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.4)", border: `1px solid ${C.border}`, borderRadius: 5, padding: "1px 6px" }}>{t("protocols.notPlanned")}</span>
                     )}
@@ -174,6 +179,8 @@ export default function Protocoles({ teamId, players = [] }) {
       {viewing && <ProgramView id={viewing.id} doc={viewing.doc} title={viewing.title} onClose={() => setViewing(null)} onEdit={() => { const vid = viewing.id; setViewing(null); setEditingId(vid); }} />}
 
       {planning && <PlanDialog doc={planning.doc} programDocId={planning.id} teamId={teamId} players={players} onClose={(created, msg) => { setPlanning(null); if (created) { refreshPlanned(); setFlash(msg || ""); setTimeout(() => setFlash(""), 5000); } }} />}
+
+      {managing && <PlansManager docId={managing.docId} doc={managing.doc} teamId={teamId} players={players} onClose={() => setManaging(null)} onChanged={refreshPlanned} t={t} />}
 
       {confirmDel && (
         <div onClick={() => setConfirmDel(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
@@ -227,6 +234,57 @@ function CatalogPanel({ entries = [], open, onToggle, onDelete, t }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* Gestion des planifications d'un protocole : liste des plans (période, séances),
+   édition (→ PlanDialog en mode édition, répercute sur le futur non réalisé) et
+   suppression (retire les séances futures non loggées, conserve les validées). */
+function PlansManager({ docId, doc, teamId, players, onClose, onChanged, t }) {
+  const [plans, setPlans] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => { try { setPlans(await plansForDoc(docId)); } catch { setPlans([]); } };
+  useEffect(() => { load(); }, [docId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const del = async (p) => {
+    setBusy(true);
+    try { await deletePlan(p.id, { today: todayISO() }); await load(); onChanged?.(); }
+    catch (e) { console.error("[plan del]", e.message); }
+    setBusy(false);
+  };
+
+  const endOf = (p) => { const d = new Date(`${p.startDate}T00:00:00`); d.setDate(d.getDate() + 7 * (p.weeks - 1)); return d.toISOString().slice(0, 10); };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 330, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "88vh", overflowY: "auto", background: C.panel, borderRadius: 18, padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("protocols.managePlansTitle")}</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.55)", fontSize: 20, lineHeight: 1 }}>×</button>
+        </div>
+        {plans === null ? (
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{t("protocols.loading")}</div>
+        ) : plans.length === 0 ? (
+          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>{t("protocols.noPlans")}</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {plans.map((p) => (
+              <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 12px" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700 }}>{fmtShort(p.startDate)} → {fmtShort(endOf(p))}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{t("protocols.weeksN", { count: p.weeks })} · {(p.slots || []).length} {t("protocols.slotsShort")}</div>
+                </div>
+                <button onClick={() => setEditing(p)} title={t("protocols.edit")} style={{ ...iconBtn, color: ACCENT, borderColor: `${ACCENT}66`, background: `${ACCENT}14` }}><Pencil size={14} /></button>
+                <button onClick={() => del(p)} disabled={busy} title={t("protocols.delete")} style={iconBtn}><Trash2 size={14} /></button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {editing && <PlanDialog doc={doc} programDocId={docId} teamId={teamId} players={players} initial={editing} onClose={(changed) => { setEditing(null); if (changed) { load(); onChanged?.(); } }} />}
     </div>
   );
 }
