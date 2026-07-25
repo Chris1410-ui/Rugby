@@ -22,7 +22,7 @@ import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose, EstimatedB
 import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -41,6 +41,7 @@ import { createClubInvitation, inviteLink } from "../../data/clubInvitations.js"
 import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
+import Convocations from "./Convocations.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
@@ -101,6 +102,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     // Protocoles (constructeur de programmes riches) : staff écrivain uniquement.
     ...(!readOnly ? [["protocoles", t("nav.protocols"), FileText]] : []),
     ["camps", t("nav.camps"), Flag],
+    ["convocations", t("nav.convocations"), Send],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
@@ -136,6 +138,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "protocoles" && !readOnly && <Protocoles teamId={profile.team_id} players={players} />}
         {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
+        {tab === "convocations" && <Convocations teamId={profile.team_id} players={players} openNew={newIntent === "convocations"} />}
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
