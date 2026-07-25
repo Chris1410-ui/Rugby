@@ -4,7 +4,7 @@ import { useAuth } from "../auth/useAuth.jsx";
 import { acceptClubInvitation, readPendingInvite, clearPendingInvite } from "../data/clubInvitations.js";
 import { joinClubWithCode, readPendingJoin, clearPendingJoin } from "../data/clubCodes.js";
 import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
-import { Bell } from "../lib/icons.jsx";
+import { Bell, Shield } from "../lib/icons.jsx";
 import { BuildTag } from "../lib/ui.jsx";
 import { useNotifications } from "../data/notifications.js";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
@@ -126,8 +126,10 @@ export default function AppShell() {
 
   const roleObj = roleObjOf(profile.role);
   const staff = isStaffRole(profile.role);
-  const tab = navTab ?? (staff ? "effectif" : "bilan");
+  const homeTab = staff ? "effectif" : "bilan"; // page d'accueil neutre par rôle
+  const tab = navTab ?? homeTab;
   const goTab = (tk) => { setNavTab(tk); notifs.markRouteRead(tk); setAvatarOpen(false); };
+  const goHome = () => goTab(homeTab);
   const name = profile.full_name || user?.email || "Moi";
   const initial = (name.trim()[0] || "?").toUpperCase();
 
@@ -146,6 +148,10 @@ export default function AppShell() {
       <div style={{ maxWidth: 760, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         {/* Header compact : titre + cloche (joueur) + avatar (menu) */}
         <header style={{ position: "sticky", top: 0, zIndex: 30, background: `${C.navy}f2`, backdropFilter: "blur(8px)", borderBottom: `1px solid ${C.border2}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Bouton accueil (logo) : ramène à la page d'accueil neutre du rôle. */}
+          <button onClick={goHome} title={t("shell.home")} aria-label={t("shell.home")} style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 9, background: `${C.coral}1f`, border: `1px solid ${C.coral}55`, color: C.coral, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Shield size={17} />
+          </button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t(`title.${tab}`, "Performance")}</div>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, letterSpacing: 0.4 }}>{t("header.brand")} · <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: 0 }}>{teamLabel(profile.team_id)}</span></div>
