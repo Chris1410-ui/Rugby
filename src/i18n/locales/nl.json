@@ -2391,5 +2391,29 @@
       "note": "Notitie",
       "other": "Sectie"
     }
+  },
+  "playerPrograms": {
+    "title": "Toegewezen programma's ({{count}})",
+    "empty": "Nog geen programma of protocol toegewezen aan deze speler.",
+    "untitled": "Zonder titel",
+    "weeksN": "{{count}} week/weken",
+    "srcPdf": "PDF",
+    "srcApp": "App",
+    "published": "Gepubliceerd",
+    "draft": "Concept",
+    "toReview": "Geïmporteerd uit PDF, nog niet nagekeken — controleer de extractie.",
+    "toReviewShort": "na te kijken",
+    "quickEditTitle": "Programma corrigeren",
+    "titlePh": "Programmatitel",
+    "exoPh": "Oefening",
+    "sets": "Reeksen",
+    "reps": "Herhalingen",
+    "charge": "Belasting",
+    "rest": "Rust (s)",
+    "removeExo": "Oefening verwijderen",
+    "noExo": "Geen oefening.",
+    "saveNow": "Opslaan",
+    "saving": "Opslaan…",
+    "saveErr": "Mislukt: {{err}}"
   }
 }

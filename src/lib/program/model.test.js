@@ -141,4 +141,25 @@ describe("protocole — nouveaux types de sections", () => {
     expect(p.sections[0].type).toBe("exercises");
     expect(p.sections[0].rows[0].name).toBe("Squat");
   });
+
+  // Garantie « ouverture en édition » : un doc mêlant LES 6 TYPES survit à la
+  // normalisation dans le même ordre (c'était la cause du bug d'ouverture #62).
+  it("les 6 types de sections coexistent et sont préservés à l'ouverture", () => {
+    const doc = { meta: { weeks: 3 }, sections: [
+      { type: "narrative", title: "Intro", body: "Texte." },
+      { type: "exercises", title: "Bloc", rows: [{ name: "Squat", weeks: [{ text: "4×8" }] }] },
+      { type: "checklist", title: "Avant match", items: ["Protège-dents"] },
+      { type: "cardio", title: "Filière", items: [{ name: "VMA", target: "10×30/30" }] },
+      { type: "weekcalendar", title: "Semaine", days: [{ day: "lundi", label: "Muscu" }] },
+      { type: "table", title: "Paliers", columns: ["A", "B"], rows: [["1", "2"]] },
+    ] };
+    const out = normalizeProgram(doc, 3);
+    expect(out.sections.map((s) => s.type)).toEqual(["narrative", "exercises", "checklist", "cardio", "weekcalendar", "table"]);
+    // Chaque section garde son contenu clé (aucune perte à l'ouverture).
+    expect(out.sections[1].rows[0].name).toBe("Squat");
+    expect(out.sections[2].items).toContain("Protège-dents");
+    expect(out.sections[3].items[0].name).toBe("VMA");
+    expect(out.sections[4].days[0].label).toBe("Muscu");
+    expect(out.sections[5].rows[0]).toEqual(["1", "2"]);
+  });
 });

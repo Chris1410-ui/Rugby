@@ -10,6 +10,8 @@ import { uploadPlayerPdf, listPlayerFiles, playerFileUrl, removePlayerFile } fro
 import { parseProgramSmart } from "../../data/programImport.js";
 import { importProgramForSelf, importProgramForPlayer } from "../../data/freeSessions.js";
 import { createProgramDoc } from "../../data/programDocs.js";
+import { addAssignment } from "../../data/programAssignments.js";
+import PlayerPrograms from "./PlayerPrograms.jsx";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
@@ -301,7 +303,12 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
       let docSaved = false;
       if (doc && !self) {
         try {
-          await createProgramDoc(player.team, { title: doc?.meta?.title || t("protocols.untitled"), weeks: doc?.meta?.weeks, doc, status: "draft" });
+          // Importé de PDF → source 'pdf' + « à vérifier » (reviewed=false), et on
+          // ASSIGNE le protocole à CE joueur pour qu'il apparaisse dans sa vue
+          // « Programmes » (accès direct depuis la fiche après import).
+          const created = await createProgramDoc(player.team, { title: doc?.meta?.title || t("protocols.untitled"), weeks: doc?.meta?.weeks, doc, status: "draft", source: "pdf" });
+          try { await addAssignment(player.team, created.id, { scope: "player", playerId: player.id }); }
+          catch { /* assignation best-effort : le protocole reste consultable au club */ }
           docSaved = true;
         } catch { /* RLS / réseau : on garde les séances */ }
       }
@@ -386,7 +393,7 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
 
 /* Fiche joueur détaillée. Lit l'effectif enrichi (aucun recalcul). Éditable par
    le staff (tests physiques). `onClose` → rendu en modal. */
-export default function Fiche({ player, canEdit = false, self = false, onClose }) {
+export default function Fiche({ player, canEdit = false, self = false, players = [], onClose }) {
   const { t } = useTranslation();
   const [edit, setEdit] = useState(false);
   const [d, setD] = useState({});
@@ -504,6 +511,8 @@ export default function Fiche({ player, canEdit = false, self = false, onClose }
 
       {/* PDF de programme du joueur : gérés par le joueur, consultés par le staff/owner. */}
       <PlayerProgramFiles player={player} self={self} canAdd={self || canEdit} canDelete={self || canEdit} />
+
+      <PlayerPrograms player={player} players={players} canEdit={canEdit} />
 
       {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
       {(() => {

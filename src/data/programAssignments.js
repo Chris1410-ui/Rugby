@@ -76,6 +76,16 @@ export async function deleteAssignment(id) {
   if (error) throw error;
 }
 
+/* Une assignation de protocole couvre-t-elle un joueur donné ?
+   scope 'all' → tout le club ; 'group' → sa ligne ; 'player' → lui nommément. */
+export function assignmentCoversPlayer(a, player) {
+  if (!a) return false;
+  if (a.scope === "all") return true;
+  if (a.scope === "group") return a.groupKey === player?.grp;
+  if (a.scope === "player") return a.playerId === player?.id;
+  return false;
+}
+
 // Normalise une liste de cibles : garde celles qui ont un libellé, trim.
 export function cleanTargets(targets) {
   return (targets || [])

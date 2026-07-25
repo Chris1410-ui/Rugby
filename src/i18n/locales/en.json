@@ -2391,5 +2391,29 @@
       "note": "Note",
       "other": "Section"
     }
+  },
+  "playerPrograms": {
+    "title": "Assigned programmes ({{count}})",
+    "empty": "No programme or protocol assigned to this player yet.",
+    "untitled": "Untitled",
+    "weeksN": "{{count}} week(s)",
+    "srcPdf": "PDF",
+    "srcApp": "App",
+    "published": "Published",
+    "draft": "Draft",
+    "toReview": "Imported from PDF, not reviewed yet — check the extraction.",
+    "toReviewShort": "to review",
+    "quickEditTitle": "Fix the programme",
+    "titlePh": "Programme title",
+    "exoPh": "Exercise",
+    "sets": "Sets",
+    "reps": "Reps",
+    "charge": "Load",
+    "rest": "Rest (s)",
+    "removeExo": "Remove exercise",
+    "noExo": "No exercise.",
+    "saveNow": "Save",
+    "saving": "Saving…",
+    "saveErr": "Failed: {{err}}"
   }
 }

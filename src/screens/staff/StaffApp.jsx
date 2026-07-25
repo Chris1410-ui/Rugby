@@ -333,7 +333,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       {importing && <ImportPlayers teamId={teamId} players={players} onClose={() => setImporting(false)} />}
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
       {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
-      {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} canEdit={!readOnly} onClose={() => setFiche(null)} />}
+      {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} players={players} canEdit={!readOnly} onClose={() => setFiche(null)} />}
     </section>
   );
 }
