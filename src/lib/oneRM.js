@@ -18,18 +18,21 @@ export function movementIdentity({ exerciseId, name } = {}) {
    cellule — le pourcentage n'écrase jamais l'absolu existant. */
 export function parseProgressionCell(text) {
   const s = String(text || "").trim();
-  const star = /[★*]/.test(s);
+  const star = /★/.test(s); // pic (le * de multiplication ne compte pas)
   const m = s.match(/(\d+)\s*[x×*]\s*(\d+(?:\s*[-–]\s*\d+)?)/);
   const sets = m ? m[1] : "";
   const reps = m ? m[2].replace(/\s+/g, "").replace(/–/g, "-") : "";
-  const pm = s.match(/@\s*(\d{1,3}(?:[.,]\d)?)\s*%/);
+  // % du 1RM : accepte les DEUX ordres — @70% et 70%@.
+  const pm = s.match(/@\s*(\d{1,3}(?:[.,]\d)?)\s*%/) || s.match(/(\d{1,3}(?:[.,]\d)?)\s*%\s*@/);
   const pct = pm ? Number(pm[1].replace(",", ".")) : null;
   let abs = null;
   if (pct == null) {
     const am = s.match(/([\d.,]+)\s*kg/i);
     if (am) abs = `${am[1].replace(",", ".")}kg`;
   }
-  return { sets, reps, pct, star, abs, raw: s };
+  // Contient @ ou % mais rien de reconnu → syntaxe à SIGNALER (pas ignorer).
+  const unknown = /[@%]/.test(s) && pct == null && abs == null;
+  return { sets, reps, pct, star, abs, unknown, raw: s };
 }
 
 // Arrondi à l'incrément disponible (2,5 kg par défaut). Robuste aux flottants.
@@ -49,6 +52,25 @@ export function computeLoadKg(pct, oneRM, inc = DEFAULT_INCREMENT) {
 // 1RM estimé (Epley) depuis un test sous-max — réutilise e1RM tel quel.
 export function estimate1RM(weight, reps) {
   return e1RM(Number(weight), Number(reps));
+}
+
+/* Statistiques d'équipe pour UN mouvement : 1RM moyen (courant par joueur) et
+   nombre de joueurs sans 1RM, sur un effectif `players`. Sert au constructeur
+   (aperçu de charge « ≈ N kg pour 1RM moyen » + « X joueurs sans 1RM »). Pur. */
+export function movementTeamStats(entries = [], players = [], movement = {}) {
+  const id = movementIdentity(movement);
+  const byPlayer = new Map(); // playerId → valeur courante (la plus récente)
+  for (const e of entries) {
+    if (e.valueKg == null) continue;
+    if (movementIdentity({ exerciseId: e.exerciseId, name: e.movementLabel || e.name }) !== id) continue;
+    const stamp = `${e.measuredAt || ""}|${e.createdAt || ""}`;
+    const prev = byPlayer.get(e.playerId);
+    if (!prev || stamp > prev.stamp) byPlayer.set(e.playerId, { value: Number(e.valueKg), stamp });
+  }
+  const rosterIds = (players || []).map((p) => p.id);
+  const values = rosterIds.map((pid) => byPlayer.get(pid)?.value).filter((v) => v != null);
+  const avg = values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : null;
+  return { avg, have: values.length, missing: Math.max(0, rosterIds.length - values.length), total: rosterIds.length };
 }
 
 /* Résout le 1RM COURANT + l'historique par mouvement depuis les lignes player_1rm.

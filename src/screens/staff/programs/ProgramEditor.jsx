@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
+import { useTeam1RM } from "../../../data/player1rm.js";
+import { parseProgressionCell, computeLoadKg, movementTeamStats } from "../../../lib/oneRM.js";
 import { todayISO } from "../../../lib/metrics.js";
 import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
@@ -35,6 +37,7 @@ const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, textTransform
    à la fermeture si des changements sont en attente. */
 export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const { t } = useTranslation();
+  const { entries: team1rm } = useTeam1RM(teamId); // aperçu de charge + 1RM manquants
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("draft");
@@ -283,7 +286,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
               <TableEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : (
               <ExerciseGrid
-                section={s} weeks={weeks} t={t}
+                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players}
                 onAddFree={() => addRow(si)} onLibrary={() => setPicker(si)}
                 onRow={(ri, p) => setRow(si, ri, p)} onCell={(ri, wi, p) => setCell(si, ri, wi, p)}
                 onMoveRow={(ri, dir) => moveRow(si, ri, dir)} onDelRow={(ri) => delRow(si, ri)}
@@ -395,10 +398,14 @@ function SaveTemplateModal({ teamId, section, defaultName, onClose, t }) {
 
 /* Grille d'exercices : une ligne par exercice, une cellule éditable par semaine
    (texte libre « 4×8 R7 » + bascule pic ★), + bloc / tempo / repos / note. */
-function ExerciseGrid({ section, weeks, t, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
+function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
   const cellW = 92;
   return (
     <div>
+      {/* Légende des conventions de saisie acceptées. */}
+      <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, lineHeight: 1.5 }}>
+        {t("protocols.cellLegend")}
+      </div>
       <div style={{ overflowX: "auto", border: `1px solid ${C.border}`, borderRadius: 10 }}>
         <div style={{ minWidth: 460 + weeks * cellW }}>
           {/* En-tête colonnes */}
@@ -419,25 +426,34 @@ function ExerciseGrid({ section, weeks, t, onAddFree, onLibrary, onRow, onCell, 
           {/* Lignes */}
           {section.rows.map((r, ri) => {
             const tint = ACC[r.tint || blockTint(r.block)] || ACC.c;
+            // Détection en direct du % et aperçu de charge (moyenne d'équipe).
+            const parsed = (r.weeks || []).map((c) => parseProgressionCell(c.text));
+            const pctCells = parsed.filter((p) => p.pct != null);
+            const anyUnknown = parsed.some((p) => p.unknown);
+            const stats = pctCells.length ? movementTeamStats(team1rm, players, { exerciseId: (r.rmRef || "").trim() ? null : r.exerciseId, name: (r.rmRef || "").trim() || r.name }) : null;
             return (
-              <div key={r.id} style={{ display: "flex", borderBottom: `1px solid ${C.border2}` }}>
+              <Fragment key={r.id}>
+              <div style={{ display: "flex", borderBottom: anyUnknown || pctCells.length ? "none" : `1px solid ${C.border2}` }}>
                 <div style={{ width: 44, flexShrink: 0, borderLeft: `3px solid ${tint}` }}>
                   <input value={r.block} onChange={(e) => onRow(ri, { block: e.target.value })} placeholder="A1" style={{ ...cellInput, textAlign: "center", fontWeight: 700 }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center" }}>
                   {r.exerciseRef && <span title={t("protocols.linked")} style={{ fontSize: 11, marginLeft: 6, color: C.green, flexShrink: 0 }}>🔗</span>}
                   <input value={r.name} onChange={(e) => onRow(ri, { name: e.target.value })} placeholder={t("protocols.exercisePh")} style={cellInput} />
-                  {/* Mouvement de référence du % (optionnel ; vide = ce mouvement). */}
-                  <input value={r.rmRef || ""} onChange={(e) => onRow(ri, { rmRef: e.target.value })} placeholder={t("protocols.rmRefPh")} title={t("protocols.rmRefTitle")} style={{ ...cellInput, width: 82, flexShrink: 0, borderLeft: `1px solid ${C.border2}`, color: C.viol, fontSize: 11 }} />
+                  {/* Mouvement de référence du % (sélecteur ; vide = ce mouvement). */}
+                  <RmRefPicker value={r.rmRef || ""} onChange={(v) => onRow(ri, { rmRef: v })} t={t} />
                 </div>
                 <input value={r.tempo} onChange={(e) => onRow(ri, { tempo: e.target.value })} placeholder="2010" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
                 <input value={r.rest} onChange={(e) => onRow(ri, { rest: e.target.value })} placeholder="90s" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
-                {r.weeks.map((cell, wi) => (
-                  <div key={wi} style={{ width: cellW, flexShrink: 0, borderLeft: `1px solid ${C.border2}`, display: "flex", alignItems: "center" }}>
-                    <input value={cell.text} onChange={(e) => onCell(ri, wi, { text: e.target.value })} placeholder="4×8 R7" style={{ ...cellInput, padding: "8px 4px 8px 6px" }} />
+                {r.weeks.map((cell, wi) => {
+                  const cp = parsed[wi];
+                  return (
+                  <div key={wi} style={{ width: cellW, flexShrink: 0, borderLeft: `1px solid ${C.border2}`, display: "flex", alignItems: "center", background: cp?.unknown ? `${C.coral}14` : cp?.pct != null ? `${C.viol}10` : "transparent" }}>
+                    <input value={cell.text} onChange={(e) => onCell(ri, wi, { text: e.target.value })} placeholder={t("protocols.cellPh")} style={{ ...cellInput, padding: "8px 4px 8px 6px" }} />
                     <button onClick={() => onCell(ri, wi, { peak: !cell.peak })} title={t("protocols.peak")} style={{ background: "none", border: "none", cursor: "pointer", color: cell.peak ? C.amb : "rgba(255,255,255,0.25)", fontSize: 13, padding: "0 4px", flexShrink: 0 }}>★</button>
                   </div>
-                ))}
+                  );
+                })}
                 <input value={r.note} onChange={(e) => onRow(ri, { note: e.target.value })} placeholder={t("protocols.notePh")} style={{ ...cellInput, flex: 1, minWidth: 150, borderLeft: `1px solid ${C.border2}` }} />
                 <div style={{ width: 38, flexShrink: 0, display: "flex", flexDirection: "column", borderLeft: `1px solid ${C.border2}` }}>
                   <button onClick={() => onMoveRow(ri, -1)} disabled={ri === 0} title={t("protocols.moveUp")} style={{ ...rowMini, opacity: ri === 0 ? 0.3 : 1 }}><ChevronDown size={11} style={{ transform: "rotate(180deg)" }} /></button>
@@ -445,6 +461,16 @@ function ExerciseGrid({ section, weeks, t, onAddFree, onLibrary, onRow, onCell, 
                   <button onClick={() => onDelRow(ri)} title={t("protocols.removeRow")} style={{ ...rowMini, color: C.coral }}><Trash2 size={11} /></button>
                 </div>
               </div>
+              {(pctCells.length > 0 || anyUnknown) && (
+                <div style={{ padding: "4px 10px 6px 47px", borderBottom: `1px solid ${C.border2}`, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", fontSize: 10.5 }}>
+                  {pctCells.length > 0 && <span style={{ fontWeight: 800, color: C.viol, background: `${C.viol}1c`, borderRadius: 5, padding: "1px 6px" }}>{t("protocols.pctBadge")}</span>}
+                  {pctCells.length > 0 && stats?.avg != null && <span style={{ color: "rgba(255,255,255,0.7)" }}>{t("protocols.loadPreview", { kg: computeLoadKg(pctCells[0].pct, stats.avg), pct: pctCells[0].pct, oneRM: stats.avg })}</span>}
+                  {pctCells.length > 0 && stats?.avg == null && <span style={{ color: "rgba(255,255,255,0.5)" }}>{t("protocols.loadExample", { kg: computeLoadKg(pctCells[0].pct, 120), pct: pctCells[0].pct })}</span>}
+                  {pctCells.length > 0 && stats?.missing > 0 && <span style={{ color: C.amb, fontWeight: 700 }}>{t("protocols.missing1rm", { count: stats.missing })}</span>}
+                  {anyUnknown && <span style={{ color: C.coral, fontWeight: 700 }}>{t("protocols.syntaxWarn")}</span>}
+                </div>
+              )}
+              </Fragment>
             );
           })}
           {section.rows.length === 0 && (
@@ -456,6 +482,25 @@ function ExerciseGrid({ section, weeks, t, onAddFree, onLibrary, onRow, onCell, 
         <button onClick={onAddFree} style={miniBtn}><Plus size={13} /> {t("protocols.addRowFree")}</button>
         <button onClick={onLibrary} style={{ ...miniBtn, borderColor: `${C.green}66`, color: C.green }}><Search size={13} /> {t("protocols.addFromLibrary")}</button>
       </div>
+    </div>
+  );
+}
+
+/* Sélecteur « % basé sur » : mouvement de référence du pourcentage. « Cet exercice »
+   (vide) par défaut ; mouvements courants ; « Autre… » → saisie libre. */
+const RM_COMMON = ["Squat", "Développé couché", "Soulevé de terre"];
+function RmRefPicker({ value, onChange, t }) {
+  const [other, setOther] = useState(false);
+  const sel = other || (value && !RM_COMMON.includes(value)) ? "__other__" : (value || "");
+  const st = { ...cellInput, width: 96, flexShrink: 0, borderLeft: `1px solid ${C.border2}`, color: C.viol, fontSize: 10.5, colorScheme: "dark" };
+  return (
+    <div style={{ display: "flex", flexShrink: 0 }} title={t("protocols.rmRefTitle")}>
+      <select value={sel} onChange={(e) => { const v = e.target.value; if (v === "__other__") { setOther(true); } else { setOther(false); onChange(v); } }} style={st}>
+        <option value="">{t("protocols.rmRefSelf")}</option>
+        {RM_COMMON.map((m) => <option key={m} value={m}>{m}</option>)}
+        <option value="__other__">{t("protocols.rmRefOther")}</option>
+      </select>
+      {sel === "__other__" && <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={t("protocols.rmRefPh")} style={{ ...cellInput, width: 90, flexShrink: 0, color: C.viol, fontSize: 10.5 }} />}
     </div>
   );
 }

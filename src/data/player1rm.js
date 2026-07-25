@@ -91,3 +91,19 @@ export async function deleteEntry1RM(id) {
   const { error } = await supabase.from("player_1rm").delete().eq("id", id);
   if (error) throw error;
 }
+
+// Toutes les entrées 1RM de l'équipe (pour l'aperçu de charge + « 1RM manquants »
+// dans le constructeur). Sans Realtime (pas de canal supplémentaire).
+export function useTeam1RM(teamId) {
+  const [entries, setEntries] = useState([]);
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setEntries([]); return; }
+    const { data, error } = await supabase.from("player_1rm").select("*").eq("team_id", teamId);
+    if (error) { console.error("[team_1rm]", error.message); return; }
+    setEntries((data ?? []).map(dbTo1rm));
+  }, [teamId]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { entries, refresh: fetch };
+}

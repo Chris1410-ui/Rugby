@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM } from "./oneRM.js";
+import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats } from "./oneRM.js";
 
 describe("parseProgressionCell", () => {
   it("reconnaît sets×reps + @xx% + ★", () => {
@@ -14,6 +14,35 @@ describe("parseProgressionCell", () => {
   });
   it("cellule sans schéma → champs vides, pas de crash", () => {
     expect(parseProgressionCell("")).toMatchObject({ sets: "", reps: "", pct: null, abs: null });
+  });
+  it("accepte les deux ordres @70% et 70%@", () => {
+    expect(parseProgressionCell("4×8 @70%")).toMatchObject({ pct: 70, unknown: false });
+    expect(parseProgressionCell("4×8 70%@")).toMatchObject({ pct: 70, unknown: false });
+  });
+  it("signale une syntaxe % non reconnue (au lieu de l'ignorer)", () => {
+    expect(parseProgressionCell("4×8 @70")).toMatchObject({ pct: null, unknown: true });  // % manquant
+    expect(parseProgressionCell("4×8 70 %")).toMatchObject({ pct: null, unknown: true });  // @ manquant
+    expect(parseProgressionCell("4×8 R7")).toMatchObject({ unknown: false });               // rien à signaler
+  });
+  it("le * de multiplication n'est pas pris pour un pic ★", () => {
+    expect(parseProgressionCell("4*8").star).toBe(false);
+    expect(parseProgressionCell("4×6 ★").star).toBe(true);
+  });
+});
+
+describe("movementTeamStats — moyenne + manquants", () => {
+  const players = [{ id: "a" }, { id: "b" }, { id: "c" }];
+  const entries = [
+    { playerId: "a", movementLabel: "Back Squat", valueKg: 120, measuredAt: "2026-02-01", createdAt: "2026-02-01" },
+    { playerId: "a", movementLabel: "Back Squat", valueKg: 130, measuredAt: "2026-03-01", createdAt: "2026-03-01" }, // courant a = 130
+    { playerId: "b", movementLabel: "back squat", valueKg: 110, measuredAt: "2026-02-01", createdAt: "2026-02-01" }, // même mouvement
+  ];
+  it("moyenne des 1RM courants + joueurs sans 1RM", () => {
+    const s = movementTeamStats(entries, players, { name: "Back Squat" });
+    expect(s.avg).toBe(120);        // (130 + 110) / 2
+    expect(s.have).toBe(2);
+    expect(s.missing).toBe(1);       // c n'a pas de 1RM
+    expect(s.total).toBe(3);
   });
 });
 
