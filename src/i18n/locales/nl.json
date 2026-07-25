@@ -838,6 +838,9 @@
       "notEnoughHistory": "Nog niet genoeg geschiedenis om een progressie te tekenen. Valideer minstens twee sessies met deze oefening.",
       "rpeShort": "RPE",
       "freeTag": "Vrij",
+      "viewProtocol": "Protocol bekijken",
+      "protocolLoading": "Openen…",
+      "weekN": "Week {{n}}",
       "deleteFree": "Deze vrije sessie verwijderen"
     },
     "freeSession": {

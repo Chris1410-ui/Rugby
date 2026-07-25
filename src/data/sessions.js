@@ -79,8 +79,10 @@ export function dbToSession(row, roster) {
     assigned: row.assigned || { mode: "all" },
     assignedIds: resolveAssignedIds(row.assigned, roster),
     campaignId: row.campaign_id || null, // séance-test → campagne de tests liée (0021)
-    origin: row.origin || "staff",        // 'staff' (prescrite) | 'libre' (autonome, 0054)
+    origin: row.origin || "staff",        // 'staff' (prescrite) | 'libre' (autonome, 0054) | 'plan' (protocole)
     createdBy: row.created_by || null,
+    programDocId: row.program_doc_id || null, // protocole source (séance planifiée)
+    sourceWeek: row.source_week || null,       // semaine Sk d'origine
   };
 }
 
