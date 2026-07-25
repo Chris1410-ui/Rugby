@@ -858,6 +858,10 @@
       "protocolLoading": "Ouverture…",
       "weekN": "Semaine {{n}}",
       "setYour1RM": "renseigne ton 1RM {{movement}}",
+      "exInfo": "Fiche de l'exercice",
+      "set1rmTitle": "Ton 1RM — {{movement}}",
+      "set1rmHint": "Saisis ta charge maximale (1 répétition) pour calculer les charges en %.",
+      "set1rmSave": "Enregistrer",
       "deleteFree": "Supprimer cette séance libre"
     },
     "freeSession": {
@@ -2492,5 +2496,10 @@
     "errValue": "Indique un 1RM valide.",
     "errSubmax": "Indique le poids et les répétitions.",
     "errSave": "Échec : {{err}}"
+  },
+  "exInfo": {
+    "loading": "Chargement…",
+    "notFound": "Aucune fiche pour cet exercice dans la bibliothèque.",
+    "noSteps": "Pas d'instructions détaillées pour cet exercice."
   }
 }

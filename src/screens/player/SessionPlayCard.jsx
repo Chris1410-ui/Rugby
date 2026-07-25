@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText } from "../../lib/icons.jsx";
+import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
   e1RM, SET_TYPES, nextSetType, parseSetsN,
@@ -11,9 +11,10 @@ import {
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
 import { getProgramDoc } from "../../data/programDocs.js";
-import { usePlayer1RM } from "../../data/player1rm.js";
+import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { summarize1RM, computeLoadKg, movementIdentity } from "../../lib/oneRM.js";
 import ProgramView from "../shared/ProgramView.jsx";
+import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
 
 const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
@@ -30,6 +31,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const [busy, setBusy] = useState(false);
   const [proto, setProto] = useState(null);        // protocole source ouvert en lecture
   const [protoBusy, setProtoBusy] = useState(false);
+  const [infoEx, setInfoEx] = useState(null);      // fiche exercice (nom) ouverte
+  const [set1rm, setSet1rm] = useState(null);      // { label } : saisie rapide 1RM manquant
 
   // 1RM du joueur → charge réelle des exercices exprimés en % (PR2).
   const { entries: my1rm } = usePlayer1RM(me.id);
@@ -209,9 +212,14 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
               <div key={e.id} style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
                   <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</span>
-                  <button onClick={() => setGraphEx(e.name)} title={t("player.session.progressTitle")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 3, fontSize: 10 }}>
-                    <TrendingUp size={13} />
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <button onClick={() => setInfoEx(e.name)} title={t("player.session.exInfo")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", display: "flex" }}>
+                      <BookOpen size={13} />
+                    </button>
+                    <button onClick={() => setGraphEx(e.name)} title={t("player.session.progressTitle")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 3, fontSize: 10 }}>
+                      <TrendingUp size={13} />
+                    </button>
+                  </div>
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {e.sets}×{e.reps}{e.charge ? ` @ ${e.charge}` : ""}</span>
@@ -227,7 +235,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                         {pl.kind === "estime" && <span style={{ fontSize: 9, fontWeight: 700, color: C.amb }}>({t("oneRM.estimated")})</span>}
                       </>
                     ) : (
-                      <span style={{ fontWeight: 700 }}>· {t("player.session.setYour1RM", { movement: pl.label })}</span>
+                      <button onClick={() => setSet1rm({ label: pl.label })} style={{ fontWeight: 800, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "1px 7px", cursor: "pointer" }}>· {t("player.session.setYour1RM", { movement: pl.label })}</button>
                     )}
                   </div>
                 )}
@@ -297,6 +305,34 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
 
       {graphEx && <ExoProgressModal pid={me.id} exName={graphEx} sessions={sessions} logs={logs} accent={accent} onClose={() => setGraphEx(null)} />}
       {proto && <ProgramView id={proto.id} doc={proto.doc} title={proto.title} onClose={() => setProto(null)} />}
+      {infoEx && <ExerciseInfoModal name={infoEx} onClose={() => setInfoEx(null)} />}
+      {set1rm && !preview && <Quick1RM label={set1rm.label} me={me} t={t} onClose={() => setSet1rm(null)} />}
+    </div>
+  );
+}
+
+/* Saisie rapide, par le JOUEUR, de son 1RM manquant pour un mouvement (depuis la
+   carte de séance quand une consigne @% n'a pas de 1RM). add1RM source 'player'. */
+function Quick1RM({ label, me, t, onClose }) {
+  const [v, setV] = useState("");
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    if (!(Number(v) > 0)) return;
+    setBusy(true);
+    try { await add1RM(me.team, me.id, { name: label, valueKg: v, source: "player" }); onClose(); }
+    catch (e) { console.error("[quick1rm]", e.message); setBusy(false); }
+  };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 340, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: C.panel, borderRadius: 16, padding: 18 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>{t("player.session.set1rmTitle", { movement: label })}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 12 }}>{t("player.session.set1rmHint")}</div>
+        <input value={v} onChange={(e) => setV(e.target.value)} inputMode="decimal" autoFocus placeholder={t("oneRM.kg")} style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px", color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", textAlign: "center", marginBottom: 12, boxSizing: "border-box" }} />
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={save} disabled={busy} style={{ flex: 1, background: C.green, border: "none", borderRadius: 9, padding: 11, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("player.session.set1rmSave")}</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "11px 14px", color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
+        </div>
+      </div>
     </div>
   );
 }
