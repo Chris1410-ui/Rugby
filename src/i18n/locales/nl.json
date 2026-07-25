@@ -638,6 +638,8 @@
       "addFreeSession": "Vrije sessie toevoegen",
       "defis": "Uitdagingen van vandaag",
       "defisSub": "Pak openstaande uitdagingen op",
+      "convocations": "Oproepingen",
+      "convocationsSub": "Beantwoord trainingen",
       "done": "Klaar ✓",
       "eveningSub": "Hoe de dag voelde",
       "exoCount": "{{count}} oef.",
@@ -2304,6 +2306,12 @@
       "missedRun": "Opeenvolgend gemist",
       "postponed": "Sessie uitgesteld",
       "overdue": "Sessie niet voltooid"
+    },
+    "convocation": {
+      "present": "Aanwezig op training",
+      "punctual": "Stiptheid",
+      "late": "Aanwezig (te laat)",
+      "missed": "Niet-aangekondigde afwezigheid"
     },
     "streak5": "Reeks van 5 sessies 🔥",
     "streak3": "Reeks van 3 sessies",

@@ -638,6 +638,8 @@
       "addFreeSession": "Add a free session",
       "defis": "Today's challenges",
       "defisSub": "Take on pending challenges",
+      "convocations": "Call-ups",
+      "convocationsSub": "Reply to trainings",
       "done": "Done ✓",
       "eveningSub": "How the day felt",
       "exoCount": "{{count}} exercises",
@@ -2304,6 +2306,12 @@
       "missedRun": "Consecutive misses",
       "postponed": "Session postponed",
       "overdue": "Session not completed"
+    },
+    "convocation": {
+      "present": "Attended training",
+      "punctual": "Punctuality",
+      "late": "Attended (late)",
+      "missed": "Unannounced absence"
     },
     "streak5": "5-session streak 🔥",
     "streak3": "3-session streak",

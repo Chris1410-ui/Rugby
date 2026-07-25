@@ -11,6 +11,7 @@ import { useTeamTaskPoints } from "../../data/tasks.js";
 import { useTeamChallengePoints } from "../../data/challenges.js";
 import { challengeBadges, topChallengeBadge, challengeBadgeLabel } from "../../lib/challenges.js";
 import { useTeamReactivity } from "../../data/notifications.js";
+import { useTeamTrainingEvents } from "../../data/trainings.js";
 import { useTeamSessionLogs, useTeamCheckinEvents } from "../../data/leaderboard.js";
 import { KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Trophy } from "../../lib/icons.jsx";
@@ -41,6 +42,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const taskPtsByPlayer = useTeamTaskPoints(teamId);
   const chalPtsByPlayer = useTeamChallengePoints(teamId);
   const reactByPlayer = useTeamReactivity(teamId);
+  const { byPlayer: convByPlayer } = useTeamTrainingEvents(teamId); // présence aux convocations (pointage staff)
   // Entrées de points À L'ÉCHELLE DU CLUB (RPC SECURITY DEFINER) → classement
   // IDENTIQUE pour owner/staff/joueur. Sans ça, un joueur (RLS = ses données
   // seules) calculait de faux points pour ses coéquipiers. On IGNORE donc les
@@ -56,7 +58,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       const bilanEvents = bilanEventsOf(clubBilans[p.id]);
       const chalPts = chalPtsByPlayer[p.id] || [];
       const challengeEvents = chalPts.map((c) => ({ label: c.titre, points: c.points, date: c.date }));
-      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents) };
+      const convocationEvents = convByPlayer[p.id] || [];
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents) };
     });
     // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
     const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
@@ -67,7 +70,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer]);
+  }, [players, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en

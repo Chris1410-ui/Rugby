@@ -638,6 +638,8 @@
       "addFreeSession": "Ajouter une séance libre",
       "defis": "Défis du jour",
       "defisSub": "Relève les défis en attente",
+      "convocations": "Convocations",
+      "convocationsSub": "Réponds aux entraînements",
       "done": "Fait ✓",
       "eveningSub": "Ressenti de la journée",
       "exoCount": "{{count}} exos",
@@ -2304,6 +2306,12 @@
       "missedRun": "Manquées consécutives",
       "postponed": "Séance reportée",
       "overdue": "Séance non validée"
+    },
+    "convocation": {
+      "present": "Présent à l'entraînement",
+      "punctual": "Ponctualité",
+      "late": "Présent (en retard)",
+      "missed": "Absence non annoncée"
     },
     "streak5": "Série de 5 séances 🔥",
     "streak3": "Série de 3 séances",

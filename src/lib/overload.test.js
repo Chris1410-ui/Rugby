@@ -28,6 +28,20 @@ describe("anti-surcharge — helpers", () => {
     });
   });
 
+  it("aggregateLoadByDate : les convocations chargent aussi (par nature)", () => {
+    const sessions = [{ date: "2026-07-06", nature: "force", code: "RS", assignedIds: ["p1"] }];
+    const trainings = [
+      { date: "2026-07-06", nature: "conditioning", assignedIds: ["p1"] },
+      { date: "2026-07-06", nature: null, assignedIds: ["p9"] },        // hors périmètre → ignoré
+      { date: "2026-07-20", nature: "vitesse", assignedIds: ["p1"] },
+    ];
+    const load = aggregateLoadByDate(sessions, new Set(["p1"]), "2026-07-06", "2026-07-31", trainings);
+    expect(load).toEqual({
+      "2026-07-06": { force: 1, conditioning: 1 },
+      "2026-07-20": { vitesse: 1 },
+    });
+  });
+
   it("aggregateLoadByDate : périmètre vide → rien", () => {
     const sessions = [{ date: "2026-07-06", nature: "force", code: "RS", assignedIds: ["p1"] }];
     expect(aggregateLoadByDate(sessions, new Set(), "2026-07-06", "2026-07-31")).toEqual({});
