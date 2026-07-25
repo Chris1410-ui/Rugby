@@ -95,6 +95,43 @@ export async function getExerciseByName(name) {
   return d2 && d2.length ? dbToExercise(d2[0]) : null;
 }
 
+/* ─── Autocomplétion + auto-alimentation (RPC SECURITY DEFINER, migration 0085) ───
+   Le nom saisi librement dans un protocole/programme s'auto-complète sur le
+   catalogue (~1300 + calisthénie) + les exos perso du club, et se crée en exo
+   perso (anti-doublon) si aucune correspondance. Le compteur d'usage fait
+   remonter les plus utilisés. */
+
+// Recherche floue classée par usage → [{ id, name, nameEn, category, equipment,
+// targetMuscle, thumbUrl, gifUrl, isCustom, isCalisthenics, usageCount }].
+export async function searchExercises(q, limit = 12) {
+  const query = (q || "").trim();
+  if (query.length < 2) return [];
+  const { data, error } = await supabase.rpc("search_exercises", { p_q: query, p_limit: limit });
+  if (error) { console.error("[search_exercises]", error.message); return []; }
+  return (data || []).map((r) => ({
+    id: r.id, name: r.name, nameEn: r.name_en, category: r.category, equipment: r.equipment,
+    targetMuscle: r.target_muscle, thumbUrl: r.thumb_url, gifUrl: r.gif_url,
+    isCustom: r.is_custom, isCalisthenics: r.is_calisthenics, usageCount: r.usage_count, sim: r.sim,
+  }));
+}
+
+// Crée (ou retrouve, anti-doublon) un exercice perso du club → renvoie son id.
+export async function createCustomExercise(name, { category = null, equipment = null } = {}) {
+  const { data, error } = await supabase.rpc("create_custom_exercise", {
+    p_name: name, p_category: category, p_equipment: equipment,
+  });
+  if (error) throw error;
+  return data; // uuid
+}
+
+// Incrémente le compteur d'usage des exercices liés (à l'enregistrement).
+export async function incrementExerciseUsage(ids) {
+  const list = (ids || []).filter(Boolean);
+  if (!list.length) return;
+  const { error } = await supabase.rpc("increment_exercise_usage", { p_ids: list });
+  if (error) console.error("[increment_exercise_usage]", error.message);
+}
+
 /* Valeurs distinctes des facettes (partie du corps / équipement / muscle ciblé)
    pour peupler les filtres. Lues une fois au montage. */
 export function useExerciseFacets() {
