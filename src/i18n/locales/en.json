@@ -1508,15 +1508,19 @@
     },
     "calendar": {
       "legendDone": "done",
-      "legendPlanned": "planned",
+      "legendMissed": "missed",
+      "legendPlanned": "to do",
       "mySessions": "MY SESSIONS",
       "agenda": "AGENDA · SESSIONS",
       "empty": "No session planned.",
       "exercisesCount": "{{count}} exercises",
       "tagDone": "Done",
       "tagMissed": "Missed",
+      "tagTodo": "To do",
+      "tagPostponed": "Postponed",
       "tagToValidate": "To validate",
-      "tagUpcoming": "Upcoming"
+      "tagUpcoming": "Upcoming",
+      "rpe": "RPE {{rpe}}"
     },
     "conversation": {
       "withPlayer": "Conversation with the player",
@@ -1716,6 +1720,14 @@
       "treat": "✓ Handle"
     },
     "fiche": {
+      "sessHistTitle": "SESSION HISTORY",
+      "sessHistEmpty": "No sessions for this player.",
+      "sessHistRate": "{{rate}}% completed",
+      "sessHistDone": "{{count}} ✓",
+      "sessHistMissed": "{{count}} ✗",
+      "sessHistTodo": "{{count}} to do",
+      "sessHistMore": "Show {{count}} more",
+      "sessHistLess": "Show less",
       "qTitle": "QUESTIONNAIRES · {{count}}",
       "questions_one": "{{count}} question",
       "questions_other": "{{count}} questions",

@@ -1508,15 +1508,19 @@
     },
     "calendar": {
       "legendDone": "fait",
-      "legendPlanned": "prévu",
+      "legendMissed": "manqué",
+      "legendPlanned": "à faire",
       "mySessions": "MES SÉANCES",
       "agenda": "AGENDA · SÉANCES",
       "empty": "Aucune séance planifiée.",
       "exercisesCount": "{{count}} exercices",
-      "tagDone": "Fait",
-      "tagMissed": "Manqué",
+      "tagDone": "Réalisée",
+      "tagMissed": "Manquée",
+      "tagTodo": "À faire",
+      "tagPostponed": "Reportée",
       "tagToValidate": "À valider",
-      "tagUpcoming": "À venir"
+      "tagUpcoming": "À venir",
+      "rpe": "RPE {{rpe}}"
     },
     "conversation": {
       "withPlayer": "Conversation avec le joueur",
@@ -1716,6 +1720,14 @@
       "treat": "✓ Traiter"
     },
     "fiche": {
+      "sessHistTitle": "HISTORIQUE DES SÉANCES",
+      "sessHistEmpty": "Aucune séance pour ce joueur.",
+      "sessHistRate": "{{rate}}% réalisées",
+      "sessHistDone": "{{count}} ✓",
+      "sessHistMissed": "{{count}} ✗",
+      "sessHistTodo": "{{count}} à faire",
+      "sessHistMore": "Voir {{count}} de plus",
+      "sessHistLess": "Réduire",
       "qTitle": "QUESTIONNAIRES · {{count}}",
       "questions_one": "{{count}} question",
       "questions_other": "{{count}} questions",

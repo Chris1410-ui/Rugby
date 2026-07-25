@@ -82,6 +82,17 @@ export const zoneLabel = (t, z) => t(`data.acwr.${z?.key || "target"}`);
 
 export const statusOfLog = (logs, sid, pid) => logs?.[sid]?.[pid]?.status || "pending";
 
+/* État d'affichage d'une séance pour UN joueur, source unique de vérité côté UI
+   (calendrier, fiche, aujourd'hui). Une séance assignée passée sans validation
+   « réalisée » compte comme MANQUÉE — cohérent avec le score (qui la pénalise
+   déjà). Renvoie 'done' | 'missed' | 'todo' | 'postponed'. */
+export const sessionDisplayState = (status, date, today = todayISO()) => {
+  if (status === "done") return "done";
+  if (status === "missed") return "missed";
+  if (status === "postponed") return "postponed";
+  return date < today ? "missed" : "todo"; // pending : passé = manqué, sinon à faire
+};
+
 /* ════════════ MOTEUR DE CHARGE · sRPE / ACWR / monotonie ════════════ */
 const sessDur = (s) => s.dur || s.duration || (s.exos ? Math.max(40, s.exos.length * 9) : 60);
 
