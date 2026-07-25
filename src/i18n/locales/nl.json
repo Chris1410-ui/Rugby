@@ -2589,5 +2589,11 @@
   },
   "exAuto": {
     "custom": "eigen"
+  },
+  "progression": {
+    "step": "stap {{pos}}/{{total}}",
+    "current": "hier",
+    "next": "doel",
+    "aim": "Volgende stap: {{label}}"
   }
 }
