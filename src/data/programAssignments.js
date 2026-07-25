@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Couche données des ASSIGNATIONS de protocoles (table program_assignments,
    migration 0064). Une assignation cible tout le club, un groupe ou un joueur,
@@ -41,7 +42,7 @@ export function useTeamProgramAssignments(teamId) {
     fetch();
     if (!teamId) return;
     const channel = supabase
-      .channel(`program_assignments:${teamId}`)
+      .channel(uniqueTopic(`program_assignments:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "program_assignments", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

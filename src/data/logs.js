@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Logs de séance (session_logs). Remplace la clé `logs` du prototype.
    Structure applicative : logs[sessionId][playerId] = {status, rpe, feedback, perExercise}.
@@ -49,7 +50,7 @@ export function useTeamLogs(teamId) {
   useEffect(() => {
     fetch();
     const channel = supabase
-      .channel(`logs:${teamId || "all"}`)
+      .channel(uniqueTopic(`logs:${teamId || "all"}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "session_logs" }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
