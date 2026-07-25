@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 import { normalizeProgram, clampWeeks, emptyProgram } from "../lib/program/model.js";
 
 /* Couche données des PROTOCOLES (programmes d'entraînement riches). Distincte de
@@ -52,7 +53,7 @@ export function useProgramDocs(teamId) {
     fetch();
     if (!teamId) return;
     const channel = supabase
-      .channel(`program_docs:${teamId}`)
+      .channel(uniqueTopic(`program_docs:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "program_docs", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

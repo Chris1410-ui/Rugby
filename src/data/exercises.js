@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 import { exKey } from "../lib/exlib.js";
 
 /* Bibliothèque d'exercices : catalogue global (team_id null) + perso d'équipe.
@@ -26,7 +27,7 @@ export function useExercises(teamId) {
   useEffect(() => {
     fetch();
     const channel = supabase
-      .channel(`exercises:${teamId}`)
+      .channel(uniqueTopic(`exercises:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "exercises" }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "../data/messages.js";
 import { C, FONT, ROLES } from "../lib/tokens.js";
 import { displayName } from "../lib/identity.js";
 import { Users, Search } from "../lib/icons.jsx";
@@ -54,7 +55,7 @@ export default function OwnerApp({ profile, user, signOut }) {
     const load = () => fetchTeamPlayers(team).then((d) => { if (active) setTeamPlayers(d); }).catch(() => {});
     load();
     const ch = supabase
-      .channel(`owner-roster:${team}`)
+      .channel(uniqueTopic(`owner-roster:${team}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: `team_id=eq.${team}` }, load)
       .subscribe();
     return () => { active = false; supabase.removeChannel(ch); };

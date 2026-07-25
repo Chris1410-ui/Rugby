@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 import { exKey } from "../lib/hevy.js";
 import { estimate1RM } from "../lib/oneRM.js";
 
@@ -46,7 +47,7 @@ export function usePlayer1RM(playerId) {
     fetch();
     if (!playerId) return;
     const channel = supabase
-      .channel(`player_1rm:${playerId}`)
+      .channel(uniqueTopic(`player_1rm:${playerId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "player_1rm", filter: `player_id=eq.${playerId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

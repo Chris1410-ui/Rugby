@@ -82,7 +82,7 @@ export function useRoster(teamId) {
     fetchRoster();
     if (!teamId) return;
     const channel = supabase
-      .channel(`players:${teamId}`)
+      .channel(uniqueTopic(`players:${teamId}`))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "players", filter: `team_id=eq.${teamId}` },

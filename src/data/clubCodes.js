@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Codes/liens d'invitation par club, DISTINCTS joueur / staff (modèle Twizzit,
    migration 0072). Un code partagé « player » et un « staff » (avec rôle) par
@@ -79,7 +80,7 @@ export function useClubInviteCodes(teamId) {
     fetch();
     if (!teamId) return;
     const ch = supabase
-      .channel(`club_invite_codes:${teamId}`)
+      .channel(uniqueTopic(`club_invite_codes:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "club_invite_codes", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(ch); };

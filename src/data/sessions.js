@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Séances (sessions). En attendant les programmes complets (étape 7), les séances
    sont des lignes datées directes. `assigned` (jsonb) définit les destinataires. */
@@ -112,7 +113,7 @@ export function useTeamSessions(teamId, roster) {
     fetch();
     if (!teamId) return;
     const channel = supabase
-      .channel(`sessions:${teamId}`)
+      .channel(uniqueTopic(`sessions:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "sessions", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

@@ -196,7 +196,7 @@ export function useTeamCheckins(playerIds) {
     fetch();
     if (!playerIds || playerIds.length === 0) return;
     const channel = supabase
-      .channel(`checkins:${key}`)
+      .channel(uniqueTopic(`checkins:${key}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "daily_checkins" }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

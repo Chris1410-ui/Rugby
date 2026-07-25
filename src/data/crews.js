@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 import { randomBannerKey } from "../lib/crews.js";
 
 /* Crews : équipes formées par les joueurs. RLS cloisonne strictement par club
@@ -37,7 +38,7 @@ export function useCrews(teamId) {
     fetch();
     if (!teamId) return;
     const ch = supabase
-      .channel(`crews:${teamId}`)
+      .channel(uniqueTopic(`crews:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "crews" }, () => fetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "crew_members" }, () => fetch())
       .subscribe();

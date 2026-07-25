@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Routines réutilisables (modèles de séances).
    - Routines d'ÉQUIPE (player_id NULL) : gérées par le staff/owner.
@@ -30,7 +31,7 @@ export function useRoutines(teamId) {
     fetch();
     if (!teamId) return;
     const channel = supabase
-      .channel(`routines:${teamId}`)
+      .channel(uniqueTopic(`routines:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "routines", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -69,7 +70,7 @@ export function useMyRoutines(playerId) {
     fetch();
     if (!playerId) return;
     const channel = supabase
-      .channel(`myRoutines:${playerId}`)
+      .channel(uniqueTopic(`myRoutines:${playerId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "routines", filter: `player_id=eq.${playerId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 
 /* Modèles de sections ENREGISTRÉS par le staff (table section_templates,
    migration 0065). Partagés au club. Écritures gardées par la RLS (owner /
@@ -37,7 +38,7 @@ export function useTeamSectionTemplates(teamId) {
     fetch();
     if (!teamId) return;
     const channel = supabase
-      .channel(`section_templates:${teamId}`)
+      .channel(uniqueTopic(`section_templates:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "section_templates", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { uniqueTopic } from "./messages.js";
 import { isoDate, parseISO } from "../lib/metrics.js";
 import { resolveAssignedIds } from "./sessions.js";
 
@@ -48,7 +49,7 @@ export function usePrograms(teamId) {
     fetch();
     if (!teamId) return;
     const channel = supabase
-      .channel(`programs:${teamId}`)
+      .channel(uniqueTopic(`programs:${teamId}`))
       .on("postgres_changes", { event: "*", schema: "public", table: "programs", filter: `team_id=eq.${teamId}` }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
