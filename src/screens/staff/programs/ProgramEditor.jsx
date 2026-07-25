@@ -4,8 +4,9 @@ import { C } from "../../../lib/tokens.js";
 import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
-import { useTeam1RM } from "../../../data/player1rm.js";
-import { parseProgressionCell, computeLoadKg, movementTeamStats } from "../../../lib/oneRM.js";
+import { useTeam1RM, add1RM } from "../../../data/player1rm.js";
+import { parseProgressionCell, computeLoadKg, movementTeamStats, movementIdentity } from "../../../lib/oneRM.js";
+import { displayName } from "../../../lib/identity.js";
 import { todayISO } from "../../../lib/metrics.js";
 import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
@@ -37,7 +38,8 @@ const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, textTransform
    à la fermeture si des changements sont en attente. */
 export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const { t } = useTranslation();
-  const { entries: team1rm } = useTeam1RM(teamId); // aperçu de charge + 1RM manquants
+  const { entries: team1rm, refresh: refreshTeam1rm } = useTeam1RM(teamId); // aperçu de charge + 1RM manquants
+  const [missingMv, setMissingMv] = useState(null); // mouvement dont on renseigne les 1RM manquants
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("draft");
@@ -286,7 +288,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
               <TableEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : (
               <ExerciseGrid
-                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players}
+                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players} onMissing={setMissingMv}
                 onAddFree={() => addRow(si)} onLibrary={() => setPicker(si)}
                 onRow={(ri, p) => setRow(si, ri, p)} onCell={(ri, wi, p) => setCell(si, ri, wi, p)}
                 onMoveRow={(ri, dir) => moveRow(si, ri, dir)} onDelRow={(ri) => delRow(si, ri)}
@@ -318,7 +320,65 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
           t={t}
         />
       )}
+
+      {missingMv && (
+        <Missing1RMModal movement={missingMv} players={players} team1rm={team1rm} teamId={teamId} onClose={() => setMissingMv(null)} onSaved={refreshTeam1rm} t={t} />
+      )}
     </section>
+  );
+}
+
+/* Saisie rapide des 1RM manquants pour UN mouvement, depuis le constructeur
+   (lien « renseigner les 1RM »). Liste les joueurs sans 1RM courant pour ce
+   mouvement + un champ kg par joueur. add1RM (source staff). */
+function Missing1RMModal({ movement, players, team1rm, teamId, onClose, onSaved, t }) {
+  const id = movementIdentity(movement);
+  const has = new Set(
+    team1rm.filter((e) => e.valueKg != null && movementIdentity({ exerciseId: e.exerciseId, name: e.movementLabel || e.name }) === id).map((e) => e.playerId),
+  );
+  const missing = players.filter((p) => !has.has(p.id));
+  const [vals, setVals] = useState({});
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const rows = missing.filter((p) => Number(vals[p.id]) > 0);
+      for (const p of rows) {
+        await add1RM(teamId, p.id, { name: movement.name, exerciseId: movement.exerciseId || null, valueKg: vals[p.id], source: "staff" });
+      }
+      onSaved?.();
+      onClose();
+    } catch (e) { console.error("[missing1rm]", e.message); setBusy(false); }
+  };
+
+  const inp = { width: 84, background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 8px", color: "#fff", fontSize: 12.5, outline: "none", textAlign: "right" };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 340, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "88vh", overflowY: "auto", background: C.panel, borderRadius: 16, padding: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("protocols.fillRmTitle", { movement: movement.name })}</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.55)", fontSize: 20, lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 12 }}>{t("protocols.fillRmHint")}</div>
+        {missing.length === 0 ? (
+          <div style={{ fontSize: 12.5, color: C.green, fontWeight: 700 }}>{t("protocols.fillRmDone")}</div>
+        ) : (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+              {missing.map((p) => (
+                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${C.border2}` }}>
+                  <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(p)}</span>
+                  <input value={vals[p.id] || ""} onChange={(e) => setVals((v) => ({ ...v, [p.id]: e.target.value }))} inputMode="decimal" placeholder={t("oneRM.kg")} style={inp} />
+                </div>
+              ))}
+            </div>
+            <button onClick={save} disabled={busy} style={{ width: "100%", background: C.viol, border: "none", borderRadius: 10, padding: 11, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("protocols.fillRmSave")}</button>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -398,7 +458,7 @@ function SaveTemplateModal({ teamId, section, defaultName, onClose, t }) {
 
 /* Grille d'exercices : une ligne par exercice, une cellule éditable par semaine
    (texte libre « 4×8 R7 » + bascule pic ★), + bloc / tempo / repos / note. */
-function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
+function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
   const cellW = 92;
   return (
     <div>
@@ -466,7 +526,11 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onAddFree
                   {pctCells.length > 0 && <span style={{ fontWeight: 800, color: C.viol, background: `${C.viol}1c`, borderRadius: 5, padding: "1px 6px" }}>{t("protocols.pctBadge")}</span>}
                   {pctCells.length > 0 && stats?.avg != null && <span style={{ color: "rgba(255,255,255,0.7)" }}>{t("protocols.loadPreview", { kg: computeLoadKg(pctCells[0].pct, stats.avg), pct: pctCells[0].pct, oneRM: stats.avg })}</span>}
                   {pctCells.length > 0 && stats?.avg == null && <span style={{ color: "rgba(255,255,255,0.5)" }}>{t("protocols.loadExample", { kg: computeLoadKg(pctCells[0].pct, 120), pct: pctCells[0].pct })}</span>}
-                  {pctCells.length > 0 && stats?.missing > 0 && <span style={{ color: C.amb, fontWeight: 700 }}>{t("protocols.missing1rm", { count: stats.missing })}</span>}
+                  {pctCells.length > 0 && stats?.missing > 0 && (
+                    <button onClick={() => onMissing?.({ exerciseId: (r.rmRef || "").trim() ? null : r.exerciseId, name: (r.rmRef || "").trim() || r.name })} style={{ color: C.amb, fontWeight: 800, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "1px 7px", cursor: "pointer" }}>
+                      {t("protocols.missing1rm", { count: stats.missing })} · {t("protocols.fillRm")}
+                    </button>
+                  )}
                   {anyUnknown && <span style={{ color: C.coral, fontWeight: 700 }}>{t("protocols.syntaxWarn")}</span>}
                 </div>
               )}
