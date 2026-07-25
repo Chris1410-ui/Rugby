@@ -92,6 +92,23 @@ describe("planDocToSessions — déroulé S1→Sn sur les vraies semaines", () =
     expect(planDocToSessions(docGrid, { startDate: "", weeks: 3, slots: [slot] }).rows).toEqual([]);
   });
 
+  it("conserve le pourcentage @xx% + mouvement de référence sur l'exo généré", () => {
+    const pctRows = [{ name: "Back Squat", exerciseId: "sq-uuid", weeks: [{ text: "4×8 @70%" }, { text: "4×6 @75%" }] }];
+    const pctSlot = { weekday: 3, label: "Force", nature: "force", code: "RS", rows: pctRows };
+    const doc = { meta: { weeks: 2, nature: "force" }, sections: [{ type: "exercises", title: "Force", rows: pctRows }] };
+    const { rows } = planDocToSessions(doc, { startDate: "2026-08-03", weeks: 2, slots: [pctSlot] });
+    expect(rows[0].exercises[0]).toMatchObject({ name: "Back Squat", sets: "4", reps: "8", pct: 70, rmLabel: "Back Squat", rmExerciseId: "sq-uuid" });
+    expect(rows[1].exercises[0].pct).toBe(75); // progression S2
+  });
+
+  it("rmRef → le % porte sur un AUTRE mouvement de référence", () => {
+    const rows0 = [{ name: "Fente", rmRef: "Back Squat", weeks: [{ text: "3×8 @60%" }] }];
+    const doc = { meta: { weeks: 1 }, sections: [{ type: "exercises", title: "x", rows: rows0 }] };
+    const slot0 = { weekday: 1, label: "x", nature: "force", code: "RS", rows: rows0 };
+    const { rows } = planDocToSessions(doc, { startDate: "2026-08-03", weeks: 1, slots: [slot0] });
+    expect(rows[0].exercises[0]).toMatchObject({ pct: 60, rmLabel: "Back Squat", rmExerciseId: null });
+  });
+
   it("slots par défaut dérivés du protocole si non fournis", () => {
     const { rows } = planDocToSessions(docGrid, { startDate: "2026-08-03", weeks: 3 });
     expect(rows).toHaveLength(3); // 1 créneau (grille) × 3 semaines

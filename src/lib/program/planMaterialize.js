@@ -13,25 +13,35 @@
                            datées, avec source_week = k (1-based) + source_label. */
 
 import { normalizeProgram, clampWeeks } from "./model.js";
-import { codeForNature, parseScheme } from "./materialize.js";
+import { codeForNature } from "./materialize.js";
+import { parseProgressionCell } from "../oneRM.js";
 import { parseISO, isoDate } from "../metrics.js";
 
 // Ligne d'exercice → exo plat pour la semaine réelle d'indice `col` (0-based).
 // Clamp sur la dernière cellule disponible (N réel > semaines du protocole).
+// Conserve le POURCENTAGE `@xx%` (pct + mouvement de référence) → la carte joueur
+// calculera la charge en kg depuis son propre 1RM (PR2/PR3).
 function rowToExoAtCol(row, col) {
   const name = String(row?.name || "").trim();
   if (!name) return null;
   const cells = Array.isArray(row?.weeks) ? row.weeks : [];
   const idx = cells.length ? Math.min(Math.max(0, col), cells.length - 1) : 0;
   const cell = cells[idx]?.text || cells.map((c) => c?.text).find((x) => x && String(x).trim()) || "";
-  const { sets, reps } = parseScheme(cell);
-  return {
+  const p = parseProgressionCell(cell);
+  const exo = {
     name,
-    sets: sets || "",
-    reps: reps || (cell ? String(cell).trim() : ""),
-    charge: String(row?.tempo || "").trim(),
+    sets: p.sets || "",
+    reps: p.reps || (p.pct == null && cell ? String(cell).trim() : ""),
+    charge: p.abs || String(row?.tempo || "").trim(),
     rest: row?.rest ?? 90,
   };
+  if (p.pct != null) {
+    const ref = String(row?.rmRef || "").trim();
+    exo.pct = p.pct;                                   // % du 1RM
+    exo.rmLabel = ref || name;                         // mouvement de référence
+    exo.rmExerciseId = ref ? null : (row?.exerciseId || null);
+  }
+  return exo;
 }
 
 /* Dérive les créneaux d'une semaine-type depuis le protocole.

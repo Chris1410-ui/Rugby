@@ -143,6 +143,8 @@
     "colNote": "Note",
     "linked": "Linked to the library",
     "exercisePh": "Exercise name",
+    "rmRefPh": "% ref.",
+    "rmRefTitle": "Reference movement for the % (empty = this movement). E.g. “Back Squat” for an accessory based on the squat.",
     "peak": "Mark a peak (★)",
     "notePh": "Note…",
     "removeRow": "Remove row",
@@ -841,6 +843,7 @@
       "viewProtocol": "View protocol",
       "protocolLoading": "Opening…",
       "weekN": "Week {{n}}",
+      "setYour1RM": "set your {{movement}} 1RM",
       "deleteFree": "Delete this free session"
     },
     "freeSession": {
