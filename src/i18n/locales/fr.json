@@ -143,6 +143,8 @@
     "colNote": "Note",
     "linked": "Lié à la bibliothèque",
     "exercisePh": "Nom de l'exercice",
+    "rmRefPh": "% réf.",
+    "rmRefTitle": "Mouvement de référence pour le % (vide = ce mouvement). Ex. « Back Squat » pour un accessoire calé sur le squat.",
     "peak": "Marquer un pic (★)",
     "notePh": "Note…",
     "removeRow": "Supprimer la ligne",
@@ -841,6 +843,7 @@
       "viewProtocol": "Voir le protocole",
       "protocolLoading": "Ouverture…",
       "weekN": "Semaine {{n}}",
+      "setYour1RM": "renseigne ton 1RM {{movement}}",
       "deleteFree": "Supprimer cette séance libre"
     },
     "freeSession": {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
@@ -11,6 +11,8 @@ import {
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
 import { getProgramDoc } from "../../data/programDocs.js";
+import { usePlayer1RM } from "../../data/player1rm.js";
+import { summarize1RM, computeLoadKg, movementIdentity } from "../../lib/oneRM.js";
 import ProgramView from "../shared/ProgramView.jsx";
 import { usePreview } from "../../lib/preview.js";
 
@@ -28,6 +30,19 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const [busy, setBusy] = useState(false);
   const [proto, setProto] = useState(null);        // protocole source ouvert en lecture
   const [protoBusy, setProtoBusy] = useState(false);
+
+  // 1RM du joueur → charge réelle des exercices exprimés en % (PR2).
+  const { entries: my1rm } = usePlayer1RM(me.id);
+  const rmByIdentity = useMemo(() => {
+    const m = {};
+    summarize1RM(my1rm).forEach((r) => { if (!r.missing) m[r.identity] = r; });
+    return m;
+  }, [my1rm]);
+  const pctLoad = (e) => {
+    if (!e?.pct) return null;
+    const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
+    return { pct: e.pct, kg: cur ? computeLoadKg(e.pct, cur.value) : null, label: e.rmLabel || e.name, kind: cur?.kind, missing: !cur };
+  };
 
   // Ouvre le PROTOCOLE source complet (consignes, sécurité, progression) en lecture.
   const openProtocol = async () => {
@@ -184,6 +199,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
+            const pl = pctLoad(e); // charge calculée depuis le 1RM si exprimé en %
             const ecart = cmp.diff
               ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
                  cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
@@ -202,6 +218,19 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   <span>{t("player.session.prev")} {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
                   {rec.top > 0 && <span style={{ color: C.amb }}>{t("player.session.recBadge", { top: rec.top, orm: rec.oneRM })}</span>}
                 </div>
+                {pl && (
+                  <div style={{ fontSize: 11, fontWeight: 800, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", color: pl.kg != null ? C.viol : C.amb }}>
+                    <span>{pl.pct}%</span>
+                    {pl.kg != null ? (
+                      <>
+                        <span>· {pl.kg} {t("player.session.kg")}</span>
+                        {pl.kind === "estime" && <span style={{ fontSize: 9, fontWeight: 700, color: C.amb }}>({t("oneRM.estimated")})</span>}
+                      </>
+                    ) : (
+                      <span style={{ fontWeight: 700 }}>· {t("player.session.setYour1RM", { movement: pl.label })}</span>
+                    )}
+                  </div>
+                )}
                 {ecart && (
                   <div style={{ fontSize: 10, color: C.amb, marginBottom: 6, display: "flex", alignItems: "center", gap: 5, fontWeight: 700 }}>
                     <span>{t("player.session.gap")}</span><span style={{ fontWeight: 600 }}>{ecart}</span>
@@ -214,7 +243,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   return (
                     <div key={i} style={{ display: "grid", gridTemplateColumns: "26px 1fr 1fr 34px", gap: 6, alignItems: "center", marginBottom: 5 }}>
                       <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
-                      <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph ? `${ph.w || "–"}` : "kg"} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
+                      <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (pl?.kg != null ? `${pl.kg}` : "kg")} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
                       <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph ? `${ph.reps || "–"} reps` : "reps"} inputMode="numeric" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité reps */}
                       <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                         <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />

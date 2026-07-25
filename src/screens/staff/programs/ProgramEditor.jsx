@@ -427,6 +427,8 @@ function ExerciseGrid({ section, weeks, t, onAddFree, onLibrary, onRow, onCell, 
                 <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center" }}>
                   {r.exerciseRef && <span title={t("protocols.linked")} style={{ fontSize: 11, marginLeft: 6, color: C.green, flexShrink: 0 }}>🔗</span>}
                   <input value={r.name} onChange={(e) => onRow(ri, { name: e.target.value })} placeholder={t("protocols.exercisePh")} style={cellInput} />
+                  {/* Mouvement de référence du % (optionnel ; vide = ce mouvement). */}
+                  <input value={r.rmRef || ""} onChange={(e) => onRow(ri, { rmRef: e.target.value })} placeholder={t("protocols.rmRefPh")} title={t("protocols.rmRefTitle")} style={{ ...cellInput, width: 82, flexShrink: 0, borderLeft: `1px solid ${C.border2}`, color: C.viol, fontSize: 11 }} />
                 </div>
                 <input value={r.tempo} onChange={(e) => onRow(ri, { tempo: e.target.value })} placeholder="2010" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
                 <input value={r.rest} onChange={(e) => onRow(ri, { rest: e.target.value })} placeholder="90s" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />

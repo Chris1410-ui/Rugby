@@ -143,6 +143,8 @@
     "colNote": "Notitie",
     "linked": "Gekoppeld aan de bibliotheek",
     "exercisePh": "Naam van de oefening",
+    "rmRefPh": "% ref.",
+    "rmRefTitle": "Referentiebeweging voor het % (leeg = deze beweging). Bijv. “Back Squat” voor een accessoire op basis van de squat.",
     "peak": "Piek markeren (★)",
     "notePh": "Notitie…",
     "removeRow": "Rij verwijderen",
@@ -841,6 +843,7 @@
       "viewProtocol": "Protocol bekijken",
       "protocolLoading": "Openen…",
       "weekN": "Week {{n}}",
+      "setYour1RM": "vul je 1RM {{movement}} in",
       "deleteFree": "Deze vrije sessie verwijderen"
     },
     "freeSession": {

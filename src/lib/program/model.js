@@ -72,6 +72,7 @@ export function emptyRow(weeks = 4) {
     weeks: Array.from({ length: w }, emptyCell),
     note: "",
     tint: "",            // '' = auto (blockTint) ; 'a' | 'c' | 'r' pour forcer
+    rmRef: "",           // mouvement de référence du % (vide = le mouvement lui-même)
   };
 }
 
@@ -153,6 +154,7 @@ function normalizeRow(row, w) {
     weeks: resizeCells(r.weeks, w),
     note: typeof r.note === "string" ? r.note : "",
     tint: ACCENTS.includes(r.tint) ? r.tint : "",
+    rmRef: typeof r.rmRef === "string" ? r.rmRef : "",
   };
 }
 
