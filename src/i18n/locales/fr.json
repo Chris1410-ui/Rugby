@@ -838,6 +838,9 @@
       "notEnoughHistory": "Pas encore assez d'historique pour tracer une progression. Valide au moins deux séances avec cet exercice.",
       "rpeShort": "RPE",
       "freeTag": "Libre",
+      "viewProtocol": "Voir le protocole",
+      "protocolLoading": "Ouverture…",
+      "weekN": "Semaine {{n}}",
       "deleteFree": "Supprimer cette séance libre"
     },
     "freeSession": {

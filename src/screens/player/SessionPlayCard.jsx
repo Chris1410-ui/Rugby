@@ -3,13 +3,15 @@ import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink } from "../../lib/icons.jsx";
+import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
   e1RM, SET_TYPES, nextSetType, parseSetsN,
   lastExercisePerf, exerciseRecords, exerciseHistory, prescribedVsRealized,
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
+import { getProgramDoc } from "../../data/programDocs.js";
+import ProgramView from "../shared/ProgramView.jsx";
 import { usePreview } from "../../lib/preview.js";
 
 const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
@@ -24,6 +26,17 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const [justPR, setJustPR] = useState(null);
   const [graphEx, setGraphEx] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [proto, setProto] = useState(null);        // protocole source ouvert en lecture
+  const [protoBusy, setProtoBusy] = useState(false);
+
+  // Ouvre le PROTOCOLE source complet (consignes, sécurité, progression) en lecture.
+  const openProtocol = async () => {
+    if (!s.programDocId || protoBusy) return;
+    setProtoBusy(true);
+    try { const full = await getProgramDoc(s.programDocId); setProto({ id: full.id, title: full.title, doc: full.doc }); }
+    catch (e) { console.error("[protocol read]", e.message); }
+    setProtoBusy(false);
+  };
 
   const init = () => {
     const b = {};
@@ -155,6 +168,13 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             </div>
           )}
           {rest && <RestTimer key={rest.k} seconds={rest.sec} accent={accent} onDone={() => setRest(null)} />}
+
+          {s.programDocId && (
+            <button onClick={openProtocol} disabled={protoBusy} style={{ width: "100%", marginBottom: 10, background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 9, padding: "9px 12px", color: C.viol, fontWeight: 800, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+              <FileText size={14} /> {protoBusy ? t("player.session.protocolLoading") : t("player.session.viewProtocol")}{s.sourceWeek ? ` · ${t("player.session.weekN", { n: s.sourceWeek })}` : ""}
+            </button>
+          )}
+
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 1 }}>{t("player.session.setsHeader")}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: doneSets === totSets && totSets ? C.green : "rgba(255,255,255,0.5)" }}>{doneSets}/{totSets}</span>
@@ -247,6 +267,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
       )}
 
       {graphEx && <ExoProgressModal pid={me.id} exName={graphEx} sessions={sessions} logs={logs} accent={accent} onClose={() => setGraphEx(null)} />}
+      {proto && <ProgramView id={proto.id} doc={proto.doc} title={proto.title} onClose={() => setProto(null)} />}
     </div>
   );
 }

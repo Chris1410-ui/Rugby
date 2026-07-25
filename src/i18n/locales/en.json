@@ -838,6 +838,9 @@
       "notEnoughHistory": "Not enough history yet to plot a progression. Validate at least two sessions with this exercise.",
       "rpeShort": "RPE",
       "freeTag": "Free",
+      "viewProtocol": "View protocol",
+      "protocolLoading": "Opening…",
+      "weekN": "Week {{n}}",
       "deleteFree": "Delete this free session"
     },
     "freeSession": {
