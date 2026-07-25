@@ -6,9 +6,9 @@ import { Calendar, Send } from "../../../lib/icons.jsx";
 import { todayISO, fmtShort } from "../../../lib/metrics.js";
 import { WD_ORDER, wdLabel } from "../../../lib/exlib.js";
 import { deriveSlots, planDocToSessions } from "../../../lib/program/planMaterialize.js";
-import { buildAssigned, resolveAssignedIds, useTeamSessions } from "../../../data/sessions.js";
+import { buildAssigned, resolveAssignedIds, assignedToSelection, useTeamSessions } from "../../../data/sessions.js";
 import { aggregateLoadByDate } from "../../../lib/overload.js";
-import { createPlan } from "../../../data/programPlans.js";
+import { createPlan, updatePlan } from "../../../data/programPlans.js";
 import RecipientSelect from "../../shared/RecipientSelect.jsx";
 
 const ACCENT = C.green;
@@ -16,16 +16,17 @@ const ACCENT = C.green;
 /* Dialogue « Planifier ce protocole » : période (début + nb de semaines), weekday
    de chaque créneau, destinataires (sélecteur combiné) + aperçu anti-surcharge.
    Génère le plan + les séances datées liées (progression S1→Sn). */
-export default function PlanDialog({ doc, programDocId, teamId, players = [], onClose }) {
+export default function PlanDialog({ doc, programDocId, teamId, players = [], initial = null, onClose }) {
   const { t } = useTranslation();
   useModalClose(() => onClose(false));
   const { sessions } = useTeamSessions(teamId, players);
+  const editing = Boolean(initial);
 
   const defaultWeeks = Math.max(1, Math.min(12, Number(doc?.meta?.weeks) || 4));
-  const [startDate, setStartDate] = useState(todayISO());
-  const [weeks, setWeeks] = useState(defaultWeeks);
-  const [slots, setSlots] = useState(() => deriveSlots(doc).slots);
-  const [rec, setRec] = useState({ all: true, groups: [], ids: [] });
+  const [startDate, setStartDate] = useState(initial?.startDate || todayISO());
+  const [weeks, setWeeks] = useState(initial?.weeks || defaultWeeks);
+  const [slots, setSlots] = useState(() => (initial?.slots?.length ? initial.slots : deriveSlots(doc).slots));
+  const [rec, setRec] = useState(() => (initial ? assignedToSelection(initial.assigned) : { all: true, groups: [], ids: [] }));
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
@@ -54,8 +55,13 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], on
     if (!rows.length) return setNote(t("plan.errEmpty"));
     setBusy(true);
     try {
-      const { count } = await createPlan(teamId, { programDocId, doc, startDate, weeks, slots, assigned });
-      onClose(true, t("plan.done", { count }));
+      if (editing) {
+        const { inserted, kept } = await updatePlan(initial.id, { startDate, weeks, slots, assigned }, doc, {});
+        onClose(true, t("plan.updated", { inserted, kept }));
+      } else {
+        const { count } = await createPlan(teamId, { programDocId, doc, startDate, weeks, slots, assigned });
+        onClose(true, t("plan.done", { count }));
+      }
     } catch (e) {
       setNote(e.code === "no-sessions" ? t("plan.errEmpty") : t("plan.errSave", { err: e.message || "" }));
       setBusy(false);
@@ -70,7 +76,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], on
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "92vh", overflowY: "auto", background: C.panel, borderRadius: 18, padding: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <Calendar size={18} color={ACCENT} />
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("plan.title", { name: doc?.meta?.title || doc?.title || "" })}</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t(editing ? "plan.editTitle" : "plan.title", { name: doc?.meta?.title || doc?.title || "" })}</div>
           <CloseX onClose={() => onClose(false)} />
         </div>
 
@@ -111,7 +117,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], on
 
         {note && <div style={{ fontSize: 11.5, color: C.coral, marginBottom: 10 }}>{note}</div>}
         <button onClick={generate} disabled={busy || !rows.length} style={{ width: "100%", background: rows.length ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: rows.length ? "pointer" : "default", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <Send size={15} /> {busy ? t("plan.generating") : t("plan.generate", { count: rows.length })}
+          <Send size={15} /> {busy ? t("plan.generating") : editing ? t("plan.update") : t("plan.generate", { count: rows.length })}
         </button>
       </div>
     </div>

@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
+import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
+import { todayISO } from "../../../lib/metrics.js";
 import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
@@ -44,6 +46,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const [picker, setPicker] = useState(null); // index de la section d'exercices ciblée
   const [preview, setPreview] = useState(false); // aperçu « stade » du document en cours
   const [saveTpl, setSaveTpl] = useState(null);  // { index } section à enregistrer comme modèle
+  const [replan, setReplan] = useState(null);    // { count } | "running" | { done, inserted } — répercussion sur les plans
 
   useEffect(() => {
     let alive = true;
@@ -62,15 +65,29 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const setDoc = (updater) => { setDocState((d) => updater(clone(d))); setDirty(true); };
   const mark = (setter) => (v) => { setter(v); setDirty(true); };
 
-  const save = async () => {
+  const save = async (promptReplan = false) => {
     setSaving(true);
     try {
       await updateProgramDoc(id, { title, category, status, weeks, doc: { ...doc, meta: { ...doc.meta, weeks } } });
       setDirty(false);
+      // Si le protocole est planifié, proposer de répercuter sur les séances
+      // futures non réalisées (jamais sur une séance déjà validée).
+      if (promptReplan) {
+        try { const plans = await plansForDoc(id); if (plans.length) setReplan({ count: plans.length }); }
+        catch { /* non bloquant */ }
+      }
     } catch (e) { console.error("[editor save]", e.message); }
     setSaving(false);
   };
-  const back = async () => { if (dirty) await save(); onClose(); };
+  const back = async () => { if (dirty) await save(false); onClose(); };
+
+  const doReplan = async () => {
+    setReplan("running");
+    try {
+      const r = await replanAllForDoc(id, { ...doc, meta: { ...doc.meta, weeks } }, { today: todayISO() });
+      setReplan({ done: true, inserted: r.inserted, kept: r.kept });
+    } catch (e) { console.error("[replan]", e.message); setReplan(null); }
+  };
 
   // Métadonnées / hero -------------------------------------------------------
   const setMeta = (patch) => setDoc((d) => { d.meta = { ...d.meta, ...patch }; return d; });
@@ -132,10 +149,31 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
         <div style={{ flex: 1, fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title || t("protocols.untitled")}</div>
         {dirty && <span style={{ fontSize: 10.5, color: C.amb, fontWeight: 700 }}>{t("protocols.unsaved")}</span>}
         <button onClick={() => setPreview(true)} title={t("protocols.preview")} style={{ ...iconBtn, color: "#fff" }}><Eye size={16} /></button>
-        <button onClick={save} disabled={saving || !dirty} style={{ background: dirty ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "9px 15px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default" }}>
+        <button onClick={() => save(true)} disabled={saving || !dirty} style={{ background: dirty ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "9px 15px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: dirty ? "pointer" : "default" }}>
           {saving ? t("protocols.saving") : t("protocols.save")}
         </button>
       </div>
+
+      {/* Répercussion : le protocole est planifié → proposer de mettre à jour les
+          séances futures NON réalisées (les séances déjà validées ne bougent pas). */}
+      {replan && (
+        <div style={{ marginBottom: 14, background: `${C.green}14`, border: `1px solid ${C.green}55`, borderRadius: 12, padding: "11px 13px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {replan === "running" ? (
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>{t("protocols.replanRunning")}</span>
+          ) : replan.done ? (
+            <>
+              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: C.green }}>{t("protocols.replanDone", { inserted: replan.inserted, kept: replan.kept })}</span>
+              <button onClick={() => setReplan(null)} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "7px 12px", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{t("protocols.replanClose")}</button>
+            </>
+          ) : (
+            <>
+              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.4 }}>{t("protocols.replanPrompt", { count: replan.count })}</span>
+              <button onClick={doReplan} style={{ background: C.green, border: "none", borderRadius: 9, padding: "8px 14px", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>{t("protocols.replanApply")}</button>
+              <button onClick={() => setReplan(null)} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{t("protocols.replanLater")}</button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── Métadonnées ── */}
       <Block title={t("protocols.metadata")}>
