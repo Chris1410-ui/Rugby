@@ -19,6 +19,18 @@ export function resolveAssignedIds(assigned, roster) {
   return assigned.ids || []; // 'players' ou 'open'
 }
 
+/* Un joueur (grp + id) est-il destinataire de `assigned` ? Réponse SANS l'effectif
+   complet (utile pour lister les programmes d'UN joueur). Couvre tous les modes,
+   y compris `mix` (union ligne(s) + joueurs). 'open' → non ciblé nominativement. */
+export function assignedCoversPlayer(assigned, player) {
+  const a = assigned || { mode: "all" };
+  if (!a.mode || a.mode === "all") return true;
+  if (a.mode === "group") return player?.grp === a.group;
+  if (a.mode === "mix") return (a.groups || []).includes(player?.grp) || (a.ids || []).includes(player?.id);
+  if (a.mode === "open") return false;
+  return (a.ids || []).includes(player?.id); // 'players'
+}
+
 /* Construit le jsonb `assigned` depuis une sélection ADDITIVE (sélecteur combiné) :
    - « Toute l'équipe » → {mode:'all'} ;
    - sinon → {mode:'mix', groups, ids} (nettoyé + dédupliqué).

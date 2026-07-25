@@ -18,6 +18,8 @@ export function dbToDoc(r) {
     status: r.status || "draft",
     weeks,
     doc: normalizeProgram(r.doc, weeks),
+    source: r.source || "app",
+    reviewed: r.reviewed !== false,
     createdBy: r.created_by || null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
@@ -33,13 +35,14 @@ export function useProgramDocs(teamId) {
     if (!teamId) { setDocs([]); setLoading(false); return; }
     const { data, error } = await supabase
       .from("program_docs")
-      .select("id, team_id, title, category, status, weeks, created_by, created_at, updated_at")
+      .select("id, team_id, title, category, status, weeks, source, reviewed, created_by, created_at, updated_at")
       .eq("team_id", teamId)
       .order("updated_at", { ascending: false });
     if (error) { console.error("[programDocs]", error.message); setLoading(false); return; }
     setDocs((data ?? []).map((r) => ({
       id: r.id, teamId: r.team_id, title: r.title || "", category: r.category || "",
       status: r.status || "draft", weeks: clampWeeks(r.weeks),
+      source: r.source || "app", reviewed: r.reviewed !== false,
       createdBy: r.created_by || null, createdAt: r.created_at, updatedAt: r.updated_at,
     })));
     setLoading(false);
@@ -65,16 +68,25 @@ export async function getProgramDoc(id) {
   return dbToDoc(data);
 }
 
-export async function createProgramDoc(teamId, { title = "", category = "", weeks = 4, doc, status = "draft" } = {}) {
+export async function createProgramDoc(teamId, { title = "", category = "", weeks = 4, doc, status = "draft", source = "app", reviewed } = {}) {
   const w = clampWeeks(weeks);
   const content = normalizeProgram(doc || emptyProgram(w), w);
+  // Un protocole importé de PDF est « à vérifier » par défaut (reviewed=false),
+  // sauf indication contraire ; un protocole créé dans l'app est déjà relu.
+  const rev = reviewed != null ? reviewed : source !== "pdf";
   const { data, error } = await supabase
     .from("program_docs")
-    .insert({ team_id: teamId, title: title.trim(), category: category.trim(), weeks: w, status, doc: content })
+    .insert({ team_id: teamId, title: title.trim(), category: category.trim(), weeks: w, status, doc: content, source, reviewed: rev })
     .select()
     .single();
   if (error) throw error;
   return dbToDoc(data);
+}
+
+// Marque un protocole comme relu (retire l'indicateur « importé — à vérifier »).
+export async function markProgramDocReviewed(id) {
+  const { error } = await supabase.from("program_docs").update({ reviewed: true }).eq("id", id);
+  if (error) throw error;
 }
 
 export async function updateProgramDoc(id, patch = {}) {

@@ -18,7 +18,14 @@ function dbToProgram(r) {
     templates: r.templates || [],
     assigned: r.assigned || { mode: "all" },
     source: r.source || "manuel",
+    reviewed: r.reviewed !== false, // défaut : considéré relu (pas d'alerte)
   };
+}
+
+// Marque un programme comme relu (retire l'indicateur « importé — à vérifier »).
+export async function markProgramReviewed(id) {
+  const { error } = await supabase.from("programs").update({ reviewed: true }).eq("id", id);
+  if (error) throw error;
 }
 
 export function usePrograms(teamId) {

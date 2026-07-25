@@ -2391,5 +2391,29 @@
       "note": "Note",
       "other": "Section"
     }
+  },
+  "playerPrograms": {
+    "title": "Programmes assignés ({{count}})",
+    "empty": "Aucun programme ni protocole assigné à ce joueur pour l'instant.",
+    "untitled": "Sans titre",
+    "weeksN": "{{count}} semaine(s)",
+    "srcPdf": "PDF",
+    "srcApp": "App",
+    "published": "Publié",
+    "draft": "Brouillon",
+    "toReview": "Importé de PDF, pas encore relu — vérifie l'extraction.",
+    "toReviewShort": "à vérifier",
+    "quickEditTitle": "Corriger le programme",
+    "titlePh": "Titre du programme",
+    "exoPh": "Exercice",
+    "sets": "Séries",
+    "reps": "Répétitions",
+    "charge": "Charge",
+    "rest": "Repos (s)",
+    "removeExo": "Retirer l'exercice",
+    "noExo": "Aucun exercice.",
+    "saveNow": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saveErr": "Échec : {{err}}"
   }
 }

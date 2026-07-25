@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveAssignedIds, dbToSession, buildAssigned, assignedToSelection } from "./sessions.js";
+import { resolveAssignedIds, dbToSession, buildAssigned, assignedToSelection, assignedCoversPlayer } from "./sessions.js";
 
 const roster = [
   { id: "a", grp: "avants" },
@@ -51,6 +51,32 @@ describe("assignedToSelection — pré-remplissage à l'édition", () => {
     expect(assignedToSelection({ mode: "group", group: "arrieres" })).toEqual({ all: false, groups: ["arrieres"], ids: [] });
     expect(assignedToSelection({ mode: "players", ids: ["b"] })).toEqual({ all: false, groups: [], ids: ["b"] });
     expect(assignedToSelection({ mode: "mix", groups: ["avants"], ids: ["b"] })).toEqual({ all: false, groups: ["avants"], ids: ["b"] });
+  });
+});
+
+describe("assignedCoversPlayer — appartenance d'UN joueur (sans effectif)", () => {
+  const avant = { id: "a", grp: "avants" };
+  const arriere = { id: "b", grp: "arrieres" };
+  it("all → tout le monde", () => {
+    expect(assignedCoversPlayer({ mode: "all" }, avant)).toBe(true);
+    expect(assignedCoversPlayer(null, arriere)).toBe(true);
+  });
+  it("group → seulement la ligne", () => {
+    expect(assignedCoversPlayer({ mode: "group", group: "avants" }, avant)).toBe(true);
+    expect(assignedCoversPlayer({ mode: "group", group: "avants" }, arriere)).toBe(false);
+  });
+  it("players → seulement les ids", () => {
+    expect(assignedCoversPlayer({ mode: "players", ids: ["b"] }, arriere)).toBe(true);
+    expect(assignedCoversPlayer({ mode: "players", ids: ["b"] }, avant)).toBe(false);
+  });
+  it("mix → union ligne(s) + ids (l'arrière ajouté nominativement est couvert)", () => {
+    const a = { mode: "mix", groups: ["avants"], ids: ["b"] };
+    expect(assignedCoversPlayer(a, avant)).toBe(true);   // via sa ligne
+    expect(assignedCoversPlayer(a, arriere)).toBe(true); // ajouté nommément
+    expect(assignedCoversPlayer(a, { id: "c", grp: "arrieres" })).toBe(false);
+  });
+  it("open → non ciblé nominativement", () => {
+    expect(assignedCoversPlayer({ mode: "open" }, avant)).toBe(false);
   });
 });
 
