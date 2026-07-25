@@ -2452,5 +2452,28 @@
     "errDate": "Kies een startdatum.",
     "errEmpty": "Geen sessie om te genereren (controleer de slots en periode).",
     "errSave": "Mislukt: {{err}}"
+  },
+  "oneRM": {
+    "title": "1RM ({{count}})",
+    "add": "Toevoegen",
+    "empty": "Nog geen 1RM ingesteld. Voeg een beweging toe (getest of geschat) voor %-progressies.",
+    "notSet": "1RM niet ingesteld",
+    "toSet": "in te vullen",
+    "histN": "{{count}} metingen",
+    "kg": "kg",
+    "tested": "getest",
+    "estimated": "geschat",
+    "history": "Geschiedenis",
+    "movementPh": "Beweging (bijv. Back Squat)",
+    "modeDirect": "Direct 1RM",
+    "modeSubmax": "Sub-max (geschat)",
+    "valuePh": "1RM in kg",
+    "weightPh": "Gewicht (kg)",
+    "repsPh": "Herh.",
+    "save": "Opslaan",
+    "errName": "Voer de beweging in.",
+    "errValue": "Voer een geldig 1RM in.",
+    "errSubmax": "Voer gewicht en herhalingen in.",
+    "errSave": "Mislukt: {{err}}"
   }
 }

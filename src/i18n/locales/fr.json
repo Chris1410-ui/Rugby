@@ -2452,5 +2452,28 @@
     "errDate": "Choisis une date de début.",
     "errEmpty": "Aucune séance à générer (vérifie les créneaux et la période).",
     "errSave": "Échec : {{err}}"
+  },
+  "oneRM": {
+    "title": "1RM ({{count}})",
+    "add": "Ajouter",
+    "empty": "Aucun 1RM renseigné. Ajoute un mouvement (testé ou estimé) pour les progressions en %.",
+    "notSet": "1RM non renseigné",
+    "toSet": "à renseigner",
+    "histN": "{{count}} mesures",
+    "kg": "kg",
+    "tested": "testé",
+    "estimated": "estimé",
+    "history": "Historique",
+    "movementPh": "Mouvement (ex. Back Squat)",
+    "modeDirect": "1RM direct",
+    "modeSubmax": "Sous-max (estimé)",
+    "valuePh": "1RM en kg",
+    "weightPh": "Poids (kg)",
+    "repsPh": "Reps",
+    "save": "Enregistrer",
+    "errName": "Indique le mouvement.",
+    "errValue": "Indique un 1RM valide.",
+    "errSubmax": "Indique le poids et les répétitions.",
+    "errSave": "Échec : {{err}}"
   }
 }

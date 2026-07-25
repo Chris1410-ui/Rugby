@@ -2452,5 +2452,28 @@
     "errDate": "Pick a start date.",
     "errEmpty": "No session to generate (check the slots and period).",
     "errSave": "Failed: {{err}}"
+  },
+  "oneRM": {
+    "title": "1RM ({{count}})",
+    "add": "Add",
+    "empty": "No 1RM set yet. Add a movement (tested or estimated) for % progressions.",
+    "notSet": "1RM not set",
+    "toSet": "to set",
+    "histN": "{{count}} measures",
+    "kg": "kg",
+    "tested": "tested",
+    "estimated": "estimated",
+    "history": "History",
+    "movementPh": "Movement (e.g. Back Squat)",
+    "modeDirect": "Direct 1RM",
+    "modeSubmax": "Sub-max (estimated)",
+    "valuePh": "1RM in kg",
+    "weightPh": "Weight (kg)",
+    "repsPh": "Reps",
+    "save": "Save",
+    "errName": "Enter the movement.",
+    "errValue": "Enter a valid 1RM.",
+    "errSubmax": "Enter weight and reps.",
+    "errSave": "Failed: {{err}}"
   }
 }
