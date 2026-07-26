@@ -1955,7 +1955,10 @@
       "confirmPrompt1": "Pour confirmer, tape ",
       "confirmPrompt2": " ci-dessous.",
       "eraseFinal": "Supprimer définitivement",
-      "eraseFail": "Échec de la suppression."
+      "eraseFail": "Échec de la suppression.",
+      "confirmTotemPrompt": "Pour confirmer, tape le totem « {{totem}} » ci-dessous.",
+      "eraseTotemMismatch": "Le totem tapé ne correspond pas à « {{totem}} ».",
+      "eraseForbidden": "Tu n'as pas les droits pour supprimer ce joueur."
     },
     "privacyPolicy": {
       "title": "Politique de confidentialité",

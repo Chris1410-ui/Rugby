@@ -50,15 +50,28 @@ export default function Confidentialite({ player, self = false, onErased }) {
     setExporting(false);
   };
 
+  // Suppression par un TIERS (owner/staff) → confirmation par le TOTEM du joueur ;
+  // auto-effacement (self) → mot de confirmation générique.
+  const requireTotem = !self;
+  const target = requireTotem ? (player.name || "") : CONFIRM_WORD;
+
+  const eraseErrMsg = (msg) => {
+    if (msg === "totem_mismatch") return t("shared.privacy.eraseTotemMismatch", { totem: target });
+    if (msg === "forbidden") return t("shared.privacy.eraseForbidden");
+    return msg || t("shared.privacy.eraseFail");
+  };
+
   const doErase = async () => {
     if (preview) return; // lecture seule : pas d'effacement sous l'identité du joueur
-    if (word.trim().toUpperCase() !== CONFIRM_WORD.toUpperCase()) return setErr(t("shared.privacy.eraseConfirmPrompt", { word: CONFIRM_WORD }));
+    if (word.trim().toLowerCase() !== target.toLowerCase()) {
+      return setErr(requireTotem ? t("shared.privacy.eraseTotemMismatch", { totem: target }) : t("shared.privacy.eraseConfirmPrompt", { word: CONFIRM_WORD }));
+    }
     setErr(""); setBusy(true);
     try {
-      await erasePlayer(player.id);
+      await erasePlayer(player.id, requireTotem ? player.name : null);
       if (self) { await signOut(); } // le compte n'existe plus → retour au login
       else { onErased?.(); }
-    } catch (e) { setErr(e.message || t("shared.privacy.eraseFail")); setBusy(false); }
+    } catch (e) { setErr(eraseErrMsg(e.message)); setBusy(false); }
   };
 
   const line = { display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border2}`, fontSize: 12 };
@@ -132,10 +145,10 @@ export default function Confidentialite({ player, self = false, onErased }) {
         ) : (
           <div style={{ border: `1px solid ${C.coral}55`, borderRadius: 10, padding: 12, background: `${C.coral}11` }}>
             <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>
-              {t("shared.privacy.confirmPrompt1")}<b>{CONFIRM_WORD}</b>{t("shared.privacy.confirmPrompt2")}
+              {requireTotem ? t("shared.privacy.confirmTotemPrompt", { totem: target }) : <>{t("shared.privacy.confirmPrompt1")}<b>{CONFIRM_WORD}</b>{t("shared.privacy.confirmPrompt2")}</>}
             </div>
-            <input value={word} onChange={(e) => { setWord(e.target.value); setErr(""); }} placeholder={CONFIRM_WORD} autoCapitalize="characters"
-              style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: 2, textAlign: "center", outline: "none", marginBottom: 10 }} />
+            <input value={word} onChange={(e) => { setWord(e.target.value); setErr(""); }} placeholder={target} autoCapitalize={requireTotem ? "off" : "characters"}
+              style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: requireTotem ? 0.5 : 2, textAlign: "center", outline: "none", marginBottom: 10 }} />
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => { setConfirm(false); setWord(""); setErr(""); }} disabled={busy} style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: 11, color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
               <button onClick={doErase} disabled={busy} style={{ flex: 2, background: C.coral, border: "none", borderRadius: 8, padding: 11, color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1 }}>

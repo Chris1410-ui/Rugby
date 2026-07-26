@@ -1955,7 +1955,10 @@
       "confirmPrompt1": "Typ ter bevestiging ",
       "confirmPrompt2": " hieronder.",
       "eraseFinal": "Definitief verwijderen",
-      "eraseFail": "Verwijderen mislukt."
+      "eraseFail": "Verwijderen mislukt.",
+      "confirmTotemPrompt": "Typ ter bevestiging het totem “{{totem}}” hieronder.",
+      "eraseTotemMismatch": "Het getypte totem komt niet overeen met “{{totem}}”.",
+      "eraseForbidden": "Je hebt geen rechten om deze speler te verwijderen."
     },
     "privacyPolicy": {
       "title": "Privacybeleid",

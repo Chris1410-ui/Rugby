@@ -68,10 +68,12 @@ export const slugify = (s) =>
   (s || "joueur").toLowerCase().normalize("NFD").replace(DIACRITICS, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "joueur";
 
-// Effacement définitif via l'Edge Function (auth : self ou staff de l'équipe).
-export async function erasePlayer(playerId) {
+/* Effacement définitif via l'Edge Function (auth serveur : self, owner, ou staff
+   écrivain de l'équipe). `confirmTotem` = totem tapé pour confirmer une
+   suppression par un tiers (owner/staff) — vérifié aussi côté serveur. */
+export async function erasePlayer(playerId, confirmTotem = null) {
   const { data, error } = await supabase.functions.invoke("gdpr-erase", {
-    body: { player_id: playerId },
+    body: { player_id: playerId, ...(confirmTotem != null ? { confirm_totem: confirmTotem } : {}) },
   });
   if (error) {
     // Corps d'erreur JSON éventuel renvoyé par la fonction
