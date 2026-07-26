@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C } from "../../lib/tokens.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
-import { MessageSquare, Send, ChevronLeft } from "../../lib/icons.jsx";
+import { MessageSquare, Send, ChevronLeft, X, CheckCircle } from "../../lib/icons.jsx";
 import { useThread, sendMessage, markRead } from "../../data/messages.js";
+import { detectRequestExercises, request1RM } from "../../data/player1rm.js";
 import { usePreview } from "../../lib/preview.js";
 import { useReadOnly } from "../../lib/readonly.js";
 
@@ -24,6 +25,9 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
   useModalClose(onClose);
   const [txt, setTxt] = useState("");
   const [busy, setBusy] = useState(false);
+  const [detected, setDetected] = useState([]);   // exercices reconnus dans le dernier message (staff)
+  const [reqBusy, setReqBusy] = useState(false);
+  const [reqDone, setReqDone] = useState(null);    // { created } après création des 1RM
   const endRef = useRef(null);
 
   useEffect(() => { markRead(playerId, who); }, [playerId, who]);
@@ -40,11 +44,28 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
     setTxt("");
     try {
       await sendMessage(playerId, { dir: who, text: trimmed, author: who === "staff" ? "Staff" : (selfName || "Joueur") });
+      // Staff : reconnaît les exercices mentionnés → propose de créer les 1RM.
+      if (who === "staff") {
+        setReqDone(null);
+        try { const found = await detectRequestExercises(trimmed); setDetected(found); }
+        catch { /* détection best-effort */ }
+      }
     } catch (e) {
       console.error("[send]", e.message);
       setTxt(trimmed); // restaure en cas d'échec
     }
     setBusy(false);
+  };
+
+  const createDetected1RM = async () => {
+    if (reqBusy || !detected.length) return;
+    setReqBusy(true);
+    try {
+      const r = await request1RM({ mode: "players", ids: [playerId] }, detected);
+      setReqDone({ created: r.created });
+      setDetected([]);
+    } catch (e) { console.error("[req1rm]", e.message); }
+    setReqBusy(false);
   };
 
   const fmt = (ts) => new Date(ts).toLocaleString(localeTag(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -90,6 +111,30 @@ export default function Conversation({ playerId, title, who, accent = C.coral, s
         )}
         <div ref={endRef} />
       </div>
+
+      {/* Détection 1RM (staff) : exercices reconnus dans le message → confirmer la création. */}
+      {who === "staff" && detected.length > 0 && (
+        <div style={{ background: `${accent}14`, border: `1px solid ${accent}44`, borderRadius: 12, padding: "10px 12px", marginBottom: 10 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 800, color: accent, marginBottom: 7 }}>{t("request1rm.detectedTitle")}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 9 }}>
+            {detected.map((e, i) => (
+              <span key={e.id || i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.08)", borderRadius: 999, padding: "4px 9px" }}>
+                {e.name}
+                <button onClick={() => setDetected((xs) => xs.filter((_, k) => k !== i))} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", cursor: "pointer", display: "flex", padding: 0 }}><X size={12} /></button>
+              </span>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={createDetected1RM} disabled={reqBusy} style={{ flex: 1, background: accent, border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", opacity: reqBusy ? 0.6 : 1 }}>{reqBusy ? "…" : t("request1rm.detectedCreate", { count: detected.length })}</button>
+            <button onClick={() => setDetected([])} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 14px", color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{t("request1rm.detectedIgnore")}</button>
+          </div>
+        </div>
+      )}
+      {who === "staff" && reqDone && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.green, fontWeight: 700, marginBottom: 10 }}>
+          <CheckCircle size={14} /> {t("request1rm.detectedDone", { count: reqDone.created })}
+        </div>
+      )}
 
       {/* saisie */}
       {preview ? (

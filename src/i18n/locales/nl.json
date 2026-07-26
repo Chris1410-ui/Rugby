@@ -2806,6 +2806,24 @@
     "viaLine": "via linie",
     "recap": "{{count}} ontvanger(s)"
   },
+  "request1rm": {
+    "open": "1RM aanvragen",
+    "title": "1RM aanvragen",
+    "hint": "Maakt op de fiche van elke gekozen speler een “in te vullen” item aan en stuurt een melding. Zodra het maximum is ingevuld, tonen zijn %-instructies de berekende belasting.",
+    "recipients": "ONTVANGERS",
+    "exercises": "OEFENINGEN",
+    "exPlaceholder": "Naam van de oefening…",
+    "add": "Toevoegen",
+    "freeName": "vrije naam",
+    "submit": "Aanvraag versturen",
+    "doneCreated": "{{count}} 1RM-item(s) aangemaakt",
+    "doneSkipped": "{{count}} al aanwezig, overgeslagen.",
+    "doneUnresolved": "Aangemaakt op de naam (niet gekoppeld aan de bibliotheek): {{names}}",
+    "detectedTitle": "Herkende oefeningen in dit bericht",
+    "detectedCreate": "1RM's aanmaken ({{count}})",
+    "detectedIgnore": "Negeren",
+    "detectedDone": "{{count}} 1RM-item(s) aangemaakt ✓"
+  },
   "catalog": {
     "title": "Clubcatalogus",
     "empty": "Nog geen sectietype. Draag een protocol bij om de catalogus te vullen.",

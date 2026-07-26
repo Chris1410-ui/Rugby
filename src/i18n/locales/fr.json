@@ -2806,6 +2806,24 @@
     "viaLine": "via ligne",
     "recap": "{{count}} destinataire(s)"
   },
+  "request1rm": {
+    "open": "Demander un 1RM",
+    "title": "Demander un 1RM",
+    "hint": "Crée une entrée « à renseigner » sur la fiche de chaque joueur choisi et le notifie. Une fois le maximum saisi, ses consignes en % affichent la charge calculée.",
+    "recipients": "DESTINATAIRES",
+    "exercises": "EXERCICES",
+    "exPlaceholder": "Nom de l’exercice…",
+    "add": "Ajouter",
+    "freeName": "nom libre",
+    "submit": "Envoyer la demande",
+    "doneCreated": "{{count}} entrée(s) 1RM créée(s)",
+    "doneSkipped": "{{count}} déjà présente(s), ignorée(s).",
+    "doneUnresolved": "Créées sur le nom (non reliées à la bibliothèque) : {{names}}",
+    "detectedTitle": "Exercices reconnus dans ce message",
+    "detectedCreate": "Créer les 1RM ({{count}})",
+    "detectedIgnore": "Ignorer",
+    "detectedDone": "{{count}} entrée(s) 1RM créée(s) ✓"
+  },
   "catalog": {
     "title": "Catalogue du club",
     "empty": "Aucune section-type pour l’instant. Verse un protocole pour alimenter le catalogue.",

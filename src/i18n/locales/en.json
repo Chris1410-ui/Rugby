@@ -2806,6 +2806,24 @@
     "viaLine": "via line",
     "recap": "{{count}} recipient(s)"
   },
+  "request1rm": {
+    "open": "Request a 1RM",
+    "title": "Request a 1RM",
+    "hint": "Creates a “to fill in” entry on each selected player's profile and notifies them. Once the max is entered, their %-based cues show the computed load.",
+    "recipients": "RECIPIENTS",
+    "exercises": "EXERCISES",
+    "exPlaceholder": "Exercise name…",
+    "add": "Add",
+    "freeName": "free name",
+    "submit": "Send request",
+    "doneCreated": "{{count}} 1RM entry(ies) created",
+    "doneSkipped": "{{count}} already present, skipped.",
+    "doneUnresolved": "Created on the name (not linked to the library): {{names}}",
+    "detectedTitle": "Exercises recognized in this message",
+    "detectedCreate": "Create the 1RMs ({{count}})",
+    "detectedIgnore": "Ignore",
+    "detectedDone": "{{count}} 1RM entry(ies) created ✓"
+  },
   "catalog": {
     "title": "Club catalogue",
     "empty": "No section type yet. Contribute a protocol to feed the catalogue.",

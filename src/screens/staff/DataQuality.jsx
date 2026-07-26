@@ -8,6 +8,7 @@ import { todayISO } from "../../lib/metrics.js";
 import { teamDataCompleteness } from "../../lib/dataQuality.js";
 import { useTeam1RM } from "../../data/player1rm.js";
 import { sendMessage } from "../../data/messages.js";
+import Request1RMModal from "../shared/Request1RMModal.jsx";
 
 const accent = C.teal;
 
@@ -22,6 +23,7 @@ export default function DataQuality({ teamId, players = [], sessions = [], logs 
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [sent, setSent] = useState({});
+  const [reqOpen, setReqOpen] = useState(false);
   const { entries: oneRM } = useTeam1RM(teamId);
 
   const dq = useMemo(
@@ -58,6 +60,9 @@ export default function DataQuality({ teamId, players = [], sessions = [], logs 
       {open && (
         <div style={{ padding: "0 14px 12px" }}>
           <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginBottom: 10, lineHeight: 1.5 }}>{t("staff.dataq.hint")}</div>
+          {!readOnly && players.length > 0 && (
+            <button onClick={() => setReqOpen(true)} style={{ width: "100%", background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: 9, padding: "9px 11px", color: accent, fontSize: 12, fontWeight: 800, cursor: "pointer", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>🏋️ {t("request1rm.open")}</button>
+          )}
           {players.length === 0 ? (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("staff.dataq.noPlayers")}</div>
           ) : totalGaps === 0 ? (
@@ -89,6 +94,14 @@ export default function DataQuality({ teamId, players = [], sessions = [], logs 
             </div>
           )}
         </div>
+      )}
+      {reqOpen && (
+        <Request1RMModal
+          players={players}
+          accent={accent}
+          initialSelection={dq.no1RM.ids.length ? { all: false, groups: [], ids: dq.no1RM.ids } : { all: true, groups: [], ids: [] }}
+          onClose={() => setReqOpen(false)}
+        />
       )}
     </div>
   );
