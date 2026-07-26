@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { extractCandidates, dedupeCandidates } from "../lib/catalog/extract.js";
+import { calisthenicsCandidates, CALISTHENICS_CATALOG_SOURCE } from "../lib/calisthenics/catalog.js";
 
 /* Catalogue de SECTIONS-TYPES (donner/recevoir) — PR1 : club-local.
    « Verser » un protocole extrait ses sections réutilisables, les normalise et
@@ -92,6 +93,34 @@ export async function verseDocToCatalog({ clubId, teamId, createdBy = null, doc,
 export async function deleteCatalogEntry(id) {
   const { error } = await supabase.from("section_templates").delete().eq("id", id);
   if (error) throw error;
+}
+
+/* Verse les modèles calisthénie bundlés (13 séances + 4 programmes) au catalogue
+   du club, comme candidats (scope='catalog', status='draft'). Import CLUB-LOCAL
+   uniquement (usage club, jamais inter-club). Dédup par `id` stable (dedup_hash) :
+   ré-importer n'ajoute pas de doublon. Retourne { total, created, merged }. */
+export async function importCalisthenicsCatalog({ clubId, teamId, createdBy = null }) {
+  if (!clubId) throw new Error("no-club");
+  const candidates = calisthenicsCandidates();
+  let created = 0, merged = 0;
+  for (const c of candidates) {
+    const { data: existing, error: selErr } = await supabase
+      .from("section_templates")
+      .select("id").eq("club_id", clubId).eq("scope", "catalog").eq("dedup_hash", c.id)
+      .limit(1);
+    if (selErr) throw selErr;
+    if (existing && existing.length) { merged++; continue; }
+    const { error: insErr } = await supabase.from("section_templates").insert({
+      team_id: teamId, club_id: clubId, origin_club_id: clubId, created_by: createdBy,
+      name: c.name, kind: c.section.type, section_kind: c.kind, section: c.section,
+      scope: "catalog", status: "draft", objective: c.objective || null,
+      duration_min: c.durationMin || null, source: CALISTHENICS_CATALOG_SOURCE,
+      dedup_hash: c.id, fingerprint: c.section,
+    });
+    if (insErr) throw insErr;
+    created++;
+  }
+  return { total: candidates.length, created, merged };
 }
 
 // Liste des candidats du catalogue du club (les plus repris en tête).

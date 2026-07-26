@@ -2564,6 +2564,9 @@
     "verseDone": "✓ {{total}} section(s) analysed — {{created}} added, {{merged}} already known.",
     "verseEmpty": "No reusable section detected in this protocol.",
     "verseErr": "⚠ Contribution failed: {{err}}",
+    "calHint": "Ready-made calisthenics templates (13 sessions + 4 programmes). Club use.",
+    "calImport": "Import",
+    "calImported": "✓ Calisthenics templates imported — {{created}} added, {{merged}} already present.",
     "usageTitle": "Reuse count",
     "kind": {
       "warmup": "Warm-up",
