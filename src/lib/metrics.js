@@ -310,7 +310,7 @@ export const badgeLabel = (t, b) => t(`badges.${b.key}`);
 // `top14Events` : tests validés Top 14 → [{ key, date }] (calculés en amont via
 //   lib/top14.js, `key` = clé du test). +30 pts par test, DATÉS de la 1re validation
 //   → un seul crédit par test (pas de double comptage aux re-saisies).
-export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = []) {
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -408,6 +408,13 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
     if (e.kind === "present") { add(10, "convocation.present", e.date, inWk); add(5, "convocation.punctual", e.date, inWk); }
     else if (e.kind === "late") { add(10, "convocation.late", e.date, inWk); }
     else if (e.kind === "absentUnannounced") { add(-15, "convocation.missed", e.date, inWk); }
+  });
+  // Routine du matin complétée (staff-athlète) : +10, aligné sur les activités du
+  // jour, une seule fois par jour (source = athlete_routine_log.done). Barèmes
+  // existants inchangés ; pas de double comptage avec le bilan du matin (clé distincte).
+  (routineEvents || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(10, "morningRoutine", e.date, inWk);
   });
   if (streak >= 5) add(15, "streak5", today, true);
   else if (streak >= 3) add(5, "streak3", today, true);

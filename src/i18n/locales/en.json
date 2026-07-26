@@ -257,6 +257,7 @@
   },
   "nav": {
     "bilan": "Today",
+    "routine": "My routine",
     "seances": "My sessions",
     "taches": "Tasks",
     "defis": "Challenges",
@@ -692,6 +693,30 @@
       "dirDownHint": "← lower = better",
       "betterThan": "your value: better than {{pct}}% of {{group}}",
       "noMyValue": "You don't have a measurement on this test yet."
+    },
+    "routine": {
+      "title": "My morning routine",
+      "edit": "Edit",
+      "doneEdit": "Done",
+      "complete": "Routine completed!",
+      "inProgress": "Routine in progress",
+      "checkedCount": "{{done}}/{{total}} items checked",
+      "plus10": " · +10 pts",
+      "checklist": "Checklist",
+      "itemPlaceholder": "Item label",
+      "timePlaceholder": "Time",
+      "addItem": "Add an item",
+      "shake": "Morning shake",
+      "protein": "{{g}} g protein",
+      "ingPlaceholder": "Ingredient",
+      "unit": "unit",
+      "proteinPer": "Protein per unit (g)",
+      "addIng": "Add an ingredient",
+      "save": "Save today's routine",
+      "saved": "Today's routine saved ✓",
+      "errSave": "Save failed: {{err}}",
+      "trend": "Trend",
+      "trendSummary": "{{done}}/{{total}} days completed"
     },
     "today": {
       "absent": "Missing",
@@ -2600,7 +2625,8 @@
     "challenge": "Challenge: {{title}}",
     "reactivity": "⚡ Top 2 responsiveness",
     "bilanMorning": "Morning check-in completed",
-    "bilanEvening": "Evening check-in completed"
+    "bilanEvening": "Evening check-in completed",
+    "morningRoutine": "Morning routine completed"
   },
   "badges": {
     "assidu": "Regular",
