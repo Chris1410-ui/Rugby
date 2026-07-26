@@ -5,7 +5,7 @@ import { Dumbbell, Plus, Trash2, Pencil, Eye, EyeOff, FileText, ExternalLink, Bo
 import { localeTag } from "../../../i18n/locale.js";
 import { fmtShort, todayISO } from "../../../lib/metrics.js";
 import { useProgramDocs, createProgramDoc, deleteProgramDoc, setProgramStatus, getProgramDoc } from "../../../data/programDocs.js";
-import { getClubId, verseDocToCatalog, useClubCatalog, deleteCatalogEntry } from "../../../data/catalog.js";
+import { getClubId, verseDocToCatalog, useClubCatalog, deleteCatalogEntry, importCalisthenicsCatalog } from "../../../data/catalog.js";
 import { usePlannedSummary, plansForDoc, deletePlan } from "../../../data/programPlans.js";
 import { emptyProgram } from "../../../lib/program/model.js";
 import ProgramEditor from "./ProgramEditor.jsx";
@@ -52,6 +52,23 @@ export default function Protocoles({ teamId, players = [] }) {
       const full = await getProgramDoc(row.id);
       const { total, created, merged } = await verseDocToCatalog({ clubId, teamId, doc: full.doc });
       setFlash(total === 0 ? t("catalog.verseEmpty") : t("catalog.verseDone", { created, merged, total }));
+      await refreshCatalog();
+      setShowCatalog(true);
+    } catch (e) {
+      setFlash(t("catalog.verseErr", { err: e.message || "" }));
+    }
+    setBusy(false);
+    setTimeout(() => setFlash(""), 6000);
+  };
+
+  // Importe les modèles calisthénie bundlés (13 séances + 4 programmes) comme
+  // candidats du catalogue du club (usage club, dédup par id stable).
+  const importCalisthenics = async () => {
+    if (busy || !clubId) return;
+    setBusy(true); setFlash("");
+    try {
+      const { created, merged } = await importCalisthenicsCatalog({ clubId, teamId });
+      setFlash(t("catalog.calImported", { created, merged }));
       await refreshCatalog();
       setShowCatalog(true);
     } catch (e) {
@@ -120,7 +137,7 @@ export default function Protocoles({ teamId, players = [] }) {
         <div style={sc({ marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.9)", background: flash.startsWith("⚠") ? `${C.amb}1a` : `${C.viol}1a`, borderColor: `${C.viol}55` })}>{flash}</div>
       )}
 
-      <CatalogPanel entries={catalog} open={showCatalog} onToggle={() => setShowCatalog((v) => !v)} onDelete={async (id) => { try { await deleteCatalogEntry(id); await refreshCatalog(); } catch (e) { console.error("[catalog del]", e.message); } }} t={t} />
+      <CatalogPanel entries={catalog} open={showCatalog} onToggle={() => setShowCatalog((v) => !v)} onImportCal={importCalisthenics} busy={busy} onDelete={async (id) => { try { await deleteCatalogEntry(id); await refreshCatalog(); } catch (e) { console.error("[catalog del]", e.message); } }} t={t} />
 
 
       {loading && !docs.length ? (
@@ -201,7 +218,7 @@ export default function Protocoles({ teamId, players = [] }) {
 /* Panneau « Catalogue du club » (repliable) : sections-types candidates extraites
    des protocoles, les plus reprises en tête. En PR1, club-local (pas de partage).
    Chaque entrée : type fonctionnel, objectif, matériel, compteur d'usage. */
-function CatalogPanel({ entries = [], open, onToggle, onDelete, t }) {
+function CatalogPanel({ entries = [], open, onToggle, onDelete, onImportCal, busy, t }) {
   const kindLabel = (k) => t(`catalog.kind.${k}`, { defaultValue: k });
   return (
     <div style={sc({ marginBottom: 14, padding: 0, overflow: "hidden" })}>
@@ -212,6 +229,13 @@ function CatalogPanel({ entries = [], open, onToggle, onDelete, t }) {
       </button>
       {open && (
         <div style={{ padding: "0 14px 12px" }}>
+          {onImportCal && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "8px 10px", background: `${C.viol}0f`, border: `1px solid ${C.viol}33`, borderRadius: 9 }}>
+              <span style={{ fontSize: 16 }}>🤸</span>
+              <span style={{ flex: 1, fontSize: 11, color: "rgba(255,255,255,0.7)", lineHeight: 1.45 }}>{t("catalog.calHint")}</span>
+              <button onClick={onImportCal} disabled={busy} style={{ flexShrink: 0, background: C.viol, border: "none", borderRadius: 8, padding: "7px 11px", color: "#fff", fontSize: 11.5, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>{t("catalog.calImport")}</button>
+            </div>
+          )}
           {entries.length === 0 ? (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", padding: "6px 0 10px", lineHeight: 1.5 }}>{t("catalog.empty")}</div>
           ) : (

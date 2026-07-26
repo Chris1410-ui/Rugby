@@ -2564,6 +2564,9 @@
     "verseDone": "✓ {{total}} sectie(s) geanalyseerd — {{created}} toegevoegd, {{merged}} al bekend.",
     "verseEmpty": "Geen herbruikbare sectie gedetecteerd in dit protocol.",
     "verseErr": "⚠ Bijdrage mislukt: {{err}}",
+    "calHint": "Kant-en-klare calisthenics-sjablonen (13 sessies + 4 programma's). Clubgebruik.",
+    "calImport": "Importeren",
+    "calImported": "✓ Calisthenics-sjablonen geïmporteerd — {{created}} toegevoegd, {{merged}} al aanwezig.",
     "usageTitle": "Aantal hergebruiken",
     "kind": {
       "warmup": "Opwarming",
