@@ -285,6 +285,7 @@
     "compare": "Compare +",
     "recos": "Recommendations",
     "adherence": "Prescribed adherence",
+    "efficacite": "Protocol efficacy",
     "abonnements": "Subscriptions",
     "exercices": "Library",
     "invites": "Invitations",
@@ -1375,6 +1376,17 @@
       "reach": "Reach out",
       "sent": "Message sent",
       "msgEngage": "Hi! Let's check in: tell us how you're feeling and whether we should adjust your load or sessions. We're here to help."
+    },
+    "efficacy": {
+      "title": "Protocol efficacy",
+      "hint": "Estimated 1RM change from start to end of each program, aggregated across the roster.",
+      "loading": "Loading performance data…",
+      "empty": "Not enough data yet. Need at least {{min}} measurements of an exercise per player, on sessions tied to a program.",
+      "reliableCount": "{{count}} usable exercise(s)",
+      "noReliable": "Not enough data to conclude",
+      "exDetail": "{{n}} players · {{improved}} improved",
+      "exInsufficient": "{{n}} player(s) — too few to conclude (min {{min}})",
+      "caveat": "Change observed during the protocol — correlation, not proof of causation (no control group)."
     },
     "refdocs": {
       "title": "Reference documents · {{count}}",

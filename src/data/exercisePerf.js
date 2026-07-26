@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { exKey } from "../lib/hevy.js";
 
@@ -62,4 +62,35 @@ export function useExercisePerf(exName, enabled = true) {
   }, [exName, enabled]);
 
   return { series, agg, loading, error };
+}
+
+/* Lecture STAFF de tous les agrégats exercice de l'équipe (RLS : staff = équipe,
+   qui voit légitimement l'individu). Sert à l'analyse d'EFFICACITÉ PROTOCOLE
+   (PR-4) : on rattache chaque ligne à son programme via la séance, puis on
+   AGRÈGE avant tout affichage (aucune valeur nominative n'est montrée à l'écran).
+   `[{ sessionId, playerId, exerciseKey, exerciseName, est1rm, topKg, date }]`. */
+export function useTeamExercisePerf(teamId) {
+  const [perf, setPerf] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!teamId) { setPerf([]); setLoading(false); return; }
+    const { data, error } = await supabase
+      .from("exercise_perf")
+      .select("session_id,player_id,exercise_key,exercise_name,est_1rm,top_kg,date")
+      .eq("team_id", teamId);
+    if (error) { console.error("[exercise_perf team]", error.message); setLoading(false); return; }
+    setPerf((data ?? []).map((r) => ({
+      sessionId: r.session_id, playerId: r.player_id,
+      exerciseKey: r.exercise_key, exerciseName: r.exercise_name,
+      est1rm: r.est_1rm != null ? Number(r.est_1rm) : null,
+      topKg: r.top_kg != null ? Number(r.top_kg) : null,
+      date: r.date,
+    })));
+    setLoading(false);
+  }, [teamId]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { perf, loading, refresh };
 }
