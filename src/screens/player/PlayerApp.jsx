@@ -23,6 +23,7 @@ import Seances from "./Seances.jsx";
 import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
 import PlayerDistributions from "./Distributions.jsx";
+import MorningRoutine from "./MorningRoutine.jsx";
 import Crew from "./Crew.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
@@ -83,6 +84,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
 
   const nav = [
     ["bilan", t("nav.bilan"), Sun, bBilan],
+    ...(me?.isStaffAthlete ? [["routine", t("nav.routine"), Sun]] : []),
     ["seances", t("nav.seances"), Dumbbell, bSeances],
     ["protocoles", t("nav.protocols"), FileText],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
@@ -108,6 +110,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
         <main style={{ flex: 1, padding: 18 }}>
          <PullToRefresh onRefresh={refresh}>
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} badges={{ defis: bDefis, taches: bTaches, convocations: bConv }} onData={refresh} />}
+          {tab === "routine" && me?.isStaffAthlete && <MorningRoutine me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
           {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}

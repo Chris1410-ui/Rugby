@@ -12,6 +12,7 @@ export function dbToPlayer(row) {
     num: row.num,
     name: row.name,
     initials: row.initials ?? null,
+    isStaffAthlete: !!row.is_staff_athlete,
     pos: row.pos,
     grp: row.grp,
     club: row.club,

@@ -257,6 +257,7 @@
   },
   "nav": {
     "bilan": "Aujourd'hui",
+    "routine": "Ma routine",
     "seances": "Mes séances",
     "taches": "Tâches",
     "defis": "Défis",
@@ -692,6 +693,30 @@
       "dirDownHint": "← plus bas = mieux",
       "betterThan": "ta valeur : mieux que {{pct}} % de {{group}}",
       "noMyValue": "Tu n'as pas encore de mesure sur ce test."
+    },
+    "routine": {
+      "title": "Ma routine du matin",
+      "edit": "Éditer",
+      "doneEdit": "Terminé",
+      "complete": "Routine complétée !",
+      "inProgress": "Routine en cours",
+      "checkedCount": "{{done}}/{{total}} items cochés",
+      "plus10": " · +10 pts",
+      "checklist": "Checklist",
+      "itemPlaceholder": "Intitulé de l'item",
+      "timePlaceholder": "Horaire",
+      "addItem": "Ajouter un item",
+      "shake": "Shake du matin",
+      "protein": "{{g}} g protéines",
+      "ingPlaceholder": "Ingrédient",
+      "unit": "unité",
+      "proteinPer": "Protéines par unité (g)",
+      "addIng": "Ajouter un ingrédient",
+      "save": "Enregistrer ma routine du jour",
+      "saved": "Routine du jour enregistrée ✓",
+      "errSave": "Échec de l'enregistrement : {{err}}",
+      "trend": "Tendance",
+      "trendSummary": "{{done}}/{{total}} jours complétés"
     },
     "today": {
       "absent": "Absent",
@@ -2600,7 +2625,8 @@
     "challenge": "Défi : {{title}}",
     "reactivity": "⚡ Top 2 réactivité",
     "bilanMorning": "Bilan du matin complété",
-    "bilanEvening": "Bilan du soir complété"
+    "bilanEvening": "Bilan du soir complété",
+    "morningRoutine": "Routine du matin complétée"
   },
   "badges": {
     "assidu": "Assidu",

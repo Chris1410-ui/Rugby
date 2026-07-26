@@ -257,6 +257,7 @@
   },
   "nav": {
     "bilan": "Vandaag",
+    "routine": "Mijn routine",
     "seances": "Mijn sessies",
     "taches": "Taken",
     "defis": "Uitdagingen",
@@ -692,6 +693,30 @@
       "dirDownHint": "← lager = beter",
       "betterThan": "jouw waarde: beter dan {{pct}}% van {{group}}",
       "noMyValue": "Je hebt nog geen meting op deze test."
+    },
+    "routine": {
+      "title": "Mijn ochtendroutine",
+      "edit": "Bewerken",
+      "doneEdit": "Klaar",
+      "complete": "Routine voltooid!",
+      "inProgress": "Routine bezig",
+      "checkedCount": "{{done}}/{{total}} items aangevinkt",
+      "plus10": " · +10 ptn",
+      "checklist": "Checklist",
+      "itemPlaceholder": "Itemlabel",
+      "timePlaceholder": "Tijd",
+      "addItem": "Item toevoegen",
+      "shake": "Ochtendshake",
+      "protein": "{{g}} g eiwit",
+      "ingPlaceholder": "Ingrediënt",
+      "unit": "eenheid",
+      "proteinPer": "Eiwit per eenheid (g)",
+      "addIng": "Ingrediënt toevoegen",
+      "save": "Routine van vandaag opslaan",
+      "saved": "Routine van vandaag opgeslagen ✓",
+      "errSave": "Opslaan mislukt: {{err}}",
+      "trend": "Trend",
+      "trendSummary": "{{done}}/{{total}} dagen voltooid"
     },
     "today": {
       "absent": "Ontbreekt",
@@ -2600,7 +2625,8 @@
     "challenge": "Uitdaging: {{title}}",
     "reactivity": "⚡ Top 2 reactiviteit",
     "bilanMorning": "Ochtendcheck voltooid",
-    "bilanEvening": "Avondcheck voltooid"
+    "bilanEvening": "Avondcheck voltooid",
+    "morningRoutine": "Ochtendroutine voltooid"
   },
   "badges": {
     "assidu": "Volhardend",
