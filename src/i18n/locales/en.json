@@ -716,7 +716,12 @@
       "saved": "Today's routine saved ✓",
       "errSave": "Save failed: {{err}}",
       "trend": "Trend",
-      "trendSummary": "{{done}}/{{total}} days completed"
+      "trendSummary": "{{done}}/{{total}} days completed",
+      "protoTitle": "Reference protocol",
+      "protoDesc": "Load the reference split (legs Mon/Wed/Fri/Sun · upper body Tue/Thu/Sat, pyramidal 12/10 method) as a personal 4-week program. Sessions are then editable like any program.",
+      "protoLoad": "Load my reference protocol",
+      "protoLoaded": "Protocol loaded · {{count}} sessions created ✓",
+      "protoAlready": "Protocol already loaded — find it in your sessions."
     },
     "today": {
       "absent": "Missing",
@@ -2010,7 +2015,14 @@
       "chalSection_one": "🎯 CHALLENGE BADGES · {{count}} claimed",
       "chalSection_other": "🎯 CHALLENGE BADGES · {{count}} claimed",
       "journalTitle": "POINTS LOG",
-      "noMovement": "No recent movement."
+      "noMovement": "No recent movement.",
+      "staffAthleteBadge": "STAFF",
+      "staffAthleteTitle": "Staff member who also trains as an athlete",
+      "athletePublicTitle": "VISIBLE ACTIVITY",
+      "athleteSessionsDone_one": "{{count}} session done",
+      "athleteSessionsDone_other": "{{count}} sessions done",
+      "athleteRoutineDone": "Morning routine ✓",
+      "athleteRoutineNone": "Morning routine —"
     },
     "report": {
       "wb": {

@@ -716,7 +716,12 @@
       "saved": "Routine van vandaag opgeslagen ✓",
       "errSave": "Opslaan mislukt: {{err}}",
       "trend": "Trend",
-      "trendSummary": "{{done}}/{{total}} dagen voltooid"
+      "trendSummary": "{{done}}/{{total}} dagen voltooid",
+      "protoTitle": "Referentieprotocol",
+      "protoDesc": "Laad de referentiesplit (benen ma/wo/vr/zo · bovenlichaam di/do/za, piramidale 12/10-methode) als persoonlijk programma van 4 weken. Sessies zijn daarna bewerkbaar zoals elk programma.",
+      "protoLoad": "Mijn referentieprotocol laden",
+      "protoLoaded": "Protocol geladen · {{count}} sessies aangemaakt ✓",
+      "protoAlready": "Protocol al geladen — vind het bij je sessies."
     },
     "today": {
       "absent": "Ontbreekt",
@@ -2010,7 +2015,14 @@
       "chalSection_one": "🎯 UITDAGINGSBADGES · {{count}} geclaimd",
       "chalSection_other": "🎯 UITDAGINGSBADGES · {{count}} geclaimd",
       "journalTitle": "PUNTENLOGBOEK",
-      "noMovement": "Geen recente beweging."
+      "noMovement": "Geen recente beweging.",
+      "staffAthleteBadge": "STAF",
+      "staffAthleteTitle": "Staflid dat ook als atleet traint",
+      "athletePublicTitle": "ZICHTBARE ACTIVITEIT",
+      "athleteSessionsDone_one": "{{count}} sessie voltooid",
+      "athleteSessionsDone_other": "{{count}} sessies voltooid",
+      "athleteRoutineDone": "Ochtendroutine ✓",
+      "athleteRoutineNone": "Ochtendroutine —"
     },
     "report": {
       "wb": {

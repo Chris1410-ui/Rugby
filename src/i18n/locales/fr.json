@@ -716,7 +716,12 @@
       "saved": "Routine du jour enregistrée ✓",
       "errSave": "Échec de l'enregistrement : {{err}}",
       "trend": "Tendance",
-      "trendSummary": "{{done}}/{{total}} jours complétés"
+      "trendSummary": "{{done}}/{{total}} jours complétés",
+      "protoTitle": "Protocole de référence",
+      "protoDesc": "Charge le split de référence (jambes lun/mer/ven/dim · haut du corps mar/jeu/sam, méthode pyramidale 12/10) comme programme personnel sur 4 semaines. Séances éditables ensuite comme n'importe quel programme.",
+      "protoLoad": "Charger mon protocole de référence",
+      "protoLoaded": "Protocole chargé · {{count}} séances créées ✓",
+      "protoAlready": "Protocole déjà chargé — retrouve-le dans tes séances."
     },
     "today": {
       "absent": "Absent",
@@ -2010,7 +2015,14 @@
       "chalSection_one": "🎯 BADGES DÉFIS · {{count}} relevé",
       "chalSection_other": "🎯 BADGES DÉFIS · {{count}} relevés",
       "journalTitle": "JOURNAL DES POINTS",
-      "noMovement": "Aucun mouvement récent."
+      "noMovement": "Aucun mouvement récent.",
+      "staffAthleteBadge": "STAFF",
+      "staffAthleteTitle": "Membre du staff qui s'entraîne aussi comme athlète",
+      "athletePublicTitle": "ACTIVITÉ VISIBLE",
+      "athleteSessionsDone_one": "{{count}} séance réalisée",
+      "athleteSessionsDone_other": "{{count}} séances réalisées",
+      "athleteRoutineDone": "Routine du matin ✓",
+      "athleteRoutineNone": "Routine du matin —"
     },
     "report": {
       "wb": {
