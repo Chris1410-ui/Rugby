@@ -30,6 +30,7 @@ import TestsEvolution from "./TestsEvolution.jsx";
 import Top14Panel from "./Top14Panel.jsx";
 import { PlayerAnswers } from "../staff/QuestionnaireResponses.jsx";
 import Confidentialite from "./Confidentialite.jsx";
+import ErrorBoundary from "../../ErrorBoundary.jsx";
 
 /* Réponses aux questionnaires du joueur (vue staff, lien croisé depuis la fiche).
    Données santé : staff du club uniquement (RLS). */
@@ -396,22 +397,26 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
 
 /* Fiche joueur détaillée. Lit l'effectif enrichi (aucun recalcul). Éditable par
    le staff (tests physiques). `onClose` → rendu en modal. */
-export default function Fiche({ player, canEdit = false, self = false, players = [], onClose }) {
+/* Fiche joueur. Enveloppée dans un ErrorBoundary local (voir export par défaut) :
+   un champ inattendu (joueur non enrichi, données partielles) affiche une erreur
+   lisible dans la modale au lieu de blanchir toute l'app. */
+function FicheInner({ player, canEdit = false, self = false, players = [], onClose }) {
   const { t } = useTranslation();
   const [edit, setEdit] = useState(false);
   const [d, setD] = useState({});
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [adv, setAdv] = useState(false);
-  const { campaigns, results } = useTestCampaigns(player.team);
-  const dated = datedResultsFor(campaigns, results, player.id);
+  const { campaigns, results } = useTestCampaigns(player?.team);
+  const dated = datedResultsFor(campaigns, results, player?.id);
   // Poids « courant » (dernier test OU questionnaire) : affiché + injecté dans le Top 14.
   const bw = currentBodyweight(player, dated);
-  const t14 = top14Player(player.pos, withCurrentBodyweight(player, dated));
-  const chalPts = useTeamChallengePoints(player.team)[player.id] || [];
+  const t14 = top14Player(player?.pos, withCurrentBodyweight(player, dated));
+  const chalPts = useTeamChallengePoints(player?.team)[player?.id] || [];
   useModalClose(onClose);
 
   useEffect(() => {
+    if (!player) return;
     setD({
       num: player.num ?? "",
       initials: player.initials ?? "",
@@ -427,7 +432,11 @@ export default function Fiche({ player, canEdit = false, self = false, players =
       ischios_d: player.ischiosD ?? "",
       pp_notes: player.ppNotes ?? "",
     });
-  }, [player.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [player?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Garde-fou : aucun joueur (appel inattendu / donnée non chargée) → rien à
+  // rendre plutôt qu'un déréférencement qui planterait la modale.
+  if (!player) return null;
 
   const asym = (() => {
     const g = num(d.ischios_g), dd = num(d.ischios_d);
@@ -534,7 +543,7 @@ export default function Fiche({ player, canEdit = false, self = false, players =
             <KPI label={t("shared.fiche.kpiWellness")} value={live ? `${player.wellness}/50` : "—"} sub={live ? "" : t("shared.fiche.notEncoded")} color={live ? triC(player.wellness, 35, 25) : C.gray} />
             <KPI label={t("shared.fiche.kpiSleep")} value={live ? player.sleep : "—"} sub={live ? t("shared.fiche.sleepSub") : t("shared.fiche.notEncoded")} color={live ? triC(player.sleep, 7.5, 6.5) : C.gray} />
             <KPI label={t("shared.fiche.kpiLoad7d")} value={player.charge7j} sub={t("shared.fiche.loadSub", { label: ch.lk ? t(ch.lk) : "—" })} color={ch.c} />
-            <KPI label={t("shared.fiche.kpiAcwr")} value={player.acwr.toFixed(2)} sub={acwrEstimated(player) ? `${zoneLabel(t, z)} · ${t("reliability.estimated")}` : zoneLabel(t, z)} color={acwrEstimated(player) ? C.gray : z.c} />
+            <KPI label={t("shared.fiche.kpiAcwr")} value={Number(player.acwr ?? 0).toFixed(2)} sub={acwrEstimated(player) ? `${zoneLabel(t, z)} · ${t("reliability.estimated")}` : zoneLabel(t, z)} color={acwrEstimated(player) ? C.gray : z.c} />
             <KPI label={t("shared.fiche.kpiDispo")} value={`${player.dispo}%`} color={triC(player.dispo, 85, 70)} />
           </div>
         );
@@ -647,5 +656,17 @@ export default function Fiche({ player, canEdit = false, self = false, players =
         {body}
       </div>
     </div>
+  );
+}
+
+/* Fiche joueur enveloppée d'un ErrorBoundary LOCAL : si le rendu de la fiche
+   plante (champ inattendu, joueur non enrichi), on affiche une erreur lisible
+   dans la modale au lieu de blanchir toute l'app (l'ancien comportement, le
+   boundary racine remplaçant l'écran entier). Le reste de l'app reste utilisable. */
+export default function Fiche(props) {
+  return (
+    <ErrorBoundary compact onClose={props.onClose}>
+      <FicheInner {...props} />
+    </ErrorBoundary>
   );
 }

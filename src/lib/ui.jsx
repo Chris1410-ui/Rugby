@@ -156,8 +156,9 @@ export const NatureTag = ({ nature, code, style }) => {
 };
 
 export const Pill = ({ v }) => {
-  const z = acwrZ(v);
-  return <span style={{ background: z.c, color: "#fff", padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{v.toFixed(2)}</span>;
+  const n = Number(v ?? 0); // défensif : une valeur absente ne doit pas planter le rendu
+  const z = acwrZ(n);
+  return <span style={{ background: z.c, color: "#fff", padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{n.toFixed(2)}</span>;
 };
 
 /* Badge « estimé » (transparence des données) — indicateur gris NEUTRE apposé à
