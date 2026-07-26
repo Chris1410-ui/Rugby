@@ -92,6 +92,22 @@ export async function deleteEntry1RM(id) {
   if (error) throw error;
 }
 
+/* Demande de 1RM (staff → joueurs) : crée pour chaque joueur destinataire ×
+   mouvement une entrée placeholder « à renseigner » (kind='auto') si absente, et
+   pousse une notification (→ lien fiche). Résolution serveur (unaccent/pg_trgm) :
+   `exercises` = [{ id?: uuid, name: string }]. Renvoie { created, skipped,
+   unresolved: [noms non reliés à la bibliothèque] } — jamais de fausse
+   correspondance inventée. Réutilise la RPC request_1rm (0099). */
+export async function request1RM(assigned, exercises) {
+  const list = (exercises || [])
+    .map((e) => ({ id: e.id || e.exerciseId || null, name: String(e.name || "").trim() }))
+    .filter((e) => e.id || e.name);
+  if (!list.length) return { created: 0, skipped: 0, unresolved: [] };
+  const { data, error } = await supabase.rpc("request_1rm", { p_assigned: assigned || { mode: "all" }, p_exercises: list });
+  if (error) throw error;
+  return { created: data?.created || 0, skipped: data?.skipped || 0, unresolved: data?.unresolved || [] };
+}
+
 // Toutes les entrées 1RM de l'équipe (pour l'aperçu de charge + « 1RM manquants »
 // dans le constructeur). Sans Realtime (pas de canal supplémentaire).
 export function useTeam1RM(teamId) {
