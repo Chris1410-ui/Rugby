@@ -722,7 +722,14 @@
       "protoDesc": "Load the reference split (legs Mon/Wed/Fri/Sun · upper body Tue/Thu/Sat, pyramidal 12/10 method) as a personal 4-week program. Sessions are then editable like any program.",
       "protoLoad": "Load my reference protocol",
       "protoLoaded": "Protocol loaded · {{count}} sessions created ✓",
-      "protoAlready": "Protocol already loaded — find it in your sessions."
+      "protoAlready": "Protocol already loaded — find it in your sessions.",
+      "protoView": "View details",
+      "protoHide": "Hide",
+      "protoMethod": "Pyramidal {{method}} method — descending reps, rising load.",
+      "proto_jambes": "Legs",
+      "proto_haut": "Upper body",
+      "protoRest": "rest {{s}}s",
+      "weekdays": "Sun,Mon,Tue,Wed,Thu,Fri,Sat"
     },
     "today": {
       "absent": "Missing",

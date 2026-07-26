@@ -7,6 +7,7 @@ import { Sun, CheckCircle, Plus, X, Pencil } from "../../lib/icons.jsx";
 import { shakeProtein, routineComplete } from "../../lib/morningRoutine.js";
 import { useRoutineConfig, saveRoutineConfig, useRoutineLog, saveRoutineLog, useRoutineHistory } from "../../data/morningRoutine.js";
 import { seedReferenceProtocol } from "../../data/staffAthlete.js";
+import ReferenceProtocolView from "./ReferenceProtocolView.jsx";
 
 const uid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -30,6 +31,7 @@ export default function MorningRoutine({ me, accent = C.green }) {
   const [protoBusy, setProtoBusy] = useState(false);
   const [protoNote, setProtoNote] = useState("");
   const [protoOk, setProtoOk] = useState(false);
+  const [protoDetail, setProtoDetail] = useState(false);
 
   useEffect(() => { if (config) setItems(config.items || []); }, [config]);
   useEffect(() => {
@@ -161,7 +163,11 @@ export default function MorningRoutine({ me, accent = C.green }) {
           <Section title={t("player.routine.protoTitle")}>
             <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.7)", marginBottom: 10, lineHeight: 1.5 }}>{t("player.routine.protoDesc")}</div>
             {protoNote && <div style={{ fontSize: 12, color: protoOk ? C.green : C.coral, marginBottom: 8 }}>{protoNote}</div>}
-            <button onClick={loadProto} disabled={protoBusy} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: protoBusy ? 0.6 : 1 }}>{protoBusy ? "…" : t("player.routine.protoLoad")}</button>
+            <div style={{ display: "flex", gap: 8, marginBottom: protoDetail ? 12 : 0 }}>
+              <button onClick={loadProto} disabled={protoBusy} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: protoBusy ? 0.6 : 1 }}>{protoBusy ? "…" : t("player.routine.protoLoad")}</button>
+              <button onClick={() => setProtoDetail((v) => !v)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 12.5, cursor: "pointer", flexShrink: 0 }}>{protoDetail ? t("player.routine.protoHide") : t("player.routine.protoView")}</button>
+            </div>
+            {protoDetail && <ReferenceProtocolView accent={accent} />}
           </Section>
 
           {hist.length > 0 && (

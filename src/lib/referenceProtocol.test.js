@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { REF_TEMPLATES, REF_JAMBES, REF_HAUT, REF_METHOD } from "./referenceProtocol.js";
+import { REF_TEMPLATES, REF_JAMBES, REF_HAUT, REF_METHOD, REF_WORKOUTS, orderWeekdays } from "./referenceProtocol.js";
 import { expandTemplates } from "../data/programs.js";
 
 /* Le protocole de référence sert de MODÈLE : on vérifie le mapping jours (getDay)
@@ -27,6 +27,20 @@ describe("referenceProtocol", () => {
       expect(e.name).toBeTruthy();
       expect(e.sets).toBeGreaterThan(0);
     });
+  });
+
+  it("REF_WORKOUTS reflète le même contenu que les templates (vue joueur)", () => {
+    const jambes = REF_WORKOUTS.find((w) => w.key === "jambes");
+    const haut = REF_WORKOUTS.find((w) => w.key === "haut");
+    expect(jambes.exercises).toBe(REF_JAMBES);
+    expect(haut.exercises).toBe(REF_HAUT);
+    expect(jambes.days).toEqual([1, 3, 5, 0]);
+    expect(haut.days).toEqual([2, 4, 6]);
+  });
+
+  it("orderWeekdays trie lundi → dimanche (0 en dernier)", () => {
+    expect(orderWeekdays([1, 3, 5, 0])).toEqual([1, 3, 5, 0]);
+    expect(orderWeekdays([0, 2, 6, 4])).toEqual([2, 4, 6, 0]);
   });
 
   it("se matérialise via expandTemplates sur une semaine", () => {

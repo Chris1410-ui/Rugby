@@ -41,3 +41,16 @@ export const REF_TEMPLATES = [
     weekday, code: "RS", nature: "force", titre: "Haut du corps", exercises: REF_HAUT,
   })),
 ];
+
+/* Séances du protocole regroupées pour l'AFFICHAGE (vue joueur). `key` → libellé
+   traduit ; `days` = jours getDay() de la séance. Le contenu vient des mêmes
+   constantes que REF_TEMPLATES (source unique). */
+export const REF_WORKOUTS = [
+  { key: "jambes", days: [1, 3, 5, 0], exercises: REF_JAMBES },
+  { key: "haut", days: [2, 4, 6], exercises: REF_HAUT },
+];
+
+// Ordonne des jours getDay() en semaine lundi → dimanche (0 = dimanche → fin).
+export function orderWeekdays(days = []) {
+  return [...days].sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b));
+}

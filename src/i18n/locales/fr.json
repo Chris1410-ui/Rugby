@@ -722,7 +722,14 @@
       "protoDesc": "Charge le split de référence (jambes lun/mer/ven/dim · haut du corps mar/jeu/sam, méthode pyramidale 12/10) comme programme personnel sur 4 semaines. Séances éditables ensuite comme n'importe quel programme.",
       "protoLoad": "Charger mon protocole de référence",
       "protoLoaded": "Protocole chargé · {{count}} séances créées ✓",
-      "protoAlready": "Protocole déjà chargé — retrouve-le dans tes séances."
+      "protoAlready": "Protocole déjà chargé — retrouve-le dans tes séances.",
+      "protoView": "Voir le détail",
+      "protoHide": "Masquer",
+      "protoMethod": "Méthode pyramidale {{method}} — reps dégressives, charge montante.",
+      "proto_jambes": "Jambes",
+      "proto_haut": "Haut du corps",
+      "protoRest": "repos {{s}}s",
+      "weekdays": "Dim,Lun,Mar,Mer,Jeu,Ven,Sam"
     },
     "today": {
       "absent": "Absent",
