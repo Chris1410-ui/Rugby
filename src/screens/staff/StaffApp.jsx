@@ -43,6 +43,7 @@ import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
 import DataQuality from "./DataQuality.jsx";
+import OrdrePassage from "./OrdrePassage.jsx";
 import Adherence from "./Adherence.jsx";
 import Recommandations from "./Recommandations.jsx";
 import ProtocolEfficacy from "./ProtocolEfficacy.jsx";
@@ -109,6 +110,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ...(!readOnly ? [["protocoles", t("nav.protocols"), FileText]] : []),
     ["camps", t("nav.camps"), Flag],
     ["convocations", t("nav.convocations"), Send],
+    ["passage", t("nav.passage"), ClipboardList],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
@@ -153,6 +155,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "protocoles" && !readOnly && <Protocoles teamId={profile.team_id} players={players} />}
         {tab === "camps" && <Camps teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
         {tab === "convocations" && <Convocations teamId={profile.team_id} players={players} openNew={newIntent === "convocations"} />}
+        {tab === "passage" && <OrdrePassage teamId={profile.team_id} players={players} />}
         {tab === "taches" && <Taches teamId={profile.team_id} players={players} openNew={newIntent === "taches"} />}
         {tab === "defis" && <Defis teamId={profile.team_id} players={players} openNew={newIntent === "defis"} />}
         {tab === "questionnaires" && <Questionnaires teamId={profile.team_id} players={players} openNew={newIntent === "questionnaires"} />}
