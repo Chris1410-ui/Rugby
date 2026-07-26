@@ -286,6 +286,7 @@
     "recos": "Aanbevelingen",
     "adherence": "Naleving voorschrift",
     "efficacite": "Protocol-effectiviteit",
+    "distributions": "Distributies",
     "abonnements": "Abonnementen",
     "exercices": "Bibliotheek",
     "invites": "Uitnodigingen",
@@ -1387,6 +1388,21 @@
       "exDetail": "{{n}} spelers · {{improved}} in vooruitgang",
       "exInsufficient": "{{n}} speler(s) — te weinig om te concluderen (min {{min}})",
       "caveat": "Evolutie waargenomen tijdens het protocol — correlatie, geen bewijs van causaliteit (geen controlegroep)."
+    },
+    "distributions": {
+      "title": "Distributies",
+      "hint": "Situeer een speler t.o.v. zijn linie of het team op een fysieke test. Alleen de vorm van de groep (kwartielen) wordt getoond — nooit de individuele waarden van teamgenoten.",
+      "groupTeam": "Team",
+      "locateNone": "— een speler situeren —",
+      "loading": "Tests laden…",
+      "kAnonHidden": "Verborgen: minder dan 5 gemeten spelers in deze groep ({{n}}). Kies een bredere groep.",
+      "median": "mediaan",
+      "iqr": "middelste 50%",
+      "range": "spreiding",
+      "nPlayers": "{{n}} spelers",
+      "dirUpHint": "→ hoger = beter",
+      "dirDownHint": "← lager = beter",
+      "betterThan": "beter dan {{pct}}% van de groep"
     },
     "refdocs": {
       "title": "Referentiedocumenten · {{count}}",

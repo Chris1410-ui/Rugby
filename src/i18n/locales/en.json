@@ -286,6 +286,7 @@
     "recos": "Recommendations",
     "adherence": "Prescribed adherence",
     "efficacite": "Protocol efficacy",
+    "distributions": "Distributions",
     "abonnements": "Subscriptions",
     "exercices": "Library",
     "invites": "Invitations",
@@ -1387,6 +1388,21 @@
       "exDetail": "{{n}} players · {{improved}} improved",
       "exInsufficient": "{{n}} player(s) — too few to conclude (min {{min}})",
       "caveat": "Change observed during the protocol — correlation, not proof of causation (no control group)."
+    },
+    "distributions": {
+      "title": "Distributions",
+      "hint": "Situate a player against their line or the team on a physical test. Only the group's shape (quartiles) is shown — never teammates' individual values.",
+      "groupTeam": "Team",
+      "locateNone": "— locate a player —",
+      "loading": "Loading tests…",
+      "kAnonHidden": "Hidden: fewer than 5 players measured in this group ({{n}}). Pick a broader group.",
+      "median": "median",
+      "iqr": "middle 50%",
+      "range": "range",
+      "nPlayers": "{{n}} players",
+      "dirUpHint": "→ higher = better",
+      "dirDownHint": "← lower = better",
+      "betterThan": "better than {{pct}}% of the group"
     },
     "refdocs": {
       "title": "Reference documents · {{count}}",
