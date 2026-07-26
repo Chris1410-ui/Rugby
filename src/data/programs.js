@@ -3,6 +3,20 @@ import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "./messages.js";
 import { isoDate, parseISO } from "../lib/metrics.js";
 import { resolveAssignedIds } from "./sessions.js";
+import { pctMovements } from "../lib/oneRM.js";
+import { request1RM } from "./player1rm.js";
+
+/* Auto-ajout des 1RM « à renseigner » à la publication : tout mouvement exprimé
+   en % de 1RM (@xx%) dans les modèles crée l'entrée correspondante sur la fiche
+   des joueurs destinataires (RPC request_1rm, idempotent). Best-effort : n'échoue
+   jamais la sauvegarde du programme. */
+async function autoRequest1RMFromTemplates(templates, assigned) {
+  try {
+    const exos = (templates || []).flatMap((tpl) => tpl.exercises || []);
+    const need = pctMovements(exos);
+    if (need.length) await request1RM(assigned || { mode: "all" }, need);
+  } catch (e) { console.warn("[program @% 1RM]", e.message); }
+}
 
 /* Programmes : plage de dates + modèles de séances (par jour de semaine) +
    destinataires. La création MATÉRIALISE des lignes `sessions` (une par
@@ -138,6 +152,7 @@ export async function createProgram(teamId, { title, start, end, assigned, templ
     await supabase.from("programs").delete().eq("id", prog.id);
     throw sErr;
   }
+  await autoRequest1RMFromTemplates(templates, assigned);
   return { program: dbToProgram(prog), count: sessions.length };
 }
 
@@ -186,6 +201,7 @@ export async function updateProgram(teamId, id, { title, start, end, assigned, t
     const { error: iErr } = await supabase.from("sessions").insert(rows);
     if (iErr) throw iErr;
   }
+  await autoRequest1RMFromTemplates(templates, assigned);
   return rows.length;
 }
 
