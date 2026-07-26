@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users } from "../../lib/icons.jsx";
+import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users, Clock } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
   e1RM, SET_TYPES, nextSetType, parseSetsN,
@@ -19,6 +19,7 @@ import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
 
 const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
+const durBtn = { flexShrink: 0, width: 38, height: 38, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer" };
 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
 export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete }) {
@@ -73,6 +74,13 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const [ex, setEx] = useState(init);
   const [rpe, setRpe] = useState(log?.rpe || null);
   const [fb, setFb] = useState(log?.feedback || "");
+  // Durée RÉELLE de la séance (min) : pré-remplie avec la durée prévue par le
+  // coach (s.dur) ou la valeur déjà saisie ; alimente le sRPE (charge).
+  const plannedDur = s.dur || 60;
+  const [dur, setDur] = useState(log?.duration || plannedDur);
+  // Chrono optionnel : démarré à l'ouverture de la séance, propose la durée écoulée.
+  const [startedAt, setStartedAt] = useState(null);
+  const [elapsed, setElapsed] = useState(0); // minutes écoulées depuis l'ouverture
   const st = log?.status || "pending";
 
   // Persistance (#4) : le log peut arriver APRÈS le montage (fetch async), ou
@@ -92,7 +100,23 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setEx(init());
     setRpe(log?.rpe || null);
     setFb(log?.feedback || "");
+    setDur(log?.duration || plannedDur);
   }, [savedSig]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Chrono optionnel : au premier dépliage d'une séance non terminée, on note
+  // l'heure d'ouverture puis on rafraîchit la durée écoulée chaque minute. Le
+  // joueur peut « utiliser » cette valeur (corrigeable) à la validation.
+  useEffect(() => {
+    if (!open || st === "done" || preview) return;
+    if (startedAt == null) setStartedAt(Date.now());
+  }, [open, st, preview, startedAt]);
+  useEffect(() => {
+    if (startedAt == null) return;
+    const tick = () => setElapsed(Math.max(1, Math.round((Date.now() - startedAt) / 60000)));
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
+  }, [startedAt]);
 
   const setSet = (eid, i, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.map((x, j) => (j === i ? { ...x, ...patch } : x)) } })); };
   const addSet = (eid) => { setDirty(true); setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; }); };
@@ -129,7 +153,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     const pe = {};
     s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, note: (ex[e.id].note || "").trim(), ...summarize(sets) }; });
     try {
-      await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb });
+      await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb, duration: status === "done" ? Number(dur) || plannedDur : null });
       setDirty(false); // enregistré → la resync depuis la base est de nouveau autorisée
       setOpen(false); setRest(null);
       onSaved && onSaved();
@@ -274,6 +298,26 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
               </div>
             );
           })}
+
+          {/* Durée réelle de la séance (min) → alimente la charge (sRPE = RPE × durée) */}
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "12px 0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <Clock size={13} /> {t("player.session.durationLabel")}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <button onClick={() => { setDirty(true); setDur((v) => Math.max(5, (Number(v) || plannedDur) - 5)); }} style={durBtn}>−5</button>
+            <div style={{ position: "relative", flex: "0 0 96px" }}>
+              <input value={dur} onChange={(ev) => { setDirty(true); setDur(ev.target.value.replace(/[^\d]/g, "")); }} inputMode="numeric" style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 30px 9px 12px", color: "#fff", fontSize: 15, fontWeight: 800, outline: "none", textAlign: "center", boxSizing: "border-box" }} />
+              <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{t("player.session.min")}</span>
+            </div>
+            <button onClick={() => { setDirty(true); setDur((v) => Math.min(300, (Number(v) || plannedDur) + 5)); }} style={durBtn}>+5</button>
+            {startedAt != null && elapsed > 0 && Number(dur) !== elapsed && (
+              <button onClick={() => { setDirty(true); setDur(elapsed); }} style={{ background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: 8, padding: "7px 10px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>{t("player.session.useChrono", { n: elapsed })}</button>
+            )}
+          </div>
+          <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.45)", marginBottom: 4 }}>
+            {t("player.session.durationPlanned", { n: plannedDur })}
+            {Number(dur) !== plannedDur ? ` · ${t("player.session.durationReal", { n: Number(dur) || plannedDur })}` : ""}
+          </div>
 
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "12px 0 8px" }}>{t("player.session.rpeLabel")}</div>
           <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>

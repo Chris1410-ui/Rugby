@@ -905,7 +905,12 @@
       "set1rmSave": "Enregistrer",
       "deleteFree": "Supprimer cette séance libre",
       "tempo": "tempo",
-      "restPresc": "repos {{n}}s"
+      "restPresc": "repos {{n}}s",
+      "durationLabel": "Durée de la séance",
+      "min": "min",
+      "useChrono": "Chrono : {{n}} min",
+      "durationPlanned": "Prévu : {{n}} min",
+      "durationReal": "réalisé : {{n}} min"
     },
     "freeSession": {
       "newButton": "Créer une séance libre",

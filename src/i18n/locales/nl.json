@@ -905,7 +905,12 @@
       "set1rmSave": "Opslaan",
       "deleteFree": "Deze vrije sessie verwijderen",
       "tempo": "tempo",
-      "restPresc": "rust {{n}}s"
+      "restPresc": "rust {{n}}s",
+      "durationLabel": "Duur van de sessie",
+      "min": "min",
+      "useChrono": "Timer: {{n}} min",
+      "durationPlanned": "Gepland: {{n}} min",
+      "durationReal": "werkelijk: {{n}} min"
     },
     "freeSession": {
       "newButton": "Vrije sessie maken",
