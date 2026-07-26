@@ -1,5 +1,27 @@
 import { describe, it, expect } from "vitest";
-import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats } from "./oneRM.js";
+import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats, pctMovements } from "./oneRM.js";
+
+describe("pctMovements", () => {
+  it("ne retient que les mouvements exprimés en % de 1RM", () => {
+    const exos = [
+      { name: "Squat", charge: "@80%" },
+      { name: "Gainage", reps: "30s" },
+      { name: "Développé couché", reps: "5×5 @75%" },
+      { name: "Curl", charge: "20kg" },
+    ];
+    const out = pctMovements(exos);
+    expect(out.map((m) => m.name).sort()).toEqual(["Développé couché", "Squat"]);
+  });
+  it("déduplique par exercise_id sinon par nom normalisé, ignore les vides", () => {
+    const out = pctMovements([
+      { name: "Squat", charge: "@80%", exerciseId: "x1" },
+      { name: "squat", charge: "@70%", exerciseId: "x1" }, // même id → dédup
+      { name: "  ", charge: "@70%" },                       // sans nom → ignoré
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ id: "x1", name: "Squat" });
+  });
+});
 
 describe("parseProgressionCell", () => {
   it("reconnaît sets×reps + @xx% + ★", () => {

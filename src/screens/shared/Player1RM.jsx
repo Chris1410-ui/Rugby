@@ -6,6 +6,7 @@ import { Plus, TrendingUp } from "../../lib/icons.jsx";
 import { fmtShort } from "../../lib/metrics.js";
 import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { summarize1RM } from "../../lib/oneRM.js";
+import ExerciseAutocomplete from "./ExerciseAutocomplete.jsx";
 
 /* Section « 1RM » de la fiche joueur : liste dynamique par mouvement (valeur
    courante, badge testé/estimé, date, historique), saisissable par le staff et
@@ -58,6 +59,7 @@ export default function Player1RM({ player, self = false, canEdit = false }) {
 
 function AddForm({ player, self, onDone, onCancel, t }) {
   const [name, setName] = useState("");
+  const [exerciseId, setExerciseId] = useState(null); // lié à la bibliothèque si choisi (dédup + agrégats)
   const [mode, setMode] = useState("direct"); // 'direct' (1RM) | 'submax' (poids × reps → estimé)
   const [value, setValue] = useState("");
   const [w, setW] = useState("");
@@ -76,6 +78,7 @@ function AddForm({ player, self, onDone, onCancel, t }) {
     try {
       await add1RM(player.team, player.id, {
         name,
+        exerciseId,
         valueKg: mode === "direct" ? value : null,
         testWeight: mode === "submax" ? w : null,
         testReps: mode === "submax" ? reps : null,
@@ -90,7 +93,15 @@ function AddForm({ player, self, onDone, onCancel, t }) {
 
   return (
     <div style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, marginBottom: 10 }}>
-      <input value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} placeholder={t("oneRM.movementPh")} style={{ ...inp, marginBottom: 8 }} />
+      <div style={{ marginBottom: 8 }}>
+        <ExerciseAutocomplete
+          value={name}
+          onChange={(v) => { setName(v); setErr(""); }}
+          onPick={(it) => setExerciseId(it?.id || null)}
+          placeholder={t("oneRM.movementPh")}
+          style={inp}
+        />
+      </div>
       <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
         <button onClick={() => setMode("direct")} style={pill(mode === "direct")}>{t("oneRM.modeDirect")}</button>
         <button onClick={() => setMode("submax")} style={pill(mode === "submax")}>{t("oneRM.modeSubmax")}</button>

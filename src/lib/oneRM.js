@@ -35,6 +35,26 @@ export function parseProgressionCell(text) {
   return { sets, reps, pct, star, abs, unknown, raw: s };
 }
 
+/* Mouvements d'une liste d'exercices qui expriment une charge en % de 1RM (donc
+   qui NÉCESSITENT un 1RM pour calculer la charge réelle). PUR. Scanne `charge`
+   et `reps` de chaque exercice ; déduplique par exercise_id (si lié) sinon par
+   nom normalisé. Sert à créer automatiquement les entrées « à renseigner » à la
+   publication d'un protocole/programme. Renvoie [{ id, name }]. */
+export function pctMovements(exercises = []) {
+  const out = [];
+  const seen = new Set();
+  for (const e of exercises || []) {
+    const name = String(e?.name || "").trim();
+    if (!name) continue;
+    if (parseProgressionCell(`${e?.charge ?? ""} ${e?.reps ?? ""}`).pct == null) continue;
+    const key = e.exerciseId ? `id:${e.exerciseId}` : `n:${exKey(name)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ id: e.exerciseId || null, name });
+  }
+  return out;
+}
+
 // Arrondi à l'incrément disponible (2,5 kg par défaut). Robuste aux flottants.
 export function roundToIncrement(kg, inc = DEFAULT_INCREMENT) {
   if (!(kg > 0)) return 0;
