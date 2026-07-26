@@ -1566,7 +1566,30 @@
       "editingBanner": "Een bestaand programma bewerken",
       "saveEdit": "Wijzigingen opslaan",
       "editBtn": "Bewerken",
-      "noExo": "Geen oefening"
+      "noExo": "Geen oefening",
+      "planSessionBtn": "Een sessie plannen",
+      "plannedTitle": "Geplande sessies ({{count}})",
+      "recipientsCount": "{{count}} ontvanger(s)"
+    },
+    "sessionPlanner": {
+      "newTitle": "Een sessie plannen",
+      "editTitle": "Sessie bewerken",
+      "titlePlaceholder": "Sessietitel",
+      "defaultTitle": "Sessie",
+      "code": "Code",
+      "nature": "Aard",
+      "duration": "Duur (min)",
+      "exercises": "Oefeningen",
+      "exoPlaceholder": "Naam van de oefening",
+      "setsPlaceholder": "Sets",
+      "repsPlaceholder": "Herh.",
+      "chargePlaceholder": "Belasting",
+      "addExo": "Oefening toevoegen",
+      "recipients": "Ontvangers",
+      "create": "Sessie aanmaken",
+      "saveEdit": "Opslaan",
+      "errTitle": "Geef de sessie een titel.",
+      "errSave": "Opslaan mislukt: {{err}}"
     },
     "app": {
       "fabSeance": "＋ Sessie",

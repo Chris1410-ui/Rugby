@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "./messages.js";
+import { makeRecurrenceOps } from "./recurrence.js";
 
 /* Séances (sessions). En attendant les programmes complets (étape 7), les séances
    sont des lignes datées directes. `assigned` (jsonb) définit les destinataires. */
@@ -84,8 +85,39 @@ export function dbToSession(row, roster) {
     createdBy: row.created_by || null,
     programDocId: row.program_doc_id || null, // protocole source (séance planifiée)
     sourceWeek: row.source_week || null,       // semaine Sk d'origine
+    seriesId: row.series_id || null, customized: !!row.customized, // récurrence (0092)
   };
 }
+
+/* Récurrence des séances autonomes (moteur générique partagé). L'occurrence porte
+   sa date dans `date` ; le gabarit (titre/code/nature/durée/exercices) vit dans le
+   payload de la série. « Réalisée » = au moins un session_logs au-delà de pending
+   → l'occurrence est protégée (jamais régénérée ni supprimée). */
+const uid = () => (globalThis.crypto?.randomUUID?.() || `e${Math.random().toString(36).slice(2, 10)}`);
+const withExoIds = (exercises) => (exercises || []).map((e) => ({
+  id: e.id || uid(), name: e.name, sets: e.sets ?? 3, reps: e.reps ?? "8", charge: e.charge ?? "", rest: e.rest ?? 90,
+}));
+const sessionRow = (teamId, o, p = {}, assigned) => ({
+  team_id: teamId, date: o.date, code: p.code || "RS", nature: p.nature || null,
+  titre: (p.titre || "").trim() || "Séance", duration_min: p.durationMin || 60,
+  exercises: withExoIds(p.exercises), assigned: assigned || { mode: "all" },
+});
+const sessionRecurrence = makeRecurrenceOps({
+  table: "sessions", dateField: "date", objectType: "session",
+  buildRow: sessionRow,
+  updatePatch: (time, p = {}, assigned) => ({
+    code: p.code || "RS", nature: p.nature || null, titre: (p.titre || "").trim() || "Séance",
+    duration_min: p.durationMin || 60, exercises: withExoIds(p.exercises), assigned: assigned || { mode: "all" },
+  }),
+  realizedIds: async (ids) => {
+    const { data } = await supabase.from("session_logs").select("session_id,status").in("session_id", ids);
+    const s = new Set(); (data || []).forEach((r) => { if (r.status && r.status !== "pending") s.add(r.session_id); });
+    return s;
+  },
+});
+export const createSessionsRecurring = (teamId, clubId, args) => sessionRecurrence.createRecurring({ teamId, clubId, ...args });
+export const updateSessionSeries = (seriesId, teamId, args, opts) => sessionRecurrence.updateSeries(seriesId, teamId, args, opts);
+export const deleteSessionSeries = (seriesId, opts) => sessionRecurrence.deleteSeries(seriesId, opts);
 
 // Lie une séance-test à la campagne de tests qu'elle remplit (créée à la 1re saisie).
 export async function linkSessionCampaign(sessionId, campaignId) {
@@ -126,15 +158,6 @@ export function useTeamSessions(teamId, roster) {
 
 // Création d'une séance par le staff (précurseur minimal des programmes, étape 7)
 export async function createSession(teamId, { date, code, nature, titre, durationMin, exercises, assigned }) {
-  const uid = () => (globalThis.crypto?.randomUUID?.() || `e${Math.random().toString(36).slice(2, 10)}`);
-  const withIds = (exercises || []).map((e) => ({
-    id: e.id || uid(),
-    name: e.name,
-    sets: e.sets ?? 3,
-    reps: e.reps ?? "8",
-    charge: e.charge ?? "",
-    rest: e.rest ?? 90,
-  }));
   const { data, error } = await supabase
     .from("sessions")
     .insert({
@@ -144,11 +167,28 @@ export async function createSession(teamId, { date, code, nature, titre, duratio
       nature: nature || null,
       titre: titre || "Séance",
       duration_min: durationMin || 60,
-      exercises: withIds,
+      exercises: withExoIds(exercises),
       assigned: assigned || { mode: "all" },
     })
     .select()
     .single();
   if (error) throw error;
   return data;
+}
+
+// Édition d'une séance unique (occurrence d'une série → marquée `customized`).
+export async function updateSession(id, { date, code, nature, titre, durationMin, exercises, assigned }, { customized = false } = {}) {
+  const patch = {
+    ...(date ? { date } : {}), code: code || "RS", nature: nature || null,
+    titre: (titre || "").trim() || "Séance", duration_min: durationMin || 60,
+    exercises: withExoIds(exercises), assigned: assigned || { mode: "all" },
+    ...(customized ? { customized: true } : {}),
+  };
+  const { error } = await supabase.from("sessions").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteSession(id) {
+  const { error } = await supabase.from("sessions").delete().eq("id", id); // cascade logs
+  if (error) throw error;
 }

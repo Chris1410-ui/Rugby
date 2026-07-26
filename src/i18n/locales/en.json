@@ -1566,7 +1566,30 @@
       "editingBanner": "Editing an existing program",
       "saveEdit": "Save changes",
       "editBtn": "Edit",
-      "noExo": "No exercise"
+      "noExo": "No exercise",
+      "planSessionBtn": "Schedule a session",
+      "plannedTitle": "Scheduled sessions ({{count}})",
+      "recipientsCount": "{{count}} recipient(s)"
+    },
+    "sessionPlanner": {
+      "newTitle": "Schedule a session",
+      "editTitle": "Edit session",
+      "titlePlaceholder": "Session title",
+      "defaultTitle": "Session",
+      "code": "Code",
+      "nature": "Nature",
+      "duration": "Duration (min)",
+      "exercises": "Exercises",
+      "exoPlaceholder": "Exercise name",
+      "setsPlaceholder": "Sets",
+      "repsPlaceholder": "Reps",
+      "chargePlaceholder": "Load",
+      "addExo": "Add an exercise",
+      "recipients": "Recipients",
+      "create": "Create session",
+      "saveEdit": "Save",
+      "errTitle": "Give the session a title.",
+      "errSave": "Save failed: {{err}}"
     },
     "app": {
       "fabSeance": "＋ Session",
