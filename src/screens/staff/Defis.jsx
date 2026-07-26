@@ -4,6 +4,7 @@ import { C, sc } from "../../lib/tokens.js";
 import { todayISO } from "../../lib/metrics.js";
 import { CloseX, useModalClose, Tag } from "../../lib/ui.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
+import ErrorBoundary from "../../ErrorBoundary.jsx";
 import { Plus, Trash2, CheckCircle, X, Grid } from "../../lib/icons.jsx";
 import { CHALLENGE_BANNERS, CHALLENGE_EMOJIS, bannerGradient, defiOfWeek } from "../../lib/challenges.js";
 import {
@@ -153,7 +154,11 @@ export default function Defis({ teamId, players = [], openNew = false }) {
         </ChallengeDetail>
       )}
 
-      {(form || edit) && <DefiForm teamId={teamId} players={players} initial={edit} onClose={() => { setForm(false); setEdit(null); }} />}
+      {(form || edit) && (
+        <ErrorBoundary compact onClose={() => { setForm(false); setEdit(null); }}>
+          <DefiForm teamId={teamId} players={players} initial={edit} onClose={() => { setForm(false); setEdit(null); }} />
+        </ErrorBoundary>
+      )}
       {grid && <DefiGrid teamId={teamId} onClose={() => setGrid(false)} />}
     </section>
   );

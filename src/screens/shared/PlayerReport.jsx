@@ -4,7 +4,7 @@ import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel, posDisplay } from "../../lib/positions.js";
-import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel, alertText, alertCat } from "../../lib/metrics.js";
+import { acwrZ, computePoints, statusOfLog, fmtShort, ACTIVITIES, EVENING_MARKERS, pointLabel, badgeLabel, divLabel, zoneLabel, alertText, alertCat, cmpDate } from "../../lib/metrics.js";
 import { Ring, Section, KPI, Tag, CloseX, useModalClose, EstimatedBadge } from "../../lib/ui.jsx";
 import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { MessageSquare, Shield } from "../../lib/icons.jsx";
@@ -74,7 +74,7 @@ export default function PlayerReport({ player, sessions, logs, activities = [], 
   // Dernières séances assignées (récentes d'abord) + statut + RPE.
   const mine = sessions
     .filter((s) => s.assignedIds?.includes(player.id))
-    .sort((a, b) => b.date.localeCompare(a.date))
+    .sort((a, b) => cmpDate(b.date, a.date))
     .slice(0, 8)
     .map((s) => ({ s, st: statusOfLog(logs, s.id, player.id), rpe: logs?.[s.id]?.[player.id]?.rpe }));
 

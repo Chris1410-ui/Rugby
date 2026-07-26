@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C } from "../../lib/tokens.js";
 import { Section, Tag } from "../../lib/ui.jsx";
-import { parseISO, todayISO } from "../../lib/metrics.js";
+import { parseISO, todayISO, cmpDate } from "../../lib/metrics.js";
 import { effectiveAttendance, attendanceRate } from "../../lib/attendance.js";
 import { useTeamTrainings, useTeamAttendance } from "../../data/trainings.js";
 
@@ -22,7 +22,7 @@ export default function PlayerAttendance({ player, players = [] }) {
     return (trainings || [])
       .filter((tr) => (tr.assignedIds || []).includes(player?.id))
       .map((tr) => ({ tr, row: byTraining?.[tr.id]?.[player?.id] || null }))
-      .sort((a, b) => b.tr.date.localeCompare(a.tr.date));
+      .sort((a, b) => cmpDate(b.tr?.date, a.tr?.date));
   }, [trainings, byTraining, player?.id]);
 
   const rate = useMemo(() => attendanceRate(rows.map((r) => r.row).filter(Boolean)), [rows]);
