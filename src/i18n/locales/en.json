@@ -1276,6 +1276,22 @@
       "tagOpen": "open",
       "tagTeam": "team"
     },
+    "dataq": {
+      "title": "Data quality",
+      "hint": "Stat reliability depends on data entry. Here's what's missing to draw conclusions from real values — nudge the players concerned in one click.",
+      "noPlayers": "No players in the roster.",
+      "allGood": "✓ Enough data for reliable analysis.",
+      "lowLog": "{{count}} player(s) with too few logged sessions (unreliable load)",
+      "noDuration": "{{count}} player(s) with no session duration entered",
+      "noBilan": "{{count}} player(s) with no recent check-in (7 d)",
+      "no1RM": "{{count}} player(s) with no 1RM recorded",
+      "relance": "Nudge",
+      "relanced": "{{count}} nudged",
+      "nudgeLog": "Remember to validate your sessions in the app: without them, your load and ACWR aren't reliable.",
+      "nudgeDuration": "Remember to enter the DURATION of your sessions at validation: it's used to compute your load (sRPE).",
+      "nudgeBilan": "Remember to complete your daily check-in: it feeds your readiness and monitoring.",
+      "nudge1RM": "Record your 1RM (max load) so %-based loads are computed for you."
+    },
     "refdocs": {
       "title": "Reference documents · {{count}}",
       "addBtn": "Upload a PDF",
