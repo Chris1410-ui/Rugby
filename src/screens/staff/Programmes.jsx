@@ -12,27 +12,37 @@ import { usePrograms, createProgram, updateProgram, deleteProgram } from "../../
 import { resolveAssignedIds, buildAssigned, assignedToSelection } from "../../data/sessions.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
-import { useExercises } from "../../data/exercises.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
 import PdfImportReview from "../shared/PdfImportReview.jsx";
 import BulkPdfImport from "./BulkPdfImport.jsx";
 import { programFolder, uploadFile } from "../../data/storage.js";
 import ProgramFiles from "./ProgramFiles.jsx";
 import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
+import ExerciseAutocomplete from "../shared/ExerciseAutocomplete.jsx";
+import { linkAndCountExercises, incrementExerciseUsage } from "../../data/exerciseLibrary.js";
 import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
 const dateSt = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark" };
 const miniSt = { background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, fontWeight: 600, outline: "none" };
 
-const ExoRow = ({ exo, onChange, onDel, cues }) => {
+const ExoRow = ({ exo, onChange, onDel }) => {
   const { t } = useTranslation();
   const vid = (exo.video || "").trim();
   const vidOk = hasVideo(vid);
   return (
     <div style={{ padding: "7px 0", borderBottom: `1px solid ${C.border2}` }}>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-        <input value={exo.name} onChange={(e) => onChange({ name: e.target.value })} list="exlib-list" placeholder={t("staff.programs.exoPlaceholder")} title={cues || ""} style={{ flex: "1 1 150px", minWidth: 120, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, outline: "none" }} />
+        <div style={{ flex: "1 1 150px", minWidth: 120, display: "flex", alignItems: "center", gap: 4 }}>
+          {(exo.exerciseId || exo.exerciseRef) && <span title={t("protocols.linked")} style={{ fontSize: 11, color: C.green, flexShrink: 0 }}>🔗</span>}
+          <ExerciseAutocomplete
+            value={exo.name}
+            onChange={(v) => onChange({ name: v })}
+            onPick={(it) => onChange(it ? { exerciseId: it.id, exerciseRef: null } : { exerciseId: null })}
+            placeholder={t("staff.programs.exoPlaceholder")}
+            style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 9px", color: "#fff", fontSize: 12, outline: "none" }}
+          />
+        </div>
         <input value={exo.sets} onChange={(e) => onChange({ sets: e.target.value })} placeholder={t("staff.programs.setsPlaceholder")} style={{ width: 48, ...miniSt, textAlign: "center" }} />
         <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>×</span>
         <input value={exo.reps} onChange={(e) => onChange({ reps: e.target.value })} placeholder={t("staff.programs.repsPlaceholder")} style={{ width: 54, ...miniSt, textAlign: "center" }} />
@@ -89,7 +99,6 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const readOnly = useReadOnly();
   const { programs } = usePrograms(teamId);
   const { routines } = useRoutines(teamId);
-  const { exercises, find } = useExercises(teamId);
 
   const [view, setView] = useState("list");
   const [busy, setBusy] = useState(false);
@@ -212,6 +221,9 @@ export default function Programmes({ teamId, players, sessions, logs }) {
 
     setBusy(true);
     try {
+      // Auto-alimentation bibliothèque : lie / crée les exos au nom libre et
+      // compte l'usage (les plus utilisés remontent en autocomplétion).
+      const usedIds = await linkAndCountExercises(cleanT.flatMap((tp) => tp.exercises));
       if (editingId) {
         // Édition en place : met à jour l'entrée + re-matérialise les séances
         // futures non loggées (l'historique loggé est préservé).
@@ -228,6 +240,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
         setView("list"); reset();
         setNote(t("staff.programs.sent", { count }));
       }
+      incrementExerciseUsage(usedIds); // non bloquant
     } catch (e) {
       if (e.code === "no-sessions" || e.message === "no-sessions")
         setNote(t("staff.programs.errNoSessions"));
@@ -352,7 +365,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           </div>
           <OverloadHint weekday={tpl.weekday} nature={tpl.nature || "force"} start={start} end={end} loadByDate={loadByDate} t={t} />
           {tpl.exercises.map((exo, ei) => (
-            <ExoRow key={exo.id} exo={exo} cues={find(exo.name)?.cues} onChange={(patch) => setExo(ti, ei, patch)} onDel={() => delExo(ti, ei)} />
+            <ExoRow key={exo.id} exo={exo} onChange={(patch) => setExo(ti, ei, patch)} onDel={() => delExo(ti, ei)} />
           ))}
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <button onClick={() => addExo(ti)} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={13} /> {t("staff.programs.addExo")}</button>
@@ -370,8 +383,6 @@ export default function Programmes({ teamId, players, sessions, logs }) {
       {pdfReview && <PdfImportReview result={pdfReview} onCancel={() => setPdfReview(null)} onConfirm={(sessions) => applyReview(sessions)} />}
 
       <button onClick={addTpl} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 10, color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, cursor: "pointer", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Plus size={14} /> {t("staff.programs.addSession")}</button>
-
-      <datalist id="exlib-list">{exercises.map((e) => <option key={e.id} value={e.name} />)}</datalist>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         <button onClick={doSaveRoutine} disabled={!title.trim()} style={{ flex: "0 0 auto", background: `${C.viol}22`, border: `1px solid ${C.viol}66`, borderRadius: 12, padding: "0 16px", color: C.viol, fontWeight: 700, fontSize: 12, cursor: title.trim() ? "pointer" : "default", opacity: title.trim() ? 1 : 0.5, display: "flex", alignItems: "center", gap: 6 }}><ClipboardList size={14} /> {t("staff.programs.routineBtn")}</button>

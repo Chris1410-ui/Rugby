@@ -18,7 +18,7 @@ import { BUILTIN_SECTION_TEMPLATES, freshSection } from "../../../lib/program/se
 import { useTeamSectionTemplates, saveSectionTemplate, deleteSectionTemplate } from "../../../data/sectionTemplates.js";
 import ExercisePickerSheet from "../../shared/ExercisePickerSheet.jsx";
 import ExerciseAutocomplete from "../../shared/ExerciseAutocomplete.jsx";
-import { createCustomExercise, incrementExerciseUsage } from "../../../data/exerciseLibrary.js";
+import { incrementExerciseUsage, linkAndCountExercises } from "../../../data/exerciseLibrary.js";
 import ProgramView from "../../shared/ProgramView.jsx";
 import AssignmentPanel from "./AssignmentPanel.jsx";
 import KnowledgeAssistant from "../../shared/KnowledgeAssistant.jsx";
@@ -83,18 +83,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
       // côté serveur). Les liens `exerciseId` sont persistés dans le doc, et le
       // compteur d'usage est incrémenté (les plus utilisés remontent en autocomplétion).
       const linked = clone(doc);
-      const usedIds = [];
-      for (const sec of linked.sections || []) {
-        for (const row of sec.rows || []) {
-          const nm = (row.name || "").trim();
-          if (!nm) continue;
-          if (!row.exerciseId && !row.exerciseRef) {
-            try { const eid = await createCustomExercise(nm); if (eid) row.exerciseId = eid; }
-            catch (e) { console.warn("[autolib]", nm, e.message); }
-          }
-          if (row.exerciseId) usedIds.push(row.exerciseId);
-        }
-      }
+      const usedIds = await linkAndCountExercises((linked.sections || []).flatMap((sec) => sec.rows || []));
       await updateProgramDoc(id, { title, category, status, weeks, doc: { ...linked, meta: { ...linked.meta, weeks } } });
       setDocState(linked); // reflète les liens (🔗) dans l'UI
       incrementExerciseUsage(usedIds); // non bloquant

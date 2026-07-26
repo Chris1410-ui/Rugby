@@ -7,6 +7,7 @@ import { Plus, Trash2 } from "../../lib/icons.jsx";
 import { createFreeSession } from "../../data/freeSessions.js";
 import { useMyRoutines, saveMyRoutine, deleteMyRoutine } from "../../data/routines.js";
 import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
+import ExerciseAutocomplete from "../shared/ExerciseAutocomplete.jsx";
 
 const accent = C.green;
 
@@ -26,9 +27,20 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   const [savingRoutine, setSavingRoutine] = useState(false);
   const [routineName, setRoutineName] = useState("");
   const [picking, setPicking] = useState(false);
+  const [quick, setQuick] = useState("");
   const { routines } = useMyRoutines(me?.id);
 
   const inCart = (ref) => cart.some((c) => c.ref === ref);
+
+  // Ajout rapide par nom (autocomplétion catalogue + perso club). Un choix lie
+  // la ligne à la bibliothèque (ref = id) ; un nom libre reste tel quel.
+  const quickAdd = (name, id, bodyPart) => {
+    const nm = (name || "").trim();
+    if (!nm) return;
+    const ref = id || `q:${nm.toLowerCase()}`;
+    setCart((c) => (c.some((x) => x.ref === ref) ? c : [...c, { ref, name: nm, bodyPart: bodyPart || "", sets: 3, reps: "8", charge: "" }]));
+    setQuick("");
+  };
   const patch = (ref, p) => setCart((c) => c.map((x) => (x.ref === ref ? { ...x, ...p } : x)));
   const remove = (ref) => setCart((c) => c.filter((x) => x.ref !== ref));
 
@@ -153,8 +165,20 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
           )
         )}
 
+        {/* Ajout rapide par nom (autocomplétion) */}
+        <div style={{ display: "flex", gap: 6, marginTop: 12, alignItems: "stretch" }}>
+          <ExerciseAutocomplete
+            value={quick}
+            onChange={setQuick}
+            onPick={(it) => it && quickAdd(it.name, it.id, it.category)}
+            placeholder={t("player.freeSession.quickAddPh")}
+            style={inp}
+          />
+          <button onClick={() => quickAdd(quick)} disabled={!quick.trim()} title={t("player.freeSession.quickAdd")} style={{ flexShrink: 0, background: accent, border: "none", borderRadius: 8, padding: "0 14px", color: "#fff", cursor: quick.trim() ? "pointer" : "default", opacity: quick.trim() ? 1 : 0.5, display: "flex", alignItems: "center" }}><Plus size={16} /></button>
+        </div>
+
         {/* Ajout depuis la Bibliothèque (sélecteur partagé) */}
-        <button onClick={() => setPicking(true)} style={{ width: "100%", marginTop: 12, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, color: accent, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+        <button onClick={() => setPicking(true)} style={{ width: "100%", marginTop: 8, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, color: accent, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
           <Plus size={15} /> {t("shared.expick.title")}
         </button>
 

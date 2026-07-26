@@ -911,6 +911,8 @@
       "namePlaceholder": "Sessienaam (optioneel)",
       "cartTitle": "MIJN SESSIE",
       "cartEmpty": "Voeg hieronder oefeningen toe uit de bibliotheek.",
+      "quickAdd": "Toevoegen",
+      "quickAddPh": "Voeg een oefening toe op naam…",
       "sets": "Sets",
       "reps": "Reps",
       "charge": "Gewicht",

@@ -132,6 +132,26 @@ export async function incrementExerciseUsage(ids) {
   if (error) console.error("[increment_exercise_usage]", error.message);
 }
 
+/* Auto-alimentation de la bibliothèque à l'enregistrement d'un protocole /
+   programme : pour chaque ligne au nom libre non encore liée, crée l'exercice
+   perso du club (dédup côté RPC via name_norm) et pose son `exerciseId`. Mute
+   les objets en place et renvoie la liste des ids utilisés (pour incrémenter le
+   compteur d'usage → remontée en autocomplétion). Best-effort : un échec de
+   création n'interrompt jamais la sauvegarde. */
+export async function linkAndCountExercises(items) {
+  const usedIds = [];
+  for (const it of items || []) {
+    const nm = (it?.name || "").trim();
+    if (!nm) continue;
+    if (!it.exerciseId && !it.exerciseRef) {
+      try { const eid = await createCustomExercise(nm); if (eid) it.exerciseId = eid; }
+      catch (e) { console.warn("[autolib]", nm, e.message); }
+    }
+    if (it.exerciseId) usedIds.push(it.exerciseId);
+  }
+  return usedIds;
+}
+
 /* Valeurs distinctes des facettes (partie du corps / équipement / muscle ciblé)
    pour peupler les filtres. Lues une fois au montage. */
 export function useExerciseFacets() {

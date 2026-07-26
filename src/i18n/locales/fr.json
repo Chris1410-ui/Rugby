@@ -911,6 +911,8 @@
       "namePlaceholder": "Nom de la séance (optionnel)",
       "cartTitle": "MA SÉANCE",
       "cartEmpty": "Ajoute des exercices depuis la bibliothèque ci-dessous.",
+      "quickAdd": "Ajouter",
+      "quickAddPh": "Ajouter un exercice par son nom…",
       "sets": "Séries",
       "reps": "Reps",
       "charge": "Charge",
