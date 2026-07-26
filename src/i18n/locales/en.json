@@ -1415,7 +1415,15 @@
         "absent": "Absent",
         "pending": "No reply"
       },
-      "errNoOcc": "No occurrences generated — check the days and period."
+      "errNoOcc": "No occurrences generated — check the days and period.",
+      "scopeOne": "This occurrence",
+      "scopeSeries": "Whole series",
+      "seriesHint": "Editing the series regenerates future occurrences. Past, customised or already-marked sessions are never touched.",
+      "saveSeries": "Update the series",
+      "delSeries": "Delete the series",
+      "delSeriesConfirm": "Delete the series? Future unmarked occurrences will be removed; the past is kept.",
+      "tagSeries": "series",
+      "tagCustom": "customised"
     },
     "challenges": {
       "delConfirm": "Delete this challenge?",

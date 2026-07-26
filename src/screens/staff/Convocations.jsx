@@ -11,9 +11,10 @@ import { attendanceCounts } from "../../lib/attendance.js";
 import {
   useTeamTrainings, useTeamAttendance,
   createTraining, updateTraining, deleteTraining, markAttendance, remindNonResponders,
-  createTrainingsRecurring,
+  createTrainingsRecurring, updateTrainingSeries, deleteTrainingSeries,
 } from "../../data/trainings.js";
 import { buildAssigned, assignedToSelection, resolveAssignedIds } from "../../data/sessions.js";
+import { getRecurrenceSeries, seriesToValue } from "../../data/recurrence.js";
 import { getClubId } from "../../data/catalog.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
 import RecurrenceSelector from "../shared/RecurrenceSelector.jsx";
@@ -60,6 +61,7 @@ export default function Convocations({ teamId, players = [], openNew = false }) 
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               {tr.nature && <NatureTag nature={tr.nature} />}
               <span style={{ fontSize: 14, fontWeight: 800 }}>{tr.titre || t("staff.convocations.untitled")}</span>
+              {tr.seriesId && <Tag c={C.teal}>{tr.customized ? t("staff.convocations.tagCustom") : t("staff.convocations.tagSeries")}</Tag>}
             </div>
             <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
               {[tr.heure, tr.lieu].filter(Boolean).join(" · ") || t("staff.convocations.noTimePlace")}
@@ -217,6 +219,7 @@ function ConvocationForm({ teamId, players, initial = null, onClose }) {
   }));
   const [rec, setRec] = useState(() => assignedToSelection(initial?.assigned));
   const [clubId, setClubId] = useState(null);
+  const [scope, setScope] = useState("occurrence"); // édition : 'occurrence' | 'series'
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const set = (k, v) => { setD((p) => ({ ...p, [k]: v })); setErr(""); };
@@ -225,11 +228,36 @@ function ConvocationForm({ teamId, players, initial = null, onClose }) {
   const recipientCount = resolveAssignedIds(buildAssigned(rec), players).length;
   const payload = () => ({ titre: d.titre.trim() || null, lieu: d.lieu?.trim() || null, nature: d.nature || null, notes: d.notes?.trim() || null });
 
+  // Bascule « toute la série » : charge la définition de série et pré-remplit.
+  const toSeriesScope = async () => {
+    try {
+      const s = await getRecurrenceSeries(initial.seriesId);
+      setRecur(seriesToValue(s));
+      setD({ titre: s.payload?.titre || "", lieu: s.payload?.lieu || "", nature: s.payload?.nature || "", notes: s.payload?.notes || "" });
+      setRec(assignedToSelection(s.assigned));
+      setScope("series"); setErr("");
+    } catch (e) { setErr(t("staff.convocations.errSave", { err: e.message || "" })); }
+  };
+  const toOccurrenceScope = () => {
+    setRecur({ mode: "once", date: initial.date, time: initial.heure || "", weekdays: [], times: {}, start: initial.date, end: "", exclusions: [] });
+    setD({ titre: initial.titre || "", lieu: initial.lieu || "", nature: initial.nature || "", notes: initial.notes || "" });
+    setRec(assignedToSelection(initial.assigned)); setScope("occurrence"); setErr("");
+  };
+
+  const delSeries = async () => {
+    if (!confirm(t("staff.convocations.delSeriesConfirm"))) return;
+    setBusy(true); setErr("");
+    try { await deleteTrainingSeries(initial.seriesId, { today: todayISO() }); onClose(); }
+    catch (e) { setErr(t("staff.convocations.errSave", { err: e.message || "" })); setBusy(false); }
+  };
+
   const save = async () => {
     const assigned = buildAssigned(rec);
     setBusy(true); setErr("");
     try {
-      if (!editing && recur.mode === "recurring") {
+      if (editing && scope === "series") {
+        await updateTrainingSeries(initial.seriesId, teamId, { value: recur, assigned, payload: payload() }, { today: todayISO() });
+      } else if (!editing && recur.mode === "recurring") {
         const r = await createTrainingsRecurring(teamId, clubId, { value: recur, assigned, payload: payload() });
         if (!r.count) throw new Error("no_occurrences");
       } else if (editing) {
@@ -262,9 +290,18 @@ function ConvocationForm({ teamId, players, initial = null, onClose }) {
 
         <input value={d.titre} onChange={(e) => set("titre", e.target.value)} placeholder={t("staff.convocations.titlePlaceholder")} maxLength={90} style={inp} />
 
+        {/* Édition d'une occurrence d'une série : portée « cette occurrence » ou « toute la série ». */}
+        {editing && initial.seriesId && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <button type="button" onClick={toOccurrenceScope} style={scopeBtn(scope === "occurrence")}>{t("staff.convocations.scopeOne")}</button>
+            <button type="button" onClick={toSeriesScope} style={scopeBtn(scope === "series")}>{t("staff.convocations.scopeSeries")}</button>
+          </div>
+        )}
+        {scope === "series" && <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginBottom: 8, lineHeight: 1.5 }}>{t("staff.convocations.seriesHint")}</div>}
+
         {/* Récurrence partagée : ponctuel (défaut) ou récurrent (jours + heures + période) */}
         <div style={{ marginBottom: 10 }}>
-          <RecurrenceSelector value={recur} onChange={(nv) => { setRecur(nv); setErr(""); }} recipientCount={recipientCount} allowRecurring={!editing} accent={accent} />
+          <RecurrenceSelector value={recur} onChange={(nv) => { setRecur(nv); setErr(""); }} recipientCount={recipientCount} allowRecurring={!editing || scope === "series"} accent={accent} />
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
@@ -282,10 +319,14 @@ function ConvocationForm({ teamId, players, initial = null, onClose }) {
         <div style={{ marginBottom: 10 }}><RecipientSelect players={players} value={rec} onChange={setRec} accent={accent} /></div>
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
-        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : editing ? t("staff.convocations.saveEdit") : t("staff.convocations.saveNew")}</button>
+        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : scope === "series" ? t("staff.convocations.saveSeries") : editing ? t("staff.convocations.saveEdit") : t("staff.convocations.saveNew")}</button>
+        {scope === "series" && (
+          <button onClick={delSeries} disabled={busy} style={{ width: "100%", marginTop: 8, background: "none", border: "none", color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>{t("staff.convocations.delSeries")}</button>
+        )}
       </div>
     </div>
   );
 }
 
 const lbl = { fontSize: 9.5, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: 0.5, marginBottom: 4 };
+const scopeBtn = (on) => ({ flex: 1, padding: "8px 0", borderRadius: 9, border: `1px solid ${on ? C.coral : C.border}`, background: on ? `${C.coral}22` : "rgba(255,255,255,0.04)", color: on ? "#fff" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 800, cursor: "pointer" });

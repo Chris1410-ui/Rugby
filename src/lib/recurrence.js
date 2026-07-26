@@ -53,6 +53,26 @@ export function expandRecurrence(value = {}, max = MAX_OCCURRENCES) {
   return { occurrences: occ, count: occ.length, capped };
 }
 
+/* Régénération d'une série après édition. On ne touche JAMAIS une occurrence
+   PROTÉGÉE : passée (date < today), personnalisée (customized) ou déjà réalisée/
+   validée par un joueur (hasAttendance). Pur & testable.
+   - existing : [{ id, date, customized, hasAttendance }]
+   - target   : occurrences voulues [{ date, time }] (expandRecurrence)
+   → { toDelete:[ids], toInsert:[{date,time}], toUpdate:[{id,time}] }.
+   On ne crée jamais d'occurrence dans le passé ; on ne duplique pas une date
+   déjà présente ; on met à jour l'heure des occurrences futures non protégées. */
+export function planSeriesUpdate(existing = [], target = [], today) {
+  const targetByDate = new Map(target.map((o) => [o.date, o]));
+  const existingDates = new Set(existing.map((e) => e.date));
+  const isProtected = (e) => e.date < today || e.customized || e.hasAttendance;
+  const toDelete = existing.filter((e) => !isProtected(e) && !targetByDate.has(e.date)).map((e) => e.id);
+  const toInsert = target.filter((o) => o.date >= today && !existingDates.has(o.date));
+  const toUpdate = existing
+    .filter((e) => !isProtected(e) && targetByDate.has(e.date))
+    .map((e) => ({ id: e.id, time: targetByDate.get(e.date).time }));
+  return { toDelete, toInsert, toUpdate };
+}
+
 // Libellé récap « Mardi 18h30 et Jeudi 20h » (jours sélectionnés + heures).
 export function summarizeDays(value, dayLabels) {
   const weekdays = [...new Set((value.weekdays || []).map(Number))].filter((n) => n >= 1 && n <= 7).sort((a, b) => a - b);

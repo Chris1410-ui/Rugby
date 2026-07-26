@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { expandRecurrence, isoWeekday, summarizeDays, MAX_OCCURRENCES } from "./recurrence.js";
+import { expandRecurrence, isoWeekday, summarizeDays, MAX_OCCURRENCES, planSeriesUpdate } from "./recurrence.js";
 
 describe("recurrence — isoWeekday (1=lundi..7=dimanche)", () => {
   it("mappe correctement", () => {
@@ -53,5 +53,36 @@ describe("recurrence — expandRecurrence", () => {
     const labels = { 1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi", 7: "Dimanche" };
     const s = summarizeDays({ weekdays: [4, 2], times: { 2: "18:30", 4: "20:00" } }, labels);
     expect(s).toBe("Mardi 18:30 · Jeudi 20:00");
+  });
+});
+
+describe("recurrence — planSeriesUpdate (protège passé / customisé / pointé)", () => {
+  const today = "2026-09-10";
+  it("supprime les futures non protégées absentes de la cible, insère les nouvelles", () => {
+    const existing = [
+      { id: "a", date: "2026-09-01", customized: false, hasAttendance: false }, // passé → protégé
+      { id: "b", date: "2026-09-15", customized: false, hasAttendance: false }, // futur, plus dans la cible → delete
+      { id: "c", date: "2026-09-22", customized: false, hasAttendance: false }, // futur, dans la cible → update
+    ];
+    const target = [{ date: "2026-09-22", time: "20:00" }, { date: "2026-09-29", time: "20:00" }];
+    const p = planSeriesUpdate(existing, target, today);
+    expect(p.toDelete).toEqual(["b"]);
+    expect(p.toInsert.map((o) => o.date)).toEqual(["2026-09-29"]);
+    expect(p.toUpdate).toEqual([{ id: "c", time: "20:00" }]);
+  });
+
+  it("ne touche jamais une occurrence customisée ou déjà pointée", () => {
+    const existing = [
+      { id: "x", date: "2026-09-15", customized: true, hasAttendance: false },  // customisée
+      { id: "y", date: "2026-09-16", customized: false, hasAttendance: true },  // pointée
+    ];
+    const target = []; // la série ne prévoit plus rien
+    const p = planSeriesUpdate(existing, target, today);
+    expect(p.toDelete).toEqual([]); // aucune protégée supprimée
+  });
+
+  it("ne crée jamais d'occurrence dans le passé", () => {
+    const p = planSeriesUpdate([], [{ date: "2026-09-01", time: "18:00" }, { date: "2026-09-20", time: "18:00" }], today);
+    expect(p.toInsert.map((o) => o.date)).toEqual(["2026-09-20"]);
   });
 });
