@@ -52,6 +52,22 @@
     "compare": "A/B comparison",
     "abonnements": "Push subscriptions"
   },
+  "recurrence": {
+    "once": "One-off",
+    "recurring": "Recurring",
+    "date": "Date",
+    "time": "Time",
+    "days": "Days",
+    "from": "From",
+    "to": "To",
+    "exclusions": "Dates to exclude (holidays, breaks…)",
+    "period": "from {{from}} to {{to}}",
+    "occCount": "{{count}} occurrence(s)",
+    "recipCount": "{{count}} recipient(s)",
+    "capped": "Capped at {{max}} occurrences — shorten the period.",
+    "incomplete": "Pick at least one day and a period.",
+    "pickDays": "Pick the days"
+  },
   "knowledge": {
     "btn": "Tips",
     "title": "Assistant — knowledge base",
@@ -1398,7 +1414,8 @@
         "late": "Late",
         "absent": "Absent",
         "pending": "No reply"
-      }
+      },
+      "errNoOcc": "No occurrences generated — check the days and period."
     },
     "challenges": {
       "delConfirm": "Delete this challenge?",

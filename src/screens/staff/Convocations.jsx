@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
@@ -11,9 +11,12 @@ import { attendanceCounts } from "../../lib/attendance.js";
 import {
   useTeamTrainings, useTeamAttendance,
   createTraining, updateTraining, deleteTraining, markAttendance, remindNonResponders,
+  createTrainingsRecurring,
 } from "../../data/trainings.js";
-import { buildAssigned, assignedToSelection } from "../../data/sessions.js";
+import { buildAssigned, assignedToSelection, resolveAssignedIds } from "../../data/sessions.js";
+import { getClubId } from "../../data/catalog.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
+import RecurrenceSelector from "../shared/RecurrenceSelector.jsx";
 
 const accent = C.coral;
 // Couleur d'un état de présence effectif.
@@ -206,22 +209,46 @@ function ConvocationForm({ teamId, players, initial = null, onClose }) {
   useModalClose(onClose);
   const editing = Boolean(initial);
   const [d, setD] = useState(() => initial
-    ? { titre: initial.titre || "", date: initial.date || "", heure: initial.heure || "", lieu: initial.lieu || "", nature: initial.nature || "", notes: initial.notes || "" }
-    : { titre: "", date: todayISO(), heure: "", lieu: "", nature: "", notes: "" });
+    ? { titre: initial.titre || "", lieu: initial.lieu || "", nature: initial.nature || "", notes: initial.notes || "" }
+    : { titre: "", lieu: "", nature: "", notes: "" });
+  const [recur, setRecur] = useState(() => ({
+    mode: "once", date: initial?.date || todayISO(), time: initial?.heure || "",
+    weekdays: [], times: {}, start: initial?.date || todayISO(), end: "", exclusions: [],
+  }));
   const [rec, setRec] = useState(() => assignedToSelection(initial?.assigned));
+  const [clubId, setClubId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const set = (k, v) => { setD((p) => ({ ...p, [k]: v })); setErr(""); };
+  useEffect(() => { let a = true; getClubId(teamId).then((id) => { if (a) setClubId(id); }); return () => { a = false; }; }, [teamId]);
+
+  const recipientCount = resolveAssignedIds(buildAssigned(rec), players).length;
+  const payload = () => ({ titre: d.titre.trim() || null, lieu: d.lieu?.trim() || null, nature: d.nature || null, notes: d.notes?.trim() || null });
 
   const save = async () => {
-    if (!d.date) return setErr(t("staff.convocations.errDate"));
     const assigned = buildAssigned(rec);
     setBusy(true); setErr("");
     try {
-      if (editing) await updateTraining(initial.id, { titre: d.titre.trim() || null, date: d.date, heure: d.heure?.trim() || null, lieu: d.lieu?.trim() || null, nature: d.nature || null, notes: d.notes?.trim() || null, assigned });
-      else await createTraining(teamId, { ...d, assigned });
+      if (!editing && recur.mode === "recurring") {
+        const r = await createTrainingsRecurring(teamId, clubId, { value: recur, assigned, payload: payload() });
+        if (!r.count) throw new Error("no_occurrences");
+      } else if (editing) {
+        if (!recur.date) { setBusy(false); return setErr(t("staff.convocations.errDate")); }
+        // Édition d'une occurrence : si elle appartient à une série, on la marque
+        // « personnalisée » → une mise à jour de série ne l'écrasera plus.
+        await updateTraining(initial.id, {
+          ...payload(), date: recur.date, heure: recur.time?.trim() || null, assigned,
+          ...(initial.seriesId ? { customized: true } : {}),
+        });
+      } else {
+        if (!recur.date) { setBusy(false); return setErr(t("staff.convocations.errDate")); }
+        await createTraining(teamId, { ...payload(), date: recur.date, heure: recur.time?.trim() || null, assigned });
+      }
       onClose();
-    } catch (e) { setErr(t("staff.convocations.errSave", { err: e.message || "" })); setBusy(false); }
+    } catch (e) {
+      setErr(e.message === "no_occurrences" ? t("staff.convocations.errNoOcc") : t("staff.convocations.errSave", { err: e.message || "" }));
+      setBusy(false);
+    }
   };
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10, boxSizing: "border-box" };
 
@@ -234,10 +261,12 @@ function ConvocationForm({ teamId, players, initial = null, onClose }) {
         </div>
 
         <input value={d.titre} onChange={(e) => set("titre", e.target.value)} placeholder={t("staff.convocations.titlePlaceholder")} maxLength={90} style={inp} />
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1.2 }}><div style={lbl}>{t("staff.convocations.lblDate")}</div><input type="date" value={d.date} onChange={(e) => set("date", e.target.value)} style={{ ...inp, colorScheme: "dark" }} /></div>
-          <div style={{ flex: 1 }}><div style={lbl}>{t("staff.convocations.lblHeure")}</div><input value={d.heure} onChange={(e) => set("heure", e.target.value)} placeholder="18:30" style={inp} /></div>
+
+        {/* Récurrence partagée : ponctuel (défaut) ou récurrent (jours + heures + période) */}
+        <div style={{ marginBottom: 10 }}>
+          <RecurrenceSelector value={recur} onChange={(nv) => { setRecur(nv); setErr(""); }} recipientCount={recipientCount} allowRecurring={!editing} accent={accent} />
         </div>
+
         <div style={{ display: "flex", gap: 8 }}>
           <div style={{ flex: 1 }}><div style={lbl}>{t("staff.convocations.lblLieu")}</div><input value={d.lieu} onChange={(e) => set("lieu", e.target.value)} placeholder={t("staff.convocations.lieuPlaceholder")} style={inp} /></div>
           <div style={{ flex: 1 }}><div style={lbl}>{t("staff.convocations.lblNature")}</div>

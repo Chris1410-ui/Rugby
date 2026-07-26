@@ -52,6 +52,22 @@
     "compare": "A/B vergelijking",
     "abonnements": "Push-abonnementen"
   },
+  "recurrence": {
+    "once": "Eenmalig",
+    "recurring": "Terugkerend",
+    "date": "Datum",
+    "time": "Tijd",
+    "days": "Dagen",
+    "from": "Van",
+    "to": "Tot",
+    "exclusions": "Uit te sluiten datums (vakanties, pauzes…)",
+    "period": "van {{from}} tot {{to}}",
+    "occCount": "{{count}} keer",
+    "recipCount": "{{count}} ontvanger(s)",
+    "capped": "Beperkt tot {{max}} keer — verkort de periode.",
+    "incomplete": "Kies minstens één dag en een periode.",
+    "pickDays": "Kies de dagen"
+  },
   "knowledge": {
     "btn": "Tips",
     "title": "Assistent — kennisbank",
@@ -1398,7 +1414,8 @@
         "late": "Te laat",
         "absent": "Afwezig",
         "pending": "Geen antwoord"
-      }
+      },
+      "errNoOcc": "Geen keren gegenereerd — controleer de dagen en periode."
     },
     "challenges": {
       "delConfirm": "Deze uitdaging verwijderen?",

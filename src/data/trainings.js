@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { resolveAssignedIds } from "./sessions.js";
 import { uniqueTopic } from "./messages.js";
+import { expandRecurrence } from "../lib/recurrence.js";
+import { createRecurrenceSeries, deleteRecurrenceSeries } from "./recurrence.js";
 
 /* Convocations aux entraînements collectifs + présences (migration 0082).
    Le joueur n'écrit JAMAIS en direct : training_respond est un RPC SECURITY
@@ -15,6 +17,7 @@ export function dbToTraining(row, roster) {
     titre: row.titre || "", notes: row.notes || "",
     assigned: row.assigned || { mode: "all" },
     assignedIds: resolveAssignedIds(row.assigned, roster || []),
+    seriesId: row.series_id || null, customized: !!row.customized,
     createdBy: row.created_by, createdAt: row.created_at,
   };
 }
@@ -98,6 +101,28 @@ export async function createTraining(teamId, tr) {
   const { data, error } = await supabase.from("trainings").insert(trainingRow(teamId, tr, auth?.user?.id)).select().single();
   if (error) throw error;
   return data;
+}
+
+/* Convocations RÉCURRENTES : crée la série (jours/heures/période/exclusions +
+   gabarit) puis UNE convocation par occurrence, liée à la série. L'heure de
+   chaque occurrence vient du jour (times[weekday]). Borné à MAX_OCCURRENCES en
+   amont (expandRecurrence). En cas d'échec d'insertion, la série est nettoyée. */
+export async function createTrainingsRecurring(teamId, clubId, { value, assigned, payload = {} }) {
+  const { occurrences } = expandRecurrence(value);
+  if (!occurrences.length) throw new Error("no_occurrences");
+  const series = await createRecurrenceSeries({ teamId, clubId, objectType: "training", value, assigned, payload });
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth?.user?.id;
+  const rows = occurrences.map((o) => ({
+    ...trainingRow(teamId, {
+      date: o.date, heure: o.time || payload.heure, lieu: payload.lieu,
+      nature: payload.nature, titre: payload.titre, notes: payload.notes, assigned,
+    }, uid),
+    series_id: series.id, customized: false,
+  }));
+  const { error } = await supabase.from("trainings").insert(rows);
+  if (error) { try { await deleteRecurrenceSeries(series.id); } catch { /* best effort */ } throw error; }
+  return { seriesId: series.id, count: rows.length };
 }
 export async function updateTraining(id, patch) {
   const { error } = await supabase.from("trainings").update(patch).eq("id", id);
