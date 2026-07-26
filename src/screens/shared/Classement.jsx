@@ -18,6 +18,7 @@ import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import { natureLabel, natureColor } from "../../lib/nature.js";
 import { KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Trophy } from "../../lib/icons.jsx";
+import AthleteProfile from "./AthleteProfile.jsx";
 
 const Move = ({ m }) =>
   m === 0 ? (
@@ -37,6 +38,14 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const [scope, setScope] = useState("all");
   const [mode, setMode] = useState("indiv"); // indiv | team (bascule #6)
   const [sel, setSel] = useState(null);
+  const [athlete, setAthlete] = useState(null); // profil athlète public (joueur → staff-athlète)
+
+  // Un JOUEUR qui ouvre un STAFF-ATHLÈTE (autre que lui) voit le profil athlète
+  // PUBLIC restreint (pas le journal des points). Sinon, détail complet habituel.
+  const openRow = (d) => {
+    if (isJoueur && d.p.isStaffAthlete && d.p.id !== me?.id) setAthlete(d);
+    else setSel(d);
+  };
 
   // Statut Top 14 par joueur, dérivé côté serveur (SECURITY DEFINER) → visible
   // par tous (émulation collective) sans exposer les valeurs brutes des tests.
@@ -148,7 +157,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
         {ranked.map((d) => {
           const meRow = isJoueur && d.p.id === me.id, top = d.scopeRank === 1;
           return (
-            <div key={d.p.id} onClick={() => setSel(d)} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto auto", alignItems: "center", gap: 8, padding: "9px 10px", marginBottom: 6, borderRadius: 9, cursor: "pointer", background: top ? "linear-gradient(90deg,rgba(39,232,214,0.9),rgba(39,232,214,0.5))" : meRow ? NEON.rowB : NEON.row, border: meRow && !top ? `1px solid ${accent}` : "1px solid transparent" }}>
+            <div key={d.p.id} onClick={() => openRow(d)} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto auto", alignItems: "center", gap: 8, padding: "9px 10px", marginBottom: 6, borderRadius: 9, cursor: "pointer", background: top ? "linear-gradient(90deg,rgba(39,232,214,0.9),rgba(39,232,214,0.5))" : meRow ? NEON.rowB : NEON.row, border: meRow && !top ? `1px solid ${accent}` : "1px solid transparent" }}>
               <div style={{ fontSize: d.scopeRank <= 3 ? 15 : 13, fontWeight: 900, fontStyle: "italic", textAlign: "center", color: top ? "#0c2b2b" : d.scopeRank === 2 ? "#C8D2E0" : d.scopeRank === 3 ? "#F2C84B" : "rgba(255,255,255,0.65)" }}>{top ? "#1" : d.scopeRank + "ᵉ"}</div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
@@ -225,6 +234,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       })()}
 
       {sel && <PlayerPointsDetail sel={sel} accent={accent} onClose={() => setSel(null)} />}
+      {athlete && <AthleteProfile sel={athlete} accent={accent} onClose={() => setAthlete(null)} />}
     </div>
   );
 }
