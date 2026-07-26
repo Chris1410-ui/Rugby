@@ -52,6 +52,19 @@
     "compare": "Comparaison A/B",
     "abonnements": "Abonnements notifications"
   },
+  "knowledge": {
+    "btn": "Conseils",
+    "title": "Assistance — base de connaissance",
+    "hint": "Conseils issus de tes documents de référence, pertinents pour ce protocole. Insère-les comme section : la source (document + page) est conservée.",
+    "searchPh": "Rechercher un conseil…",
+    "empty": "Aucun conseil publié. Dépose et analyse un PDF de référence dans « Documents » pour enrichir la base.",
+    "noMatch": "Aucun conseil ne correspond à ta recherche.",
+    "relevant": "Pertinents pour ce protocole",
+    "others": "Autres conseils",
+    "source": "Source :",
+    "insert": "Insérer",
+    "insertedTitle": "Conseil"
+  },
   "protocols": {
     "title": "Protocoles",
     "intro": "Crée des programmes d'entraînement riches (hero, sections, tableaux d'exercices), puis publie-les pour tes joueurs.",

@@ -52,6 +52,19 @@
     "compare": "A/B comparison",
     "abonnements": "Push subscriptions"
   },
+  "knowledge": {
+    "btn": "Tips",
+    "title": "Assistant — knowledge base",
+    "hint": "Tips from your reference documents, relevant to this protocol. Insert them as a section: the source (document + page) is preserved.",
+    "searchPh": "Search a tip…",
+    "empty": "No published tip yet. Upload and analyse a reference PDF in “Documents” to enrich the base.",
+    "noMatch": "No tip matches your search.",
+    "relevant": "Relevant to this protocol",
+    "others": "Other tips",
+    "source": "Source:",
+    "insert": "Insert",
+    "insertedTitle": "Tip"
+  },
   "protocols": {
     "title": "Protocols",
     "intro": "Build rich training programs (hero, sections, exercise tables), then publish them for your players.",
