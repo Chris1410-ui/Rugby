@@ -17,9 +17,15 @@ export function dbToRefDoc(r) {
     period: r.period || "", positions: r.positions || [], ageCategory: r.age_category || "",
     equipment: r.equipment || [], storagePath: r.storage_path || null, source: r.source || "",
     authorOwned: !!r.author_owned, visibility: r.visibility || "club", status: r.status || "uploaded",
+    provenance: r.provenance || "origine_inconnue",
+    hasTextLayer: r.has_text_layer,           // null = inconnu ; false = pas de couche texte
+    shareLocked: r.provenance === "origine_inconnue" || (r.provenance === "adapte_source" && !r.share_authorized_by),
     pageCount: r.page_count || null, createdBy: r.created_by, createdAt: r.created_at,
   };
 }
+
+// Valeurs de provenance (source de vérité partagée UI + validation).
+export const PROVENANCE = ["creation_propre", "adapte_source", "autorise_tiers", "origine_inconnue"];
 
 // Documents du club sélectionné. Le staff est déjà borné par la RLS ; on filtre
 // AUSSI explicitement sur club_id car l'owner (bypass RLS) verrait sinon tous
@@ -38,9 +44,11 @@ export function useReferenceDocs(clubId) {
 }
 
 /* Dépôt d'un PDF de référence : upload dans le bucket privé, puis insertion de
-   la ligne (provenance obligatoire : author_owned + source). */
+   la ligne. La PROVENANCE est un choix ACTIF obligatoire (4 valeurs) ; le trigger
+   0089 verrouille la visibilité pour les provenances à risque. `author_owned`
+   reste renseigné (dérivé) pour rétro-compat. */
 export async function uploadReferenceDoc(teamId, clubId, file, meta = {}) {
-  if (!meta.authorOwned) throw new Error("author_owned_required");
+  if (!PROVENANCE.includes(meta.provenance)) throw new Error("provenance_required");
   const path = await uploadFile(`${teamId}/reference`, file);
   const { data: auth } = await supabase.auth.getUser();
   const row = {
@@ -49,7 +57,10 @@ export async function uploadReferenceDoc(teamId, clubId, file, meta = {}) {
     objective: meta.objective?.trim() || null, period: meta.period?.trim() || null,
     positions: meta.positions || [], age_category: meta.ageCategory?.trim() || null,
     equipment: meta.equipment || [], storage_path: path, source: meta.source?.trim() || null,
-    author_owned: true, visibility: "club", status: "uploaded", created_by: auth?.user?.id,
+    provenance: meta.provenance,
+    author_owned: meta.provenance === "creation_propre" || meta.provenance === "autorise_tiers",
+    has_text_layer: typeof meta.hasTextLayer === "boolean" ? meta.hasTextLayer : null,
+    visibility: "club", status: "uploaded", created_by: auth?.user?.id,
   };
   const { data, error } = await supabase.from("reference_docs").insert(row).select().single();
   if (error) { try { await removeFile(path); } catch { /* best effort */ } throw error; }
