@@ -1955,7 +1955,10 @@
       "confirmPrompt1": "To confirm, type ",
       "confirmPrompt2": " below.",
       "eraseFinal": "Delete permanently",
-      "eraseFail": "Deletion failed."
+      "eraseFail": "Deletion failed.",
+      "confirmTotemPrompt": "To confirm, type the totem “{{totem}}” below.",
+      "eraseTotemMismatch": "The totem you typed does not match “{{totem}}”.",
+      "eraseForbidden": "You don't have permission to delete this player."
     },
     "privacyPolicy": {
       "title": "Privacy policy",
