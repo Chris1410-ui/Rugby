@@ -285,6 +285,7 @@
     "compare": "Vergelijk +",
     "recos": "Aanbevelingen",
     "adherence": "Naleving voorschrift",
+    "efficacite": "Protocol-effectiviteit",
     "abonnements": "Abonnementen",
     "exercices": "Bibliotheek",
     "invites": "Uitnodigingen",
@@ -1375,6 +1376,17 @@
       "reach": "Contact opnemen",
       "sent": "Bericht verzonden",
       "msgEngage": "Hoi! Even inchecken: laat weten hoe je je voelt en of we je belasting of sessies moeten aanpassen. We helpen je graag."
+    },
+    "efficacy": {
+      "title": "Protocol-effectiviteit",
+      "hint": "Evolutie van de geschatte 1RM, van begin tot einde van elk programma, geaggregeerd over de selectie.",
+      "loading": "Prestatiegegevens laden…",
+      "empty": "Nog niet genoeg gegevens. Minstens {{min}} metingen van een oefening per speler nodig, op sessies gekoppeld aan een programma.",
+      "reliableCount": "{{count}} bruikbare oefening(en)",
+      "noReliable": "Onvoldoende gegevens om te concluderen",
+      "exDetail": "{{n}} spelers · {{improved}} in vooruitgang",
+      "exInsufficient": "{{n}} speler(s) — te weinig om te concluderen (min {{min}})",
+      "caveat": "Evolutie waargenomen tijdens het protocol — correlatie, geen bewijs van causaliteit (geen controlegroep)."
     },
     "refdocs": {
       "title": "Referentiedocumenten · {{count}}",

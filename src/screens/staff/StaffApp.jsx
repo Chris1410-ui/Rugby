@@ -45,6 +45,7 @@ import Convocations from "./Convocations.jsx";
 import DataQuality from "./DataQuality.jsx";
 import Adherence from "./Adherence.jsx";
 import Recommandations from "./Recommandations.jsx";
+import ProtocolEfficacy from "./ProtocolEfficacy.jsx";
 import ReferenceDocs from "./ReferenceDocs.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
@@ -118,6 +119,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["compare", t("nav.compare"), Activity],
     ["recos", t("nav.recos"), Sparkles],
     ["adherence", t("nav.adherence"), TrendingUp],
+    ["efficacite", t("nav.efficacite"), TrendingUp],
     ["historique", t("nav.historique"), TrendingUp],
     ["calendrier", t("nav.calendrier"), Calendar],
     ["video", t("nav.video"), Video],
@@ -160,6 +162,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}
         {tab === "recos" && <Recommandations teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
         {tab === "adherence" && <Adherence players={players} sessions={sessions} logs={logs} />}
+        {tab === "efficacite" && <ProtocolEfficacy teamId={profile.team_id} sessions={sessions} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}

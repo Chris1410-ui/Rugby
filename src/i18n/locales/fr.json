@@ -285,6 +285,7 @@
     "compare": "Comparaison",
     "recos": "Recommandations",
     "adherence": "Respect du prescrit",
+    "efficacite": "Efficacité protocole",
     "abonnements": "Abonnements",
     "exercices": "Bibliothèque",
     "invites": "Invitations",
@@ -1375,6 +1376,17 @@
       "reach": "Prendre contact",
       "sent": "Message envoyé",
       "msgEngage": "Salut ! On fait un point : dis-nous comment tu te sens et si on doit ajuster ta charge ou tes séances. On est là pour t'aider."
+    },
+    "efficacy": {
+      "title": "Efficacité protocole",
+      "hint": "Évolution du 1RM estimé, du début à la fin de chaque programme, agrégée sur l'effectif.",
+      "loading": "Chargement des données de performance…",
+      "empty": "Pas encore assez de données. Il faut au moins {{min}} mesures d'un exercice par joueur, sur des séances rattachées à un programme.",
+      "reliableCount": "{{count}} exercice(s) exploitable(s)",
+      "noReliable": "Données insuffisantes pour conclure",
+      "exDetail": "{{n}} joueurs · {{improved}} en progression",
+      "exInsufficient": "{{n}} joueur(s) — trop peu pour conclure (min {{min}})",
+      "caveat": "Évolution observée pendant le protocole — corrélation, pas preuve de causalité (pas de groupe témoin)."
     },
     "refdocs": {
       "title": "Documents de référence · {{count}}",
