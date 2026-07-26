@@ -11,17 +11,13 @@ vi.mock("react-i18next", () => ({
 
 import AthleteProfile from "./AthleteProfile.jsx";
 
-const sel = {
-  p: { id: "sa1", name: "Aigle", initials: "IF", isStaffAthlete: true },
-  div: { e: "🥉", min: 0 }, rank: 4, pts: 120, streak: 0,
-  badges: [], top14: 0, top14Tests: [], chalCount: 0,
-  ev: [{ v: 15, key: "bilan", date: "2024-01-01" }], // journal NE DOIT PAS fuiter
-  athlete: { sessionsDone: 3, natures: { force: 2 }, routineToday: true },
-};
+const player = { id: "sa1", name: "Aigle", initials: "IF", isStaffAthlete: true };
+const stats = { div: { e: "🥉", min: 0 }, rank: 4, pts: 120, badges: [], top14: 0, chalCount: 0 };
+const athlete = { sessionsDone: 3, natures: { force: 2 }, routineToday: true };
 
-describe("AthleteProfile — vue joueur du staff-athlète", () => {
+describe("AthleteProfile — profil public du staff-athlète", () => {
   it("montre l'activité publique (séances + nature + routine) et le badge staff", () => {
-    const { getByText, container } = render(<AthleteProfile sel={sel} onClose={() => {}} />);
+    const { getByText, container } = render(<AthleteProfile player={player} athlete={athlete} stats={stats} onClose={() => {}} />);
     expect(getByText("shared.leaderboard.staffAthleteBadge")).toBeTruthy();
     expect(getByText("shared.leaderboard.athleteSessionsDone:3")).toBeTruthy();
     expect(getByText("shared.leaderboard.athleteRoutineDone")).toBeTruthy();
@@ -29,7 +25,14 @@ describe("AthleteProfile — vue joueur du staff-athlète", () => {
   });
 
   it("ne montre JAMAIS le journal des points (confidentialité)", () => {
-    const { queryByText } = render(<AthleteProfile sel={sel} onClose={() => {}} />);
+    const { queryByText } = render(<AthleteProfile player={player} athlete={athlete} stats={stats} onClose={() => {}} />);
     expect(queryByText("shared.leaderboard.journalTitle")).toBeNull();
+  });
+
+  it("fonctionne sans classement (vue staff dans l'effectif) : activité seule", () => {
+    const { getByText, queryByText } = render(<AthleteProfile player={player} athlete={athlete} onClose={() => {}} />);
+    expect(getByText("shared.leaderboard.athleteSessionsDone:3")).toBeTruthy();
+    // Sans `stats`, pas de section badges/classement.
+    expect(queryByText("shared.leaderboard.athleteBadges")).toBeNull();
   });
 });

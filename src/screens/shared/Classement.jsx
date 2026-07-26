@@ -234,7 +234,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       })()}
 
       {sel && <PlayerPointsDetail sel={sel} accent={accent} onClose={() => setSel(null)} />}
-      {athlete && <AthleteProfile sel={athlete} accent={accent} onClose={() => setAthlete(null)} />}
+      {athlete && <AthleteProfile player={athlete.p} athlete={athlete.athlete} stats={{ div: athlete.div, pts: athlete.pts, rank: athlete.rank, badges: athlete.badges, top14: athlete.top14, chalCount: athlete.chalCount }} accent={accent} onClose={() => setAthlete(null)} />}
     </div>
   );
 }

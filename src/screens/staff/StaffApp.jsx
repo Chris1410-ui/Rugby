@@ -53,6 +53,8 @@ import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
 import Fiche from "../shared/Fiche.jsx";
+import AthleteProfile from "../shared/AthleteProfile.jsx";
+import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import PlayerReport from "../shared/PlayerReport.jsx";
 import TotemPicker from "../shared/TotemPicker.jsx";
 import TestsBatch from "./TestsBatch.jsx";
@@ -228,6 +230,8 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
   const [demoBusy, setDemoBusy] = useState(false);
   const [demoNote, setDemoNote] = useState("");
   const [invited, setInvited] = useState(null); // id du joueur dont le lien vient d'être copié
+  const [athleteView, setAthleteView] = useState(null); // staff-athlète ouvert (profil public restreint)
+  const athletePublic = useTeamAthletePublic(teamId); // projection publique des staff-athlètes
   const demoCount = players.filter((p) => p.isDemo).length;
 
   // Invite un joueur non revendiqué : crée l'invitation (role=joueur, carte
@@ -322,34 +326,41 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {players.map((p) => (
-            <div key={p.id} onClick={() => setFiche(p)} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer" })}>
+            <div key={p.id} onClick={() => (p.isStaffAthlete ? setAthleteView(p) : setFiche(p))} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer" })}>
               <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)", width: 30, textAlign: "center" }}>{p.num ?? "—"}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
                   {displayName(p)}{p._live && <span title={t("staff.app.liveTitle")} style={{ width: 6, height: 6, borderRadius: 4, background: C.green, display: "inline-block" }} />}
                   {p.isDemo && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: 0.5, color: C.viol, background: `${C.viol}22`, border: `1px solid ${C.viol}55`, borderRadius: 5, padding: "1px 5px" }}>{t("staff.app.demoBadge")}</span>}
+                  {p.isStaffAthlete && <span title={t("shared.leaderboard.staffAthleteTitle")} style={{ fontSize: 8, fontWeight: 900, letterSpacing: 0.4, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 5, padding: "1px 5px" }}>{t("shared.leaderboard.staffAthleteBadge")}</span>}
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, p.pos)} · {grpLabel(p.grp)}</div>
               </div>
-              <div style={{ textAlign: "center" }} title={readinessReady(p) ? undefined : t("reliability.noBilan")}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: readinessReady(p) ? (p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral) : "rgba(255,255,255,0.4)" }}>{readinessReady(p) ? p.readiness : "—"}</div>
-                <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>{t("staff.app.ready")}</div>
-              </div>
-              {!readOnly && !p.ownerUid && !p.isDemo && (
-                <button onClick={(e) => { e.stopPropagation(); invitePlayer(p); }} title={t("staff.app.invitePlayer")} style={{ background: invited === p.id ? C.green : `${C.green}18`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: 7, color: invited === p.id ? "#fff" : C.green, cursor: "pointer", display: "flex" }}>
-                  {invited === p.id ? <Check size={15} /> : <Shield size={15} />}
-                </button>
+              {/* Staff-athlète : données de suivi self-only → on n'affiche que le
+                  public (clic sur la ligne → AthleteProfile), pas les widgets privés. */}
+              {p.isStaffAthlete ? null : (
+                <>
+                  <div style={{ textAlign: "center" }} title={readinessReady(p) ? undefined : t("reliability.noBilan")}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: readinessReady(p) ? (p.readiness > 70 ? C.green : p.readiness > 50 ? C.amb : C.coral) : "rgba(255,255,255,0.4)" }}>{readinessReady(p) ? p.readiness : "—"}</div>
+                    <div style={{ fontSize: 8, color: "rgba(255,255,255,0.56)" }}>{t("staff.app.ready")}</div>
+                  </div>
+                  {!readOnly && !p.ownerUid && !p.isDemo && (
+                    <button onClick={(e) => { e.stopPropagation(); invitePlayer(p); }} title={t("staff.app.invitePlayer")} style={{ background: invited === p.id ? C.green : `${C.green}18`, border: `1px solid ${C.green}66`, borderRadius: 8, padding: 7, color: invited === p.id ? "#fff" : C.green, cursor: "pointer", display: "flex" }}>
+                      {invited === p.id ? <Check size={15} /> : <Shield size={15} />}
+                    </button>
+                  )}
+                  <button onClick={(e) => { e.stopPropagation(); onPreview?.(p); }} title={t("staff.app.previewTitle")} style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
+                    <Eye size={15} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title={t("staff.app.reportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
+                    <Activity size={15} />
+                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <Pill v={p.acwr} />
+                    {acwrEstimated(p) && <EstimatedBadge />}
+                  </div>
+                </>
               )}
-              <button onClick={(e) => { e.stopPropagation(); onPreview?.(p); }} title={t("staff.app.previewTitle")} style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 8, padding: 7, color: C.viol, cursor: "pointer", display: "flex" }}>
-                <Eye size={15} />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); setReport(p); }} title={t("staff.app.reportTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: 7, color: "rgba(255,255,255,0.75)", cursor: "pointer", display: "flex" }}>
-                <Activity size={15} />
-              </button>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <Pill v={p.acwr} />
-                {acwrEstimated(p) && <EstimatedBadge />}
-              </div>
             </div>
           ))}
         </div>
@@ -357,6 +368,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       {adding && <AddPlayerModal teamId={teamId} players={players} onClose={() => setAdding(false)} />}
       {importing && <ImportPlayers teamId={teamId} players={players} onClose={() => setImporting(false)} />}
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
+      {athleteView && <AthleteProfile player={athleteView} athlete={athletePublic[athleteView.id]} onClose={() => setAthleteView(null)} />}
       {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
       {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} players={players} canEdit={!readOnly} onClose={() => setFiche(null)} />}
     </section>
