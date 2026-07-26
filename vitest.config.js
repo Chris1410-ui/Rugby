@@ -2,6 +2,10 @@ import { defineConfig } from "vitest/config";
 
 // Tests unitaires du cœur métier (lib/*) et des utilitaires de données.
 export default defineConfig({
+  // Runtime JSX automatique (react/jsx-runtime) → pas besoin de `React` global
+  // dans les tests de composants (.test.jsx). Sans ça, esbuild suppose le JSX
+  // classique et le rendu échoue sur « React is not defined ».
+  esbuild: { jsx: "automatic" },
   test: {
     environment: "node",
     include: ["src/**/*.test.{js,jsx}"],
