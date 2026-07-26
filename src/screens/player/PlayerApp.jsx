@@ -22,6 +22,7 @@ import Questionnaires from "./Questionnaires.jsx";
 import Seances from "./Seances.jsx";
 import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
+import PlayerDistributions from "./Distributions.jsx";
 import Crew from "./Crew.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
@@ -97,6 +98,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["calendrier", t("nav.calendrier"), Calendar],
     ["fiche", t("nav.fiche"), Shield],
     ["comparaison", t("nav.comparaison"), Activity],
+    ["distributions", t("nav.distributions"), Activity],
     ["donnees", t("nav.donnees"), Lock],
   ];
 
@@ -121,6 +123,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} meId={me.id} accent={ACCENT} trainings={trainings} attendance={convAtt} />}
           {tab === "fiche" && <Fiche player={me} canEdit={false} self />}
           {tab === "comparaison" && <Comparaison me={me} players={players} accent={ACCENT} />}
+          {tab === "distributions" && <PlayerDistributions me={me} accent={ACCENT} />}
           {tab === "donnees" && <Confidentialite player={me} self />}
          </PullToRefresh>
         </main>

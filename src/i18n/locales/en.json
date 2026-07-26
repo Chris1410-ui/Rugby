@@ -674,6 +674,21 @@
   "player": {
     "activityFab": "Activity",
     "activityFabTitle": "Log an activity",
+    "dist": {
+      "title": "Distributions",
+      "hint": "Situate yourself against your line or team on a test. You only see the group's shape (quartiles, ≥ 5 players) and your own rank — never others' values.",
+      "team": "Team",
+      "loading": "Loading…",
+      "kAnonHidden": "Comparison unavailable: fewer than 5 players measured in this group ({{n}}).",
+      "median": "{{group}} median",
+      "iqr": "middle 50%",
+      "range": "range",
+      "nPlayers": "{{n}} players",
+      "dirUpHint": "→ higher = better",
+      "dirDownHint": "← lower = better",
+      "betterThan": "your value: better than {{pct}}% of {{group}}",
+      "noMyValue": "You don't have a measurement on this test yet."
+    },
     "today": {
       "absent": "Missing",
       "activities": "Today's activities",

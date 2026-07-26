@@ -674,6 +674,21 @@
   "player": {
     "activityFab": "Activiteit",
     "activityFabTitle": "Een activiteit melden",
+    "dist": {
+      "title": "Distributies",
+      "hint": "Situeer jezelf t.o.v. je linie of team op een test. Je ziet alleen de vorm van de groep (kwartielen, ≥ 5 spelers) en je eigen rang — nooit de waarden van anderen.",
+      "team": "Team",
+      "loading": "Laden…",
+      "kAnonHidden": "Vergelijking niet beschikbaar: minder dan 5 gemeten spelers in deze groep ({{n}}).",
+      "median": "{{group}} mediaan",
+      "iqr": "middelste 50%",
+      "range": "spreiding",
+      "nPlayers": "{{n}} spelers",
+      "dirUpHint": "→ hoger = beter",
+      "dirDownHint": "← lager = beter",
+      "betterThan": "jouw waarde: beter dan {{pct}}% van {{group}}",
+      "noMyValue": "Je hebt nog geen meting op deze test."
+    },
     "today": {
       "absent": "Ontbreekt",
       "activities": "Activiteiten van vandaag",
