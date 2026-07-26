@@ -2034,7 +2034,9 @@
       "athleteSessionsDone_one": "{{count}} session done",
       "athleteSessionsDone_other": "{{count}} sessions done",
       "athleteRoutineDone": "Morning routine ✓",
-      "athleteRoutineNone": "Morning routine —"
+      "athleteRoutineNone": "Morning routine —",
+      "athleteBadges": "BADGES",
+      "athleteScopeNote": "A staff member who also trains as an athlete. You see his ranking, completed sessions and morning routine — never his loads, tests, weight or check-ins."
     },
     "report": {
       "wb": {

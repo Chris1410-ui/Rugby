@@ -2034,7 +2034,9 @@
       "athleteSessionsDone_one": "{{count}} séance réalisée",
       "athleteSessionsDone_other": "{{count}} séances réalisées",
       "athleteRoutineDone": "Routine du matin ✓",
-      "athleteRoutineNone": "Routine du matin —"
+      "athleteRoutineNone": "Routine du matin —",
+      "athleteBadges": "BADGES",
+      "athleteScopeNote": "Membre du staff qui s'entraîne aussi comme athlète. Tu vois de lui son classement, ses séances réalisées et sa routine du matin — jamais ses charges, tests, poids ni bilans."
     },
     "report": {
       "wb": {

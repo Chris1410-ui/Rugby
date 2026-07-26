@@ -2034,7 +2034,9 @@
       "athleteSessionsDone_one": "{{count}} sessie voltooid",
       "athleteSessionsDone_other": "{{count}} sessies voltooid",
       "athleteRoutineDone": "Ochtendroutine ✓",
-      "athleteRoutineNone": "Ochtendroutine —"
+      "athleteRoutineNone": "Ochtendroutine —",
+      "athleteBadges": "BADGES",
+      "athleteScopeNote": "Een staflid dat ook als atleet traint. Je ziet zijn klassement, voltooide sessies en ochtendroutine — nooit zijn belastingen, tests, gewicht of check-ins."
     },
     "report": {
       "wb": {
