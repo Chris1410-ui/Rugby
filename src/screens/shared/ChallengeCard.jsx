@@ -44,6 +44,7 @@ export default function ChallengeCard({ c, releves = 0, participants = 0, open =
           {c.lieu && <span style={tag(C.blue)}>📍 {c.lieu}</span>}
           {c.echeance && <span style={tag(C.amb)}>📅 {fmtShort(c.echeance)}</span>}
           {(c.materiel || []).map((m, i) => <span key={i} style={tag(C.gray)}>🎒 {m}</span>)}
+          {c.seriesId && <span style={tag(C.teal)}>{c.customized ? t("recurrence.tagCustom") : t("recurrence.tagSeries")}</span>}
           {open && <span style={tag(C.viol)}>{t("shared.challengeCard.open")}</span>}
         </div>
 

@@ -66,7 +66,17 @@
     "recipCount": "{{count}} recipient(s)",
     "capped": "Capped at {{max}} occurrences — shorten the period.",
     "incomplete": "Pick at least one day and a period.",
-    "pickDays": "Pick the days"
+    "pickDays": "Pick the days",
+    "scopeOne": "This occurrence",
+    "scopeSeries": "Whole series",
+    "seriesHint": "Editing the series regenerates future occurrences. Past, customised and already-done are never touched.",
+    "updateSeries": "Update the series",
+    "deleteSeries": "Delete the series",
+    "delSeriesConfirm": "Delete the series? Future undone occurrences will be removed; the past is kept.",
+    "tagSeries": "series",
+    "tagCustom": "customised",
+    "saveRecurring": "Create the series",
+    "errNoOcc": "No occurrences generated — check the days and period."
   },
   "knowledge": {
     "btn": "Tips",

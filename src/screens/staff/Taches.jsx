@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
-import { fmtShort } from "../../lib/metrics.js";
+import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { ClipboardList, Plus, CheckCircle, Trash2, Calendar } from "../../lib/icons.jsx";
-import { useTeamTasks, useTeamTaskCompletions, createTask, deleteTask, confirmTask, refuseTask } from "../../data/tasks.js";
-import { buildAssigned } from "../../data/sessions.js";
+import { useTeamTasks, useTeamTaskCompletions, createTask, createTasksRecurring, deleteTask, confirmTask, refuseTask } from "../../data/tasks.js";
+import { buildAssigned, resolveAssignedIds } from "../../data/sessions.js";
+import { getClubId } from "../../data/catalog.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
+import RecurrenceSelector from "../shared/RecurrenceSelector.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
 
 const accent = C.coral;
@@ -60,27 +62,44 @@ export default function Taches({ teamId, players = [], openNew = false }) {
 
 function TaskForm({ teamId, players, onDone, onCancel }) {
   const { t } = useTranslation();
-  const [f, setF] = useState({ titre: "", description: "", lieu: "", echeance: "" });
+  const [f, setF] = useState({ titre: "", description: "", lieu: "" });
   const [rec, setRec] = useState({ all: true, groups: [], ids: [] });
+  const [recur, setRecur] = useState(() => ({ mode: "once", date: "", time: "", weekdays: [], times: {}, start: todayISO(), end: "", exclusions: [] }));
+  const [clubId, setClubId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 10px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark", marginBottom: 8 };
+  useEffect(() => { let a = true; getClubId(teamId).then((id) => { if (a) setClubId(id); }); return () => { a = false; }; }, [teamId]);
+
+  const recipientCount = resolveAssignedIds(buildAssigned(rec), players).length;
+  const payload = () => ({ titre: f.titre.trim(), description: f.description?.trim() || null, lieu: f.lieu?.trim() || null });
 
   const save = async () => {
     if (!f.titre.trim()) return setErr(t("staff.tasks.errTitle"));
     const assigned = buildAssigned(rec);
     setBusy(true); setErr("");
-    try { await createTask(teamId, { ...f, echeance: f.echeance || null, assigned }); onDone(); }
-    catch (e) { setErr(t("staff.tasks.errSave", { err: e.message || t("staff.tasks.errSaveRetry") })); setBusy(false); }
+    try {
+      if (recur.mode === "recurring") {
+        const r = await createTasksRecurring(teamId, clubId, { value: recur, assigned, payload: payload() });
+        if (!r.count) throw new Error("no_occurrences");
+      } else {
+        await createTask(teamId, { ...payload(), echeance: recur.date || null, assigned });
+      }
+      onDone();
+    } catch (e) {
+      setErr(e.message === "no_occurrences" ? t("recurrence.errNoOcc") : t("staff.tasks.errSave", { err: e.message || t("staff.tasks.errSaveRetry") }));
+      setBusy(false);
+    }
   };
 
   return (
     <div style={sc({ padding: 14, marginBottom: 12 })}>
       <input value={f.titre} onChange={(e) => { setF((p) => ({ ...p, titre: e.target.value })); setErr(""); }} placeholder={t("staff.tasks.phTitle")} maxLength={80} style={inp} />
       <textarea value={f.description} onChange={(e) => setF((p) => ({ ...p, description: e.target.value }))} placeholder={t("staff.tasks.phDesc")} style={{ ...inp, height: 48, resize: "none" }} />
-      <div style={{ display: "flex", gap: 8 }}>
-        <input value={f.lieu} onChange={(e) => setF((p) => ({ ...p, lieu: e.target.value }))} placeholder={t("staff.tasks.phPlace")} style={{ ...inp, flex: 1 }} />
-        <input type="date" value={f.echeance} onChange={(e) => setF((p) => ({ ...p, echeance: e.target.value }))} title={t("staff.tasks.dueTitle")} style={{ ...inp, flex: "0 0 150px" }} />
+      <input value={f.lieu} onChange={(e) => setF((p) => ({ ...p, lieu: e.target.value }))} placeholder={t("staff.tasks.phPlace")} style={inp} />
+
+      <div style={{ marginBottom: 8 }}>
+        <RecurrenceSelector value={recur} onChange={(nv) => { setRecur(nv); setErr(""); }} recipientCount={recipientCount} accent={accent} />
       </div>
 
       <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, letterSpacing: 0.5, margin: "2px 0 6px" }}>{t("staff.tasks.recipients")}</div>
@@ -88,7 +107,7 @@ function TaskForm({ teamId, players, onDone, onCancel }) {
 
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={save} disabled={busy} style={{ flex: 1, background: accent, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("staff.tasks.createTask")}</button>
+        <button onClick={save} disabled={busy} style={{ flex: 1, background: accent, border: "none", borderRadius: 8, padding: 10, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : recur.mode === "recurring" ? t("recurrence.saveRecurring") : t("staff.tasks.createTask")}</button>
         <button onClick={onCancel} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "10px 14px", color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>
       </div>
     </div>
@@ -116,6 +135,7 @@ function TaskCard({ task, players, completions, teamId }) {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
             {task.lieu && <Tag c={C.teal}>📍 {task.lieu}</Tag>}
             {task.echeance && <Tag c={C.amb}><Calendar size={10} /> {fmtShort(task.echeance)}</Tag>}
+            {task.seriesId && <Tag c={C.teal}>{task.customized ? t("recurrence.tagCustom") : t("recurrence.tagSeries")}</Tag>}
             <Tag c={C.viol}>{modeLabel(task.assigned, t)}</Tag>
           </div>
         </div>

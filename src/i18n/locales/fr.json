@@ -66,7 +66,17 @@
     "recipCount": "{{count}} destinataire(s)",
     "capped": "Limité à {{max}} occurrences — réduis la période.",
     "incomplete": "Choisis au moins un jour et une période.",
-    "pickDays": "Choisis les jours"
+    "pickDays": "Choisis les jours",
+    "scopeOne": "Cette occurrence",
+    "scopeSeries": "Toute la série",
+    "seriesHint": "Modifier la série régénère les occurrences futures. Le passé, le personnalisé et le déjà réalisé ne sont jamais touchés.",
+    "updateSeries": "Mettre à jour la série",
+    "deleteSeries": "Supprimer la série",
+    "delSeriesConfirm": "Supprimer la série ? Les occurrences futures non réalisées seront retirées ; le passé est conservé.",
+    "tagSeries": "série",
+    "tagCustom": "personnalisé",
+    "saveRecurring": "Créer la série",
+    "errNoOcc": "Aucune occurrence générée — vérifie les jours et la période."
   },
   "knowledge": {
     "btn": "Conseils",
