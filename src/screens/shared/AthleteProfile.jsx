@@ -6,43 +6,49 @@ import { challengeBadges, challengeBadgeLabel } from "../../lib/challenges.js";
 import { natureLabel, natureColor } from "../../lib/nature.js";
 import { CloseX, useModalClose } from "../../lib/ui.jsx";
 
-/* Profil athlète d'un STAFF-athlète, tel qu'un JOUEUR a le droit de le voir.
-   Strictement limité au public (RPC team_athlete_public + classement) : points /
-   division / badges, séances réalisées (nombre + nature) et routine du matin
-   ✓/✗. JAMAIS de charges, tests, poids, bilans, détail de routine ni journal des
-   points. `sel` = ligne enrichie du classement (avec sel.athlete = projection). */
-export default function AthleteProfile({ sel, accent = C.green, onClose }) {
+/* Profil athlète d'un STAFF-athlète, tel qu'un JOUEUR (ou un AUTRE staff) a le
+   droit de le voir. Strictement limité au public : totem/badge, classement
+   (points / division / badges — via `stats`, optionnel) et activité visible
+   (séances réalisées nombre + nature, routine du matin ✓/✗ — via `athlete`).
+   JAMAIS de charges, tests, poids, bilans, détail de routine ni journal des
+   points — ses données de suivi sont self-only (RLS 0096).
+   Props : `player` (carte), `athlete` (projection team_athlete_public),
+   `stats` = { div, pts, rank, badges, top14, chalCount } | null. */
+export default function AthleteProfile({ player, athlete, stats = null, accent = C.green, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
-  const a = sel.athlete || { sessionsDone: 0, natures: {}, routineToday: false };
+  const a = athlete || { sessionsDone: 0, natures: {}, routineToday: false };
   const natures = Object.entries(a.natures || {});
+  const hasBadges = stats && ((stats.badges?.length > 0) || stats.top14 > 0 || stats.chalCount > 0);
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
-        {/* En-tête : totem + badge staff + division + points */}
+        {/* En-tête : totem + badge staff (+ division / points si dispo) */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <span style={{ fontSize: 26 }}>{sel.div.e}</span>
+            {stats && <span style={{ fontSize: 26 }}>{stats.div.e}</span>}
             <div style={{ minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(sel.p)}</span>
+                <span style={{ fontSize: 16, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(player)}</span>
                 <span style={{ flexShrink: 0, fontSize: 8, fontWeight: 900, letterSpacing: 0.4, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 5, padding: "1px 5px" }}>{t("shared.leaderboard.staffAthleteBadge")}</span>
               </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("shared.leaderboard.detailSub", { rank: sel.rank, div: divLabel(t, sel.div), pts: sel.pts })}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>
+                {stats ? t("shared.leaderboard.detailSub", { rank: stats.rank, div: divLabel(t, stats.div), pts: stats.pts }) : t("shared.leaderboard.staffAthleteTitle")}
+              </div>
             </div>
           </div>
           <CloseX onClose={onClose} />
         </div>
 
-        {/* Badges (division + Top 14 + défis) */}
-        {(sel.badges?.length > 0 || sel.top14 > 0 || sel.chalCount > 0) && (
+        {/* Badges (division + Top 14 + défis) — si le classement est fourni */}
+        {hasBadges && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.athleteBadges")}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {sel.top14 > 0 && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 6, padding: "3px 9px" }}>🏆 TOP 14{sel.top14 > 1 ? ` ×${sel.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
-              {(sel.badges || []).map((b) => <span key={b.key} style={{ fontSize: 10, fontWeight: 700, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 20, padding: "3px 9px" }}>{b.e} {badgeLabel(t, b)}</span>)}
-              {sel.chalCount > 0 && challengeBadges(sel.chalCount).map((b) => <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {challengeBadgeLabel(t, b)}</span>)}
+              {stats.top14 > 0 && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#0c2b2b", background: C.amb, borderRadius: 6, padding: "3px 9px" }}>🏆 TOP 14{stats.top14 > 1 ? ` ×${stats.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
+              {(stats.badges || []).map((b) => <span key={b.key} style={{ fontSize: 10, fontWeight: 700, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 20, padding: "3px 9px" }}>{b.e} {badgeLabel(t, b)}</span>)}
+              {stats.chalCount > 0 && challengeBadges(stats.chalCount).map((b) => <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {challengeBadgeLabel(t, b)}</span>)}
             </div>
           </div>
         )}
