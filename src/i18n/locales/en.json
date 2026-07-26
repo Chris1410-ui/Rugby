@@ -1380,7 +1380,9 @@
       "nudgeLog": "Remember to validate your sessions in the app: without them, your load and ACWR aren't reliable.",
       "nudgeDuration": "Remember to enter the DURATION of your sessions at validation: it's used to compute your load (sRPE).",
       "nudgeBilan": "Remember to complete your daily check-in: it feeds your readiness and monitoring.",
-      "nudge1RM": "Record your 1RM (max load) so %-based loads are computed for you."
+      "nudge1RM": "Record your 1RM (max load) so %-based loads are computed for you.",
+      "byMoveTitle": "Missing 1RM by exercise ({{count}})",
+      "byMoveN": "{{count}} player(s) to fill in"
     },
     "adherence": {
       "title": "Prescribed adherence",
