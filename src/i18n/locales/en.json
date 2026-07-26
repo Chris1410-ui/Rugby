@@ -1713,6 +1713,8 @@
       "editBtn": "Edit",
       "noExo": "No exercise",
       "planSessionBtn": "Schedule a session",
+      "refProtocol": "Reference protocol",
+      "refProtocolHide": "Hide reference protocol",
       "plannedTitle": "Scheduled sessions ({{count}})",
       "recipientsCount": "{{count}} recipient(s)"
     },

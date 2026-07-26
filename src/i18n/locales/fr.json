@@ -1713,6 +1713,8 @@
       "editBtn": "Modifier",
       "noExo": "Aucun exercice",
       "planSessionBtn": "Planifier une séance",
+      "refProtocol": "Protocole de référence",
+      "refProtocolHide": "Masquer le protocole de référence",
       "plannedTitle": "Séances planifiées ({{count}})",
       "recipientsCount": "{{count}} destinataire(s)"
     },

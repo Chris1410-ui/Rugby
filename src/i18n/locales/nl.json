@@ -1713,6 +1713,8 @@
       "editBtn": "Bewerken",
       "noExo": "Geen oefening",
       "planSessionBtn": "Een sessie plannen",
+      "refProtocol": "Referentieprotocol",
+      "refProtocolHide": "Referentieprotocol verbergen",
       "plannedTitle": "Geplande sessies ({{count}})",
       "recipientsCount": "{{count}} ontvanger(s)"
     },
