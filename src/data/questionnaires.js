@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
+import { todayISO } from "../lib/metrics.js";
 import { uniqueTopic } from "./messages.js";
+import { createRecurrenceSeries, updateRecurrenceSeries, deleteRecurrenceSeries } from "./recurrence.js";
 
 /* Questionnaires (modèles réutilisables) + assignations par joueur. Le joueur
    soumet via le RPC submit_questionnaire (pas d'écriture directe). Données santé
-   sensibles : RLS club stricte (cf. migration 0025). */
+   sensibles : RLS club stricte (cf. migration 0025). Envois récurrents : une série
+   recurrence_series (object_type='questionnaire') + dispatcher pg_cron (0093/0094). */
 
 const dbToQ = (r) => ({ id: r.id, teamId: r.team_id, nom: r.nom, questions: Array.isArray(r.questions) ? r.questions : [], createdAt: r.created_at });
-const dbToA = (r) => ({ questionnaireId: r.questionnaire_id, playerId: r.player_id, statut: r.statut, reponses: r.reponses || {}, sentAt: r.sent_at, filledAt: r.filled_at });
+const dbToA = (r) => ({ id: r.id, questionnaireId: r.questionnaire_id, playerId: r.player_id, statut: r.statut, reponses: r.reponses || {}, sentAt: r.sent_at, filledAt: r.filled_at, occurrenceDate: r.occurrence_date || null, seriesId: r.series_id || null });
 
 // Modèles du club (staff). Realtime.
 export function useTeamQuestionnaires(teamId) {
@@ -40,8 +43,9 @@ export function useTeamAssignments(teamId) {
 
   const fetch = useCallback(async () => {
     if (!teamId) { setByQ({}); return; }
-    const { data, error } = await supabase.from("questionnaire_assignments").select("*").eq("team_id", teamId);
+    const { data, error } = await supabase.from("questionnaire_assignments").select("*").eq("team_id", teamId).order("occurrence_date", { ascending: true });
     if (error) { console.error("[q assignments]", error.message); return; }
+    // Occurrence la plus récente par (questionnaire, joueur) → statut courant.
     const m = {};
     (data ?? []).forEach((r) => { (m[r.questionnaire_id] = m[r.questionnaire_id] || {})[r.player_id] = dbToA(r); });
     setByQ(m);
@@ -111,11 +115,13 @@ export async function deleteQuestionnaire(id) {
   if (error) throw error;
 }
 
-// Envoi ciblé : crée les assignations (ne réinitialise pas celles déjà remplies).
+// Envoi ciblé immédiat : occurrence du jour (ne réinitialise pas les occurrences
+// déjà remplies ; ignore un doublon du même jour).
 export async function sendQuestionnaire(questionnaireId, teamId, playerIds) {
   if (!playerIds?.length) return;
-  const rows = playerIds.map((pid) => ({ questionnaire_id: questionnaireId, player_id: pid, team_id: teamId, statut: "a_remplir", sent_at: new Date().toISOString() }));
-  const { error } = await supabase.from("questionnaire_assignments").upsert(rows, { onConflict: "questionnaire_id,player_id", ignoreDuplicates: true });
+  const occ = todayISO();
+  const rows = playerIds.map((pid) => ({ questionnaire_id: questionnaireId, player_id: pid, team_id: teamId, statut: "a_remplir", sent_at: new Date().toISOString(), occurrence_date: occ }));
+  const { error } = await supabase.from("questionnaire_assignments").upsert(rows, { onConflict: "questionnaire_id,player_id,occurrence_date", ignoreDuplicates: true });
   if (error) throw error;
 }
 export async function unsendAssignment(questionnaireId, playerId) {
@@ -123,10 +129,45 @@ export async function unsendAssignment(questionnaireId, playerId) {
   if (error) throw error;
 }
 
-// Soumission joueur (RPC SECURITY DEFINER).
-export async function submitQuestionnaire(questionnaireId, reponses) {
-  const { error } = await supabase.rpc("submit_questionnaire", { p_questionnaire: questionnaireId, p_reponses: reponses || {} });
+// Soumission joueur (RPC SECURITY DEFINER) — ciblée sur l'occurrence remplie.
+export async function submitQuestionnaire(questionnaireId, reponses, occurrenceDate = null) {
+  const { error } = await supabase.rpc("submit_questionnaire", { p_questionnaire: questionnaireId, p_reponses: reponses || {}, p_occurrence: occurrenceDate });
   if (error) throw error;
+}
+
+/* ── Programmation d'envois récurrents (série recurrence_series) ──
+   Le questionnaire cible vit dans payload.questionnaireId ; le dispatcher pg_cron
+   crée les occurrences dues (aucune matérialisation à l'avance). Supprimer la
+   série ne fait qu'arrêter les futurs envois — l'historique rempli est intact. */
+export const createQuestionnaireSchedule = (teamId, clubId, { questionnaireId, value, assigned }) =>
+  createRecurrenceSeries({ teamId, clubId, objectType: "questionnaire", value, assigned, payload: { questionnaireId } });
+export const updateQuestionnaireSchedule = (id, { questionnaireId, value, assigned }) =>
+  updateRecurrenceSeries(id, { value, assigned, payload: { questionnaireId } });
+export const deleteQuestionnaireSchedule = (id) => deleteRecurrenceSeries(id);
+
+/* Programmations du club → { [questionnaireId]: série }. Realtime. */
+export function useTeamQuestionnaireSchedules(teamId) {
+  const [byQ, setByQ] = useState({});
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setByQ({}); return; }
+    const { data, error } = await supabase.from("recurrence_series").select("*").eq("team_id", teamId).eq("object_type", "questionnaire");
+    if (error) { console.error("[q schedules]", error.message); return; }
+    const m = {};
+    (data ?? []).forEach((s) => { const qid = s.payload?.questionnaireId; if (qid && !m[qid]) m[qid] = s; });
+    setByQ(m);
+  }, [teamId]);
+
+  useEffect(() => {
+    fetch();
+    if (!teamId) return;
+    const ch = supabase.channel(uniqueTopic(`qsched:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "recurrence_series", filter: `team_id=eq.${teamId}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [teamId, fetch]);
+
+  return { byQuestionnaire: byQ, refresh: fetch };
 }
 
 /* Rappel manuel (staff) : notifie (pastille + push) les joueurs n'ayant pas

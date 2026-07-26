@@ -1257,7 +1257,17 @@
       "destPlayers": "Joueurs choisis",
       "noRecipient": "Aucun destinataire.",
       "sent": "Envoyé à {{count}} joueur(s) ✓",
-      "sendErr": "Échec : {{err}}"
+      "sendErr": "Échec : {{err}}",
+      "scheduledTag": "programmé",
+      "schedule": "Programmer",
+      "scheduleEdit": "Programmation",
+      "scheduleTitle": "Programmer « {{name}} »",
+      "scheduleHint": "Envoi automatique aux jours choisis pendant la période. L'historique déjà rempli n'est jamais touché.",
+      "scheduleCreate": "Programmer les envois",
+      "scheduleSave": "Mettre à jour la programmation",
+      "scheduleDelete": "Arrêter la programmation",
+      "schedErrCadence": "Choisis au moins un jour et une période.",
+      "schedDelConfirm": "Arrêter les envois programmés ? Les envois passés restent, plus aucun nouvel envoi automatique."
     },
     "camps": {
       "title": "Camps · {{count}}",

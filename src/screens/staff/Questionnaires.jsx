@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
+import { todayISO } from "../../lib/metrics.js";
 import { Section, Tag, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { ClipboardList, Plus, X, Trash2, Send, Bell } from "../../lib/icons.jsx";
+import { ClipboardList, Plus, X, Trash2, Send, Bell, Calendar } from "../../lib/icons.jsx";
 import { QUESTION_BANK, QCATS, QTYPES, bankById, newQid } from "../../lib/questionnaires.js";
-import { resolveAssignedIds, buildAssigned } from "../../data/sessions.js";
+import { resolveAssignedIds, buildAssigned, assignedToSelection } from "../../data/sessions.js";
+import { seriesToValue } from "../../data/recurrence.js";
+import { getClubId } from "../../data/catalog.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
-import { useTeamQuestionnaires, useTeamAssignments, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire, sendQuestionnaire, remindQuestionnaire } from "../../data/questionnaires.js";
+import RecurrenceSelector from "../shared/RecurrenceSelector.jsx";
+import { useTeamQuestionnaires, useTeamAssignments, useTeamQuestionnaireSchedules, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire, sendQuestionnaire, remindQuestionnaire, createQuestionnaireSchedule, updateQuestionnaireSchedule, deleteQuestionnaireSchedule } from "../../data/questionnaires.js";
 import QuestionnaireResponses from "./QuestionnaireResponses.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
 
@@ -19,8 +23,10 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
   const readOnly = useReadOnly();
   const { questionnaires } = useTeamQuestionnaires(teamId);
   const { byQuestionnaire } = useTeamAssignments(teamId);
+  const { byQuestionnaire: schedByQ } = useTeamQuestionnaireSchedules(teamId);
   const [edit, setEdit] = useState(openNew && !readOnly ? "new" : null);   // 'new' | questionnaire (FAB → éditeur ouvert)
   const [send, setSend] = useState(null);   // questionnaire à envoyer
+  const [sched, setSched] = useState(null); // questionnaire à programmer
   const [responses, setResponses] = useState(null); // questionnaire dont on voit les réponses
   const [flash, setFlash] = useState("");   // message de confirmation (rappel envoyé)
   const [reminding, setReminding] = useState(null); // id du questionnaire en cours de relance
@@ -63,7 +69,10 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
             <div key={q.id} style={sc({ marginBottom: 10, padding: 14 })}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800 }}>{q.nom}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800 }}>{q.nom}</div>
+                    {schedByQ[q.id] && <Tag c={C.teal}>{t("staff.questionnaires.scheduledTag")}</Tag>}
+                  </div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("staff.questionnaires.questions", { count: q.questions.length })}{sent > 0 ? t("staff.questionnaires.filledSuffix", { filled, sent }) : t("staff.questionnaires.notSentSuffix")}</div>
                 </div>
                 {!readOnly && <button onClick={() => setEdit(q)} title={t("staff.questionnaires.editTitle")} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("staff.questionnaires.editTitle")}</button>}
@@ -71,6 +80,7 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                 {!readOnly && <button onClick={() => setSend(q)} style={{ flex: 1, background: `${accent}22`, border: `1px solid ${accent}66`, borderRadius: 9, padding: 9, color: accent, fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Send size={13} /> {t("staff.questionnaires.send")}</button>}
+                {!readOnly && <button onClick={() => setSched(q)} style={{ flex: 1, background: schedByQ[q.id] ? `${C.teal}22` : "rgba(255,255,255,0.06)", border: `1px solid ${schedByQ[q.id] ? `${C.teal}66` : C.border}`, borderRadius: 9, padding: 9, color: schedByQ[q.id] ? C.teal : "rgba(255,255,255,0.8)", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Calendar size={13} /> {schedByQ[q.id] ? t("staff.questionnaires.scheduleEdit") : t("staff.questionnaires.schedule")}</button>}
                 <button onClick={() => setResponses(q)} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: 9, color: "rgba(255,255,255,0.8)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("staff.questionnaires.responses")}{sent > 0 ? t("staff.questionnaires.responsesSuffix", { filled, sent }) : ""}</button>
               </div>
               {!readOnly && missing > 0 && (
@@ -84,7 +94,61 @@ export default function Questionnaires({ teamId, players = [], openNew = false }
       )}
 
       {send && <SendModal questionnaire={send} teamId={teamId} players={players} onClose={() => setSend(null)} />}
+      {sched && <ScheduleModal questionnaire={sched} teamId={teamId} players={players} existing={schedByQ[sched.id] || null} onClose={() => setSched(null)} />}
     </section>
+  );
+}
+
+/* Programmer des envois récurrents (série recurrence_series + dispatcher pg_cron).
+   Récurrence forcée (pas de « ponctuel »). Supprimer la série arrête seulement les
+   futurs envois — l'historique rempli reste intact. */
+function ScheduleModal({ questionnaire, teamId, players, existing, onClose }) {
+  const { t } = useTranslation();
+  useModalClose(onClose);
+  const [rec, setRec] = useState(() => existing ? assignedToSelection(existing.assigned) : { all: true, groups: [], ids: [] });
+  const [recur, setRecur] = useState(() => existing ? seriesToValue(existing) : { mode: "recurring", date: "", time: "", weekdays: [], times: {}, start: todayISO(), end: "", exclusions: [] });
+  const [clubId, setClubId] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  useEffect(() => { let a = true; getClubId(teamId).then((id) => { if (a) setClubId(id); }); return () => { a = false; }; }, [teamId]);
+
+  const recipientCount = resolveAssignedIds(buildAssigned(rec), players).length;
+
+  const save = async () => {
+    if (!(recur.weekdays || []).length || !recur.start || !recur.end) return setErr(t("staff.questionnaires.schedErrCadence"));
+    const assigned = buildAssigned(rec);
+    setBusy(true); setErr("");
+    try {
+      if (existing) await updateQuestionnaireSchedule(existing.id, { questionnaireId: questionnaire.id, value: recur, assigned });
+      else await createQuestionnaireSchedule(teamId, clubId, { questionnaireId: questionnaire.id, value: recur, assigned });
+      onClose();
+    } catch (e) { setErr(t("staff.questionnaires.errSave", { err: e.message || "" })); setBusy(false); }
+  };
+  const del = async () => {
+    if (!confirm(t("staff.questionnaires.schedDelConfirm"))) return;
+    setBusy(true); setErr("");
+    try { await deleteQuestionnaireSchedule(existing.id); onClose(); }
+    catch (e) { setErr(t("staff.questionnaires.errSave", { err: e.message || "" })); setBusy(false); }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: C.panel, borderRadius: 18, padding: 20, maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{t("staff.questionnaires.scheduleTitle", { name: questionnaire.nom })}</div>
+          <CloseX onClose={onClose} />
+        </div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, marginBottom: 10 }}>{t("staff.questionnaires.scheduleHint")}</div>
+        <div style={{ marginBottom: 12 }}>
+          <RecurrenceSelector value={recur} onChange={(nv) => { setRecur(nv); setErr(""); }} recipientCount={recipientCount} accent={C.teal} recurringOnly />
+        </div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700, marginBottom: 6 }}>{t("staff.questionnaires.recipients")}</div>
+        <div style={{ marginBottom: 10 }}><RecipientSelect players={players} value={rec} onChange={setRec} accent={C.teal} /></div>
+        {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
+        <button onClick={save} disabled={busy} style={{ width: "100%", background: C.teal, border: "none", borderRadius: 10, padding: 12, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}><Calendar size={14} /> {existing ? t("staff.questionnaires.scheduleSave") : t("staff.questionnaires.scheduleCreate")}</button>
+        {existing && <button onClick={del} disabled={busy} style={{ width: "100%", marginTop: 8, background: "none", border: "none", color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>{t("staff.questionnaires.scheduleDelete")}</button>}
+      </div>
+    </div>
   );
 }
 
