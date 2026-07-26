@@ -13,6 +13,17 @@
    séances sont éditables avant écriture (validation manuelle obligatoire). */
 
 import { normalizeProgram } from "./model.js";
+import { norm } from "../catalog/detect.js";
+
+// Deux titres se « correspondent » si l'un contient l'autre (normalisés) — pour
+// rattacher un jour de semaine-type à la grille d'exercices homonyme.
+function titlesMatch(a, b) {
+  const na = norm(a), nb = norm(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const [short, long] = na.length <= nb.length ? [na, nb] : [nb, na];
+  return short.length >= 4 && long.includes(short); // évite qu'un titre trivial (« A ») matche tout
+}
 
 // Nature dominante → code rugby par défaut (inverse de nature.js CODE_NATURE).
 const NATURE_CODE = {
@@ -31,19 +42,25 @@ export function parseScheme(text) {
 }
 
 // Ligne d'exercices du protocole → exo plat. On prend le schéma de la 1re
-// cellule non vide (S1 en général) comme sets×reps indicatif ; le tempo devient
-// une charge/indication si présent.
+// cellule non vide (S1 en général) comme sets×reps indicatif. 1 LIGNE = 1
+// EXERCICE : on ne jette JAMAIS la ligne (nom de repli sur le bloc/la cellule)
+// et on préserve la consigne prescrite brute `presc` (avec son unité), le tempo
+// et la note du coach.
 function rowToExo(row) {
-  const name = String(row?.name || "").trim();
-  if (!name) return null;
   const cell = (Array.isArray(row?.weeks) ? row.weeks : []).map((c) => c?.text).find((x) => x && String(x).trim()) || "";
+  const presc = String(cell || "").trim();
   const { sets, reps } = parseScheme(cell);
+  const block = String(row?.block || "").trim();
+  const name = String(row?.name || "").trim() || block || presc || "Exercice";
   return {
     name,
     sets: sets || "",
-    reps: reps || (cell ? String(cell).trim() : ""),
-    charge: String(row?.tempo || "").trim(),
+    reps: reps || presc,
+    charge: "",
     rest: 90,
+    tempo: String(row?.tempo || "").trim() || null,
+    note: String(row?.note || "").trim() || null,
+    presc: presc || null,
   };
 }
 
@@ -69,11 +86,14 @@ export function docToSessions(doc) {
     const sessions = active.map((day) => {
       const nature = day.nature || "";
       const label = day.label || "Séance";
-      // On rattache la grille unique aux jours de FORCE ; sinon l'intitulé du
-      // jour sert d'unique ligne (séance non vide → visible au calendrier).
-      const exos = soleExos.length && (nature === "force" || /muscu|force|renfo/i.test(label))
-        ? soleExos
-        : [{ name: label, sets: "", reps: "", charge: "", rest: 90 }];
+      // 1) Rapprochement par TITRE : un jour ↔ la grille homonyme (toute nature).
+      // 2) Sinon, la grille unique alimente les jours de force ; à défaut,
+      //    l'intitulé du jour = une ligne (séance non vide → visible au calendrier).
+      const byTitle = exSecs.find((s) => titlesMatch(s.title, label));
+      const exos = byTitle ? exosOfSection(byTitle)
+        : (soleExos.length && (nature === "force" || /muscu|force|renfo/i.test(label))
+          ? soleExos
+          : [{ name: label, sets: "", reps: "", charge: "", rest: 90 }]);
       return { weekday: day.weekday, nature, code: codeForNature(nature), titre: label, exercises: exos };
     });
     return { sessions, warnings };
