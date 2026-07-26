@@ -1276,6 +1276,22 @@
       "tagOpen": "open",
       "tagTeam": "team"
     },
+    "dataq": {
+      "title": "Datakwaliteit",
+      "hint": "De betrouwbaarheid van de statistieken hangt af van de invoer. Dit ontbreekt om op echte waarden te kunnen concluderen — por de betrokken spelers in één klik aan.",
+      "noPlayers": "Geen spelers in de selectie.",
+      "allGood": "✓ Voldoende gegevens voor een betrouwbare analyse.",
+      "lowLog": "{{count}} speler(s) met te weinig gelogde sessies (onbetrouwbare belasting)",
+      "noDuration": "{{count}} speler(s) zonder ingevoerde sessieduur",
+      "noBilan": "{{count}} speler(s) zonder recente check-in (7 d)",
+      "no1RM": "{{count}} speler(s) zonder 1RM ingevuld",
+      "relance": "Aanporren",
+      "relanced": "{{count}} aangepord",
+      "nudgeLog": "Vergeet niet je sessies in de app te valideren: zonder deze zijn je belasting en ACWR niet betrouwbaar.",
+      "nudgeDuration": "Vergeet niet de DUUR van je sessies bij validatie in te voeren: die wordt gebruikt om je belasting (sRPE) te berekenen.",
+      "nudgeBilan": "Vergeet niet je dagelijkse check-in in te vullen: die voedt je readiness en opvolging.",
+      "nudge1RM": "Vul je 1RM (maximale belasting) in zodat %-belastingen voor jou worden berekend."
+    },
     "refdocs": {
       "title": "Referentiedocumenten · {{count}}",
       "addBtn": "Pdf uploaden",

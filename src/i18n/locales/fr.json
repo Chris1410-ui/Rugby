@@ -1276,6 +1276,22 @@
       "tagOpen": "ouverte",
       "tagTeam": "équipe"
     },
+    "dataq": {
+      "title": "Qualité des données",
+      "hint": "La fiabilité des statistiques dépend de la saisie. Voici ce qui manque pour conclure sur des valeurs réelles — relance les joueurs concernés en un clic.",
+      "noPlayers": "Aucun joueur dans l'effectif.",
+      "allGood": "✓ Données suffisantes pour une analyse fiable.",
+      "lowLog": "{{count}} joueur(s) avec trop peu de séances loggées (charge non fiable)",
+      "noDuration": "{{count}} joueur(s) sans durée de séance saisie",
+      "noBilan": "{{count}} joueur(s) sans bilan récent (7 j)",
+      "no1RM": "{{count}} joueur(s) sans 1RM renseigné",
+      "relance": "Relancer",
+      "relanced": "{{count}} relancé(s)",
+      "nudgeLog": "Pense à valider tes séances dans l'app : sans elles, ta charge et ton ACWR ne sont pas fiables.",
+      "nudgeDuration": "Pense à saisir la DURÉE de tes séances à la validation : elle sert à calculer ta charge (sRPE).",
+      "nudgeBilan": "Pense à compléter ton bilan du jour : il alimente ta readiness et ton suivi.",
+      "nudge1RM": "Renseigne ton 1RM (charge max) pour que les charges en % soient calculées pour toi."
+    },
     "refdocs": {
       "title": "Documents de référence · {{count}}",
       "addBtn": "Déposer un PDF",

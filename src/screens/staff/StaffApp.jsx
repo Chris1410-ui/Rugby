@@ -42,6 +42,7 @@ import AnalyseVideo from "./AnalyseVideo.jsx";
 import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
+import DataQuality from "./DataQuality.jsx";
 import ReferenceDocs from "./ReferenceDocs.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
@@ -134,7 +135,10 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
       <main style={{ flex: 1, padding: 18 }}>
        <PullToRefresh onRefresh={refresh}>
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} resetRequests={resetReqs} />}
-        {tab === "aujourdhui" && <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
+        {tab === "aujourdhui" && <>
+          {!readOnly && <DataQuality teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
+          <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />
+        </>}
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}
