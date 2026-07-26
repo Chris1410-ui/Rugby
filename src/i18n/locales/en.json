@@ -312,7 +312,11 @@
     "playerNotLinked": "Your player profile isn't linked to the squad yet. Contact the staff.",
     "notifications": "Notifications",
     "home": "Home",
-    "finalizingInvite": "Finalizing your account…"
+    "finalizingInvite": "Finalizing your account…",
+    "activateAthlete": "Activate my athlete profile",
+    "activating": "Activating…",
+    "viewAsAthlete": "Switch to athlete view",
+    "viewAsStaff": "Back to staff view"
   },
   "onboarding": {
     "skip": "Skip",

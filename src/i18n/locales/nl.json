@@ -312,7 +312,11 @@
     "playerNotLinked": "Je spelersprofiel is nog niet aan de selectie gekoppeld. Neem contact op met de staf.",
     "notifications": "Meldingen",
     "home": "Start",
-    "finalizingInvite": "Je account afronden…"
+    "finalizingInvite": "Je account afronden…",
+    "activateAthlete": "Mijn atletenprofiel activeren",
+    "activating": "Activeren…",
+    "viewAsAthlete": "Naar atletenweergave",
+    "viewAsStaff": "Terug naar stafweergave"
   },
   "onboarding": {
     "skip": "Overslaan",
