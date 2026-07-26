@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "./messages.js";
 import { exKey } from "../lib/hevy.js";
 import { estimate1RM } from "../lib/oneRM.js";
+import { extractExerciseCandidates } from "../lib/exerciseDetect.js";
+import { searchExercises } from "./exerciseLibrary.js";
 
 /* 1RM par joueur (table player_1rm) : saisissable par le staff et le joueur,
    testé ou estimé (Epley), historisé. Écritures gardées par la RLS (joueur =
@@ -98,6 +100,26 @@ export async function deleteEntry1RM(id) {
    `exercises` = [{ id?: uuid, name: string }]. Renvoie { created, skipped,
    unresolved: [noms non reliés à la bibliothèque] } — jamais de fausse
    correspondance inventée. Réutilise la RPC request_1rm (0099). */
+/* Scan best-effort d'un message texte libre → exercices RELIÉS à la bibliothèque,
+   À CONFIRMER par le staff avant toute création (jamais d'invention silencieuse).
+   Extrait des phrases candidates (pur, lib/exerciseDetect) puis confronte chacune
+   à search_exercises ; ne garde que les correspondances sûres (similarité ≥ 0.5),
+   dédupliquées par exercice. Renvoie [{ id, name }]. */
+export async function detectRequestExercises(text) {
+  const cands = extractExerciseCandidates(text);
+  const out = [];
+  const seen = new Set();
+  for (const q of cands) {
+    const res = await searchExercises(q, 1);
+    const top = res[0];
+    if (top && Number(top.sim) >= 0.5 && !seen.has(top.id)) {
+      seen.add(top.id);
+      out.push({ id: top.id, name: top.name });
+    }
+  }
+  return out;
+}
+
 export async function request1RM(assigned, exercises) {
   const list = (exercises || [])
     .map((e) => ({ id: e.id || e.exerciseId || null, name: String(e.name || "").trim() }))
