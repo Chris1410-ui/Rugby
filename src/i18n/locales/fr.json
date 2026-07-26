@@ -1415,7 +1415,15 @@
         "absent": "Absent",
         "pending": "Sans réponse"
       },
-      "errNoOcc": "Aucune occurrence générée — vérifie les jours et la période."
+      "errNoOcc": "Aucune occurrence générée — vérifie les jours et la période.",
+      "scopeOne": "Cette occurrence",
+      "scopeSeries": "Toute la série",
+      "seriesHint": "Modifier la série régénère les occurrences futures. Les séances passées, personnalisées ou déjà pointées ne sont jamais touchées.",
+      "saveSeries": "Mettre à jour la série",
+      "delSeries": "Supprimer la série",
+      "delSeriesConfirm": "Supprimer la série ? Les occurrences futures non pointées seront retirées ; le passé est conservé.",
+      "tagSeries": "série",
+      "tagCustom": "personnalisée"
     },
     "challenges": {
       "delConfirm": "Supprimer ce défi ?",

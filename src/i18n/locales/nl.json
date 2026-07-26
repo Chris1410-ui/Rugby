@@ -1415,7 +1415,15 @@
         "absent": "Afwezig",
         "pending": "Geen antwoord"
       },
-      "errNoOcc": "Geen keren gegenereerd — controleer de dagen en periode."
+      "errNoOcc": "Geen keren gegenereerd — controleer de dagen en periode.",
+      "scopeOne": "Deze keer",
+      "scopeSeries": "Hele reeks",
+      "seriesHint": "De reeks bewerken genereert toekomstige keren opnieuw. Verleden, aangepaste of reeds geregistreerde sessies worden nooit aangeraakt.",
+      "saveSeries": "Reeks bijwerken",
+      "delSeries": "Reeks verwijderen",
+      "delSeriesConfirm": "Reeks verwijderen? Toekomstige niet-geregistreerde keren worden verwijderd; het verleden blijft.",
+      "tagSeries": "reeks",
+      "tagCustom": "aangepast"
     },
     "challenges": {
       "delConfirm": "Deze uitdaging verwijderen?",

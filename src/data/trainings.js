@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { resolveAssignedIds } from "./sessions.js";
 import { uniqueTopic } from "./messages.js";
-import { expandRecurrence } from "../lib/recurrence.js";
-import { createRecurrenceSeries, deleteRecurrenceSeries } from "./recurrence.js";
+import { expandRecurrence, planSeriesUpdate } from "../lib/recurrence.js";
+import { createRecurrenceSeries, deleteRecurrenceSeries, updateRecurrenceSeries } from "./recurrence.js";
 
 /* Convocations aux entraînements collectifs + présences (migration 0082).
    Le joueur n'écrit JAMAIS en direct : training_respond est un RPC SECURITY
@@ -123,6 +123,65 @@ export async function createTrainingsRecurring(teamId, clubId, { value, assigned
   const { error } = await supabase.from("trainings").insert(rows);
   if (error) { try { await deleteRecurrenceSeries(series.id); } catch { /* best effort */ } throw error; }
   return { seriesId: series.id, count: rows.length };
+}
+
+// Occurrences d'une série + drapeau « déjà réalisée/validée » (présence saisie).
+async function seriesOccurrences(seriesId) {
+  const { data: rows, error } = await supabase.from("trainings").select("id,date,customized").eq("series_id", seriesId);
+  if (error) throw error;
+  const ids = (rows || []).map((r) => r.id);
+  const attended = new Set();
+  if (ids.length) {
+    const { data: att } = await supabase.from("training_attendance").select("training_id,player_response,staff_status").in("training_id", ids);
+    (att || []).forEach((a) => { if (a.player_response || a.staff_status) attended.add(a.training_id); });
+  }
+  return (rows || []).map((r) => ({ id: r.id, date: r.date, customized: !!r.customized, hasAttendance: attended.has(r.id) }));
+}
+
+/* Modifier la SÉRIE : met à jour la définition puis régénère les occurrences
+   FUTURES non protégées (passé / customisée / déjà pointée = intouchables). */
+export async function updateTrainingSeries(seriesId, teamId, { value, assigned, payload = {} }, { today }) {
+  await updateRecurrenceSeries(seriesId, { value, assigned, payload });
+  const existing = await seriesOccurrences(seriesId);
+  const { occurrences } = expandRecurrence(value);
+  const plan = planSeriesUpdate(existing, occurrences, today);
+
+  if (plan.toDelete.length) {
+    const { error } = await supabase.from("trainings").delete().in("id", plan.toDelete);
+    if (error) throw error;
+  }
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth?.user?.id;
+  if (plan.toInsert.length) {
+    const rows = plan.toInsert.map((o) => ({
+      ...trainingRow(teamId, { date: o.date, heure: o.time || payload.heure, lieu: payload.lieu, nature: payload.nature, titre: payload.titre, notes: payload.notes, assigned }, uid),
+      series_id: seriesId, customized: false,
+    }));
+    const { error } = await supabase.from("trainings").insert(rows);
+    if (error) throw error;
+  }
+  // Occurrences futures conservées : on répercute heure + gabarit + destinataires.
+  for (const u of plan.toUpdate) {
+    const { error } = await supabase.from("trainings").update({
+      heure: u.time || payload.heure || null, titre: payload.titre || null, lieu: payload.lieu || null,
+      nature: payload.nature || null, notes: payload.notes || null, assigned: assigned || { mode: "all" },
+    }).eq("id", u.id);
+    if (error) throw error;
+  }
+  return { deleted: plan.toDelete.length, inserted: plan.toInsert.length, updated: plan.toUpdate.length };
+}
+
+/* Supprimer la SÉRIE : retire les occurrences futures non protégées, puis la
+   série (les occurrences passées / customisées / pointées restent, détachées). */
+export async function deleteTrainingSeries(seriesId, { today }) {
+  const existing = await seriesOccurrences(seriesId);
+  const toDelete = existing.filter((e) => e.date >= today && !e.customized && !e.hasAttendance).map((e) => e.id);
+  if (toDelete.length) {
+    const { error } = await supabase.from("trainings").delete().in("id", toDelete);
+    if (error) throw error;
+  }
+  await deleteRecurrenceSeries(seriesId);
+  return { deleted: toDelete.length };
 }
 export async function updateTraining(id, patch) {
   const { error } = await supabase.from("trainings").update(patch).eq("id", id);
