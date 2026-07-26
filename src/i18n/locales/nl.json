@@ -52,6 +52,19 @@
     "compare": "A/B vergelijking",
     "abonnements": "Push-abonnementen"
   },
+  "knowledge": {
+    "btn": "Tips",
+    "title": "Assistent — kennisbank",
+    "hint": "Tips uit je referentiedocumenten, relevant voor dit protocol. Voeg ze in als sectie: de bron (document + pagina) blijft behouden.",
+    "searchPh": "Zoek een tip…",
+    "empty": "Nog geen gepubliceerde tip. Upload en analyseer een referentie-pdf bij “Documenten” om de basis te verrijken.",
+    "noMatch": "Geen tip komt overeen met je zoekopdracht.",
+    "relevant": "Relevant voor dit protocol",
+    "others": "Andere tips",
+    "source": "Bron:",
+    "insert": "Invoegen",
+    "insertedTitle": "Tip"
+  },
   "protocols": {
     "title": "Protocollen",
     "intro": "Bouw rijke trainingsprogramma's (hero, secties, oefeningentabellen) en publiceer ze voor je spelers.",

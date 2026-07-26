@@ -21,7 +21,9 @@ import ExerciseAutocomplete from "../../shared/ExerciseAutocomplete.jsx";
 import { createCustomExercise, incrementExerciseUsage } from "../../../data/exerciseLibrary.js";
 import ProgramView from "../../shared/ProgramView.jsx";
 import AssignmentPanel from "./AssignmentPanel.jsx";
-import { Eye } from "../../../lib/icons.jsx";
+import KnowledgeAssistant from "../../shared/KnowledgeAssistant.jsx";
+import { contextTerms } from "../../../lib/knowledge/rank.js";
+import { Eye, Sparkles } from "../../../lib/icons.jsx";
 
 const ACCENT = C.coral;
 // Couleurs des accents de colonne/chiffre (code → teinte du thème « stade »).
@@ -53,6 +55,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const [picker, setPicker] = useState(null); // index de la section d'exercices ciblée
   const [preview, setPreview] = useState(false); // aperçu « stade » du document en cours
   const [saveTpl, setSaveTpl] = useState(null);  // { index } section à enregistrer comme modèle
+  const [assist, setAssist] = useState(false);   // panneau d'assistance (conseils de la base de connaissance)
   const [replan, setReplan] = useState(null);    // { count } | "running" | { done, inserted } — répercussion sur les plans
 
   useEffect(() => {
@@ -141,6 +144,13 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const addSection = (type) => setDoc((d) => { d.sections.push((SECTION_FACTORY[type] || SECTION_FACTORY.narrative)()); return d; });
   // Insère une ou plusieurs sections (modèle) avec des ids frais.
   const insertSections = (list) => setDoc((d) => { (list || []).forEach((s) => d.sections.push(freshSection(s))); return d; });
+  // Insère un conseil de la base de connaissance comme section narrative, en
+  // conservant la CITATION SOURCE (doc + page) dans le sous-titre.
+  const insertKnowledge = (note) => insertSections([{
+    type: "narrative", title: note.title || t("knowledge.insertedTitle"),
+    subtitle: note.sourceRef ? `${t("knowledge.source")} ${note.sourceRef}` : "",
+    body: note.body || "",
+  }]);
   const setSection = (i, patch) => setDoc((d) => { d.sections[i] = { ...d.sections[i], ...patch }; return d; });
   const moveSection = (i, dir) => setDoc((d) => { const j = i + dir; if (j < 0 || j >= d.sections.length) return d; [d.sections[i], d.sections[j]] = [d.sections[j], d.sections[i]]; return d; });
   const delSection = (i) => setDoc((d) => { d.sections.splice(i, 1); return d; });
@@ -268,6 +278,9 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
       {/* ── Sections ── */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "22px 0 10px" }}>
         <div style={{ fontSize: 14, fontWeight: 800, flex: 1 }}>{t("protocols.sections")}</div>
+        <button onClick={() => setAssist(true)} title={t("knowledge.title")} style={{ ...miniBtn, background: `${C.viol}18`, borderColor: `${C.viol}66`, color: "#fff" }}>
+          <Sparkles size={13} /> {t("knowledge.btn")}
+        </button>
         <AddSectionMenu weeks={weeks} teamId={teamId} onBlank={addSection} onInsert={insertSections} t={t} />
       </div>
 
@@ -344,6 +357,17 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
 
       {missingMv && (
         <Missing1RMModal movement={missingMv} players={players} team1rm={team1rm} teamId={teamId} onClose={() => setMissingMv(null)} onSaved={refreshTeam1rm} t={t} />
+      )}
+
+      {assist && (
+        <KnowledgeAssistant
+          context={{
+            theme: category || doc.meta.nature || "",
+            terms: contextTerms(title, category, doc.meta.nature, ...doc.sections.map((s) => s.title)),
+          }}
+          onInsert={insertKnowledge}
+          onClose={() => setAssist(false)}
+        />
       )}
     </section>
   );
