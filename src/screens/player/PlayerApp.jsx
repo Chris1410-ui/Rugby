@@ -24,6 +24,7 @@ import Messages from "./Messages.jsx";
 import Comparaison from "./Comparaison.jsx";
 import PlayerDistributions from "./Distributions.jsx";
 import MorningRoutine from "./MorningRoutine.jsx";
+import Passage from "./Passage.jsx";
 import Crew from "./Crew.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
@@ -90,6 +91,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
     ["convocations", t("nav.convocations"), Send, bConv],
+    ["passage", t("nav.passage"), ClipboardList],
     ["questionnaires", t("nav.questionnaires"), FileText, bQuest],
     ["messages", t("nav.messages"), MessageSquare, unread],
     ["equipe", t("nav.equipe"), Users],
@@ -116,6 +118,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
           {tab === "convocations" && <Convocations me={me} players={players} accent={ACCENT} />}
+          {tab === "passage" && <Passage me={me} teamId={profile.team_id} players={players} accent={ACCENT} />}
           {tab === "questionnaires" && <Questionnaires me={me} accent={ACCENT} />}
           {tab === "messages" && <Messages me={me} accent={ACCENT} />}
           {tab === "equipe" && <Crew me={me} teamId={profile.team_id} players={players} crews={crews} accent={ACCENT} />}
