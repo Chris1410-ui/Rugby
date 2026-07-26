@@ -68,8 +68,19 @@ export function useModalClose(onClose) {
     if (!ref.current) return undefined; // rendu inline (pas de modal) → no-op
     const onKey = (e) => { if (e.key === "Escape") ref.current?.(); };
     let viaPop = false;
+    const now = () => (typeof performance !== "undefined" && performance.now ? performance.now() : 0);
+    const mountedAt = now();
     try { window.history.pushState({ modal: true }, ""); } catch { /* noop */ }
-    const onPop = () => { viaPop = true; ref.current?.(); };
+    // Enchaînement modale→modale (ex. détail d'un défi → « Modifier ») : la fermeture
+    // de la modale précédente déclenche un history.back() dont le `popstate` (asynchrone)
+    // arrive juste APRÈS le montage de la nouvelle, qui se refermerait alors toute seule.
+    // On ignore cet écho dans une courte fenêtre après le montage (un vrai retour
+    // arrière ne peut pas survenir aussi vite que l'ouverture qui vient d'avoir lieu).
+    const onPop = () => {
+      if (now() - mountedAt < 250) return;
+      viaPop = true;
+      ref.current?.();
+    };
     window.addEventListener("keydown", onKey);
     window.addEventListener("popstate", onPop);
     return () => {

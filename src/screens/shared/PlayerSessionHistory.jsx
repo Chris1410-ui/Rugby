@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { Section, Tag, NatureTag } from "../../lib/ui.jsx";
-import { parseISO, todayISO, statusOfLog, sessionDisplayState } from "../../lib/metrics.js";
+import { parseISO, todayISO, statusOfLog, sessionDisplayState, cmpDate } from "../../lib/metrics.js";
 import { useTeamSessions } from "../../data/sessions.js";
 import { useTeamLogs } from "../../data/logs.js";
 
@@ -15,8 +15,8 @@ const STATE_COLOR = { done: C.green, missed: C.coral, todo: C.amb, postponed: C.
    données déjà scopées RLS ; aucune écriture. */
 export default function PlayerSessionHistory({ player, players = [] }) {
   const { t } = useTranslation();
-  const sessions = useTeamSessions(player?.team, players);
-  const logs = useTeamLogs(player?.team);
+  const { sessions } = useTeamSessions(player?.team, players);
+  const { logs } = useTeamLogs(player?.team);
   const today = todayISO();
   const [showAll, setShowAll] = useState(false);
 
@@ -24,7 +24,7 @@ export default function PlayerSessionHistory({ player, players = [] }) {
     const mine = (sessions || [])
       .filter((s) => (s.assignedIds || []).includes(player?.id))
       .map((s) => ({ s, st: sessionDisplayState(statusOfLog(logs, s.id, player?.id), s.date, today), rpe: logs?.[s.id]?.[player?.id]?.rpe, dur: logs?.[s.id]?.[player?.id]?.duration }))
-      .sort((a, b) => b.s.date.localeCompare(a.s.date)); // plus récent d'abord
+      .sort((a, b) => cmpDate(b.s?.date, a.s?.date)); // plus récent d'abord
     return mine;
   }, [sessions, logs, player?.id, today]);
 

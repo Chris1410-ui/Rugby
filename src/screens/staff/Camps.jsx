@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
-import { todayISO, fmtShort } from "../../lib/metrics.js";
+import { todayISO, fmtShort, cmpDate } from "../../lib/metrics.js";
 import { Section, Tag } from "../../lib/ui.jsx";
 import { Flag, Plus, Activity, Trash2 } from "../../lib/icons.jsx";
 import { useTeamCamps, useCampCounts, useCampParticipants, createCamp, updateCamp, deleteCamp, inCamp } from "../../data/camps.js";
@@ -121,10 +121,10 @@ function CampDetail({ camp, teamId, players, sessions, logs, onBack, onDeleted }
   const { campaigns } = useTestCampaigns(teamId);
 
   const campSessions = useMemo(
-    () => sessions.filter((s) => inCamp(camp, s.date)).sort((a, b) => a.date.localeCompare(b.date)),
+    () => sessions.filter((s) => inCamp(camp, s.date)).sort((a, b) => cmpDate(a.date, b.date)),
     [sessions, camp]
   );
-  const campCampaigns = campaigns.filter((c) => c.campId === camp.id).sort((a, b) => a.date.localeCompare(b.date));
+  const campCampaigns = campaigns.filter((c) => c.campId === camp.id).sort((a, b) => cmpDate(a.date, b.date));
 
   const del = async () => {
     setBusy(true);

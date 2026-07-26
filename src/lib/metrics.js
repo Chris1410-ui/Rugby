@@ -38,6 +38,9 @@ export const parseISO = (s) => {
   return new Date(s); // timestamp ISO complet ou autre format Date-compatible
 };
 export const todayISO = () => isoDate(new Date());
+// Comparateur de dates ISO null-safe (une date manquante ne fait jamais planter un
+// tri) — les valeurs absentes se comparent comme "" (triées en tête en croissant).
+export const cmpDate = (a, b) => String(a ?? "").localeCompare(String(b ?? ""));
 export const fmtShort = (s, fallback = "—") => {
   const d = parseISO(s);
   return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString(localeTag(), { day: "numeric", month: "short" });

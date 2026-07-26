@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
-import { todayISO } from "../../lib/metrics.js";
+import { todayISO, cmpDate } from "../../lib/metrics.js";
 import { usePreview } from "../../lib/preview.js";
 import { useTeamTrainings, useTeamAttendance } from "../../data/trainings.js";
 import ConvocationRespondCard from "../shared/ConvocationRespondCard.jsx";
@@ -17,7 +17,7 @@ export default function Convocations({ me, players = [], accent = C.coral }) {
   const today = todayISO();
 
   const { upcoming, past } = useMemo(() => {
-    const sorted = [...trainings].sort((a, b) => a.date.localeCompare(b.date));
+    const sorted = [...trainings].sort((a, b) => cmpDate(a.date, b.date));
     return {
       upcoming: sorted.filter((tr) => tr.date >= today),
       past: sorted.filter((tr) => tr.date < today).reverse(),

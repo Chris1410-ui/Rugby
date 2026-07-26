@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
-import { wbToWellness, computeReadiness, isoDate, parseISO, fmtShort, todayISO, EVENING_MARKERS } from "../../lib/metrics.js";
+import { wbToWellness, computeReadiness, isoDate, parseISO, fmtShort, todayISO, EVENING_MARKERS, cmpDate } from "../../lib/metrics.js";
 import { Section, KPI } from "../../lib/ui.jsx";
 import { useTeamCheckinHistory } from "../../data/checkins.js";
 import { activeCamp } from "../../data/camps.js";
@@ -28,7 +28,7 @@ export default function Historique({ players, testCampaigns = [], camps = [] }) 
   // « Depuis le camp » = le camp actif (période nommée). Repli : la campagne de
   // tests la plus récente si aucun camp n'existe encore.
   const camp = activeCamp(camps);
-  const lastCamp = [...testCampaigns].sort((a, b) => b.date.localeCompare(a.date))[0];
+  const lastCamp = [...testCampaigns].sort((a, b) => cmpDate(b.date, a.date))[0];
   const campFrom = camp?.dateDebut || lastCamp?.date || null;
   const days = period === "today" ? 1 : period === "7" ? 7 : period === "30" ? 30 : period === "camp" ? (campFrom ? daysBetween(campFrom) : 30) : 3650;
 

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
-import { isoDate, parseISO, todayISO, statusOfLog, sessionDisplayState } from "../../lib/metrics.js";
+import { isoDate, parseISO, todayISO, statusOfLog, sessionDisplayState, cmpDate } from "../../lib/metrics.js";
 import { Section, Tag, NatureTag } from "../../lib/ui.jsx";
 import { ChevronRight } from "../../lib/icons.jsx";
 
@@ -43,7 +43,7 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
   for (let i = 0; i < startDow; i++) cells.push(null);
   for (let d = 1; d <= nDays; d++) cells.push(d);
 
-  const agenda = [...mySessions].sort((a, b) => a.date.localeCompare(b.date));
+  const agenda = [...mySessions].sort((a, b) => cmpDate(a.date, b.date));
 
   return (
     <div>
@@ -109,7 +109,7 @@ export default function Calendrier({ sessions = [], logs = {}, meId, accent = C.
 
       {trainings.length > 0 && (
         <Section title={t("shared.calendar.convocations")}>
-          {[...trainings].sort((a, b) => a.date.localeCompare(b.date)).map((tr) => {
+          {[...trainings].sort((a, b) => cmpDate(a.date, b.date)).map((tr) => {
             const d = parseISO(tr.date);
             const resp = convResp(tr);
             const col = resp === "present" ? C.green : resp === "late" ? C.amb : resp === "absent" ? C.coral : C.viol;
