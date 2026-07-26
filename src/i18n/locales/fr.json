@@ -674,6 +674,21 @@
   "player": {
     "activityFab": "Activité",
     "activityFabTitle": "Déclarer une activité",
+    "dist": {
+      "title": "Distributions",
+      "hint": "Situe-toi par rapport à ta ligne ou à ton équipe sur un test. Tu ne vois que la forme du groupe (quartiles, ≥ 5 joueurs) et ton propre rang — jamais les valeurs des autres.",
+      "team": "Équipe",
+      "loading": "Chargement…",
+      "kAnonHidden": "Comparaison indisponible : moins de 5 joueurs mesurés dans ce groupe ({{n}}).",
+      "median": "médiane {{group}}",
+      "iqr": "50 % central",
+      "range": "amplitude",
+      "nPlayers": "{{n}} joueurs",
+      "dirUpHint": "→ plus haut = mieux",
+      "dirDownHint": "← plus bas = mieux",
+      "betterThan": "ta valeur : mieux que {{pct}} % de {{group}}",
+      "noMyValue": "Tu n'as pas encore de mesure sur ce test."
+    },
     "today": {
       "absent": "Absent",
       "activities": "Activités du jour",

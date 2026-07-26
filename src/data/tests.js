@@ -153,6 +153,42 @@ function useComparisonStats(playerId, rpc, valueKey) {
 export const useLineStats = (playerId) => useComparisonStats(playerId, "comparison_line_stats", "line_avg");
 export const useTeamStats = (playerId) => useComparisonStats(playerId, "comparison_team_stats", "team_avg");
 
+/* Distribution serveur (k-anon) d'un test pour ma ligne / mon équipe : quartiles +
+   min/max/moyenne masqués sous 5 joueurs, MA valeur (jamais masquée) et mon rang
+   percentile. Jamais de valeur individuelle d'un coéquipier (RPC test_distribution,
+   migration 0095). `scope` = 'line' | 'team'. Realtime sur test_results. */
+export function useTestDistribution(playerId, metricKey, scope) {
+  const [dist, setDist] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const num = (x) => (x != null ? Number(x) : null);
+
+  const fetch = useCallback(async () => {
+    if (!metricKey) { setDist(null); setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await supabase.rpc("test_distribution", { p_metric: metricKey, p_scope: scope || "team" });
+    if (error) { console.error("[test_distribution]", error.message); setDist(null); setLoading(false); return; }
+    const r = Array.isArray(data) ? data[0] : data;
+    setDist(r ? {
+      n: r.n, hidden: r.hidden,
+      min: num(r.mn), q1: num(r.q1), median: num(r.med), q3: num(r.q3), max: num(r.mx), mean: num(r.mean),
+      myVal: num(r.my_val), myPct: r.my_pct != null ? Number(r.my_pct) : null,
+    } : null);
+    setLoading(false);
+  }, [metricKey, scope]);
+
+  useEffect(() => {
+    fetch();
+    if (!playerId) return;
+    const ch = supabase
+      .channel(uniqueTopic(`testdist:${playerId}:${metricKey}:${scope}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "test_results" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [playerId, metricKey, scope, fetch]);
+
+  return { dist, loading, refresh: fetch };
+}
+
 export async function createCampaign(teamId, { name, date, campId = null }) {
   const { data: auth } = await supabase.auth.getUser();
   const { data, error } = await supabase
