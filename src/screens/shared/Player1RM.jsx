@@ -15,16 +15,26 @@ export default function Player1RM({ player, self = false, canEdit = false }) {
   const { t } = useTranslation();
   const { entries } = usePlayer1RM(player?.id);
   const canAdd = self || canEdit;
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState(null); // null | {} (nouveau) | { name, exerciseId } (complétion)
   const [hist, setHist] = useState(null); // mouvement dont on voit l'historique
 
   const rows = useMemo(() => summarize1RM(entries), [entries]);
+  const missing = useMemo(() => rows.filter((r) => r.missing), [rows]);
+
+  const complete = (r) => setAdding({ name: r.label, exerciseId: r.exerciseId });
 
   return (
     <Section title={t("oneRM.title", { count: rows.length })} right={canAdd && !adding ? (
-      <button onClick={() => setAdding(true)} style={{ background: "none", border: "none", color: C.viol, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}><Plus size={13} /> {t("oneRM.add")}</button>
+      <button onClick={() => setAdding({})} style={{ background: "none", border: "none", color: C.viol, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}><Plus size={13} /> {t("oneRM.add")}</button>
     ) : null}>
-      {adding && <AddForm player={player} self={self} onDone={() => setAdding(false)} onCancel={() => setAdding(false)} t={t} />}
+      {/* Rappel : des 1RM demandés (par le staff ou un protocole en %) attendent une valeur. */}
+      {canAdd && !adding && missing.length > 0 && (
+        <div style={{ background: `${C.amb}14`, border: `1px solid ${C.amb}55`, borderRadius: 10, padding: "9px 11px", marginBottom: 10, fontSize: 12, color: C.amb, fontWeight: 700 }}>
+          {t("oneRM.toComplete", { count: missing.length })}
+        </div>
+      )}
+
+      {adding && <AddForm player={player} self={self} initial={adding} onDone={() => setAdding(null)} onCancel={() => setAdding(null)} t={t} />}
 
       {rows.length === 0 && !adding ? (
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>{t("oneRM.empty")}</div>
@@ -39,7 +49,11 @@ export default function Player1RM({ player, self = false, canEdit = false }) {
                 </div>
               </div>
               {r.missing ? (
-                <Tag c={C.amb}>{t("oneRM.toSet")}</Tag>
+                canAdd ? (
+                  <button onClick={() => complete(r)} style={{ background: `${C.amb}1f`, border: `1px solid ${C.amb}66`, borderRadius: 8, padding: "6px 11px", color: C.amb, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{t("oneRM.complete")}</button>
+                ) : (
+                  <Tag c={C.amb}>{t("oneRM.toSet")}</Tag>
+                )
               ) : (
                 <>
                   <span style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{r.value}<span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}> {t("oneRM.kg")}</span></span>
@@ -57,9 +71,12 @@ export default function Player1RM({ player, self = false, canEdit = false }) {
   );
 }
 
-function AddForm({ player, self, onDone, onCancel, t }) {
-  const [name, setName] = useState("");
-  const [exerciseId, setExerciseId] = useState(null); // lié à la bibliothèque si choisi (dédup + agrégats)
+function AddForm({ player, self, initial = {}, onDone, onCancel, t }) {
+  // Complétion d'un 1RM demandé : le mouvement est fixé (nom + exercise_id) ; le
+  // joueur n'a plus qu'à saisir la valeur et le type. Sinon, ajout libre.
+  const locked = !!initial.name;
+  const [name, setName] = useState(initial.name || "");
+  const [exerciseId, setExerciseId] = useState(initial.exerciseId || null); // lié à la bibliothèque si choisi (dédup + agrégats)
   const [mode, setMode] = useState("direct"); // 'direct' (1RM) | 'submax' (poids × reps → estimé)
   const [value, setValue] = useState("");
   const [w, setW] = useState("");
@@ -93,15 +110,22 @@ function AddForm({ player, self, onDone, onCancel, t }) {
 
   return (
     <div style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, marginBottom: 10 }}>
-      <div style={{ marginBottom: 8 }}>
-        <ExerciseAutocomplete
-          value={name}
-          onChange={(v) => { setName(v); setErr(""); }}
-          onPick={(it) => setExerciseId(it?.id || null)}
-          placeholder={t("oneRM.movementPh")}
-          style={inp}
-        />
-      </div>
+      {locked ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{t("oneRM.completing")}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{name}</span>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 8 }}>
+          <ExerciseAutocomplete
+            value={name}
+            onChange={(v) => { setName(v); setErr(""); }}
+            onPick={(it) => setExerciseId(it?.id || null)}
+            placeholder={t("oneRM.movementPh")}
+            style={inp}
+          />
+        </div>
+      )}
       <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
         <button onClick={() => setMode("direct")} style={pill(mode === "direct")}>{t("oneRM.modeDirect")}</button>
         <button onClick={() => setMode("submax")} style={pill(mode === "submax")}>{t("oneRM.modeSubmax")}</button>
