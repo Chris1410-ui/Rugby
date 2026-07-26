@@ -93,6 +93,30 @@ export function movementTeamStats(entries = [], players = [], movement = {}) {
   return { avg, have: values.length, missing: Math.max(0, rosterIds.length - values.length), total: rosterIds.length };
 }
 
+/* 1RM MANQUANTS par mouvement (vue staff « 1RM manquants »). Un (joueur,
+   mouvement) est manquant s'il a une entrée « à renseigner » (value null) et
+   AUCUNE mesure pour ce mouvement. PUR. `rosterIds` (optionnel) restreint aux
+   joueurs actifs. Renvoie [{ identity, label, exerciseId, playerIds[] }] trié par
+   nombre de manquants décroissant → relance ciblée par exercice. */
+export function missing1RMByMovement(entries = [], rosterIds = null) {
+  const roster = rosterIds ? new Set(rosterIds) : null;
+  const byMove = new Map();
+  for (const e of entries || []) {
+    const pid = e.playerId;
+    if (roster && !roster.has(pid)) continue;
+    const id = movementIdentity({ exerciseId: e.exerciseId, name: e.movementLabel || e.name });
+    if (!byMove.has(id)) byMove.set(id, { identity: id, label: e.movementLabel || e.name || "", exerciseId: e.exerciseId || null, measured: new Set(), missing: new Set() });
+    const g = byMove.get(id);
+    if (e.valueKg != null) g.measured.add(pid); else g.missing.add(pid);
+  }
+  const out = [];
+  for (const g of byMove.values()) {
+    const missing = [...g.missing].filter((pid) => !g.measured.has(pid));
+    if (missing.length) out.push({ identity: g.identity, label: g.label, exerciseId: g.exerciseId, playerIds: missing });
+  }
+  return out.sort((a, b) => (b.playerIds.length - a.playerIds.length) || a.label.localeCompare(b.label));
+}
+
 /* Résout le 1RM COURANT + l'historique par mouvement depuis les lignes player_1rm.
    Une ligne avec value_kg = mesure ; value null = placeholder « à renseigner ».
    Retourne un tableau [{ identity, label, exerciseId, value, kind, measuredAt,

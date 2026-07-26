@@ -1380,7 +1380,9 @@
       "nudgeLog": "Vergeet niet je sessies in de app te valideren: zonder deze zijn je belasting en ACWR niet betrouwbaar.",
       "nudgeDuration": "Vergeet niet de DUUR van je sessies bij validatie in te voeren: die wordt gebruikt om je belasting (sRPE) te berekenen.",
       "nudgeBilan": "Vergeet niet je dagelijkse check-in in te vullen: die voedt je readiness en opvolging.",
-      "nudge1RM": "Vul je 1RM (maximale belasting) in zodat %-belastingen voor jou worden berekend."
+      "nudge1RM": "Vul je 1RM (maximale belasting) in zodat %-belastingen voor jou worden berekend.",
+      "byMoveTitle": "Ontbrekende 1RM per oefening ({{count}})",
+      "byMoveN": "{{count}} speler(s) in te vullen"
     },
     "adherence": {
       "title": "Naleving voorschrift",

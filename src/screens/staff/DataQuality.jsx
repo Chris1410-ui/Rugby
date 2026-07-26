@@ -6,7 +6,8 @@ import { displayName } from "../../lib/identity.js";
 import { useReadOnly } from "../../lib/readonly.js";
 import { todayISO } from "../../lib/metrics.js";
 import { teamDataCompleteness } from "../../lib/dataQuality.js";
-import { useTeam1RM } from "../../data/player1rm.js";
+import { missing1RMByMovement } from "../../lib/oneRM.js";
+import { useTeam1RM, request1RM } from "../../data/player1rm.js";
 import { sendMessage } from "../../data/messages.js";
 import Request1RMModal from "../shared/Request1RMModal.jsx";
 
@@ -23,8 +24,11 @@ export default function DataQuality({ teamId, players = [], sessions = [], logs 
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [sent, setSent] = useState({});
+  const [sentMove, setSentMove] = useState({});
+  const [expMove, setExpMove] = useState(null);
   const [reqOpen, setReqOpen] = useState(false);
   const { entries: oneRM } = useTeam1RM(teamId);
+  const byMove = useMemo(() => missing1RMByMovement(oneRM, players.map((p) => p.id)), [oneRM, players]);
 
   const dq = useMemo(
     () => teamDataCompleteness({ players, sessions, logs, oneRM, bilans, today: todayISO() }),
@@ -46,6 +50,16 @@ export default function DataQuality({ teamId, players = [], sessions = [], logs 
       await Promise.all(item.d.ids.map((pid) => sendMessage(pid, { dir: "staff", author: "Staff", text: item.msg })));
       setSent((s) => ({ ...s, [item.key]: item.d.n }));
     } catch (e) { console.error("[dataq relance]", e.message); }
+  };
+
+  // Relance ciblée par exercice : recrée/rappelle l'entrée « à renseigner » aux
+  // seuls joueurs manquants pour ce mouvement (idempotent, → notification).
+  const relanceMove = async (m) => {
+    if (readOnly || !m.playerIds.length) return;
+    try {
+      await request1RM({ mode: "players", ids: m.playerIds }, [{ id: m.exerciseId, name: m.label }]);
+      setSentMove((s) => ({ ...s, [m.identity]: m.playerIds.length }));
+    } catch (e) { console.error("[dataq relance move]", e.message); }
   };
 
   return (
@@ -91,6 +105,37 @@ export default function DataQuality({ teamId, players = [], sessions = [], logs 
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 1RM manquants PAR EXERCICE (entrées « à renseigner »), relance ciblée. */}
+          {byMove.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: C.amb, letterSpacing: 0.5, marginBottom: 8 }}>{t("staff.dataq.byMoveTitle", { count: byMove.length })}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {byMove.map((m) => (
+                  <div key={m.identity} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 9, padding: "9px 11px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <button onClick={() => setExpMove(expMove === m.identity ? null : m.identity)} style={{ flex: 1, textAlign: "left", background: "none", border: "none", color: "#fff", cursor: "pointer", padding: 0, minWidth: 0 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>{m.label}</span>
+                        <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{t("staff.dataq.byMoveN", { count: m.playerIds.length })}</span>
+                      </button>
+                      {!readOnly && (
+                        sentMove[m.identity] ? (
+                          <span style={{ fontSize: 10.5, color: C.green, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}><CheckCircle size={12} /> {t("staff.dataq.relanced", { count: sentMove[m.identity] })}</span>
+                        ) : (
+                          <button onClick={() => relanceMove(m)} style={{ background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: 8, padding: "6px 10px", color: accent, fontSize: 11, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}><Send size={12} /> {t("staff.dataq.relance")}</button>
+                        )
+                      )}
+                    </div>
+                    {expMove === m.identity && (
+                      <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)", marginTop: 6, lineHeight: 1.6 }}>
+                        {m.playerIds.map((pid) => nameById[pid] || pid).join(", ")}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

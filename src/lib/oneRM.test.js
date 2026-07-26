@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats, pctMovements } from "./oneRM.js";
+import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats, pctMovements, missing1RMByMovement } from "./oneRM.js";
 
 describe("pctMovements", () => {
   it("ne retient que les mouvements exprimés en % de 1RM", () => {
@@ -20,6 +20,38 @@ describe("pctMovements", () => {
     ]);
     expect(out).toHaveLength(1);
     expect(out[0]).toMatchObject({ id: "x1", name: "Squat" });
+  });
+});
+
+describe("missing1RMByMovement", () => {
+  const E = (playerId, exerciseId, label, valueKg) => ({ playerId, exerciseId, movementLabel: label, valueKg });
+  it("groupe les manquants par mouvement, exclut ceux qui ont une mesure", () => {
+    const entries = [
+      E("p1", "ex1", "Squat", null),   // manquant
+      E("p2", "ex1", "Squat", null),   // manquant
+      E("p3", "ex1", "Squat", 120),    // mesuré → pas manquant
+      E("p1", null, "Bench", null),    // manquant (par nom)
+      E("p2", null, "Bench", 90),      // mesuré
+    ];
+    const out = missing1RMByMovement(entries);
+    // Squat (2 manquants) avant Bench (1) — tri par nombre décroissant.
+    expect(out.map((m) => [m.label, m.playerIds.length])).toEqual([["Squat", 2], ["Bench", 1]]);
+    expect(out[0].playerIds.sort()).toEqual(["p1", "p2"]);
+    expect(out[0].exerciseId).toBe("ex1");
+  });
+  it("un joueur avec placeholder ET mesure n'est pas compté manquant", () => {
+    const out = missing1RMByMovement([
+      { playerId: "p1", exerciseId: "ex1", movementLabel: "Squat", valueKg: null },
+      { playerId: "p1", exerciseId: "ex1", movementLabel: "Squat", valueKg: 100 },
+    ]);
+    expect(out).toEqual([]);
+  });
+  it("restreint à l'effectif fourni", () => {
+    const out = missing1RMByMovement([
+      { playerId: "p1", exerciseId: "ex1", movementLabel: "Squat", valueKg: null },
+      { playerId: "ghost", exerciseId: "ex1", movementLabel: "Squat", valueKg: null },
+    ], ["p1"]);
+    expect(out[0].playerIds).toEqual(["p1"]);
   });
 });
 
