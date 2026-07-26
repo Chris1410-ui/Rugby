@@ -2,6 +2,30 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { resolveAssignedIds } from "./sessions.js";
 import { uniqueTopic } from "./messages.js";
+import { makeRecurrenceOps } from "./recurrence.js";
+
+/* Récurrence des tâches (moteur générique partagé). L'occurrence porte sa date
+   dans `echeance` (pas d'heure). « Réalisée » = complétion au-delà de « à faire ». */
+const taskRow = (teamId, o, p = {}, assigned, uid) => ({
+  team_id: teamId, titre: (p.titre || "").trim() || "Tâche", description: p.description?.trim() || null,
+  lieu: p.lieu?.trim() || null, echeance: o.date, assigned: assigned || { mode: "all" }, created_by: uid,
+});
+const taskRecurrence = makeRecurrenceOps({
+  table: "tasks", dateField: "echeance", objectType: "task",
+  buildRow: taskRow,
+  updatePatch: (time, p = {}, assigned) => ({
+    titre: (p.titre || "").trim() || "Tâche", description: p.description?.trim() || null,
+    lieu: p.lieu?.trim() || null, assigned: assigned || { mode: "all" },
+  }),
+  realizedIds: async (ids) => {
+    const { data } = await supabase.from("task_completions").select("task_id,statut").in("task_id", ids);
+    const s = new Set(); (data || []).forEach((r) => { if (r.statut && r.statut !== "a_faire") s.add(r.task_id); });
+    return s;
+  },
+});
+export const createTasksRecurring = (teamId, clubId, args) => taskRecurrence.createRecurring({ teamId, clubId, ...args });
+export const updateTaskSeries = (seriesId, teamId, args, opts) => taskRecurrence.updateSeries(seriesId, teamId, args, opts);
+export const deleteTaskSeries = (seriesId, opts) => taskRecurrence.deleteSeries(seriesId, opts);
 
 /* Tâches assignées aux joueurs + validation en 2 temps (joueur « Fait » →
    coach « Valider »). Le joueur n'écrit jamais en direct : task_mark_done /
@@ -18,6 +42,7 @@ export function dbToTask(row, roster) {
     echeance: row.echeance || null,
     assigned: row.assigned || { mode: "all" },
     assignedIds: resolveAssignedIds(row.assigned, roster || []),
+    seriesId: row.series_id || null, customized: !!row.customized,
     createdAt: row.created_at,
   };
 }

@@ -2,6 +2,33 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { resolveAssignedIds } from "./sessions.js";
 import { uniqueTopic } from "./messages.js";
+import { makeRecurrenceOps } from "./recurrence.js";
+
+/* Récurrence des défis (moteur générique partagé). L'occurrence porte sa date
+   dans `echeance` et son heure dans `heure`. « Réalisée » = complétion au-delà
+   de « à faire » (validée joueur ou confirmée). */
+const chRow = (teamId, o, p = {}, assigned, uid) => ({
+  team_id: teamId, titre: (p.titre || "").trim() || "Défi", description: p.description?.trim() || null,
+  points: p.points ?? 10, heure: o.time || p.heure || null, lieu: p.lieu?.trim() || null,
+  materiel: p.materiel || [], echeance: o.date, assigned: assigned || { mode: "all" },
+  banner: p.banner || "flame", badge: p.badge || "🏆", created_by: uid,
+});
+const challengeRecurrence = makeRecurrenceOps({
+  table: "challenges", dateField: "echeance", objectType: "challenge",
+  buildRow: chRow,
+  updatePatch: (time, p = {}, assigned) => {
+    const { team_id, created_by, echeance, ...rest } = chRow(null, { time, date: null }, p, assigned, null); // eslint-disable-line no-unused-vars
+    return rest;
+  },
+  realizedIds: async (ids) => {
+    const { data } = await supabase.from("challenge_completions").select("challenge_id,statut").in("challenge_id", ids);
+    const s = new Set(); (data || []).forEach((r) => { if (r.statut && r.statut !== "a_faire") s.add(r.challenge_id); });
+    return s;
+  },
+});
+export const createChallengesRecurring = (teamId, clubId, args) => challengeRecurrence.createRecurring({ teamId, clubId, ...args });
+export const updateChallengeSeries = (seriesId, teamId, args, opts) => challengeRecurrence.updateSeries(seriesId, teamId, args, opts);
+export const deleteChallengeSeries = (seriesId, opts) => challengeRecurrence.deleteSeries(seriesId, opts);
 
 /* Défis (challenges) + validation en 2 temps. Le joueur n'écrit jamais en direct :
    challenge_mark_done / challenge_unmark sont des RPC SECURITY DEFINER (migration
@@ -16,6 +43,7 @@ export function dbToChallenge(row, roster) {
     echeance: row.echeance || null, assigned: row.assigned || { mode: "all" },
     assignedIds: resolveAssignedIds(row.assigned, roster || []),
     banner: row.banner || "flame", badge: row.badge || "🏆",
+    seriesId: row.series_id || null, customized: !!row.customized,
     createdAt: row.created_at,
   };
 }

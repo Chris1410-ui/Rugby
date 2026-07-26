@@ -1,17 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { todayISO } from "../../lib/metrics.js";
-import { CloseX, useModalClose } from "../../lib/ui.jsx";
+import { CloseX, useModalClose, Tag } from "../../lib/ui.jsx";
 import { useReadOnly } from "../../lib/readonly.js";
 import { Plus, Trash2, CheckCircle, X, Grid } from "../../lib/icons.jsx";
 import { CHALLENGE_BANNERS, CHALLENGE_EMOJIS, bannerGradient, defiOfWeek } from "../../lib/challenges.js";
 import {
   useTeamChallenges, useTeamChallengeCompletions, useTeamChallengeStats,
   createChallenge, createChallengesBulk, deleteChallenge, confirmChallenge, refuseChallenge, updateChallenge,
+  createChallengesRecurring, updateChallengeSeries, deleteChallengeSeries,
 } from "../../data/challenges.js";
-import { buildAssigned, assignedToSelection } from "../../data/sessions.js";
+import { buildAssigned, assignedToSelection, resolveAssignedIds } from "../../data/sessions.js";
+import { getRecurrenceSeries, seriesToValue } from "../../data/recurrence.js";
+import { getClubId } from "../../data/catalog.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
+import RecurrenceSelector from "../shared/RecurrenceSelector.jsx";
 import ChallengeCard from "../shared/ChallengeCard.jsx";
 import ChallengeDetail from "../shared/ChallengeDetail.jsx";
 
@@ -168,34 +172,65 @@ function DefiForm({ teamId, players, initial = null, onClose }) {
   // (open) — cette dernière n'est pas cumulable, d'où un interrupteur distinct.
   const [open, setOpen] = useState(initial?.assigned?.mode === "open");
   const [rec, setRec] = useState(() => assignedToSelection(initial?.assigned));
+  const [recur, setRecur] = useState(() => ({ mode: "once", date: initial?.echeance || "", time: initial?.heure || "", weekdays: [], times: {}, start: initial?.echeance || todayISO(), end: "", exclusions: [] }));
+  const [scope, setScope] = useState("occurrence");
+  const [clubId, setClubId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const set = (k, v) => { setD((p) => ({ ...p, [k]: v })); setErr(""); };
+  useEffect(() => { let a = true; getClubId(teamId).then((id) => { if (a) setClubId(id); }); return () => { a = false; }; }, [teamId]);
+
+  const assignedNow = () => (open ? { mode: "open" } : buildAssigned(rec));
+  const recipientCount = open ? players.length : resolveAssignedIds(buildAssigned(rec), players).length;
+  const payload = () => ({
+    titre: d.titre.trim(), description: d.description?.trim() || null,
+    points: Math.max(0, Math.min(500, Math.round(+d.points) || 0)),
+    lieu: d.lieu?.trim() || null, materiel: parseMateriel(d.materiel), banner: d.banner, badge: d.badge,
+  });
+
+  const toSeriesScope = async () => {
+    try {
+      const s = await getRecurrenceSeries(initial.seriesId);
+      setRecur(seriesToValue(s));
+      const p = s.payload || {};
+      setD((cur) => ({ ...cur, titre: p.titre || "", description: p.description || "", points: p.points ?? 10, lieu: p.lieu || "", materiel: (p.materiel || []).join(", "), banner: p.banner || "flame", badge: p.badge || "🏆" }));
+      setRec(assignedToSelection(s.assigned)); setOpen(s.assigned?.mode === "open"); setScope("series"); setErr("");
+    } catch (e) { setErr(t("staff.challenges.errSave", { err: e.message || "" })); }
+  };
+  const toOccurrenceScope = () => {
+    setRecur({ mode: "once", date: initial.echeance || "", time: initial.heure || "", weekdays: [], times: {}, start: initial.echeance || todayISO(), end: "", exclusions: [] });
+    setScope("occurrence"); setErr("");
+  };
+  const delSeries = async () => {
+    if (!confirm(t("recurrence.delSeriesConfirm"))) return;
+    setBusy(true); setErr("");
+    try { await deleteChallengeSeries(initial.seriesId, { today: todayISO() }); onClose(); }
+    catch (e) { setErr(t("staff.challenges.errSave", { err: e.message || "" })); setBusy(false); }
+  };
 
   const save = async () => {
     if (!d.titre.trim()) return setErr(t("staff.challenges.errTitle"));
-    const assigned = open ? { mode: "open" } : buildAssigned(rec);
+    const assigned = assignedNow();
     setBusy(true); setErr("");
-    const fields = { ...d, materiel: parseMateriel(d.materiel), assigned };
     try {
-      if (editing) {
+      if (editing && scope === "series") {
+        await updateChallengeSeries(initial.seriesId, teamId, { value: recur, assigned, payload: payload() }, { today: todayISO() });
+      } else if (!editing && recur.mode === "recurring") {
+        const r = await createChallengesRecurring(teamId, clubId, { value: recur, assigned, payload: payload() });
+        if (!r.count) throw new Error("no_occurrences");
+      } else if (editing) {
         await updateChallenge(initial.id, {
-          titre: fields.titre.trim(),
-          description: fields.description?.trim() || null,
-          points: Math.max(0, Math.min(500, Math.round(+fields.points) || 0)),
-          heure: fields.heure?.trim() || null,
-          lieu: fields.lieu?.trim() || null,
-          materiel: fields.materiel,
-          echeance: fields.echeance || null,
-          assigned,
-          banner: fields.banner,
-          badge: fields.badge,
+          ...payload(), heure: recur.time?.trim() || null, echeance: recur.date || null, assigned,
+          ...(initial.seriesId ? { customized: true } : {}),
         });
       } else {
-        await createChallenge(teamId, fields);
+        await createChallenge(teamId, { ...payload(), heure: recur.time?.trim() || null, echeance: recur.date || null, assigned });
       }
       onClose();
-    } catch (e) { setErr(t("staff.challenges.errSave", { err: e.message || "" })); setBusy(false); }
+    } catch (e) {
+      setErr(e.message === "no_occurrences" ? t("recurrence.errNoOcc") : t("staff.challenges.errSave", { err: e.message || "" }));
+      setBusy(false);
+    }
   };
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10, boxSizing: "border-box" };
   const pill = (on) => ({ padding: "6px 11px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", background: on ? accent : "rgba(255,255,255,0.07)", color: "#fff" });
@@ -217,11 +252,19 @@ function DefiForm({ teamId, players, initial = null, onClose }) {
 
         <input value={d.titre} onChange={(e) => set("titre", e.target.value)} placeholder={t("staff.challenges.titlePlaceholder")} maxLength={90} style={inp} />
         <textarea value={d.description} onChange={(e) => set("description", e.target.value)} placeholder={t("staff.challenges.descPlaceholder")} style={{ ...inp, minHeight: 54, resize: "vertical" }} />
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1 }}><div style={lbl}>{t("staff.challenges.lblPoints")}</div><input type="number" value={d.points} onChange={(e) => set("points", e.target.value)} min={0} max={500} style={inp} /></div>
-          <div style={{ flex: 1 }}><div style={lbl}>{t("staff.challenges.lblHeure")}</div><input value={d.heure} onChange={(e) => set("heure", e.target.value)} placeholder={t("staff.challenges.heurePlaceholder")} style={inp} /></div>
-          <div style={{ flex: 1 }}><div style={lbl}>{t("staff.challenges.lblEcheance")}</div><input type="date" value={d.echeance} onChange={(e) => set("echeance", e.target.value)} style={{ ...inp, colorScheme: "dark" }} /></div>
+        <div style={{ maxWidth: 160 }}><div style={lbl}>{t("staff.challenges.lblPoints")}</div><input type="number" value={d.points} onChange={(e) => set("points", e.target.value)} min={0} max={500} style={inp} /></div>
+
+        {editing && initial.seriesId && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <button type="button" onClick={toOccurrenceScope} style={scopeBtn(scope === "occurrence")}>{t("recurrence.scopeOne")}</button>
+            <button type="button" onClick={toSeriesScope} style={scopeBtn(scope === "series")}>{t("recurrence.scopeSeries")}</button>
+          </div>
+        )}
+        {scope === "series" && <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginBottom: 8, lineHeight: 1.5 }}>{t("recurrence.seriesHint")}</div>}
+        <div style={{ marginBottom: 10 }}>
+          <RecurrenceSelector value={recur} onChange={(nv) => { setRecur(nv); setErr(""); }} recipientCount={recipientCount} allowRecurring={!editing || scope === "series"} accent={accent} />
         </div>
+
         <div style={lbl}>{t("staff.challenges.lblLieu")}</div>
         <input value={d.lieu} onChange={(e) => set("lieu", e.target.value)} placeholder={t("staff.challenges.lieuPlaceholder")} style={inp} />
         <div style={lbl}>{t("staff.challenges.lblMateriel")}</div>
@@ -247,11 +290,14 @@ function DefiForm({ teamId, players, initial = null, onClose }) {
         {!open && <div style={{ marginBottom: 10 }}><RecipientSelect players={players} value={rec} onChange={setRec} accent={accent} /></div>}
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
-        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : editing ? t("staff.challenges.saveEdit") : t("staff.challenges.saveNew")}</button>
+        <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : scope === "series" ? t("recurrence.updateSeries") : !editing && recur.mode === "recurring" ? t("recurrence.saveRecurring") : editing ? t("staff.challenges.saveEdit") : t("staff.challenges.saveNew")}</button>
+        {scope === "series" && <button onClick={delSeries} disabled={busy} style={{ width: "100%", marginTop: 8, background: "none", border: "none", color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>{t("recurrence.deleteSeries")}</button>}
       </div>
     </div>
   );
 }
+
+const scopeBtn = (on) => ({ flex: 1, padding: "8px 0", borderRadius: 9, border: `1px solid ${on ? accent : C.border}`, background: on ? `${accent}22` : "rgba(255,255,255,0.04)", color: on ? "#fff" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 800, cursor: "pointer" });
 
 /* Grille tableur : plusieurs défis d'un coup (titre, points, heure, lieu,
    matériel, destinataires), ajout de ligne, puis « Publier ». */

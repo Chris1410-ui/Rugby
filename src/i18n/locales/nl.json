@@ -66,7 +66,17 @@
     "recipCount": "{{count}} ontvanger(s)",
     "capped": "Beperkt tot {{max}} keer — verkort de periode.",
     "incomplete": "Kies minstens één dag en een periode.",
-    "pickDays": "Kies de dagen"
+    "pickDays": "Kies de dagen",
+    "scopeOne": "Deze keer",
+    "scopeSeries": "Hele reeks",
+    "seriesHint": "De reeks bewerken genereert toekomstige keren opnieuw. Verleden, aangepast en reeds gedaan worden nooit aangeraakt.",
+    "updateSeries": "Reeks bijwerken",
+    "deleteSeries": "Reeks verwijderen",
+    "delSeriesConfirm": "Reeks verwijderen? Toekomstige niet-voltooide keren worden verwijderd; het verleden blijft.",
+    "tagSeries": "reeks",
+    "tagCustom": "aangepast",
+    "saveRecurring": "Reeks aanmaken",
+    "errNoOcc": "Geen keren gegenereerd — controleer de dagen en periode."
   },
   "knowledge": {
     "btn": "Tips",
