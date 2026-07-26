@@ -10,7 +10,9 @@ import {
   useReferenceDocs, uploadReferenceDoc, deleteReferenceDoc, referenceDocUrl,
   analyzeReferenceDoc, useReferenceDocCandidates,
   validateSectionCandidate, rejectSectionCandidate, validateNoteCandidate, rejectNoteCandidate,
+  PROVENANCE,
 } from "../../data/referenceDocs.js";
+import { analyzePdf, suggestProvenance } from "../../lib/pdfMeta.js";
 
 const accent = C.viol;
 
@@ -71,7 +73,8 @@ export default function ReferenceDocs({ teamId }) {
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
                   {d.theme && <Tag c={C.teal}>{d.theme}</Tag>}
                   {d.tags.slice(0, 3).map((tg) => <Tag key={tg} c={"rgba(255,255,255,0.4)"}>{tg}</Tag>)}
-                  {!d.authorOwned && <Tag c={C.amb}>{t("staff.refdocs.noRights")}</Tag>}
+                  <Tag c={d.shareLocked ? C.amb : "rgba(255,255,255,0.4)"}>{d.shareLocked ? "🔒 " : ""}{t(`staff.refdocs.prov.${d.provenance}`)}</Tag>
+                  {d.hasTextLayer === false && <Tag c={C.coral}>{t("staff.refdocs.noOcrTag")}</Tag>}
                 </div>
                 {d.source && <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>{t("staff.refdocs.sourceLabel")} {d.source}</div>}
                 <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{new Date(d.createdAt).toLocaleDateString(localeTag())} · {t("staff.refdocs.clubOnly")}</div>
@@ -79,6 +82,8 @@ export default function ReferenceDocs({ teamId }) {
               {!readOnly && d.storagePath && (
                 d.status === "analyzed" ? (
                   <button onClick={() => setReview(d)} title={t("staff.refdocs.review")} style={{ background: `${accent}22`, border: `1px solid ${accent}55`, borderRadius: 8, padding: "8px 10px", color: accent, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700 }}><Sparkles size={14} /> {t("staff.refdocs.candidates")}</button>
+                ) : d.hasTextLayer === false ? (
+                  <span title={t("staff.refdocs.noOcrHint")} style={{ fontSize: 10.5, color: C.coral, fontWeight: 700, padding: "8px 10px", whiteSpace: "nowrap" }}>{t("staff.refdocs.noOcrTag")}</span>
                 ) : (
                   <button onClick={() => analyze(d)} disabled={busyId === d.id} title={t("staff.refdocs.analyze")} style={{ background: `${accent}22`, border: `1px solid ${accent}55`, borderRadius: 8, padding: "8px 10px", color: accent, cursor: busyId === d.id ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, opacity: busyId === d.id ? 0.6 : 1 }}>{busyId === d.id ? <Loader size={14} /> : <Sparkles size={14} />} {busyId === d.id ? t("staff.refdocs.analyzing") : t("staff.refdocs.analyze")}</button>
                 )
@@ -181,26 +186,48 @@ function UploadForm({ teamId, clubId, onClose }) {
   useModalClose(() => onClose(false));
   const [d, setD] = useState({ title: "", theme: "", source: "", tags: "", objective: "" });
   const [file, setFile] = useState(null);
-  const [owned, setOwned] = useState(false);
+  const [prov, setProv] = useState("");        // provenance : choix ACTIF requis (jamais pré-coché)
+  const [pdf, setPdf] = useState(null);        // résultat d'analyse du fichier
+  const [suggested, setSuggested] = useState(null); // provenance suggérée (mise en avant)
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const set = (k, v) => { setD((p) => ({ ...p, [k]: v })); setErr(""); };
 
+  // Sélection du fichier → analyse (métadonnées + couche texte) et pré-remplissage.
+  const onFile = async (f) => {
+    setFile(f || null); setPdf(null); setSuggested(null); setErr("");
+    if (!f) return;
+    if (!d.title) set("title", f.name.replace(/\.pdf$/i, ""));
+    const res = await analyzePdf(f);
+    if (!res.ok) return;
+    setPdf(res);
+    // Pré-remplir source/auteur + titre quand déductibles (sans écraser la saisie).
+    setD((p) => ({
+      ...p,
+      title: p.title || res.title || f.name.replace(/\.pdf$/i, ""),
+      source: p.source || res.author || res.producer || "",
+    }));
+    // Proposer (sans imposer) une provenance ≠ « création propre ».
+    setSuggested(suggestProvenance(res));
+  };
+
   const submit = async () => {
     if (!file) return setErr(t("staff.refdocs.errFile"));
-    if (!owned) return setErr(t("staff.refdocs.errOwned"));
+    if (!PROVENANCE.includes(prov)) return setErr(t("staff.refdocs.errProv"));
     setBusy(true); setErr("");
     try {
       await uploadReferenceDoc(teamId, clubId, file, {
         title: d.title || file.name, theme: d.theme, source: d.source,
         tags: d.tags.split(",").map((x) => x.trim()).filter(Boolean),
-        objective: d.objective, authorOwned: true,
+        objective: d.objective, provenance: prov, hasTextLayer: pdf?.hasTextLayer,
       });
       onClose(true);
     } catch (e) { setErr(t("staff.refdocs.errSave", { err: e.message || "" })); setBusy(false); }
   };
   const inp = { width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", color: "#fff", fontSize: 14, outline: "none", marginBottom: 10, boxSizing: "border-box" };
   const lbl = { fontSize: 9.5, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: 0.5, marginBottom: 4 };
+  const locked = prov === "origine_inconnue" || prov === "adapte_source";
+  const noOcr = pdf && pdf.hasTextLayer === false;
 
   return (
     <div onClick={() => onClose(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 330, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
@@ -211,7 +238,15 @@ function UploadForm({ teamId, clubId, onClose }) {
         </div>
 
         <div style={lbl}>{t("staff.refdocs.lblFile")}</div>
-        <input type="file" accept="application/pdf" onChange={(e) => { const f = e.target.files?.[0]; setFile(f || null); if (f && !d.title) set("title", f.name.replace(/\.pdf$/i, "")); }} style={{ ...inp, padding: 8 }} />
+        <input type="file" accept="application/pdf" onChange={(e) => onFile(e.target.files?.[0])} style={{ ...inp, padding: 8 }} />
+
+        {/* Bandeau : PDF composé d'images (pas de couche texte) → analyse IA impossible sans OCR. */}
+        {noOcr && (
+          <div style={{ fontSize: 10.5, color: C.amb, background: `${C.amb}14`, border: `1px solid ${C.amb}44`, borderRadius: 9, padding: "8px 10px", marginBottom: 10, lineHeight: 1.5 }}>
+            ⚠ {t("staff.refdocs.noTextBanner")}
+          </div>
+        )}
+        {pdf?.creationDate && <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>{t("staff.refdocs.detected", { date: pdf.creationDate })}</div>}
 
         <input value={d.title} onChange={(e) => set("title", e.target.value)} placeholder={t("staff.refdocs.titlePh")} maxLength={140} style={inp} />
         <div style={{ display: "flex", gap: 8 }}>
@@ -223,10 +258,24 @@ function UploadForm({ teamId, clubId, onClose }) {
         <div style={lbl}>{t("staff.refdocs.lblSource")}</div>
         <input value={d.source} onChange={(e) => set("source", e.target.value)} placeholder={t("staff.refdocs.sourcePh")} style={inp} />
 
-        <label style={{ display: "flex", alignItems: "flex-start", gap: 9, background: owned ? `${C.green}14` : "rgba(255,255,255,0.04)", border: `1px solid ${owned ? C.green + "66" : C.border}`, borderRadius: 10, padding: "10px 12px", cursor: "pointer", marginBottom: 12 }}>
-          <input type="checkbox" checked={owned} onChange={(e) => setOwned(e.target.checked)} style={{ marginTop: 2, accentColor: C.green }} />
-          <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.45 }}>{t("staff.refdocs.ownedLabel")}</span>
-        </label>
+        {/* Provenance : QUESTION à laquelle on répond (4 options, choix actif requis). */}
+        <div style={{ ...lbl, marginBottom: 6 }}>{t("staff.refdocs.lblProvenance")}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+          {PROVENANCE.map((p) => {
+            const on = prov === p;
+            const isSug = suggested === p && !prov;
+            return (
+              <button key={p} onClick={() => { setProv(p); setErr(""); }} style={{ display: "flex", alignItems: "flex-start", gap: 9, textAlign: "left", background: on ? `${accent}18` : "rgba(255,255,255,0.04)", border: `1px solid ${on ? accent + "88" : isSug ? C.amb + "66" : C.border}`, borderRadius: 10, padding: "9px 11px", cursor: "pointer", color: "#fff" }}>
+                <span style={{ marginTop: 1, width: 15, height: 15, borderRadius: "50%", border: `2px solid ${on ? accent : "rgba(255,255,255,0.4)"}`, background: on ? accent : "transparent", flexShrink: 0 }} />
+                <span style={{ flex: 1 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>{t(`staff.refdocs.prov.${p}`)}{isSug ? <span style={{ fontSize: 9, fontWeight: 800, color: C.amb, marginLeft: 6 }}>· {t("staff.refdocs.suggested")}</span> : null}</span>
+                  <span style={{ display: "block", fontSize: 9.5, color: "rgba(255,255,255,0.5)", marginTop: 2, lineHeight: 1.4 }}>{t(`staff.refdocs.provDesc.${p}`)}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {locked && <div style={{ fontSize: 10, color: C.amb, marginBottom: 10, lineHeight: 1.5 }}>🔒 {t("staff.refdocs.lockedNote")}</div>}
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginBottom: 12, lineHeight: 1.5 }}>{t("staff.refdocs.privacyNote")}</div>
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}

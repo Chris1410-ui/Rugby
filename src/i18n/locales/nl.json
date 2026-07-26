@@ -1321,6 +1321,26 @@
       "errSave": "Mislukt: {{err}}",
       "uploading": "Uploaden…",
       "save": "Uploaden",
+      "errProv": "Kies de herkomst van het document om verder te gaan.",
+      "lblProvenance": "Herkomst van het document",
+      "suggested": "voorgesteld",
+      "lockedNote": "Deze herkomst vergrendelt het document tot clubgebruik: nooit tussen clubs gedeeld.",
+      "noTextBanner": "Dit bestand lijkt een compilatie van afbeeldingen uit een ander document. Geef de herkomst aan.",
+      "detected": "Metadata gedetecteerd · datum {{date}}",
+      "noOcrTag": "geen tekst",
+      "noOcrHint": "Op afbeeldingen gebaseerde pdf: AI-analyse onmogelijk zonder OCR.",
+      "prov": {
+        "creation_propre": "Eigen creatie",
+        "adapte_source": "Aangepast van een geciteerde bron",
+        "autorise_tiers": "Toegestaan door een derde",
+        "origine_inconnue": "Onbekende herkomst"
+      },
+      "provDesc": {
+        "creation_propre": "Ik ben de auteur van dit document.",
+        "adapte_source": "Afgeleid van een bron die ik citeer (niet deelbaar zonder toestemming).",
+        "autorise_tiers": "Ik heb toestemming van de auteur om het te gebruiken.",
+        "origine_inconnue": "Document van derden, auteur niet geïdentificeerd — alleen privé-clubreferentie."
+      },
       "analyze": "Analyseren",
       "analyzing": "Analyseren…",
       "candidates": "Kandidaten",

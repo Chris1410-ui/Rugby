@@ -1321,6 +1321,26 @@
       "errSave": "Échec : {{err}}",
       "uploading": "Envoi…",
       "save": "Déposer",
+      "errProv": "Choisis la provenance du document pour continuer.",
+      "lblProvenance": "Provenance du document",
+      "suggested": "suggéré",
+      "lockedNote": "Cette provenance verrouille le document en usage club : jamais partagé inter-clubs.",
+      "noTextBanner": "Ce fichier semble être une compilation d'images issues d'un autre document. Merci d'indiquer sa provenance.",
+      "detected": "Métadonnées détectées · date {{date}}",
+      "noOcrTag": "sans texte",
+      "noOcrHint": "PDF composé d'images : analyse IA impossible sans OCR.",
+      "prov": {
+        "creation_propre": "Création propre",
+        "adapte_source": "Adapté d'une source citée",
+        "autorise_tiers": "Autorisé par un tiers",
+        "origine_inconnue": "Origine inconnue"
+      },
+      "provDesc": {
+        "creation_propre": "Je suis l'auteur de ce document.",
+        "adapte_source": "Dérivé d'une source que je cite (non partageable sans autorisation).",
+        "autorise_tiers": "J'ai l'autorisation de l'auteur de l'utiliser.",
+        "origine_inconnue": "Document tiers, auteur non identifié — référence privée du club uniquement."
+      },
       "analyze": "Analyser",
       "analyzing": "Analyse…",
       "candidates": "Candidats",

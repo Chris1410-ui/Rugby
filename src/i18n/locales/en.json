@@ -1321,6 +1321,26 @@
       "errSave": "Failed: {{err}}",
       "uploading": "Uploading…",
       "save": "Upload",
+      "errProv": "Choose the document's provenance to continue.",
+      "lblProvenance": "Document provenance",
+      "suggested": "suggested",
+      "lockedNote": "This provenance locks the document to club use: never shared between clubs.",
+      "noTextBanner": "This file looks like a compilation of images from another document. Please indicate its provenance.",
+      "detected": "Metadata detected · date {{date}}",
+      "noOcrTag": "no text",
+      "noOcrHint": "Image-based PDF: AI analysis impossible without OCR.",
+      "prov": {
+        "creation_propre": "Own creation",
+        "adapte_source": "Adapted from a cited source",
+        "autorise_tiers": "Authorised by a third party",
+        "origine_inconnue": "Unknown origin"
+      },
+      "provDesc": {
+        "creation_propre": "I am the author of this document.",
+        "adapte_source": "Derived from a source I cite (not shareable without authorisation).",
+        "autorise_tiers": "I have the author's permission to use it.",
+        "origine_inconnue": "Third-party document, author unidentified — private club reference only."
+      },
       "analyze": "Analyse",
       "analyzing": "Analysing…",
       "candidates": "Candidates",
