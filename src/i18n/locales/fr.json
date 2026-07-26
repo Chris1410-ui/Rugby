@@ -52,6 +52,22 @@
     "compare": "Comparaison A/B",
     "abonnements": "Abonnements notifications"
   },
+  "recurrence": {
+    "once": "Ponctuel",
+    "recurring": "Récurrent",
+    "date": "Date",
+    "time": "Heure",
+    "days": "Jours",
+    "from": "Du",
+    "to": "Au",
+    "exclusions": "Dates à exclure (vacances, trêve…)",
+    "period": "du {{from}} au {{to}}",
+    "occCount": "{{count}} occurrence(s)",
+    "recipCount": "{{count}} destinataire(s)",
+    "capped": "Limité à {{max}} occurrences — réduis la période.",
+    "incomplete": "Choisis au moins un jour et une période.",
+    "pickDays": "Choisis les jours"
+  },
   "knowledge": {
     "btn": "Conseils",
     "title": "Assistance — base de connaissance",
@@ -1398,7 +1414,8 @@
         "late": "En retard",
         "absent": "Absent",
         "pending": "Sans réponse"
-      }
+      },
+      "errNoOcc": "Aucune occurrence générée — vérifie les jours et la période."
     },
     "challenges": {
       "delConfirm": "Supprimer ce défi ?",
