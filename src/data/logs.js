@@ -15,12 +15,14 @@ function toMap(rows) {
       rpe: r.rpe,
       feedback: r.feedback,
       perExercise: r.per_exercise || {},
+      duration: r.duration_min ?? null, // durée réelle saisie (min) ; null = repli sur la prévue
     };
   });
   return m;
 }
 
-export async function saveLog(sessionId, playerId, { status, rpe, feedback, perExercise }) {
+export async function saveLog(sessionId, playerId, { status, rpe, feedback, perExercise, duration }) {
+  const d = Number(duration);
   const { error } = await supabase
     .from("session_logs")
     .upsert(
@@ -31,6 +33,8 @@ export async function saveLog(sessionId, playerId, { status, rpe, feedback, perE
         rpe: status === "done" ? rpe : null,
         feedback: feedback || null,
         per_exercise: status === "done" ? perExercise || {} : {},
+        // Durée réelle : seulement sur une séance réalisée et si saisie (>0).
+        duration_min: status === "done" && Number.isFinite(d) && d > 0 ? Math.round(d) : null,
       },
       { onConflict: "session_id,player_id" }
     );

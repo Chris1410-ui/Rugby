@@ -128,7 +128,9 @@ export function loadDaily(p, sessions, logs, nDays = 42) {
     const idx = out.findIndex((o) => o.date === s.date);
     if (idx < 0) return;
     if (lg && lg.status === "done" && lg.rpe)
-      out[idx] = { ...out[idx], au: Math.round(lg.rpe * sessDur(s)), real: true };
+      // sRPE = RPE × durée : la durée RÉELLE saisie prime ; repli sur la prévue
+      // si non renseignée (formule inchangée, seule la valeur d'entrée devient réelle).
+      out[idx] = { ...out[idx], au: Math.round(lg.rpe * (lg.duration > 0 ? lg.duration : sessDur(s))), real: true };
     else if (lg && lg.status === "missed") out[idx] = { ...out[idx], au: 0, real: true };
   });
   return out.map((o) => ({ date: o.date, au: o.au, real: o.real }));

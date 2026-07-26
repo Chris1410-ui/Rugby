@@ -905,7 +905,12 @@
       "set1rmSave": "Save",
       "deleteFree": "Delete this free session",
       "tempo": "tempo",
-      "restPresc": "rest {{n}}s"
+      "restPresc": "rest {{n}}s",
+      "durationLabel": "Session duration",
+      "min": "min",
+      "useChrono": "Timer: {{n}} min",
+      "durationPlanned": "Planned: {{n}} min",
+      "durationReal": "actual: {{n}} min"
     },
     "freeSession": {
       "newButton": "Create a free session",

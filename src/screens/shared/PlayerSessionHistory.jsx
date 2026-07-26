@@ -23,7 +23,7 @@ export default function PlayerSessionHistory({ player, players = [] }) {
   const rows = useMemo(() => {
     const mine = (sessions || [])
       .filter((s) => (s.assignedIds || []).includes(player?.id))
-      .map((s) => ({ s, st: sessionDisplayState(statusOfLog(logs, s.id, player?.id), s.date, today), rpe: logs?.[s.id]?.[player?.id]?.rpe }))
+      .map((s) => ({ s, st: sessionDisplayState(statusOfLog(logs, s.id, player?.id), s.date, today), rpe: logs?.[s.id]?.[player?.id]?.rpe, dur: logs?.[s.id]?.[player?.id]?.duration }))
       .sort((a, b) => b.s.date.localeCompare(a.s.date)); // plus récent d'abord
     return mine;
   }, [sessions, logs, player?.id, today]);
@@ -50,7 +50,7 @@ export default function PlayerSessionHistory({ player, players = [] }) {
             <Tag c={C.coral}>{t("shared.fiche.sessHistMissed", { count: counts.missed })}</Tag>
             <Tag c={C.amb}>{t("shared.fiche.sessHistTodo", { count: counts.todo })}</Tag>
           </div>
-          {shown.map(({ s, st, rpe }) => {
+          {shown.map(({ s, st, rpe, dur }) => {
             const d = parseISO(s.date);
             return (
               <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border2}` }}>
@@ -66,6 +66,7 @@ export default function PlayerSessionHistory({ player, players = [] }) {
                     <span style={{ fontSize: 12.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.titre}</span>
                   </div>
                 </div>
+                {st === "done" && dur > 0 && <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", flexShrink: 0 }}>{dur} {t("player.session.min")}</span>}
                 {st === "done" ? <Tag c={C.green}>{t("shared.calendar.tagDone")}{rpe ? ` · ${t("shared.calendar.rpe", { rpe })}` : ""}</Tag>
                   : st === "missed" ? <Tag c={C.coral}>{t("shared.calendar.tagMissed")}</Tag>
                   : st === "postponed" ? <Tag c={C.gray}>{t("shared.calendar.tagPostponed")}</Tag>

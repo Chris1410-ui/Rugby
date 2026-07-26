@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import i18n from "../i18n/config.js";
 import {
   acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
-  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, alertText, alertCat, sessionDisplayState,
+  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, alertText, alertCat, sessionDisplayState, loadDaily,
 } from "./metrics.js";
 
 beforeAll(async () => { await i18n.changeLanguage("fr"); });
@@ -143,6 +143,15 @@ describe("playerLoad — moteur de charge", () => {
   it("est déterministe (même seed → même ACWR)", () => {
     const p = basePlayer();
     expect(playerLoad(p, [], {}).acwr).toBe(playerLoad(p, [], {}).acwr);
+  });
+  it("la durée RÉELLE saisie alimente le sRPE ; repli sur la prévue sinon", () => {
+    const p = basePlayer();
+    const date = todayISO();
+    const sess = [{ id: "s1", date, assignedIds: [p.id], dur: 60 }];
+    const withReal = loadDaily(p, sess, { s1: { [p.id]: { status: "done", rpe: 8, duration: 90 } } });
+    const noReal = loadDaily(p, sess, { s1: { [p.id]: { status: "done", rpe: 8 } } });
+    expect(withReal.find((o) => o.date === date).au).toBe(8 * 90); // durée réelle
+    expect(noReal.find((o) => o.date === date).au).toBe(8 * 60);   // repli sur la prévue (s.dur)
   });
 });
 
