@@ -11,6 +11,7 @@ import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
 import Onboarding from "./shared/Onboarding.jsx";
 import { markOnboardingSeen } from "../data/onboarding.js";
+import { activateStaffAthlete } from "../data/staffAthlete.js";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import OwnerApp from "./OwnerApp.jsx";
@@ -29,6 +30,8 @@ export default function AppShell() {
   const [navTab, setNavTab] = useState(null); // onglet actif (piloté ici pour cloche/hub/avatar)
   const [notifOpen, setNotifOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [viewAs, setViewAs] = useState("staff"); // staff-athlète : bascule staff ↔ athlète (même login)
+  const [activating, setActivating] = useState(false);
   const [tourReplay, setTourReplay] = useState(false);   // « Revoir le tutoriel » (menu)
   const [tourDismissed, setTourDismissed] = useState(false); // masque immédiat le temps du refresh profil
   // Filet d'adhésion : true tant qu'une invitation nominative OU un code partagé
@@ -125,10 +128,23 @@ export default function AppShell() {
   if (profile.role === "owner") return <OwnerApp profile={profile} user={user} signOut={signOut} />;
 
   const roleObj = roleObjOf(profile.role);
-  const staff = isStaffRole(profile.role);
-  const homeTab = staff ? "effectif" : "bilan"; // page d'accueil neutre par rôle
+  const staffRole = isStaffRole(profile.role);
+  // Staff-athlète : un compte staff avec une carte athlète (profile.player_id) peut
+  // basculer en vue athlète. `staff` = vue STAFF actuellement affichée.
+  const hasAthlete = staffRole && !!profile.player_id;
+  const asAthlete = hasAthlete && viewAs === "athlete";
+  const staff = staffRole && !asAthlete;
+  const homeTab = staff ? "effectif" : "bilan"; // page d'accueil neutre par vue
   const tab = navTab ?? homeTab;
   const goTab = (tk) => { setNavTab(tk); notifs.markRouteRead(tk); setAvatarOpen(false); };
+  const switchView = (v) => { setViewAs(v); setNavTab(null); setAvatarOpen(false); };
+  const activateAthlete = async () => {
+    if (activating) return;
+    setActivating(true);
+    try { await activateStaffAthlete(); await refreshProfile(); setViewAs("athlete"); setNavTab(null); }
+    catch (e) { console.error("[staff athlete]", e.message); }
+    finally { setActivating(false); setAvatarOpen(false); }
+  };
   const goHome = () => goTab(homeTab);
   const name = profile.full_name || user?.email || "Moi";
   const initial = (name.trim()[0] || "?").toUpperCase();
@@ -177,6 +193,11 @@ export default function AppShell() {
                   <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
                   {/* Navigation retirée du header : « Ma fiche » / « Vue joueur » sont
                      déjà dans la barre du bas + hub « Plus » (un seul système). */}
+                  {staffRole && (hasAthlete ? (
+                    <MenuItem label={asAthlete ? t("shell.viewAsStaff") : t("shell.viewAsAthlete")} onClick={() => switchView(asAthlete ? "staff" : "athlete")} />
+                  ) : (
+                    <MenuItem label={activating ? t("shell.activating") : t("shell.activateAthlete")} onClick={activateAthlete} />
+                  ))}
                   <MenuItem label={t("common.replayTutorial")} onClick={() => { setAvatarOpen(false); setTourReplay(true); }} />
                   <MenuItem label={t("common.logout")} danger onClick={() => { setAvatarOpen(false); signOut(); }} />
                   <div style={{ height: 1, background: C.border2, margin: "4px 0 0" }} />

@@ -312,7 +312,11 @@
     "playerNotLinked": "Ton profil joueur n'est pas encore lié à l'effectif. Contacte le staff.",
     "notifications": "Notifications",
     "home": "Accueil",
-    "finalizingInvite": "Finalisation de ton compte…"
+    "finalizingInvite": "Finalisation de ton compte…",
+    "activateAthlete": "Activer mon profil athlète",
+    "activating": "Activation…",
+    "viewAsAthlete": "Passer en vue athlète",
+    "viewAsStaff": "Revenir en vue staff"
   },
   "onboarding": {
     "skip": "Passer",
