@@ -13,11 +13,13 @@ import { expandRecurrence, summarizeDays, WEEKDAY_ORDER } from "../../lib/recurr
    expandRecurrence pour matérialiser les occurrences. `recipientCount` sert au
    récap ; il est calculé par l'écran hôte (réutilise le sélecteur de
    destinataires existant). */
-export default function RecurrenceSelector({ value, onChange, recipientCount = 0, maxOccurrences = 200, accent = C.teal, allowRecurring = true }) {
+export default function RecurrenceSelector({ value, onChange, recipientCount = 0, maxOccurrences = 200, accent = C.teal, allowRecurring = true, recurringOnly = false }) {
   const { t } = useTranslation();
   const [excl, setExcl] = useState("");
   const v = value || { mode: "once", date: todayISO(), time: "", weekdays: [], times: {}, start: todayISO(), end: "", exclusions: [] };
   const patch = (p) => onChange({ ...v, ...p });
+  const showToggle = allowRecurring && !recurringOnly; // récurrent forcé → pas de bascule
+  const isRecurring = recurringOnly || v.mode === "recurring";
 
   // Libellé d'un jour ISO (1..7) dans la locale — pastille (narrow) ou récap (long).
   const dayLabel = (wd, style) => {
@@ -45,14 +47,14 @@ export default function RecurrenceSelector({ value, onChange, recipientCount = 0
 
   return (
     <div>
-      {allowRecurring && (
+      {showToggle && (
         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
           <button type="button" onClick={() => patch({ mode: "once" })} style={modeBtn(v.mode !== "recurring")}>{t("recurrence.once")}</button>
           <button type="button" onClick={() => patch({ mode: "recurring", start: v.start || todayISO() })} style={modeBtn(v.mode === "recurring")}>{t("recurrence.recurring")}</button>
         </div>
       )}
 
-      {v.mode !== "recurring" ? (
+      {!isRecurring ? (
         <div style={{ display: "flex", gap: 8 }}>
           <div style={{ flex: 1.3 }}><div style={lbl}>{t("recurrence.date")}</div><input type="date" value={v.date || ""} onChange={(e) => patch({ date: e.target.value })} style={{ ...inp, width: "100%", boxSizing: "border-box" }} /></div>
           <div style={{ flex: 1 }}><div style={lbl}>{t("recurrence.time")}</div><input type="time" value={v.time || ""} onChange={(e) => patch({ time: e.target.value })} style={{ ...inp, width: "100%", boxSizing: "border-box" }} /></div>

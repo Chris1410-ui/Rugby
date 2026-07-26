@@ -1257,7 +1257,17 @@
       "destPlayers": "Gekozen spelers",
       "noRecipient": "Geen ontvanger.",
       "sent": "Verzonden naar {{count}} speler(s) ✓",
-      "sendErr": "Mislukt: {{err}}"
+      "sendErr": "Mislukt: {{err}}",
+      "scheduledTag": "gepland",
+      "schedule": "Plannen",
+      "scheduleEdit": "Planning",
+      "scheduleTitle": "„{{name}}” plannen",
+      "scheduleHint": "Automatische verzending op de gekozen dagen tijdens de periode. Reeds ingevulde historiek wordt nooit aangeraakt.",
+      "scheduleCreate": "Verzendingen plannen",
+      "scheduleSave": "Planning bijwerken",
+      "scheduleDelete": "Planning stoppen",
+      "schedErrCadence": "Kies minstens één dag en een periode.",
+      "schedDelConfirm": "De geplande verzendingen stoppen? Eerdere verzendingen blijven, geen automatische verzendingen meer."
     },
     "camps": {
       "title": "Kampen · {{count}}",

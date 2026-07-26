@@ -1257,7 +1257,17 @@
       "destPlayers": "Selected players",
       "noRecipient": "No recipient.",
       "sent": "Sent to {{count}} player(s) ✓",
-      "sendErr": "Failed: {{err}}"
+      "sendErr": "Failed: {{err}}",
+      "scheduledTag": "scheduled",
+      "schedule": "Schedule",
+      "scheduleEdit": "Schedule",
+      "scheduleTitle": "Schedule “{{name}}”",
+      "scheduleHint": "Automatic send on the chosen days during the period. Already-filled history is never touched.",
+      "scheduleCreate": "Schedule sends",
+      "scheduleSave": "Update schedule",
+      "scheduleDelete": "Stop schedule",
+      "schedErrCadence": "Pick at least one day and a period.",
+      "schedDelConfirm": "Stop the scheduled sends? Past sends stay, no more automatic sends."
     },
     "camps": {
       "title": "Camps · {{count}}",

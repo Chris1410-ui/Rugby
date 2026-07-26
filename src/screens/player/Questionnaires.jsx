@@ -13,28 +13,28 @@ export default function Questionnaires({ me, accent = C.green }) {
   const { t } = useTranslation();
   const preview = usePreview();
   const { list } = useMyQuestionnaires(me.id);
-  const [open, setOpen] = useState(null); // questionnaireId en cours de remplissage
+  const [open, setOpen] = useState(null); // id d'assignation (occurrence) en cours de remplissage
 
   const todo = list.filter((a) => a.statut !== "rempli");
   const done = list.filter((a) => a.statut === "rempli");
 
   if (open) {
-    const a = list.find((x) => x.questionnaire.id === open);
+    const a = list.find((x) => x.id === open);
     if (a) return <FillForm assignment={a} preview={preview} accent={accent} onClose={() => setOpen(null)} />;
   }
 
   const Card = (a) => (
-    <div key={a.questionnaire.id} style={sc({ marginBottom: 10, padding: 14, borderLeft: `3px solid ${a.statut === "rempli" ? C.green : accent}` })}>
+    <div key={a.id} style={sc({ marginBottom: 10, padding: 14, borderLeft: `3px solid ${a.statut === "rempli" ? C.green : accent}` })}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 800 }}>{a.questionnaire.nom}</div>
           <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{t("player.quest.received", { count: a.questionnaire.questions.length, date: fmtShort(a.sentAt) })}</div>
         </div>
         {a.statut === "rempli" ? <Tag c={C.green}>{t("player.quest.filled")}</Tag> : (
-          <button onClick={() => setOpen(a.questionnaire.id)} style={{ background: accent, border: "none", borderRadius: 9, padding: "8px 13px", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer" }}>{t("player.quest.fill")}</button>
+          <button onClick={() => setOpen(a.id)} style={{ background: accent, border: "none", borderRadius: 9, padding: "8px 13px", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer" }}>{t("player.quest.fill")}</button>
         )}
       </div>
-      {a.statut === "rempli" && <button onClick={() => setOpen(a.questionnaire.id)} style={{ marginTop: 8, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("player.quest.review")}</button>}
+      {a.statut === "rempli" && <button onClick={() => setOpen(a.id)} style={{ marginTop: 8, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 10px", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t("player.quest.review")}</button>}
     </div>
   );
 
@@ -71,7 +71,7 @@ function FillForm({ assignment, preview, accent, onClose }) {
   const submit = async () => {
     if (preview) return;
     setBusy(true); setNote("");
-    try { await submitQuestionnaire(q.id, ans); setNote("ok"); setTimeout(onClose, 500); }
+    try { await submitQuestionnaire(q.id, ans, assignment.occurrenceDate); setNote("ok"); setTimeout(onClose, 500); }
     catch (e) { setNote(t("player.quest.fail", { err: e.message || t("player.quest.failRetry") })); setBusy(false); }
   };
 
