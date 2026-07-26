@@ -21,15 +21,18 @@ export function dbToRefDoc(r) {
   };
 }
 
-// Documents du club (staff), realtime léger sur la table.
+// Documents du club sélectionné. Le staff est déjà borné par la RLS ; on filtre
+// AUSSI explicitement sur club_id car l'owner (bypass RLS) verrait sinon tous
+// les clubs — ici on ne montre que le club courant.
 export function useReferenceDocs(clubId) {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("reference_docs").select("*").order("created_at", { ascending: false });
+    if (!clubId) { setDocs([]); setLoading(false); return; }
+    const { data, error } = await supabase.from("reference_docs").select("*").eq("club_id", clubId).order("created_at", { ascending: false });
     if (error) { console.error("[reference_docs]", error.message); setLoading(false); return; }
     setDocs((data || []).map(dbToRefDoc)); setLoading(false);
-  }, [clubId]); // eslint-disable-line react-hooks/exhaustive-deps -- clubId gates the refetch; rows are RLS-scoped to my_club()
+  }, [clubId]);
   useEffect(() => { fetch(); }, [fetch]);
   return { docs, loading, refresh: fetch };
 }
