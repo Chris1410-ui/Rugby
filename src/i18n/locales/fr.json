@@ -1566,7 +1566,30 @@
       "editingBanner": "Modification d’un programme existant",
       "saveEdit": "Enregistrer les modifications",
       "editBtn": "Modifier",
-      "noExo": "Aucun exercice"
+      "noExo": "Aucun exercice",
+      "planSessionBtn": "Planifier une séance",
+      "plannedTitle": "Séances planifiées ({{count}})",
+      "recipientsCount": "{{count}} destinataire(s)"
+    },
+    "sessionPlanner": {
+      "newTitle": "Planifier une séance",
+      "editTitle": "Modifier la séance",
+      "titlePlaceholder": "Intitulé de la séance",
+      "defaultTitle": "Séance",
+      "code": "Code",
+      "nature": "Nature",
+      "duration": "Durée (min)",
+      "exercises": "Exercices",
+      "exoPlaceholder": "Nom de l'exercice",
+      "setsPlaceholder": "Séries",
+      "repsPlaceholder": "Reps",
+      "chargePlaceholder": "Charge",
+      "addExo": "Ajouter un exercice",
+      "recipients": "Destinataires",
+      "create": "Créer la séance",
+      "saveEdit": "Enregistrer",
+      "errTitle": "Donne un intitulé à la séance.",
+      "errSave": "Échec de l'enregistrement : {{err}}"
     },
     "app": {
       "fabSeance": "＋ Séance",

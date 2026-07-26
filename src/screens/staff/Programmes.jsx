@@ -6,11 +6,12 @@ import { WD_ORDER, wdLabel, newExo } from "../../lib/exlib.js";
 import { NATURES, natureLabel, natureColor } from "../../lib/nature.js";
 import { weekdayDatesInRange, aggregateLoadByDate, overlapForWeekday } from "../../lib/overload.js";
 import { Section, Tag } from "../../lib/ui.jsx";
-import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video, Pencil, Eye } from "../../lib/icons.jsx";
+import { Plus, X, Send, FileText, ClipboardList, Paperclip, Video, Pencil, Eye, Calendar } from "../../lib/icons.jsx";
 import { hasVideo } from "../../lib/youtube.js";
 import { usePrograms, createProgram, updateProgram, deleteProgram } from "../../data/programs.js";
 import { resolveAssignedIds, buildAssigned, assignedToSelection } from "../../data/sessions.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
+import SessionPlanner from "./SessionPlanner.jsx";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
 import PdfImportReview from "../shared/PdfImportReview.jsx";
@@ -115,6 +116,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [editingId, setEditingId] = useState(null); // programme en cours d'édition (null = création)
   const [viewing, setViewing] = useState(null);      // programme ouvert en consultation (lecteur)
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
+  const [planner, setPlanner] = useState(null);       // « Planifier une séance » : true (créer) | séance (éditer)
 
   // ── Anti-surcharge : charge DÉJÀ prévue du périmètre de destinataires ──
   // Ensemble des joueurs ciblés (sélection combinée lignes + joueurs).
@@ -129,6 +131,17 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const loadByDate = useMemo(
     () => aggregateLoadByDate(sessions, recipientIds, start, end),
     [sessions, recipientIds, start, end],
+  );
+
+  // Séances planifiées « autonomes » (hors programme, hors test) à venir — gérées
+  // par « Planifier une séance ». Inclut les séances récurrentes (série).
+  const today = todayISO();
+  const planned = useMemo(
+    () => sessions
+      .filter((s) => !s.programId && !s.campaignId && s.code !== "TEST" && s.date >= today)
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+      .slice(0, 20),
+    [sessions, today],
   );
 
   const reset = () => {
@@ -265,11 +278,34 @@ export default function Programmes({ teamId, players, sessions, logs }) {
         </div>
         )}
         {!readOnly && (
-          <button onClick={() => setBulk(true)} style={{ width: "100%", marginBottom: 14, background: `${C.green}18`, border: `1px solid ${C.green}55`, borderRadius: 10, padding: 11, color: C.green, fontWeight: 700, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <button onClick={() => setBulk(true)} style={{ width: "100%", marginBottom: 8, background: `${C.green}18`, border: `1px solid ${C.green}55`, borderRadius: 10, padding: 11, color: C.green, fontWeight: 700, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <ClipboardList size={15} /> {t("staff.programs.bulkImportBtn")}
           </button>
         )}
+        {!readOnly && (
+          <button onClick={() => setPlanner(true)} style={{ width: "100%", marginBottom: 14, background: `${C.teal}18`, border: `1px solid ${C.teal}55`, borderRadius: 10, padding: 11, color: C.teal, fontWeight: 700, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <Calendar size={15} /> {t("staff.programs.planSessionBtn")}
+          </button>
+        )}
         {bulk && <BulkPdfImport teamId={teamId} players={players} onClose={() => setBulk(false)} />}
+
+        {planned.length > 0 && (
+          <Section title={t("staff.programs.plannedTitle", { count: planned.length })}>
+            {planned.map((s) => (
+              <div key={s.id} onClick={() => !readOnly && setPlanner(s)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border2}`, cursor: readOnly ? "default" : "pointer" }}>
+                <div style={{ width: 30, height: 30, borderRadius: 8, background: `${CODES[s.code] || accent}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Calendar size={14} color={CODES[s.code] || accent} /></div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.titre}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>{fmtShort(s.date)} · {t("staff.programs.recipientsCount", { count: s.assignedIds.length })}</div>
+                </div>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  {s.nature && <Tag c={natureColor(s.nature)}>{natureLabel(t, s.nature)}</Tag>}
+                  {s.seriesId && <Tag c={C.teal}>{s.customized ? t("recurrence.tagCustom") : t("recurrence.tagSeries")}</Tag>}
+                </div>
+              </div>
+            ))}
+          </Section>
+        )}
 
         {note && (
           <div style={sc({ marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", background: note.includes("✓") ? `${C.green}1a` : `${C.amb}1a`, borderColor: note.includes("✓") ? `${C.green}66` : `${C.amb}66` })}>{note}</div>
@@ -331,6 +367,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
         })}
         {filesOf && <ProgramFiles teamId={teamId} program={filesOf} onClose={() => setFilesOf(null)} />}
         {viewing && <ProgramConsult program={viewing} readOnly={readOnly} onEdit={() => loadForEdit(viewing)} onClose={() => setViewing(null)} t={t} />}
+        {planner && <SessionPlanner teamId={teamId} players={players} initial={planner === true ? null : planner} onClose={() => setPlanner(null)} />}
       </div>
     );
   }
