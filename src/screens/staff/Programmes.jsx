@@ -11,6 +11,7 @@ import { hasVideo } from "../../lib/youtube.js";
 import { usePrograms, createProgram, updateProgram, deleteProgram } from "../../data/programs.js";
 import { resolveAssignedIds, buildAssigned, assignedToSelection } from "../../data/sessions.js";
 import RecipientSelect from "../shared/RecipientSelect.jsx";
+import ReferenceProtocolView from "../shared/ReferenceProtocolView.jsx";
 import SessionPlanner from "./SessionPlanner.jsx";
 import { useRoutines, saveRoutine, deleteRoutine } from "../../data/routines.js";
 import { parseProgramPdf } from "../../lib/pdf.js";
@@ -117,6 +118,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
   const [viewing, setViewing] = useState(null);      // programme ouvert en consultation (lecteur)
   const [pickingFor, setPickingFor] = useState(null); // index de séance pour le sélecteur Bibliothèque
   const [planner, setPlanner] = useState(null);       // « Planifier une séance » : true (créer) | séance (éditer)
+  const [refOpen, setRefOpen] = useState(false);      // aperçu du protocole de référence (lecture)
 
   // ── Anti-surcharge : charge DÉJÀ prévue du périmètre de destinataires ──
   // Ensemble des joueurs ciblés (sélection combinée lignes + joueurs).
@@ -288,6 +290,14 @@ export default function Programmes({ teamId, players, sessions, logs }) {
           </button>
         )}
         {bulk && <BulkPdfImport teamId={teamId} players={players} onClose={() => setBulk(false)} />}
+
+        {/* Protocole de référence (lecture) : split jambes/haut, méthode pyramidale
+            12/10. Sert de repère au staff — chargeable par le staff-athlète depuis
+            sa routine du matin. */}
+        <button onClick={() => setRefOpen((v) => !v)} style={{ width: "100%", marginBottom: refOpen ? 10 : 14, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 11, color: "rgba(255,255,255,0.8)", fontWeight: 700, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          📋 {refOpen ? t("staff.programs.refProtocolHide") : t("staff.programs.refProtocol")}
+        </button>
+        {refOpen && <div style={{ marginBottom: 14 }}><ReferenceProtocolView accent={accent} /></div>}
 
         {planned.length > 0 && (
           <Section title={t("staff.programs.plannedTitle", { count: planned.length })}>

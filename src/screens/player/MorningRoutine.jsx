@@ -7,7 +7,7 @@ import { Sun, CheckCircle, Plus, X, Pencil } from "../../lib/icons.jsx";
 import { shakeProtein, routineComplete } from "../../lib/morningRoutine.js";
 import { useRoutineConfig, saveRoutineConfig, useRoutineLog, saveRoutineLog, useRoutineHistory } from "../../data/morningRoutine.js";
 import { seedReferenceProtocol } from "../../data/staffAthlete.js";
-import ReferenceProtocolView from "./ReferenceProtocolView.jsx";
+import ReferenceProtocolView from "../shared/ReferenceProtocolView.jsx";
 
 const uid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
