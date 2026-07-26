@@ -22,7 +22,7 @@ import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose, EstimatedB
 import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send, Sparkles } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -44,6 +44,7 @@ import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
 import DataQuality from "./DataQuality.jsx";
 import Adherence from "./Adherence.jsx";
+import Recommandations from "./Recommandations.jsx";
 import ReferenceDocs from "./ReferenceDocs.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
@@ -115,6 +116,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
     ["compare", t("nav.compare"), Activity],
+    ["recos", t("nav.recos"), Sparkles],
     ["adherence", t("nav.adherence"), TrendingUp],
     ["historique", t("nav.historique"), TrendingUp],
     ["calendrier", t("nav.calendrier"), Calendar],
@@ -156,6 +158,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}
+        {tab === "recos" && <Recommandations teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
         {tab === "adherence" && <Adherence players={players} sessions={sessions} logs={logs} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
