@@ -6,6 +6,7 @@ import { Section } from "../../lib/ui.jsx";
 import { Sun, CheckCircle, Plus, X, Pencil } from "../../lib/icons.jsx";
 import { shakeProtein, routineComplete } from "../../lib/morningRoutine.js";
 import { useRoutineConfig, saveRoutineConfig, useRoutineLog, saveRoutineLog, useRoutineHistory } from "../../data/morningRoutine.js";
+import { seedReferenceProtocol } from "../../data/staffAthlete.js";
 
 const uid = (p) => `${p}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -26,6 +27,9 @@ export default function MorningRoutine({ me, accent = C.green }) {
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [protoBusy, setProtoBusy] = useState(false);
+  const [protoNote, setProtoNote] = useState("");
+  const [protoOk, setProtoOk] = useState(false);
 
   useEffect(() => { if (config) setItems(config.items || []); }, [config]);
   useEffect(() => {
@@ -64,6 +68,17 @@ export default function MorningRoutine({ me, accent = C.green }) {
   const setIng = (id, patch) => setShake((s) => s.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   const delIng = (id) => { const n = shake.filter((x) => x.id !== id); setShake(n); saveCfg(items, n); };
   const commitCfg = () => { saveCfg(items, shake.map((x) => ({ ...x, qty: Number(x.qty) || 0, proteinPer: Number(x.proteinPer) || 0 }))); setEditing(false); };
+
+  const loadProto = async () => {
+    if (!me?.id || !me?.team) return;
+    setProtoBusy(true); setProtoNote(""); setProtoOk(false);
+    try {
+      const r = await seedReferenceProtocol(me.team, me.id, today);
+      setProtoNote(r.skipped ? t("player.routine.protoAlready") : t("player.routine.protoLoaded", { count: r.count }));
+      setProtoOk(true);
+    } catch (e) { setProtoNote(t("player.routine.errSave", { err: e.message || "" })); setProtoOk(false); }
+    setProtoBusy(false);
+  };
 
   const inp = { background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 9px", color: "#fff", fontSize: 12.5, outline: "none" };
 
@@ -140,6 +155,14 @@ export default function MorningRoutine({ me, accent = C.green }) {
           {note && note !== "ok" && <div style={{ fontSize: 12, color: C.coral, marginBottom: 8 }}>{note}</div>}
           {note === "ok" && <div style={{ fontSize: 12, color: C.green, marginBottom: 8 }}>{t("player.routine.saved")}</div>}
           <button onClick={save} disabled={busy} style={{ width: "100%", background: accent, border: "none", borderRadius: 12, padding: 14, color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: busy ? 0.6 : 1, marginBottom: 14 }}>{busy ? "…" : t("player.routine.save")}</button>
+
+          {/* Pré-chargement du protocole de référence (split jambes/haut, pyramidal 12/10)
+              comme programme personnel — séances matérialisées, ensuite éditables. */}
+          <Section title={t("player.routine.protoTitle")}>
+            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.7)", marginBottom: 10, lineHeight: 1.5 }}>{t("player.routine.protoDesc")}</div>
+            {protoNote && <div style={{ fontSize: 12, color: protoOk ? C.green : C.coral, marginBottom: 8 }}>{protoNote}</div>}
+            <button onClick={loadProto} disabled={protoBusy} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: protoBusy ? 0.6 : 1 }}>{protoBusy ? "…" : t("player.routine.protoLoad")}</button>
+          </Section>
 
           {hist.length > 0 && (
             <Section title={t("player.routine.trend")}>

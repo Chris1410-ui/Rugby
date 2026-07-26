@@ -14,6 +14,8 @@ import { useTeamReactivity } from "../../data/notifications.js";
 import { useTeamTrainingEvents } from "../../data/trainings.js";
 import { useTeamSessionLogs, useTeamCheckinEvents } from "../../data/leaderboard.js";
 import { useTeamRoutinePoints } from "../../data/morningRoutine.js";
+import { useTeamAthletePublic } from "../../data/staffAthlete.js";
+import { natureLabel, natureColor } from "../../lib/nature.js";
 import { KPI, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { Trophy } from "../../lib/icons.jsx";
 
@@ -45,6 +47,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const reactByPlayer = useTeamReactivity(teamId);
   const { byPlayer: convByPlayer } = useTeamTrainingEvents(teamId); // présence aux convocations (pointage staff)
   const routineByPlayer = useTeamRoutinePoints(teamId); // routine du matin complétée (staff-athlète)
+  const athletePublic = useTeamAthletePublic(teamId); // projection publique des staff-athlètes (séances/nature + routine ✓/✗)
   // Entrées de points À L'ÉCHELLE DU CLUB (RPC SECURITY DEFINER) → classement
   // IDENTIQUE pour owner/staff/joueur. Sans ça, un joueur (RLS = ses données
   // seules) calculait de faux points pour ses coéquipiers. On IGNORE donc les
@@ -62,7 +65,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       const challengeEvents = chalPts.map((c) => ({ label: c.titre, points: c.points, date: c.date }));
       const convocationEvents = convByPlayer[p.id] || [];
       const routineEvents = routineByPlayer[p.id] || [];
-      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents) };
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents) };
     });
     // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
     const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
@@ -73,7 +76,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer]);
+  }, [players, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, athletePublic]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
@@ -152,6 +155,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
                   <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + displayName(d.p) : displayName(d.p)}</span>
                   {d.top14 > 0 && <span title={t("shared.leaderboard.top14Title", { count: d.top14 })} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
                   {d.chalBadge && <span title={t("shared.leaderboard.chalTitle", { count: d.chalCount, badge: challengeBadgeLabel(t, d.chalBadge) })} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
+                  {d.p.isStaffAthlete && <span title={t("shared.leaderboard.staffAthleteTitle")} style={{ flexShrink: 0, fontSize: 8, fontWeight: 900, letterSpacing: 0.4, color: top ? "#0c2b2b" : "rgba(255,255,255,0.75)", background: top ? "rgba(12,43,43,0.18)" : "rgba(255,255,255,0.12)", border: `1px solid ${top ? "rgba(12,43,43,0.3)" : "rgba(255,255,255,0.22)"}`, borderRadius: 5, padding: "1px 5px" }}>{t("shared.leaderboard.staffAthleteBadge")}</span>}
                 </div>
                 <div style={{ fontSize: 9.5, color: top ? "rgba(12,43,43,0.7)" : "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}><span>{d.div.e} {divLabel(t, d.div)}</span>{d.streak >= 3 && <span>🔥{d.streak}</span>}</div>
               </div>
@@ -259,6 +263,22 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
                 <span key={b.n} style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "rgba(108,92,224,0.25)", border: `1px solid ${C.viol}66`, borderRadius: 6, padding: "3px 9px" }}>{b.emoji} {challengeBadgeLabel(t, b)}</span>
               ))}
             </div>
+          </div>
+        )}
+        {sel.p.isStaffAthlete && sel.athlete && (
+          <div style={{ marginBottom: 14, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.athletePublicTitle")}</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>{t("shared.leaderboard.athleteSessionsDone", { count: sel.athlete.sessionsDone })}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: sel.athlete.routineToday ? C.green : "rgba(255,255,255,0.5)" }}>{sel.athlete.routineToday ? t("shared.leaderboard.athleteRoutineDone") : t("shared.leaderboard.athleteRoutineNone")}</span>
+            </div>
+            {Object.keys(sel.athlete.natures || {}).length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {Object.entries(sel.athlete.natures).map(([k, n]) => (
+                  <span key={k} style={{ fontSize: 10, fontWeight: 700, color: natureColor(k), background: `${natureColor(k)}20`, border: `1px solid ${natureColor(k)}44`, borderRadius: 6, padding: "2px 8px" }}>{n}× {natureLabel(t, k)}</span>
+                ))}
+              </div>
+            )}
           </div>
         )}
         <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.journalTitle")}</div>
