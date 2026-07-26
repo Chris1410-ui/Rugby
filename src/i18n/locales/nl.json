@@ -283,6 +283,7 @@
     "video": "Video",
     "veille": "Nieuws",
     "compare": "Vergelijk +",
+    "adherence": "Naleving voorschrift",
     "abonnements": "Abonnementen",
     "exercices": "Bibliotheek",
     "invites": "Uitnodigingen",
@@ -1327,6 +1328,21 @@
       "nudgeDuration": "Vergeet niet de DUUR van je sessies bij validatie in te voeren: die wordt gebruikt om je belasting (sRPE) te berekenen.",
       "nudgeBilan": "Vergeet niet je dagelijkse check-in in te vullen: die voedt je readiness en opvolging.",
       "nudge1RM": "Vul je 1RM (maximale belasting) in zodat %-belastingen voor jou worden berekend."
+    },
+    "adherence": {
+      "title": "Naleving voorschrift",
+      "hint": "Aandeel VOORGESCHREVEN sessies dat echt is uitgevoerd over {{days}} dagen (vrije sessies tellen niet). Gedaan / gemist / niet geregistreerd, per speler en voor het team.",
+      "noPlayers": "Geen spelers in de selectie.",
+      "teamRate": "Voorgeschreven sessies uitgevoerd (team)",
+      "teamDetail": "{{done}}/{{presc}} sessies · {{n}} betrouwbare speler(s)",
+      "kAnonHidden": "Teamaggregaat verborgen: minder dan 5 spelers met genoeg sessies ({{n}}). Individuele rijen blijven zichtbaar.",
+      "rowDetail": "{{done}}/{{presc}} sessies uitgevoerd",
+      "insufficient": "Onvoldoende gegevens ({{n}}/{{min}} voorgeschreven sessies)",
+      "done": "gedaan",
+      "missed": "gemist",
+      "skipped": "niet geregistreerd",
+      "exerciseRate": "{{adhered}}/{{total}} oefeningen met voorgeschreven sets",
+      "skippedHint": "{{count}} verlopen sessie(s) zonder validatie of „gemist” — herinner aan registratie."
     },
     "refdocs": {
       "title": "Referentiedocumenten · {{count}}",
