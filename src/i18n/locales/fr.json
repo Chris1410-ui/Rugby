@@ -903,7 +903,9 @@
       "set1rmTitle": "Ton 1RM — {{movement}}",
       "set1rmHint": "Saisis ta charge maximale (1 répétition) pour calculer les charges en %.",
       "set1rmSave": "Enregistrer",
-      "deleteFree": "Supprimer cette séance libre"
+      "deleteFree": "Supprimer cette séance libre",
+      "tempo": "tempo",
+      "restPresc": "repos {{n}}s"
     },
     "freeSession": {
       "newButton": "Créer une séance libre",
@@ -1350,7 +1352,12 @@
       "errSave": "Échec : {{err}}",
       "saveEdit": "Enregistrer",
       "saveNew": "Convoquer",
-      "state": { "present": "Présent", "late": "En retard", "absent": "Absent", "pending": "Sans réponse" }
+      "state": {
+        "present": "Présent",
+        "late": "En retard",
+        "absent": "Absent",
+        "pending": "Sans réponse"
+      }
     },
     "challenges": {
       "delConfirm": "Supprimer ce défi ?",

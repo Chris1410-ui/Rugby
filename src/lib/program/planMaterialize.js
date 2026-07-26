@@ -16,24 +16,45 @@ import { normalizeProgram, clampWeeks } from "./model.js";
 import { codeForNature } from "./materialize.js";
 import { parseProgressionCell } from "../oneRM.js";
 import { parseISO, isoDate } from "../metrics.js";
+import { norm } from "../catalog/detect.js";
 
-// Ligne d'exercice → exo plat pour la semaine réelle d'indice `col` (0-based).
-// Clamp sur la dernière cellule disponible (N réel > semaines du protocole).
-// Conserve le POURCENTAGE `@xx%` (pct + mouvement de référence) → la carte joueur
-// calculera la charge en kg depuis son propre 1RM (PR2/PR3).
+// Deux titres se « correspondent » si l'un contient l'autre (normalisés). Sert à
+// rattacher un jour de semaine-type « Cardio & Course » à la grille homonyme.
+function titlesMatch(a, b) {
+  const na = norm(a), nb = norm(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const [short, long] = na.length <= nb.length ? [na, nb] : [nb, na];
+  return short.length >= 4 && long.includes(short); // évite qu'un titre trivial (« A ») matche tout
+}
+
+/* Ligne d'exercice → exo plat pour la semaine réelle d'indice `col` (0-based).
+   Clamp sur la dernière cellule disponible (N réel > semaines du protocole).
+   1 LIGNE = 1 EXERCICE : on ne jette JAMAIS la ligne (le nom peut manquer et
+   vivre dans le bloc ou la cellule). On conserve la CONSIGNE PRESCRITE brute
+   `presc` (avec son unité : reps, kg, watts, kcal, min, distance…), le tempo,
+   le repos et la NOTE du coach. Le POURCENTAGE `@xx%` (+ mouvement de référence)
+   est préservé → la carte joueur calcule la charge kg depuis son 1RM. */
 function rowToExoAtCol(row, col) {
-  const name = String(row?.name || "").trim();
-  if (!name) return null;
   const cells = Array.isArray(row?.weeks) ? row.weeks : [];
   const idx = cells.length ? Math.min(Math.max(0, col), cells.length - 1) : 0;
   const cell = cells[idx]?.text || cells.map((c) => c?.text).find((x) => x && String(x).trim()) || "";
+  const presc = String(cell || "").trim();
   const p = parseProgressionCell(cell);
+  const block = String(row?.block || "").trim();
+  const name = String(row?.name || "").trim() || block || presc || "Exercice";
+  // reps : le nombre parsé s'il y a un vrai sets×reps ; sinon la cellule brute
+  // (préserve l'unité non-kg : « 250 watts », « 100 kcal », « 6 min », « 400 m »).
+  const reps = p.reps || (p.pct == null && !p.abs ? presc : "");
   const exo = {
     name,
     sets: p.sets || "",
-    reps: p.reps || (p.pct == null && cell ? String(cell).trim() : ""),
-    charge: p.abs || String(row?.tempo || "").trim(),
+    reps,
+    charge: p.abs || "",
     rest: row?.rest ?? 90,
+    tempo: String(row?.tempo || "").trim() || null,
+    note: String(row?.note || "").trim() || null,
+    presc: presc || null, // consigne prescrite fidèle (affichée telle quelle au joueur)
   };
   if (p.pct != null) {
     const ref = String(row?.rmRef || "").trim();
@@ -58,13 +79,18 @@ export function deriveSlots(doc) {
   // Cas 1 — semaine type explicite : chaque jour actif = un créneau.
   if (wcal) {
     const active = wcal.days.filter((day) => !day.off && day.weekday != null);
-    const soleRows = exSecs.length === 1 ? exSecs[0].rows : [];
+    const sole = exSecs.length === 1 ? exSecs[0] : null;
     if (exSecs.length > 1) warnings.push("multi-grids");
     const slots = active.map((day) => {
       const nature = day.nature || "";
       const label = day.label || "Séance";
-      const useRows = soleRows.length && (nature === "force" || /muscu|force|renfo/i.test(label));
-      return { weekday: day.weekday, label, nature, code: codeForNature(nature), rows: useRows ? soleRows : [] };
+      // 1) Rapprochement par TITRE : un jour « Cardio & Course » ↔ la grille du
+      //    même nom (quelle que soit sa nature — le bug perdait ces lignes).
+      // 2) Sinon, la grille UNIQUE alimente les jours de force / muscu.
+      const byTitle = exSecs.find((s) => titlesMatch(s.title, label));
+      const rows = byTitle ? (byTitle.rows || [])
+        : (sole && (nature === "force" || /muscu|force|renfo/i.test(label)) ? (sole.rows || []) : []);
+      return { weekday: day.weekday, label, nature, code: codeForNature(nature), rows };
     });
     return { slots, warnings };
   }

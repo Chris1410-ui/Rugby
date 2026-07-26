@@ -903,7 +903,9 @@
       "set1rmTitle": "Your 1RM — {{movement}}",
       "set1rmHint": "Enter your max load (1 rep) to compute %-based loads.",
       "set1rmSave": "Save",
-      "deleteFree": "Delete this free session"
+      "deleteFree": "Delete this free session",
+      "tempo": "tempo",
+      "restPresc": "rest {{n}}s"
     },
     "freeSession": {
       "newButton": "Create a free session",
@@ -1350,7 +1352,12 @@
       "errSave": "Failed: {{err}}",
       "saveEdit": "Save",
       "saveNew": "Call up",
-      "state": { "present": "Present", "late": "Late", "absent": "Absent", "pending": "No reply" }
+      "state": {
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "pending": "No reply"
+      }
     },
     "challenges": {
       "delConfirm": "Delete this challenge?",

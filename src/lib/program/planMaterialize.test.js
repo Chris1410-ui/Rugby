@@ -40,6 +40,26 @@ describe("deriveSlots — créneaux d'une semaine-type", () => {
     expect(cardio.rows.length).toBe(0);  // pas de grille → libellé seul
   });
 
+  it("jour de semaine-type rattaché à la grille HOMONYME (même quand nature ≠ force)", () => {
+    // Bug corrigé : un jour « Cardio & Course » (conditioning) perdait ses lignes.
+    const cardioRows = [
+      { name: "Malcom 6min", tempo: "1A/R", rest: 120, note: "négatives possibles", weeks: [{ text: "1×250 watts" }] },
+      { name: "Vélo 3min", weeks: [{ text: "1×100 kcal" }] },
+      { name: "Watbike", weeks: [{ text: "6min" }] },
+    ];
+    const doc = {
+      meta: { weeks: 4 },
+      sections: [
+        { type: "weekcalendar", title: "Semaine", days: [
+          { day: "mardi", weekday: 2, label: "Cardio & Course", nature: "conditioning" },
+        ] },
+        { type: "exercises", title: "Cardio & Course", rows: cardioRows },
+      ],
+    };
+    const slot = deriveSlots(doc).slots.find((s) => s.label === "Cardio & Course");
+    expect(slot.rows).toHaveLength(3); // les 3 lignes réelles, pas 0
+  });
+
   it("aucun contenu datable → slots vides + avertissement", () => {
     const { slots, warnings } = deriveSlots({ meta: { weeks: 4 }, sections: [{ type: "narrative", title: "Intro", body: "x" }] });
     expect(slots).toEqual([]);
@@ -107,6 +127,24 @@ describe("planDocToSessions — déroulé S1→Sn sur les vraies semaines", () =
     const slot0 = { weekday: 1, label: "x", nature: "force", code: "RS", rows: rows0 };
     const { rows } = planDocToSessions(doc, { startDate: "2026-08-03", weeks: 1, slots: [slot0] });
     expect(rows[0].exercises[0]).toMatchObject({ pct: 60, rmLabel: "Back Squat", rmExerciseId: null });
+  });
+
+  it("1 ligne = 1 exercice, consigne prescrite + note préservées (unités non-kg)", () => {
+    const cardioRows = [
+      { name: "Malcom 6min", tempo: "1A/R", rest: 120, note: "négatives", weeks: [{ text: "1×250 watts" }] },
+      { name: "Vélo 3min", weeks: [{ text: "1×100 kcal" }] },
+      { name: "Watbike", weeks: [{ text: "6min" }] },
+    ];
+    const doc = { meta: { weeks: 1 }, sections: [{ type: "exercises", title: "Cardio & Course", rows: cardioRows }] };
+    const slot = { weekday: 2, label: "Cardio & Course", nature: "conditioning", code: "CSB", rows: cardioRows };
+    const { rows } = planDocToSessions(doc, { startDate: "2026-08-03", weeks: 1, slots: [slot] });
+    const exos = rows[0].exercises;
+    expect(exos.map((e) => e.name)).toEqual(["Malcom 6min", "Vélo 3min", "Watbike"]); // 3 exos, pas 1
+    expect(exos[0].presc).toBe("1×250 watts"); // consigne fidèle (unité watts préservée)
+    expect(exos[0].note).toBe("négatives");
+    expect(exos[0].tempo).toBe("1A/R");
+    expect(exos[0].rest).toBe(120);
+    expect(exos[2].presc).toBe("6min"); // durée préservée
   });
 
   it("slots par défaut dérivés du protocole si non fournis", () => {
