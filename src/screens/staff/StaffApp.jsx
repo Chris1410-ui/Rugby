@@ -43,6 +43,7 @@ import Mediatheque from "../shared/Mediatheque.jsx";
 import Defis from "./Defis.jsx";
 import Convocations from "./Convocations.jsx";
 import DataQuality from "./DataQuality.jsx";
+import Adherence from "./Adherence.jsx";
 import ReferenceDocs from "./ReferenceDocs.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
@@ -114,6 +115,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
     ["compare", t("nav.compare"), Activity],
+    ["adherence", t("nav.adherence"), TrendingUp],
     ["historique", t("nav.historique"), TrendingUp],
     ["calendrier", t("nav.calendrier"), Calendar],
     ["video", t("nav.video"), Video],
@@ -154,6 +156,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}
+        {tab === "adherence" && <Adherence players={players} sessions={sessions} logs={logs} />}
         {tab === "historique" && <Historique players={players} testCampaigns={testCampaigns} camps={camps} />}
         {tab === "calendrier" && <Calendrier sessions={sessions} logs={logs} accent={ACCENT} />}
         {tab === "video" && <AnalyseVideo teamId={profile.team_id} />}

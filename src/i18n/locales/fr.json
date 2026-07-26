@@ -283,6 +283,7 @@
     "video": "Vidéo",
     "veille": "Veille",
     "compare": "Comparaison",
+    "adherence": "Respect du prescrit",
     "abonnements": "Abonnements",
     "exercices": "Bibliothèque",
     "invites": "Invitations",
@@ -1327,6 +1328,21 @@
       "nudgeDuration": "Pense à saisir la DURÉE de tes séances à la validation : elle sert à calculer ta charge (sRPE).",
       "nudgeBilan": "Pense à compléter ton bilan du jour : il alimente ta readiness et ton suivi.",
       "nudge1RM": "Renseigne ton 1RM (charge max) pour que les charges en % soient calculées pour toi."
+    },
+    "adherence": {
+      "title": "Respect du prescrit",
+      "hint": "Part des séances PRESCRITES réellement réalisées sur {{days}} jours (les séances libres ne comptent pas). Faite / manquée / oubli de saisie, par joueur et pour l'équipe.",
+      "noPlayers": "Aucun joueur dans l'effectif.",
+      "teamRate": "Séances prescrites réalisées (équipe)",
+      "teamDetail": "{{done}}/{{presc}} séances · {{n}} joueur(s) fiable(s)",
+      "kAnonHidden": "Agrégat d'équipe masqué : moins de 5 joueurs avec assez de séances ({{n}}). Les lignes individuelles restent visibles.",
+      "rowDetail": "{{done}}/{{presc}} séances réalisées",
+      "insufficient": "Données insuffisantes ({{n}}/{{min}} séances prescrites)",
+      "done": "faites",
+      "missed": "manquées",
+      "skipped": "oubli saisie",
+      "exerciseRate": "{{adhered}}/{{total}} exercices aux séries prescrites",
+      "skippedHint": "{{count}} séance(s) échue(s) sans validation ni « manquée » — relance la saisie."
     },
     "refdocs": {
       "title": "Documents de référence · {{count}}",

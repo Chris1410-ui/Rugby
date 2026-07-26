@@ -283,6 +283,7 @@
     "video": "Video",
     "veille": "Watch",
     "compare": "Compare +",
+    "adherence": "Prescribed adherence",
     "abonnements": "Subscriptions",
     "exercices": "Library",
     "invites": "Invitations",
@@ -1327,6 +1328,21 @@
       "nudgeDuration": "Remember to enter the DURATION of your sessions at validation: it's used to compute your load (sRPE).",
       "nudgeBilan": "Remember to complete your daily check-in: it feeds your readiness and monitoring.",
       "nudge1RM": "Record your 1RM (max load) so %-based loads are computed for you."
+    },
+    "adherence": {
+      "title": "Prescribed adherence",
+      "hint": "Share of PRESCRIBED sessions actually completed over {{days}} days (free sessions don't count). Done / missed / not logged, per player and for the team.",
+      "noPlayers": "No players in the roster.",
+      "teamRate": "Prescribed sessions completed (team)",
+      "teamDetail": "{{done}}/{{presc}} sessions · {{n}} reliable player(s)",
+      "kAnonHidden": "Team aggregate hidden: fewer than 5 players with enough sessions ({{n}}). Individual rows remain visible.",
+      "rowDetail": "{{done}}/{{presc}} sessions completed",
+      "insufficient": "Not enough data ({{n}}/{{min}} prescribed sessions)",
+      "done": "done",
+      "missed": "missed",
+      "skipped": "not logged",
+      "exerciseRate": "{{adhered}}/{{total}} exercises met prescribed sets",
+      "skippedHint": "{{count}} past session(s) with no validation or “missed” — nudge logging."
     },
     "refdocs": {
       "title": "Reference documents · {{count}}",
