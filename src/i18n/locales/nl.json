@@ -115,6 +115,7 @@
     "managePlansTitle": "Planningen",
     "noPlans": "Geen planning voor dit protocol.",
     "slotsShort": "slot(s)",
+    "personalizeHint": "Personaliseren voor een speler — tik op een ontvanger:",
     "replanPrompt": "Dit protocol is ingepland ({{count}}). Wijzigingen doorvoeren op toekomstige NIET-voltooide sessies? (reeds gevalideerde sessies blijven onaangeroerd)",
     "replanApply": "Doorvoeren",
     "replanLater": "Later",
@@ -2960,6 +2961,25 @@
     "overlapConfirm": "Toepassen",
     "overlapCancel": "Annuleren",
     "errSave": "Mislukt: {{err}}"
+  },
+  "playerProto": {
+    "title": "Versie van {{player}}",
+    "intro": "Pas dit protocol enkel voor deze speler aan. Wijzigingen worden als overrides opgeslagen (de gedeelde basis en andere spelers blijven ongewijzigd) en genereren zijn toekomstige niet-gevalideerde sessies opnieuw.",
+    "customCount": "{{count}} aanpassing(en)",
+    "resetAll": "Alles resetten",
+    "days": "Dagen",
+    "restore": "Herstellen",
+    "section": "Sectie",
+    "removeSection": "Verwijderen",
+    "hidden": "verborgen voor deze speler",
+    "sectionKeepOrRemove": "Informatieve sectie — behouden of verwijderen voor deze speler.",
+    "modified": "gewijzigd",
+    "exoName": "Naam van de oefening",
+    "rest": "Rust",
+    "removeRow": "Verwijderen",
+    "addRow": "Rij toevoegen",
+    "added": "toegevoegd",
+    "open": "Open de versie van deze speler"
   },
   "oneRM": {
     "title": "1RM ({{count}})",
