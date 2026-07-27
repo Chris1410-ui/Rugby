@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "./messages.js";
 import { isoDate, parseISO } from "../lib/metrics.js";
-import { resolveAssignedIds } from "./sessions.js";
+import { resolveAssignedIds, assignedIsEmpty } from "./sessions.js";
 import { pctMovements } from "../lib/oneRM.js";
 import { request1RM } from "./player1rm.js";
 
@@ -128,6 +128,9 @@ export function planProgramUpdate({ future = [], loggedIds, today, expanded = []
 }
 
 export async function createProgram(teamId, { title, start, end, assigned, templates, source }) {
+  // Refus explicite : un programme sans destinataire ne part jamais (sinon, avec
+  // l'ancien repli, il partait à toute l'équipe).
+  if (assignedIsEmpty(assigned)) { const e = new Error("no-recipients"); e.code = "no-recipients"; throw e; }
   // Matérialise D'ABORD : si aucune séance ne serait générée (dates ne couvrant
   // aucun jour choisi, ou aucun exercice nommé), on échoue AVANT d'insérer le
   // programme — pas de programme orphelin vide.
@@ -161,6 +164,7 @@ export async function createProgram(teamId, { title, start, end, assigned, templ
    l'historique : les séances passées et les séances futures DÉJÀ loggées ne sont
    pas touchées ; seules les séances futures NON loggées sont remplacées. */
 export async function updateProgram(teamId, id, { title, start, end, assigned, templates }, { today } = {}) {
+  if (assignedIsEmpty(assigned)) { const e = new Error("no-recipients"); e.code = "no-recipients"; throw e; }
   const t0 = today || isoDate(new Date());
 
   const { error: uErr } = await supabase

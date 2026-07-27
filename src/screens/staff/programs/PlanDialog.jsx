@@ -55,6 +55,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
     setNote("");
     if (!startDate) return setNote(t("plan.errDate"));
     if (!rows.length) return setNote(t("plan.errEmpty"));
+    if (recipientCount === 0) return setNote(t("plan.errNoRecipients"));
     setBusy(true);
     try {
       if (editing) {
@@ -65,7 +66,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
         onClose(true, t("plan.done", { count }));
       }
     } catch (e) {
-      setNote(e.code === "no-sessions" ? t("plan.errEmpty") : t("plan.errSave", { err: e.message || "" }));
+      setNote(e.code === "no-sessions" ? t("plan.errEmpty") : e.code === "no-recipients" ? t("plan.errNoRecipients") : t("plan.errSave", { err: e.message || "" }));
       setBusy(false);
     }
   };
@@ -118,7 +119,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
         </div>
 
         {note && <div style={{ fontSize: 11.5, color: C.coral, marginBottom: 10 }}>{note}</div>}
-        <button onClick={generate} disabled={busy || !rows.length} style={{ width: "100%", background: rows.length ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: rows.length ? "pointer" : "default", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <button onClick={generate} disabled={busy || !rows.length || recipientCount === 0} style={{ width: "100%", background: rows.length && recipientCount ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: rows.length && recipientCount ? "pointer" : "default", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <Send size={15} /> {busy ? t("plan.generating") : editing ? t("plan.update") : t("plan.generate", { count: rows.length })}
         </button>
       </div>

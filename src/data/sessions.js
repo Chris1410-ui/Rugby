@@ -12,6 +12,7 @@ import { makeRecurrenceOps } from "./recurrence.js";
 //               l'unicité viennent du filtrage sur l'effectif).
 export function resolveAssignedIds(assigned, roster) {
   if (!assigned || assigned.mode === "all" || !assigned.mode) return roster.map((p) => p.id);
+  if (assigned.mode === "none") return []; // sélection VIDE → personne (jamais « tous »)
   if (assigned.mode === "group") return roster.filter((p) => p.grp === assigned.group).map((p) => p.id);
   if (assigned.mode === "mix") {
     const groups = new Set(assigned.groups || []);
@@ -27,6 +28,7 @@ export function resolveAssignedIds(assigned, roster) {
 export function assignedCoversPlayer(assigned, player) {
   const a = assigned || { mode: "all" };
   if (!a.mode || a.mode === "all") return true;
+  if (a.mode === "none") return false; // sélection vide → ne cible personne
   if (a.mode === "group") return player?.grp === a.group;
   if (a.mode === "mix") return (a.groups || []).includes(player?.grp) || (a.ids || []).includes(player?.id);
   if (a.mode === "open") return false;
@@ -34,14 +36,31 @@ export function assignedCoversPlayer(assigned, player) {
 }
 
 /* Construit le jsonb `assigned` depuis une sélection ADDITIVE (sélecteur combiné) :
-   - « Toute l'équipe » → {mode:'all'} ;
-   - sinon → {mode:'mix', groups, ids} (nettoyé + dédupliqué).
-   Repli prudent : rien de sélectionné → {mode:'all'} (personne d'oublié). */
+   - « Toute l'équipe » explicite → {mode:'all'} ;
+   - une/des ligne(s) et/ou joueur(s) → {mode:'mix', groups, ids} (nettoyé + dédup) ;
+   - RIEN de sélectionné → {mode:'none'} (cible PERSONNE).
+   ⚠️ Correctif : une sélection vide ne doit JAMAIS devenir {mode:'all'}. C'est ce
+   « repli prudent » qui envoyait à toute l'équipe un protocole destiné à un seul
+   joueur. Les appelants refusent la publication quand le résultat est vide (voir
+   assignedIsEmpty + gardes createPlan/updatePlan/createProgram/updateProgram). */
 export function buildAssigned({ all = false, groups = [], ids = [] } = {}) {
+  if (all) return { mode: "all" };
   const g = [...new Set((groups || []).filter(Boolean))];
   const i = [...new Set((ids || []).filter(Boolean))];
-  if (all || (g.length === 0 && i.length === 0)) return { mode: "all" };
+  if (g.length === 0 && i.length === 0) return { mode: "none" };
   return { mode: "mix", groups: g, ids: i };
+}
+
+/* Un `assigned` ne cible-t-il explicitement PERSONNE ? (sélection vide) — sert de
+   garde « refus de publication » côté data + UI. 'all'/'group'/'players'/'open'
+   ciblent (potentiellement) quelqu'un ; 'none' ou un 'mix'/'players' sans aucune
+   ligne ni joueur → vide. */
+export function assignedIsEmpty(assigned) {
+  const a = assigned || { mode: "all" };
+  if (a.mode === "none") return true;
+  if (a.mode === "mix") return !(a.groups?.length) && !(a.ids?.length);
+  if (a.mode === "players") return !(a.ids?.length);
+  return false;
 }
 
 /* Décompose un `assigned` existant vers la forme du sélecteur (pré-remplissage
@@ -49,6 +68,7 @@ export function buildAssigned({ all = false, groups = [], ids = [] } = {}) {
 export function assignedToSelection(assigned) {
   const a = assigned || { mode: "all" };
   if (!a.mode || a.mode === "all") return { all: true, groups: [], ids: [] };
+  if (a.mode === "none") return { all: false, groups: [], ids: [] };
   if (a.mode === "group") return { all: false, groups: a.group ? [a.group] : [], ids: [] };
   if (a.mode === "mix") return { all: false, groups: a.groups || [], ids: a.ids || [] };
   return { all: false, groups: [], ids: a.ids || [] }; // players / open

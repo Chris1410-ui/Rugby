@@ -2,6 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { planDocToSessions, toSessionRows } from "../lib/program/planMaterialize.js";
 import { planProgramUpdate } from "./programs.js";
+import { assignedIsEmpty } from "./sessions.js";
+
+// Refus explicite : un plan sans destinataire ne doit jamais être publié (sinon,
+// avec l'ancien repli, il partait à toute l'équipe). Lève `no-recipients`.
+function assertHasRecipients(assigned) {
+  if (assignedIsEmpty(assigned)) { const e = new Error("no-recipients"); e.code = "no-recipients"; throw e; }
+}
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
@@ -26,6 +33,7 @@ export function dbToPlan(r) {
 /* Crée un plan + génère les séances datées liées. `doc` = protocole complet
    (pour la matérialisation), `slots` = créneaux résolus (weekday choisi). */
 export async function createPlan(teamId, { programDocId, doc, startDate, weeks, slots, assigned }) {
+  assertHasRecipients(assigned);
   const { rows } = planDocToSessions(doc, { startDate, weeks, slots });
   if (!rows.length) { const e = new Error("no-sessions"); e.code = "no-sessions"; throw e; }
 
@@ -104,6 +112,7 @@ export async function replanAllForDoc(programDocId, doc, { today } = {}) {
 /* Édite un plan (période / jours / destinataires) puis répercute sur les séances
    futures non réalisées. `doc` = protocole complet (pour re-matérialiser). */
 export async function updatePlan(planId, { startDate, weeks, slots, assigned }, doc, { today } = {}) {
+  assertHasRecipients(assigned);
   const { data, error } = await supabase.from("program_plans")
     .update({ start_date: startDate, weeks, slots: slots || [], assigned: assigned || { mode: "all" }, updated_at: new Date().toISOString() })
     .eq("id", planId).select().single();
