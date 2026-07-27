@@ -699,6 +699,7 @@
       "dirUpHint": "→ hoger = beter",
       "dirDownHint": "← lager = beter",
       "betterThan": "jouw waarde: beter dan {{pct}}% van {{group}}",
+      "soloValue": "Jouw waarde — nog geen groepsverdeling beschikbaar.",
       "noMyValue": "Je hebt nog geen meting op deze test."
     },
     "routine": {
