@@ -115,6 +115,7 @@
     "managePlansTitle": "Schedules",
     "noPlans": "No schedule for this protocol.",
     "slotsShort": "slot(s)",
+    "personalizeHint": "Personalize for a player — tap a recipient:",
     "replanPrompt": "This protocol is scheduled ({{count}}). Push the changes to future UNCOMPLETED sessions? (already validated sessions are never touched)",
     "replanApply": "Push changes",
     "replanLater": "Later",
@@ -2960,6 +2961,25 @@
     "overlapConfirm": "Apply",
     "overlapCancel": "Cancel",
     "errSave": "Failed: {{err}}"
+  },
+  "playerProto": {
+    "title": "{{player}}'s version",
+    "intro": "Edit this protocol for this player only. Changes are stored as overrides (the shared base and other players stay untouched) and regenerate their future non-validated sessions.",
+    "customCount": "{{count}} customization(s)",
+    "resetAll": "Reset all",
+    "days": "Days",
+    "restore": "Restore",
+    "section": "Section",
+    "removeSection": "Remove",
+    "hidden": "hidden for this player",
+    "sectionKeepOrRemove": "Informative section — keep or remove for this player.",
+    "modified": "modified",
+    "exoName": "Exercise name",
+    "rest": "Rest",
+    "removeRow": "Remove",
+    "addRow": "Add a row",
+    "added": "added",
+    "open": "Open this player's version"
   },
   "oneRM": {
     "title": "1RM ({{count}})",

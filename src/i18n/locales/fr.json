@@ -115,6 +115,7 @@
     "managePlansTitle": "Planifications",
     "noPlans": "Aucune planification pour ce protocole.",
     "slotsShort": "créneau(x)",
+    "personalizeHint": "Personnaliser au nom d'un joueur — clique un destinataire :",
     "replanPrompt": "Ce protocole est planifié ({{count}}). Répercuter les changements sur les séances futures NON réalisées ? (les séances déjà validées ne sont pas touchées)",
     "replanApply": "Répercuter",
     "replanLater": "Plus tard",
@@ -2960,6 +2961,25 @@
     "overlapConfirm": "Appliquer",
     "overlapCancel": "Annuler",
     "errSave": "Échec : {{err}}"
+  },
+  "playerProto": {
+    "title": "Version de {{player}}",
+    "intro": "Modifie ce protocole uniquement pour ce joueur. Ses changements sont enregistrés comme des surcharges (le socle collectif et les autres joueurs ne bougent pas) et régénèrent ses séances futures non validées.",
+    "customCount": "{{count}} personnalisation(s)",
+    "resetAll": "Tout réinitialiser",
+    "days": "Jours",
+    "restore": "Rétablir",
+    "section": "Section",
+    "removeSection": "Retirer",
+    "hidden": "masquée pour ce joueur",
+    "sectionKeepOrRemove": "Section informative — conserve ou retire pour ce joueur.",
+    "modified": "modifié",
+    "exoName": "Nom de l'exercice",
+    "rest": "Repos",
+    "removeRow": "Retirer",
+    "addRow": "Ajouter une ligne",
+    "added": "ajouté",
+    "open": "Ouvrir la version de ce joueur"
   },
   "oneRM": {
     "title": "1RM ({{count}})",

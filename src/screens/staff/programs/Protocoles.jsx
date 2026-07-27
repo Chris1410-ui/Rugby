@@ -7,9 +7,13 @@ import { fmtShort, todayISO } from "../../../lib/metrics.js";
 import { useProgramDocs, createProgramDoc, deleteProgramDoc, setProgramStatus, getProgramDoc } from "../../../data/programDocs.js";
 import { getClubId, verseDocToCatalog, useClubCatalog, deleteCatalogEntry, importCalisthenicsCatalog } from "../../../data/catalog.js";
 import { usePlannedSummary, plansForDoc, deletePlan } from "../../../data/programPlans.js";
+import { resolveAssignedIds } from "../../../data/sessions.js";
+import { displayName } from "../../../lib/identity.js";
+import { overridesForDoc } from "../../../data/protocolOverrides.js";
 import { emptyProgram } from "../../../lib/program/model.js";
 import ProgramEditor from "./ProgramEditor.jsx";
 import PlanDialog from "./PlanDialog.jsx";
+import PlayerProtocolEditor from "./PlayerProtocolEditor.jsx";
 import ProgramView from "../../shared/ProgramView.jsx";
 
 const ACCENT = C.coral;
@@ -269,9 +273,12 @@ function PlansManager({ docId, doc, teamId, players, onClose, onChanged, t }) {
   const [plans, setPlans] = useState(null);
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [personalizing, setPersonalizing] = useState(null); // joueur dont on ouvre la version
+  const [customized, setCustomized] = useState(new Set());   // joueurs ayant des surcharges
 
   const load = async () => { try { setPlans(await plansForDoc(docId)); } catch { setPlans([]); } };
-  useEffect(() => { load(); }, [docId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const loadCustom = async () => { try { const ov = await overridesForDoc(docId); setCustomized(new Set(ov.map((o) => o.playerId))); } catch { /* non bloquant */ } };
+  useEffect(() => { load(); loadCustom(); }, [docId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const del = async (p) => {
     setBusy(true);
@@ -295,20 +302,43 @@ function PlansManager({ docId, doc, teamId, players, onClose, onChanged, t }) {
           <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>{t("protocols.noPlans")}</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {plans.map((p) => (
-              <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 12px" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 700 }}>{fmtShort(p.startDate)} → {fmtShort(endOf(p))}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{t("protocols.weeksN", { count: p.weeks })} · {(p.slots || []).length} {t("protocols.slotsShort")}</div>
+            {plans.map((p) => {
+              const recips = players.filter((pl) => resolveAssignedIds(p.assigned, players).includes(pl.id));
+              return (
+                <div key={p.id} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700 }}>{fmtShort(p.startDate)} → {fmtShort(endOf(p))}</div>
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{t("protocols.weeksN", { count: p.weeks })} · {(p.slots || []).length} {t("protocols.slotsShort")}</div>
+                    </div>
+                    <button onClick={() => setEditing(p)} title={t("protocols.edit")} style={{ ...iconBtn, color: ACCENT, borderColor: `${ACCENT}66`, background: `${ACCENT}14` }}><Pencil size={14} /></button>
+                    <button onClick={() => del(p)} disabled={busy} title={t("protocols.delete")} style={iconBtn}><Trash2 size={14} /></button>
+                  </div>
+                  {recips.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>{t("protocols.personalizeHint")}</div>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {recips.map((pl) => {
+                          const on = customized.has(pl.id);
+                          return (
+                            <button key={pl.id} onClick={() => setPersonalizing(pl)} title={t("playerProto.open")}
+                              style={{ padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                border: `1px solid ${on ? C.viol : C.border}`, background: on ? `${C.viol}22` : "rgba(255,255,255,0.05)", color: on ? "#fff" : "rgba(255,255,255,0.7)" }}>
+                              {displayName(pl)}{on ? " ✎" : ""}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => setEditing(p)} title={t("protocols.edit")} style={{ ...iconBtn, color: ACCENT, borderColor: `${ACCENT}66`, background: `${ACCENT}14` }}><Pencil size={14} /></button>
-                <button onClick={() => del(p)} disabled={busy} title={t("protocols.delete")} style={iconBtn}><Trash2 size={14} /></button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
       {editing && <PlanDialog doc={doc} programDocId={docId} teamId={teamId} players={players} initial={editing} onClose={(changed) => { setEditing(null); if (changed) { load(); onChanged?.(); } }} />}
+      {personalizing && <PlayerProtocolEditor programDocId={docId} teamId={teamId} player={personalizing} players={players} onClose={() => { setPersonalizing(null); loadCustom(); onChanged?.(); }} />}
     </div>
   );
 }
