@@ -2987,6 +2987,20 @@
     "added": "added",
     "open": "Open this player's version"
   },
+  "staffPlayer": {
+    "tabToday": "Today",
+    "tabFiche": "Profile",
+    "tabSessions": "Sessions",
+    "tabTests": "Tests / 1RM",
+    "loading": "Loading…",
+    "morning": "Morning check-in",
+    "evening": "Evening check-in",
+    "filled": "Filled in",
+    "notFilled": "Not encoded yet",
+    "activities": "Today's activities",
+    "noSessions": "No session for this player.",
+    "sessionsHint": "Tap a session to see the detail (prescribed vs done)."
+  },
   "oneRM": {
     "title": "1RM ({{count}})",
     "add": "Add",

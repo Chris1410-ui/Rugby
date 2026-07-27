@@ -2987,6 +2987,20 @@
     "added": "toegevoegd",
     "open": "Open de versie van deze speler"
   },
+  "staffPlayer": {
+    "tabToday": "Vandaag",
+    "tabFiche": "Fiche",
+    "tabSessions": "Sessies",
+    "tabTests": "Tests / 1RM",
+    "loading": "Laden…",
+    "morning": "Ochtendcheck",
+    "evening": "Avondcheck",
+    "filled": "Ingevuld",
+    "notFilled": "Nog niet ingevoerd",
+    "activities": "Activiteiten van vandaag",
+    "noSessions": "Geen sessie voor deze speler.",
+    "sessionsHint": "Tik op een sessie voor het detail (voorgeschreven vs gedaan)."
+  },
   "oneRM": {
     "title": "1RM ({{count}})",
     "add": "Toevoegen",

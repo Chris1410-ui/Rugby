@@ -400,7 +400,7 @@ function PlayerProgramFiles({ player, self, canAdd, canDelete }) {
 /* Fiche joueur. Enveloppée dans un ErrorBoundary local (voir export par défaut) :
    un champ inattendu (joueur non enrichi, données partielles) affiche une erreur
    lisible dans la modale au lieu de blanchir toute l'app. */
-function FicheInner({ player, canEdit = false, self = false, players = [], onClose }) {
+function FicheInner({ player, canEdit = false, self = false, players = [], hide = {}, onClose }) {
   const { t } = useTranslation();
   const [edit, setEdit] = useState(false);
   const [d, setD] = useState({});
@@ -526,7 +526,7 @@ function FicheInner({ player, canEdit = false, self = false, players = [], onClo
 
       <PlayerPrograms player={player} players={players} canEdit={canEdit} />
 
-      <PlayerSessionHistory player={player} players={players} />
+      {!hide.sessions && <PlayerSessionHistory player={player} players={players} />}
 
       <PlayerAttendance player={player} players={players} />
 

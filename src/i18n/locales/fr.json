@@ -2987,6 +2987,20 @@
     "added": "ajouté",
     "open": "Ouvrir la version de ce joueur"
   },
+  "staffPlayer": {
+    "tabToday": "Aujourd'hui",
+    "tabFiche": "Fiche",
+    "tabSessions": "Séances",
+    "tabTests": "Tests / 1RM",
+    "loading": "Chargement…",
+    "morning": "Bilan du matin",
+    "evening": "Bilan du soir",
+    "filled": "Rempli",
+    "notFilled": "Pas encore encodé",
+    "activities": "Activités du jour",
+    "noSessions": "Aucune séance pour ce joueur.",
+    "sessionsHint": "Touche une séance pour voir le détail (prescrit vs réalisé)."
+  },
   "oneRM": {
     "title": "1RM ({{count}})",
     "add": "Ajouter",
