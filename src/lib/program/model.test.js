@@ -1,8 +1,36 @@
 import { describe, it, expect } from "vitest";
 import {
   emptyProgram, emptyRow, emptyExerciseSection, defaultWeekAccents, defaultWeekLabels,
-  blockTint, slugify, normalizeProgram, changeWeeks, toc, clampWeeks,
+  blockTint, slugify, normalizeProgram, changeWeeks, toc, clampWeeks, normalizeCellSets,
 } from "./model.js";
+
+describe("prescription par série — cellule sets[] + row.video", () => {
+  it("normalizeCellSets nettoie/écarte les séries vides, pct1rm XOR charge", () => {
+    expect(normalizeCellSets([
+      { reps: 10, pct1rm: 80 },
+      { reps: "8", charge: "90", tempo: " 30X1 ", rest: "150", note: " top " },
+      { reps: 6, pct1rm: 90, charge: 100 }, // pct gagne sur charge
+      {},                                    // vide → écartée
+    ])).toEqual([
+      { reps: 10, pct1rm: 80 },
+      { reps: "8", charge: 90, tempo: "30X1", rest: 150, note: "top" },
+      { reps: 6, pct1rm: 90 },
+    ]);
+    expect(normalizeCellSets(undefined)).toBeUndefined();
+    expect(normalizeCellSets([{}])).toBeUndefined(); // aucune série exploitable
+  });
+
+  it("normalizeProgram préserve sets[] sur la cellule et row.video (redim. semaines OK)", () => {
+    const p = normalizeProgram({
+      sections: [{ type: "exercises", rows: [{ name: "Bench", video: "https://y/x", weeks: [{ text: "pyr", sets: [{ reps: 10, pct1rm: 80 }] }] }] }],
+    }, 3);
+    const row = p.sections[0].rows[0];
+    expect(row.video).toBe("https://y/x");
+    expect(row.weeks[0].sets).toEqual([{ reps: 10, pct1rm: 80 }]); // cellule S1 garde son détail
+    expect(row.weeks).toHaveLength(3); // S2/S3 ajoutées vides (sans sets)
+    expect(row.weeks[1].sets).toBeUndefined();
+  });
+});
 
 describe("protocole — fabriques", () => {
   it("emptyProgram a meta + sections vides", () => {

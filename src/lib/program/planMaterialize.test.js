@@ -147,6 +147,31 @@ describe("planDocToSessions — déroulé S1→Sn sur les vraies semaines", () =
     expect(exos[2].presc).toBe("6min"); // durée préservée
   });
 
+  it("MODE DÉTAILLÉ par série : cellule avec sets[] → exo.setPlan (distinct du compte exo.sets) + rmLabel", () => {
+    const pyr = [{
+      name: "Bench", exerciseId: "bench-uuid",
+      weeks: [{ text: "pyramidal", sets: [
+        { reps: 10, pct1rm: 80 }, { reps: 8, pct1rm: 85 }, { reps: 6, pct1rm: 90 }, { reps: 4, charge: 95, tempo: "30X1", note: "top" },
+      ] }],
+    }];
+    const doc = { meta: { weeks: 1 }, sections: [{ type: "exercises", title: "Force", rows: pyr }] };
+    const slot = { weekday: 1, label: "Force", nature: "force", code: "RS", rows: pyr };
+    const exo = planDocToSessions(doc, { startDate: "2026-08-03", weeks: 1, slots: [slot] }).rows[0].exercises[0];
+    expect(exo.setPlan).toEqual([
+      { reps: 10, pct: 80 }, { reps: 8, pct: 85 }, { reps: 6, pct: 90 }, { reps: 4, charge: 95, tempo: "30X1", note: "top" },
+    ]);
+    expect(exo.rmLabel).toBe("Bench");           // référence %1RM commune aux séries
+    expect(exo.rmExerciseId).toBe("bench-uuid");
+  });
+
+  it("vidéo de ligne → exo.video", () => {
+    const rows0 = [{ name: "Squat", video: "https://y.tube/x", weeks: [{ text: "5×5" }] }];
+    const doc = { meta: { weeks: 1 }, sections: [{ type: "exercises", title: "x", rows: rows0 }] };
+    const slot0 = { weekday: 1, label: "x", nature: "force", code: "RS", rows: rows0 };
+    const exo = planDocToSessions(doc, { startDate: "2026-08-03", weeks: 1, slots: [slot0] }).rows[0].exercises[0];
+    expect(exo.video).toBe("https://y.tube/x");
+  });
+
   it("slots par défaut dérivés du protocole si non fournis", () => {
     const { rows } = planDocToSessions(docGrid, { startDate: "2026-08-03", weeks: 3 });
     expect(rows).toHaveLength(3); // 1 créneau (grille) × 3 semaines

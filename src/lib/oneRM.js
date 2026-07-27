@@ -69,6 +69,22 @@ export function computeLoadKg(pct, oneRM, inc = DEFAULT_INCREMENT) {
   return roundToIncrement((oneRM * pct) / 100, inc);
 }
 
+/* Résout un schéma prescrit PAR SÉRIE (exo.setPlan) avec le 1RM du joueur. Chaque
+   série renvoie sa charge `kg` (arrondie à l'incrément) : depuis `charge` absolue
+   (indépendante du 1RM) ou depuis `pct` (%1RM). RÈGLE INCHANGÉE : un % sans 1RM →
+   kg = null + needs1RM = true (jamais de charge fausse ; l'UI affiche « renseigne
+   ton 1RM »). Réutilise computeLoadKg/roundToIncrement — formules identiques. */
+export function resolveSetPlan(setPlan, oneRM, inc = DEFAULT_INCREMENT) {
+  return (setPlan || []).map((s) => {
+    const pct = s?.pct != null ? Number(s.pct) : null;
+    const charge = s?.charge != null ? Number(s.charge) : null;
+    const kg = charge != null ? roundToIncrement(charge, inc)
+      : pct != null ? computeLoadKg(pct, oneRM, inc)
+        : null;
+    return { reps: s?.reps ?? "", pct, charge, tempo: s?.tempo ?? null, rest: s?.rest ?? null, note: s?.note ?? null, kg, needs1RM: pct != null && !(oneRM > 0) };
+  });
+}
+
 // 1RM estimé (Epley) depuis un test sous-max — réutilise e1RM tel quel.
 export function estimate1RM(weight, reps) {
   return e1RM(Number(weight), Number(reps));
