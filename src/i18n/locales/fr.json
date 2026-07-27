@@ -2952,6 +2952,13 @@
     "errDate": "Choisis une date de début.",
     "errEmpty": "Aucune séance à générer (vérifie les créneaux et la période).",
     "errNoRecipients": "Aucun destinataire : choisis au moins une ligne ou un joueur (ou « Toute l'équipe »). Le protocole ne sera pas publié.",
+    "overlapTitle": "Conflit de protocoles",
+    "overlapIntro": "Ces joueurs suivent déjà un protocole sur la période. Deux protocoles ne peuvent pas se chevaucher — choisis pour chacun :",
+    "overlapLine": "{{player}} suit déjà {{protocol}} du {{from}} au {{to}}",
+    "overlapReplace": "Remplacer l'ancien",
+    "overlapExclude": "Exclure ce joueur",
+    "overlapConfirm": "Appliquer",
+    "overlapCancel": "Annuler",
     "errSave": "Échec : {{err}}"
   },
   "oneRM": {
