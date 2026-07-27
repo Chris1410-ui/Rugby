@@ -167,7 +167,7 @@ export function planDocToSessions(doc, { startDate, weeks, slots } = {}) {
 /* Lignes générées → payload d'insertion `sessions`, avec le LIEN maintenu vers la
    source (plan_id, program_doc_id, source_week, source_label) et origin='plan'.
    Pur (pas de réseau) → testable. */
-export function toSessionRows(genRows, { teamId, planId, programDocId, assigned } = {}) {
+export function toSessionRows(genRows, { teamId, planId, programDocId, assigned, overridePlayerId = null } = {}) {
   return (genRows || []).map((r) => ({
     team_id: teamId,
     date: r.date,
@@ -182,5 +182,6 @@ export function toSessionRows(genRows, { teamId, planId, programDocId, assigned 
     program_doc_id: programDocId,
     source_week: r.source_week ?? null,
     source_label: r.source_label ?? null,
+    override_player_id: overridePlayerId,
   }));
 }

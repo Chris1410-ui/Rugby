@@ -102,7 +102,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const doReplan = async () => {
     setReplan("running");
     try {
-      const r = await replanAllForDoc(id, { ...doc, meta: { ...doc.meta, weeks } }, { today: todayISO() });
+      const r = await replanAllForDoc(id, { ...doc, meta: { ...doc.meta, weeks } }, { today: todayISO(), roster: players });
       setReplan({ done: true, inserted: r.inserted, kept: r.kept });
     } catch (e) { console.error("[replan]", e.message); setReplan(null); }
   };
