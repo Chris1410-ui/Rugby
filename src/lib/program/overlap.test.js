@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rangesOverlap, computeProtocolConflicts, removePlayerFromAssigned } from "./overlap.js";
+import { rangesOverlap, computeProtocolConflicts, removePlayerFromAssigned, addPlayerToAssigned } from "./overlap.js";
 
 const roster = [
   { id: "krakito", grp: "avants" },
@@ -64,5 +64,14 @@ describe("removePlayerFromAssigned", () => {
   it("retire un joueur couvert par sa ligne → reste la ligne dépliée sans lui", () => {
     // avants = krakito + zoe ; on retire krakito → il reste zoe.
     expect(removePlayerFromAssigned({ mode: "group", group: "avants" }, "krakito", roster)).toEqual({ mode: "mix", groups: [], ids: ["zoe"] });
+  });
+});
+
+describe("addPlayerToAssigned — re-fusion au socle après reset", () => {
+  it("déjà couvert (mode all) → inchangé", () => {
+    expect(addPlayerToAssigned({ mode: "all" }, "krakito", roster)).toEqual({ mode: "all" });
+  });
+  it("absent → liste explicite + le joueur", () => {
+    expect(addPlayerToAssigned({ mode: "mix", groups: [], ids: ["bob"] }, "krakito", roster)).toEqual({ mode: "mix", groups: [], ids: ["bob", "krakito"] });
   });
 });

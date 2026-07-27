@@ -57,3 +57,11 @@ export function removePlayerFromAssigned(assigned, playerId, roster) {
   if (!ids.length) return { mode: "none" };
   return { mode: "mix", groups: [], ids };
 }
+
+/* Ré-ajoute UN joueur à un `assigned` (re-fusion au socle après reset d'une
+   personnalisation). Déjà couvert → inchangé ; sinon liste explicite + le joueur. */
+export function addPlayerToAssigned(assigned, playerId, roster) {
+  const ids = resolveAssignedIds(assigned, roster);
+  if (ids.includes(playerId)) return assigned;
+  return { mode: "mix", groups: [], ids: [...ids, playerId] };
+}
