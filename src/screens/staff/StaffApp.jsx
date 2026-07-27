@@ -52,7 +52,7 @@ import ReferenceDocs from "./ReferenceDocs.jsx";
 import Classement from "../shared/Classement.jsx";
 import Calendrier from "../shared/Calendrier.jsx";
 import Veille from "../shared/Veille.jsx";
-import Fiche from "../shared/Fiche.jsx";
+import StaffPlayerView from "../shared/StaffPlayerView.jsx";
 import AthleteProfile from "../shared/AthleteProfile.jsx";
 import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import PlayerReport from "../shared/PlayerReport.jsx";
@@ -370,7 +370,7 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
       {batch && <TestsBatch teamId={teamId} players={players} onClose={() => setBatch(false)} />}
       {athleteView && <AthleteProfile player={athleteView} athlete={athletePublic[athleteView.id]} onClose={() => setAthleteView(null)} />}
       {report && <PlayerReport player={players.find((p) => p.id === report.id) || report} sessions={sessions} logs={logs} activities={activities[report.id] || []} onClose={() => setReport(null)} onEditFiche={() => setFiche(report)} />}
-      {fiche && <Fiche player={players.find((p) => p.id === fiche.id) || fiche} players={players} canEdit={!readOnly} onClose={() => setFiche(null)} />}
+      {fiche && <StaffPlayerView player={players.find((p) => p.id === fiche.id) || fiche} players={players} canEdit={!readOnly} onClose={() => setFiche(null)} />}
     </section>
   );
 }
