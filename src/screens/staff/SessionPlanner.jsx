@@ -72,6 +72,9 @@ export default function SessionPlanner({ teamId, players = [], initial = null, o
   const save = async () => {
     if (!d.titre.trim()) return setErr(t("staff.sessionPlanner.errTitle"));
     const assigned = buildAssigned(rec);
+    // Les chemins récurrence/série portent des destinataires : refus si vide.
+    const usesAssigned = (editing && scope === "series") || (!editing && recur.mode === "recurring");
+    if (usesAssigned && recipientCount === 0) return setErr(t("staff.sessionPlanner.errNoRecipients"));
     setBusy(true); setErr("");
     try {
       if (editing && scope === "series") {

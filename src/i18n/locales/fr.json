@@ -1670,6 +1670,7 @@
       "sent_one": "Programme envoyé ✓ — {{count}} séance créée.",
       "sent_other": "Programme envoyé ✓ — {{count}} séances créées.",
       "errNoSessions": "Aucune séance générée : les dates ne couvrent aucun des jours choisis pour les séances. Élargis la période ou change le jour d'une séance.",
+      "errNoRecipients": "Aucun destinataire : choisis au moins une ligne ou un joueur (ou « Toute l'équipe »). Le programme ne sera pas envoyé.",
       "errSend": "Échec de l'envoi : {{err}}",
       "newProgram": "Nouveau programme",
       "reading": "Lecture…",
@@ -1736,6 +1737,7 @@
       "create": "Créer la séance",
       "saveEdit": "Enregistrer",
       "errTitle": "Donne un intitulé à la séance.",
+      "errNoRecipients": "Aucun destinataire : choisis au moins une ligne ou un joueur (ou « Toute l'équipe »).",
       "errSave": "Échec de l'enregistrement : {{err}}"
     },
     "app": {
@@ -2949,6 +2951,7 @@
     "done": "✓ {{count}} séance(s) planifiée(s)",
     "errDate": "Choisis une date de début.",
     "errEmpty": "Aucune séance à générer (vérifie les créneaux et la période).",
+    "errNoRecipients": "Aucun destinataire : choisis au moins une ligne ou un joueur (ou « Toute l'équipe »). Le protocole ne sera pas publié.",
     "errSave": "Échec : {{err}}"
   },
   "oneRM": {

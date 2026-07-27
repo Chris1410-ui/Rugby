@@ -1670,6 +1670,7 @@
       "sent_one": "Program sent ✓ — {{count}} session created.",
       "sent_other": "Program sent ✓ — {{count}} sessions created.",
       "errNoSessions": "No session generated: the dates cover none of the days chosen for the sessions. Widen the period or change a session's day.",
+      "errNoRecipients": "No recipient: pick at least one line or player (or “Whole team”). The program will not be sent.",
       "errSend": "Send failed: {{err}}",
       "newProgram": "New program",
       "reading": "Reading…",
@@ -1736,6 +1737,7 @@
       "create": "Create session",
       "saveEdit": "Save",
       "errTitle": "Give the session a title.",
+      "errNoRecipients": "No recipient: pick at least one line or player (or “Whole team”).",
       "errSave": "Save failed: {{err}}"
     },
     "app": {
@@ -2949,6 +2951,7 @@
     "done": "✓ {{count}} session(s) scheduled",
     "errDate": "Pick a start date.",
     "errEmpty": "No session to generate (check the slots and period).",
+    "errNoRecipients": "No recipient: pick at least one line or player (or “Whole team”). The protocol will not be published.",
     "errSave": "Failed: {{err}}"
   },
   "oneRM": {

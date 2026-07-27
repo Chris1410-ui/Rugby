@@ -229,6 +229,7 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     if (!title.trim()) return setNote(t("staff.programs.errTitle"));
     if (!start || !end || start > end) return setNote(t("staff.programs.errDates"));
     const assigned = buildAssigned(rec);
+    if (resolveAssignedIds(assigned, players).length === 0) return setNote(t("staff.programs.errNoRecipients"));
     const cleanT = templates
       .map((tp) => ({ weekday: Number(tp.weekday), code: tp.code, nature: tp.nature || null, titre: tp.titre, exercises: tp.exercises.filter((e) => e.name.trim()) }))
       .filter((tp) => tp.exercises.length);
@@ -259,6 +260,8 @@ export default function Programmes({ teamId, players, sessions, logs }) {
     } catch (e) {
       if (e.code === "no-sessions" || e.message === "no-sessions")
         setNote(t("staff.programs.errNoSessions"));
+      else if (e.code === "no-recipients" || e.message === "no-recipients")
+        setNote(t("staff.programs.errNoRecipients"));
       else setNote(t("staff.programs.errSend", { err: e.message }));
     }
     setBusy(false);

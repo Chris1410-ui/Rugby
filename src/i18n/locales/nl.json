@@ -1670,6 +1670,7 @@
       "sent_one": "Programma verzonden ✓ — {{count}} sessie aangemaakt.",
       "sent_other": "Programma verzonden ✓ — {{count}} sessies aangemaakt.",
       "errNoSessions": "Geen sessie gegenereerd: de datums dekken geen van de gekozen dagen voor de sessies. Verbreed de periode of wijzig de dag van een sessie.",
+      "errNoRecipients": "Geen ontvanger: kies minstens één linie of speler (of “Hele team”). Het programma wordt niet verzonden.",
       "errSend": "Verzenden mislukt: {{err}}",
       "newProgram": "Nieuw programma",
       "reading": "Lezen…",
@@ -1736,6 +1737,7 @@
       "create": "Sessie aanmaken",
       "saveEdit": "Opslaan",
       "errTitle": "Geef de sessie een titel.",
+      "errNoRecipients": "Geen ontvanger: kies minstens één linie of speler (of “Hele team”).",
       "errSave": "Opslaan mislukt: {{err}}"
     },
     "app": {
@@ -2949,6 +2951,7 @@
     "done": "✓ {{count}} sessie(s) ingepland",
     "errDate": "Kies een startdatum.",
     "errEmpty": "Geen sessie om te genereren (controleer de slots en periode).",
+    "errNoRecipients": "Geen ontvanger: kies minstens één linie of speler (of “Hele team”). Het protocol wordt niet gepubliceerd.",
     "errSave": "Mislukt: {{err}}"
   },
   "oneRM": {

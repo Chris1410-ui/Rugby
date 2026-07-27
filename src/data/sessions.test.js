@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveAssignedIds, dbToSession, buildAssigned, assignedToSelection, assignedCoversPlayer } from "./sessions.js";
+import { resolveAssignedIds, dbToSession, buildAssigned, assignedToSelection, assignedCoversPlayer, assignedIsEmpty } from "./sessions.js";
 
 const roster = [
   { id: "a", grp: "avants" },
@@ -34,14 +34,52 @@ describe("resolveAssignedIds — destinataires d'une séance", () => {
 });
 
 describe("buildAssigned — sélection additive → jsonb assigned", () => {
-  it("« Toute l'équipe » → {mode:'all'}", () => {
+  it("« Toute l'équipe » explicite → {mode:'all'}", () => {
     expect(buildAssigned({ all: true, groups: ["avants"], ids: ["b"] })).toEqual({ mode: "all" });
   });
-  it("rien de sélectionné → {mode:'all'} (repli prudent)", () => {
-    expect(buildAssigned({ groups: [], ids: [] })).toEqual({ mode: "all" });
+  it("RIEN de sélectionné → {mode:'none'} (JAMAIS 'all' — c'est le bug corrigé)", () => {
+    // Régression : un protocole destiné à personne ne doit pas partir à toute l'équipe.
+    expect(buildAssigned({ groups: [], ids: [] })).toEqual({ mode: "none" });
+    expect(buildAssigned({})).toEqual({ mode: "none" });
+    expect(buildAssigned()).toEqual({ mode: "none" });
   });
-  it("lignes + joueurs → {mode:'mix'} nettoyé/dédup", () => {
+  it("UN seul joueur → {mode:'mix'} avec ce seul id (ne s'élargit pas à l'équipe)", () => {
+    expect(buildAssigned({ ids: ["b"] })).toEqual({ mode: "mix", groups: [], ids: ["b"] });
+    expect(resolveAssignedIds(buildAssigned({ ids: ["b"] }), roster)).toEqual(["b"]);
+  });
+  it("PLUSIEURS joueurs → {mode:'mix'} avec leurs ids", () => {
+    expect(resolveAssignedIds(buildAssigned({ ids: ["a", "b"] }), roster)).toEqual(["a", "b"]);
+  });
+  it("UNE ligne seule → {mode:'mix'} avec ce groupe", () => {
+    expect(buildAssigned({ groups: ["avants"] })).toEqual({ mode: "mix", groups: ["avants"], ids: [] });
+    expect(resolveAssignedIds(buildAssigned({ groups: ["avants"] }), roster)).toEqual(["a", "c"]);
+  });
+  it("ligne + joueurs → {mode:'mix'} nettoyé/dédup", () => {
     expect(buildAssigned({ groups: ["avants", "avants"], ids: ["b", "b", ""] })).toEqual({ mode: "mix", groups: ["avants"], ids: ["b"] });
+  });
+});
+
+describe("assignedIsEmpty — refus de publication quand aucun destinataire", () => {
+  it("none / mix vide / players vide → vide (refus)", () => {
+    expect(assignedIsEmpty(buildAssigned({ groups: [], ids: [] }))).toBe(true);
+    expect(assignedIsEmpty({ mode: "none" })).toBe(true);
+    expect(assignedIsEmpty({ mode: "mix", groups: [], ids: [] })).toBe(true);
+    expect(assignedIsEmpty({ mode: "players", ids: [] })).toBe(true);
+  });
+  it("all / group / un joueur / une ligne → non vide (publication autorisée)", () => {
+    expect(assignedIsEmpty({ mode: "all" })).toBe(false);
+    expect(assignedIsEmpty(null)).toBe(false); // absent ⇒ défaut 'all'
+    expect(assignedIsEmpty({ mode: "group", group: "avants" })).toBe(false);
+    expect(assignedIsEmpty(buildAssigned({ ids: ["b"] }))).toBe(false);
+    expect(assignedIsEmpty(buildAssigned({ groups: ["avants"] }))).toBe(false);
+    expect(assignedIsEmpty(buildAssigned({ groups: ["avants"], ids: ["b"] }))).toBe(false);
+  });
+});
+
+describe("resolveAssignedIds / assignedCoversPlayer — mode 'none'", () => {
+  it("none → personne", () => {
+    expect(resolveAssignedIds({ mode: "none" }, roster)).toEqual([]);
+    expect(assignedCoversPlayer({ mode: "none" }, { id: "a", grp: "avants" })).toBe(false);
   });
 });
 
@@ -51,6 +89,7 @@ describe("assignedToSelection — pré-remplissage à l'édition", () => {
     expect(assignedToSelection({ mode: "group", group: "arrieres" })).toEqual({ all: false, groups: ["arrieres"], ids: [] });
     expect(assignedToSelection({ mode: "players", ids: ["b"] })).toEqual({ all: false, groups: [], ids: ["b"] });
     expect(assignedToSelection({ mode: "mix", groups: ["avants"], ids: ["b"] })).toEqual({ all: false, groups: ["avants"], ids: ["b"] });
+    expect(assignedToSelection({ mode: "none" })).toEqual({ all: false, groups: [], ids: [] });
   });
 });
 
