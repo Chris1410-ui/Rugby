@@ -1,9 +1,11 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
 import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
+import { overridesForDoc, resetOverride } from "../../../data/protocolOverrides.js";
+import { overrideConflicts, parsePath } from "../../../lib/program/overrides.js";
 import { useTeam1RM, add1RM } from "../../../data/player1rm.js";
 import { parseProgressionCell, computeLoadKg, movementTeamStats, movementIdentity } from "../../../lib/oneRM.js";
 import { displayName } from "../../../lib/identity.js";
@@ -56,7 +58,9 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
   const [preview, setPreview] = useState(false); // aperçu « stade » du document en cours
   const [saveTpl, setSaveTpl] = useState(null);  // { index } section à enregistrer comme modèle
   const [assist, setAssist] = useState(false);   // panneau d'assistance (conseils de la base de connaissance)
-  const [replan, setReplan] = useState(null);    // { count } | "running" | { done, inserted } — répercussion sur les plans
+  const [replan, setReplan] = useState(null);    // { count, conflicts } | "running" | { done, inserted } — répercussion
+  const [conflictChoice, setConflictChoice] = useState({}); // `${playerId}|${path}` → 'keep' | 'adopt'
+  const baseDoc = useRef(null);                  // socle AVANT cette édition (détection de conflits socle↔surcharge)
 
   useEffect(() => {
     let alive = true;
@@ -66,11 +70,23 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
         if (!alive) return;
         setTitle(d.title); setCategory(d.category); setStatus(d.status);
         setWeeksState(d.weeks); setDocState(d.doc);
+        baseDoc.current = d.doc;
       } catch (e) { console.error("[editor load]", e.message); }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; };
   }, [id]);
+
+  // Libellé lisible d'un chemin de surcharge (section · ligne) pour le récap conflits.
+  const pathLabel = (docSrc, path) => {
+    const p = parsePath(path);
+    const sec = (docSrc?.sections || []).find((s) => s.id === p.sectionId);
+    if (p.kind === "row") {
+      const row = sec?.rows?.find((r) => r.id === p.rowId);
+      return [sec?.title, row?.name || row?.block].filter(Boolean).join(" · ") || t("playerProto.section");
+    }
+    return sec?.title || t("playerProto.section");
+  };
 
   const setDoc = (updater) => { setDocState((d) => updater(clone(d))); setDirty(true); };
   const mark = (setter) => (v) => { setter(v); setDirty(true); };
@@ -84,24 +100,46 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
       // compteur d'usage est incrémenté (les plus utilisés remontent en autocomplétion).
       const linked = clone(doc);
       const usedIds = await linkAndCountExercises((linked.sections || []).flatMap((sec) => sec.rows || []));
-      await updateProgramDoc(id, { title, category, status, weeks, doc: { ...linked, meta: { ...linked.meta, weeks } } });
+      const newDoc = { ...linked, meta: { ...linked.meta, weeks } };
+      const oldDoc = baseDoc.current;
+      await updateProgramDoc(id, { title, category, status, weeks, doc: newDoc });
       setDocState(linked); // reflète les liens (🔗) dans l'UI
       incrementExerciseUsage(usedIds); // non bloquant
       setDirty(false);
       // Si le protocole est planifié, proposer de répercuter sur les séances
-      // futures non réalisées (jamais sur une séance déjà validée).
+      // futures non réalisées (jamais sur une séance déjà validée). On détecte
+      // aussi les CONFLITS avec des personnalisations joueur (le socle a changé
+      // là où un joueur avait surchargé) → choix garder la perso / adopter le socle.
       if (promptReplan) {
-        try { const plans = await plansForDoc(id); if (plans.length) setReplan({ count: plans.length }); }
-        catch { /* non bloquant */ }
+        try {
+          const plans = await plansForDoc(id);
+          if (plans.length) {
+            const allOv = await overridesForDoc(id);
+            const raw = allOv.length ? overrideConflicts(oldDoc, newDoc, allOv) : [];
+            const nameOf = (pid) => { const p = players.find((x) => x.id === pid); return p ? displayName(p) : pid; };
+            const conflicts = raw.map((c) => ({ ...c, player: nameOf(c.playerId), label: pathLabel(newDoc, c.path) || pathLabel(oldDoc, c.path) }));
+            setConflictChoice(Object.fromEntries(conflicts.map((c) => [`${c.playerId}|${c.path}`, "keep"])));
+            setReplan({ count: plans.length, conflicts });
+          }
+        } catch { /* non bloquant */ }
       }
+      baseDoc.current = newDoc; // nouvelle référence pour la prochaine édition
     } catch (e) { console.error("[editor save]", e.message); }
     setSaving(false);
   };
   const back = async () => { if (dirty) await save(false); onClose(); };
 
   const doReplan = async () => {
+    const conflicts = replan?.conflicts || [];
     setReplan("running");
     try {
+      // « Adopter le socle » : on supprime la surcharge du joueur sur ce chemin
+      // (elle reprendra la valeur du socle). « Garder la perso » : on ne touche
+      // rien (la surcharge l'emporte toujours). Puis on répercute : replanAllForDoc
+      // régénère chaque joueur personnalisé depuis socle + ses surcharges restantes.
+      for (const c of conflicts) {
+        if (conflictChoice[`${c.playerId}|${c.path}`] === "adopt") await resetOverride(id, c.playerId, c.path);
+      }
       const r = await replanAllForDoc(id, { ...doc, meta: { ...doc.meta, weeks } }, { today: todayISO(), roster: players });
       setReplan({ done: true, inserted: r.inserted, kept: r.kept });
     } catch (e) { console.error("[replan]", e.message); setReplan(null); }
@@ -192,6 +230,31 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
             </>
           ) : (
             <>
+              {replan.conflicts?.length > 0 && (
+                <div style={{ width: "100%", marginBottom: 4 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: C.amb, marginBottom: 4 }}>{t("protocols.conflictTitle")}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 8, lineHeight: 1.5 }}>{t("protocols.conflictIntro")}</div>
+                  {replan.conflicts.map((c) => {
+                    const key = `${c.playerId}|${c.path}`;
+                    return (
+                      <div key={key} style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 11.5, color: "#fff", marginBottom: 3 }}>{t("protocols.conflictLine", { player: c.player, label: c.label })}</div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          {["keep", "adopt"].map((opt) => (
+                            <button key={opt} type="button" onClick={() => setConflictChoice((s) => ({ ...s, [key]: opt }))}
+                              style={{ flex: 1, padding: "6px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                border: `1px solid ${conflictChoice[key] === opt ? C.viol : C.border}`,
+                                background: conflictChoice[key] === opt ? `${C.viol}22` : "rgba(255,255,255,0.05)",
+                                color: conflictChoice[key] === opt ? "#fff" : "rgba(255,255,255,0.6)" }}>
+                              {t(opt === "keep" ? "protocols.conflictKeep" : "protocols.conflictAdopt")}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               <span style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.4 }}>{t("protocols.replanPrompt", { count: replan.count })}</span>
               <button onClick={doReplan} style={{ background: C.green, border: "none", borderRadius: 9, padding: "8px 14px", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>{t("protocols.replanApply")}</button>
               <button onClick={() => setReplan(null)} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 12px", color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{t("protocols.replanLater")}</button>
