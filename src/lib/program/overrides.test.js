@@ -109,4 +109,20 @@ describe("overrideConflicts — édition du socle vs surcharges (PR-4)", () => {
     ];
     expect(overrideConflicts(oldD, newD, ovs)).toEqual([{ path: "sec/s1/row/r1", playerId: "p1" }]);
   });
+
+  it("ligne SUPPRIMÉE du socle → conflit (le joueur l'avait personnalisée)", () => {
+    const oldD = socle();
+    const newD = socle();
+    newD.sections[0].rows = newD.sections[0].rows.filter((r) => r.id !== "r2"); // coach retire r2
+    const ovs = [{ path: "sec/s1/row/r2", playerId: "p1", op: "patch", value: { rest: "60" } }];
+    expect(overrideConflicts(oldD, newD, ovs)).toEqual([{ path: "sec/s1/row/r2", playerId: "p1" }]);
+  });
+
+  it("socle inchangé au chemin surchargé → aucun conflit", () => {
+    const oldD = socle();
+    const newD = socle();
+    newD.meta.title = "Nuque v2"; // changement ailleurs
+    const ovs = [{ path: "sec/s1/row/r1", playerId: "p1", op: "patch", value: { name: "X" } }];
+    expect(overrideConflicts(oldD, newD, ovs)).toEqual([]);
+  });
 });
