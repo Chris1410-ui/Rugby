@@ -2952,6 +2952,13 @@
     "errDate": "Pick a start date.",
     "errEmpty": "No session to generate (check the slots and period).",
     "errNoRecipients": "No recipient: pick at least one line or player (or “Whole team”). The protocol will not be published.",
+    "overlapTitle": "Protocol conflict",
+    "overlapIntro": "These players already follow a protocol during this period. Two protocols cannot overlap — choose for each:",
+    "overlapLine": "{{player}} already follows {{protocol}} from {{from}} to {{to}}",
+    "overlapReplace": "Replace the old one",
+    "overlapExclude": "Exclude this player",
+    "overlapConfirm": "Apply",
+    "overlapCancel": "Cancel",
     "errSave": "Failed: {{err}}"
   },
   "oneRM": {

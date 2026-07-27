@@ -5,6 +5,7 @@ import { CloseX, useModalClose } from "../../../lib/ui.jsx";
 import { Calendar, Send } from "../../../lib/icons.jsx";
 import { todayISO, fmtShort } from "../../../lib/metrics.js";
 import { WD_ORDER, wdLabel } from "../../../lib/exlib.js";
+import { displayName } from "../../../lib/identity.js";
 import { deriveSlots, planDocToSessions } from "../../../lib/program/planMaterialize.js";
 import { buildAssigned, resolveAssignedIds, assignedToSelection, useTeamSessions } from "../../../data/sessions.js";
 import { useTeamTrainings } from "../../../data/trainings.js";
@@ -31,6 +32,9 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
   const [rec, setRec] = useState(() => (initial ? assignedToSelection(initial.assigned) : { all: true, groups: [], ids: [] }));
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  // Conflits de non-superposition (protocole↔protocole) à résoudre avant publication.
+  const [conflicts, setConflicts] = useState([]); // [{ playerId, docTitle, from, to }]
+  const [choices, setChoices] = useState({});      // { [playerId]: 'replace' | 'exclude' }
 
   const setSlotDay = (i, wd) => setSlots((s) => s.map((x, j) => (j === i ? { ...x, weekday: Number(wd) } : x)));
 
@@ -50,7 +54,7 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
 
   const recipientCount = useMemo(() => resolveAssignedIds(assigned, players).length, [assigned, players]);
 
-  const generate = async () => {
+  const generate = async (resolution) => {
     if (busy) return;
     setNote("");
     if (!startDate) return setNote(t("plan.errDate"));
@@ -58,18 +62,45 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
     if (recipientCount === 0) return setNote(t("plan.errNoRecipients"));
     setBusy(true);
     try {
+      const common = { startDate, weeks, slots, assigned, roster: players, resolution };
       if (editing) {
-        const { inserted, kept } = await updatePlan(initial.id, { startDate, weeks, slots, assigned }, doc, {});
+        const { inserted, kept } = await updatePlan(initial.id, common, doc, {});
         onClose(true, t("plan.updated", { inserted, kept }));
       } else {
-        const { count } = await createPlan(teamId, { programDocId, doc, startDate, weeks, slots, assigned });
+        const { count } = await createPlan(teamId, { programDocId, doc, ...common });
         onClose(true, t("plan.done", { count }));
       }
     } catch (e) {
+      if (e.code === "protocol-overlap") {
+        // Blocage : on affiche le conflit et on demande un choix par joueur.
+        setConflicts(e.conflicts || []);
+        setChoices((prev) => {
+          const next = { ...prev };
+          (e.conflicts || []).forEach((c) => { if (!next[c.playerId]) next[c.playerId] = "replace"; });
+          return next;
+        });
+        setBusy(false);
+        return;
+      }
       setNote(e.code === "no-sessions" ? t("plan.errEmpty") : e.code === "no-recipients" ? t("plan.errNoRecipients") : t("plan.errSave", { err: e.message || "" }));
       setBusy(false);
     }
   };
+
+  // Conflits groupés par joueur (un joueur peut chevaucher plusieurs protocoles).
+  const conflictsByPlayer = useMemo(() => {
+    const m = new Map();
+    conflicts.forEach((c) => { if (!m.has(c.playerId)) m.set(c.playerId, []); m.get(c.playerId).push(c); });
+    return [...m.entries()];
+  }, [conflicts]);
+
+  const applyResolution = () => {
+    const replace = [], exclude = [];
+    conflictsByPlayer.forEach(([pid]) => (choices[pid] === "exclude" ? exclude : replace).push(pid));
+    setConflicts([]);
+    generate({ replace: [...new Set(replace)], exclude: [...new Set(exclude)] });
+  };
+  const playerName = (id) => { const p = players.find((x) => x.id === id); return p ? displayName(p) : id; };
 
   const inp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 11px", color: "#fff", fontSize: 13, outline: "none", colorScheme: "dark", boxSizing: "border-box" };
   const lbl = { fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 0.4, marginBottom: 5, display: "block" };
@@ -118,10 +149,43 @@ export default function PlanDialog({ doc, programDocId, teamId, players = [], in
           {gen.warnings.includes("clamp") && <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 4 }}>{t("plan.clampNote")}</div>}
         </div>
 
-        {note && <div style={{ fontSize: 11.5, color: C.coral, marginBottom: 10 }}>{note}</div>}
-        <button onClick={generate} disabled={busy || !rows.length || recipientCount === 0} style={{ width: "100%", background: rows.length && recipientCount ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: rows.length && recipientCount ? "pointer" : "default", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <Send size={15} /> {busy ? t("plan.generating") : editing ? t("plan.update") : t("plan.generate", { count: rows.length })}
-        </button>
+        {conflicts.length > 0 ? (
+          <div style={sc({ marginBottom: 12, padding: 12, border: `1px solid ${C.coral}66` })}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: C.coral, marginBottom: 6 }}>{t("plan.overlapTitle")}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 10, lineHeight: 1.5 }}>{t("plan.overlapIntro")}</div>
+            {conflictsByPlayer.map(([pid, list]) => (
+              <div key={pid} style={{ marginBottom: 10 }}>
+                {list.map((c, i) => (
+                  <div key={i} style={{ fontSize: 11.5, color: "#fff", marginBottom: 3 }}>
+                    {t("plan.overlapLine", { player: playerName(pid), protocol: c.docTitle, from: fmtShort(c.from), to: fmtShort(c.to) })}
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                  {["replace", "exclude"].map((opt) => (
+                    <button key={opt} type="button" onClick={() => setChoices((s) => ({ ...s, [pid]: opt }))}
+                      style={{ flex: 1, padding: "7px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        border: `1px solid ${choices[pid] === opt ? ACCENT : C.border}`,
+                        background: choices[pid] === opt ? `${ACCENT}22` : "rgba(255,255,255,0.05)",
+                        color: choices[pid] === opt ? "#fff" : "rgba(255,255,255,0.6)" }}>
+                      {t(opt === "replace" ? "plan.overlapReplace" : "plan.overlapExclude")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+              <button type="button" onClick={() => setConflicts([])} style={{ flex: "0 0 auto", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: "none", color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("plan.overlapCancel")}</button>
+              <button type="button" onClick={applyResolution} disabled={busy} style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: ACCENT, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{t("plan.overlapConfirm")}</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {note && <div style={{ fontSize: 11.5, color: C.coral, marginBottom: 10 }}>{note}</div>}
+            <button onClick={() => generate()} disabled={busy || !rows.length || recipientCount === 0} style={{ width: "100%", background: rows.length && recipientCount ? ACCENT : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, padding: 13, color: "#fff", fontWeight: 800, fontSize: 14, cursor: rows.length && recipientCount ? "pointer" : "default", opacity: busy ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <Send size={15} /> {busy ? t("plan.generating") : editing ? t("plan.update") : t("plan.generate", { count: rows.length })}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

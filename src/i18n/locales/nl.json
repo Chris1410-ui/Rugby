@@ -2952,6 +2952,13 @@
     "errDate": "Kies een startdatum.",
     "errEmpty": "Geen sessie om te genereren (controleer de slots en periode).",
     "errNoRecipients": "Geen ontvanger: kies minstens één linie of speler (of “Hele team”). Het protocol wordt niet gepubliceerd.",
+    "overlapTitle": "Protocolconflict",
+    "overlapIntro": "Deze spelers volgen al een protocol in deze periode. Twee protocollen mogen niet overlappen — kies per speler:",
+    "overlapLine": "{{player}} volgt al {{protocol}} van {{from}} tot {{to}}",
+    "overlapReplace": "Vervang het oude",
+    "overlapExclude": "Sluit deze speler uit",
+    "overlapConfirm": "Toepassen",
+    "overlapCancel": "Annuleren",
     "errSave": "Mislukt: {{err}}"
   },
   "oneRM": {
