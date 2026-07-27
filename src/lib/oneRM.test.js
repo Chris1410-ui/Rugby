@@ -1,5 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats, pctMovements, missing1RMByMovement } from "./oneRM.js";
+import { parseProgressionCell, roundToIncrement, computeLoadKg, estimate1RM, movementIdentity, summarize1RM, movementTeamStats, pctMovements, missing1RMByMovement, resolveSetPlan } from "./oneRM.js";
+
+describe("resolveSetPlan — schéma prescrit par série", () => {
+  const plan = [{ reps: 10, pct: 80 }, { reps: 6, pct: 90 }, { reps: 4, charge: 95 }];
+  it("résout chaque série avec le 1RM (arrondi 2,5 kg), charge absolue indépendante du 1RM", () => {
+    const r = resolveSetPlan(plan, 100);
+    expect(r.map((s) => s.kg)).toEqual([80, 90, 95]); // 80%→80 ; 90%→90 ; abs 95
+    expect(r.every((s) => !s.needs1RM)).toBe(true);
+  });
+  it("1RM manquant → kg null + needs1RM (jamais une charge fausse), mais la charge absolue passe", () => {
+    const r = resolveSetPlan(plan, null);
+    expect(r.map((s) => s.kg)).toEqual([null, null, 95]);
+    expect(r.map((s) => s.needs1RM)).toEqual([true, true, false]);
+  });
+});
 
 describe("pctMovements", () => {
   it("ne retient que les mouvements exprimés en % de 1RM", () => {

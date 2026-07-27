@@ -38,6 +38,7 @@ function titlesMatch(a, b) {
 function rowToExoAtCol(row, col) {
   const cells = Array.isArray(row?.weeks) ? row.weeks : [];
   const idx = cells.length ? Math.min(Math.max(0, col), cells.length - 1) : 0;
+  const cellObj = cells.length ? cells[idx] : null;
   const cell = cells[idx]?.text || cells.map((c) => c?.text).find((x) => x && String(x).trim()) || "";
   const presc = String(cell || "").trim();
   const p = parseProgressionCell(cell);
@@ -62,6 +63,25 @@ function rowToExoAtCol(row, col) {
     exo.rmLabel = ref || name;                         // mouvement de référence
     exo.rmExerciseId = ref ? null : (row?.exerciseId || null);
   }
+  // MODE DÉTAILLÉ PAR SÉRIE (schéma pyramidal de la cellule) → exo.setPlan, DISTINCT
+  // du COMPTE prescrit exo.sets. Chaque série : reps + pct(%1RM) OU charge (kg).
+  if (Array.isArray(cellObj?.sets) && cellObj.sets.length) {
+    exo.setPlan = cellObj.sets.map((s) => {
+      const o = { reps: s.reps ?? "" };
+      if (s.pct1rm != null) o.pct = s.pct1rm; else if (s.charge != null) o.charge = s.charge;
+      if (s.tempo) o.tempo = s.tempo;
+      if (s.rest != null) o.rest = s.rest;
+      if (s.note) o.note = s.note;
+      return o;
+    });
+    if (exo.setPlan.some((s) => s.pct != null)) {
+      const ref = String(row?.rmRef || "").trim();
+      exo.rmLabel = exo.rmLabel || ref || name;           // référence %1RM commune aux séries
+      if (exo.rmExerciseId == null) exo.rmExerciseId = ref ? null : (row?.exerciseId || null);
+    }
+  }
+  const vid = String(row?.video || "").trim();
+  if (vid) exo.video = vid;                              // vidéo de démo propre à la ligne
   return exo;
 }
 

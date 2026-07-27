@@ -59,6 +59,26 @@ export const blockTint = (block) => {
 
 const emptyCell = () => ({ text: "", peak: false });
 
+/* Normalise le schéma prescrit PAR SÉRIE d'une cellule de semaine (mode détaillé
+   pyramidal — OPTIONNEL ; absent = prescription simple `text`). Une série = reps
+   + (pct1rm OU charge kg, exclusifs) + tempo/repos/note. Retourne undefined si
+   aucune série exploitable (on ne stocke pas de `sets` vide). */
+export function normalizeCellSets(sets) {
+  if (!Array.isArray(sets)) return undefined;
+  const num = (v) => (v != null && v !== "" && Number.isFinite(Number(v)) ? Number(v) : null);
+  const out = sets.map((s) => {
+    const o = {};
+    if (s?.reps != null && String(s.reps).trim() !== "") o.reps = typeof s.reps === "number" ? s.reps : String(s.reps).trim();
+    const pct = num(s?.pct1rm ?? s?.pct), charge = num(s?.charge);
+    if (pct != null) o.pct1rm = pct; else if (charge != null) o.charge = charge;
+    if (typeof s?.tempo === "string" && s.tempo.trim()) o.tempo = s.tempo.trim();
+    const rest = num(s?.rest); if (rest != null) o.rest = rest;
+    if (typeof s?.note === "string" && s.note.trim()) o.note = s.note.trim();
+    return o;
+  }).filter((o) => o.reps != null || o.pct1rm != null || o.charge != null);
+  return out.length ? out : undefined;
+}
+
 export function emptyRow(weeks = 4) {
   const w = clampWeeks(weeks);
   return {
@@ -73,6 +93,7 @@ export function emptyRow(weeks = 4) {
     note: "",
     tint: "",            // '' = auto (blockTint) ; 'a' | 'c' | 'r' pour forcer
     rmRef: "",           // mouvement de référence du % (vide = le mouvement lui-même)
+    video: "",           // vidéo de démo propre à la ligne (l'exo garde la sienne via exerciseId)
   };
 }
 
@@ -136,7 +157,10 @@ const resizeCells = (cells, w) => {
   const out = [];
   for (let i = 0; i < w; i++) {
     const c = Array.isArray(cells) ? cells[i] : null;
-    out.push({ text: c && typeof c.text === "string" ? c.text : "", peak: Boolean(c && c.peak) });
+    const cell = { text: c && typeof c.text === "string" ? c.text : "", peak: Boolean(c && c.peak) };
+    const sets = normalizeCellSets(c?.sets); // préserve le mode détaillé par série
+    if (sets) cell.sets = sets;
+    out.push(cell);
   }
   return out;
 };
@@ -155,6 +179,7 @@ function normalizeRow(row, w) {
     note: typeof r.note === "string" ? r.note : "",
     tint: ACCENTS.includes(r.tint) ? r.tint : "",
     rmRef: typeof r.rmRef === "string" ? r.rmRef : "",
+    video: typeof r.video === "string" ? r.video : "",
   };
 }
 
