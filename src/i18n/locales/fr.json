@@ -699,6 +699,7 @@
       "dirUpHint": "→ plus haut = mieux",
       "dirDownHint": "← plus bas = mieux",
       "betterThan": "ta valeur : mieux que {{pct}} % de {{group}}",
+      "soloValue": "Ta valeur — aucune distribution de groupe disponible pour l'instant.",
       "noMyValue": "Tu n'as pas encore de mesure sur ce test."
     },
     "routine": {

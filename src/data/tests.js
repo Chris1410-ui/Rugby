@@ -165,7 +165,10 @@ export function useTestDistribution(playerId, metricKey, scope) {
   const fetch = useCallback(async () => {
     if (!metricKey) { setDist(null); setLoading(false); return; }
     setLoading(true);
-    const { data, error } = await supabase.rpc("test_distribution", { p_metric: metricKey, p_scope: scope || "team" });
+    // p_player : en aperçu owner/staff, calcule la distribution du point de vue du
+    // joueur consulté (sinon la RPC prendrait my_player_id() du caller = l'owner,
+    // sans équipe → écran vide). Un joueur lambda ne peut viser qu'lui-même (garde RPC).
+    const { data, error } = await supabase.rpc("test_distribution", { p_metric: metricKey, p_scope: scope || "team", p_player: playerId || null });
     if (error) { console.error("[test_distribution]", error.message); setDist(null); setLoading(false); return; }
     const r = Array.isArray(data) ? data[0] : data;
     setDist(r ? {
@@ -174,7 +177,7 @@ export function useTestDistribution(playerId, metricKey, scope) {
       myVal: num(r.my_val), myPct: r.my_pct != null ? Number(r.my_pct) : null,
     } : null);
     setLoading(false);
-  }, [metricKey, scope]);
+  }, [metricKey, scope, playerId]);
 
   useEffect(() => {
     fetch();

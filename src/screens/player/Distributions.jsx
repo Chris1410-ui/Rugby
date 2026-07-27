@@ -80,10 +80,18 @@ export default function Distributions({ me, accent = C.green }) {
                 <div style={{ marginTop: 14, fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{t("player.dist.noMyValue")}</div>
               )}
             </>
+          ) : dist && dist.hidden && dist.n > 0 ? (
+            // Groupe présent mais < 5 mesures → k-anon : message EXPLICITE (pas
+            // « tu n'as pas de mesure »), avec ta valeur si elle existe.
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
+              {dist.myVal != null && <div style={{ fontSize: 20, fontWeight: 900, color: accent, marginBottom: 4 }}>{fmt(dist.myVal)}{unit}</div>}
+              {t("player.dist.kAnonHidden", { n: dist.n })}
+            </div>
           ) : dist?.myVal != null ? (
+            // Ta valeur existe mais aucune distribution de groupe disponible.
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
               <div style={{ fontSize: 20, fontWeight: 900, color: accent, marginBottom: 4 }}>{fmt(dist.myVal)}{unit}</div>
-              {t("player.dist.kAnonHidden", { n: dist?.n ?? 0 })}
+              {t("player.dist.soloValue")}
             </div>
           ) : (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>{t("player.dist.noMyValue")}</div>
