@@ -1003,6 +1003,7 @@
       "weekN": "Week {{n}}",
       "setYour1RM": "set your {{movement}} 1RM",
       "seriesN": "S{{n}}",
+      "holdUnit": "s",
       "detailedSeries": "{{n}} detailed sets",
       "exInfo": "Exercise details",
       "set1rmTitle": "Your 1RM — {{movement}}",
@@ -1046,6 +1047,10 @@
       "advanced": "Advanced settings",
       "lest": "Added load",
       "removeLest": "– load",
+      "measure": "Measure",
+      "measure_reps": "Reps",
+      "measure_temps": "Time",
+      "hold": "Hold (s)",
       "typeDesc": {
         "strength": "Sets × reps × load",
         "conditioning": "Distance, time, intervals",

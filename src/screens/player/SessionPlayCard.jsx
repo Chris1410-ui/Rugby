@@ -14,6 +14,7 @@ import { getProgramDoc } from "../../data/programDocs.js";
 import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { useExercisePerf } from "../../data/exercisePerf.js";
 import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
+import { blockKind } from "../../lib/sessionType.js";
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
@@ -241,6 +242,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             const pl = pctLoad(e); // charge calculée depuis le 1RM si exprimé en %
             // Séries détaillées : consigne + charge résolue (1RM) par série (arrondi 2,5).
             const plan = Array.isArray(e.setPlan) && e.setPlan.length ? resolveSetPlan(e.setPlan, exOneRM(e)) : null;
+            const isSkillEx = blockKind(e) === "skill"; // pas de kg : reps ou tenue (s)
             const ecart = cmp.diff
               ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
                  cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
@@ -260,7 +262,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   </div>
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {plan ? (e.presc || t("player.session.detailedSeries", { n: plan.length })) : (e.presc || `${e.sets}×${e.reps}${e.charge ? ` @ ${e.charge}` : ""}`)}{e.tempo ? ` · ${t("player.session.tempo")} ${e.tempo}` : ""}{e.rest ? ` · ${t("player.session.restPresc", { n: e.rest })}` : ""}</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {plan ? (e.presc || t("player.session.detailedSeries", { n: plan.length })) : (e.presc || `${e.sets}×${e.reps ?? (e.holdSec ? `${e.holdSec}s` : "")}${e.charge ? ` @ ${e.charge}` : ""}`)}{e.tempo ? ` · ${t("player.session.tempo")} ${e.tempo}` : ""}{e.rest ? ` · ${t("player.session.restPresc", { n: e.rest })}` : ""}</span>
                   <span>{t("player.session.prev")} {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
                   {rec.top > 0 && <span style={{ color: C.amb }}>{t("player.session.recBadge", { top: rec.top, orm: rec.oneRM })}</span>}
                 </div>
@@ -302,10 +304,10 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                           ) : null}
                         </div>
                       )}
-                      <div style={{ display: "grid", gridTemplateColumns: "26px 1fr 1fr 34px", gap: 6, alignItems: "center" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: isSkillEx ? "26px 1fr 34px" : "26px 1fr 1fr 34px", gap: 6, alignItems: "center" }}>
                         <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
-                        <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (psKg != null ? `${psKg}` : (pl?.kg != null ? `${pl.kg}` : "kg"))} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
-                        <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph?.reps ? `${ph.reps}` : (ps?.reps ? `${ps.reps}` : (e.reps || "reps"))} style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: placeholder = consigne prescrite (unité adaptée : reps, watts, kcal, min…) */}
+                        {!isSkillEx && <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (psKg != null ? `${psKg}` : (pl?.kg != null ? `${pl.kg}` : "kg"))} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />}{/* i18n-ok: unité kg */}
+                        <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph?.reps ? `${ph.reps}` : (isSkillEx ? (e.measure === "temps" ? t("player.session.holdUnit") : (e.reps || "reps")) : (ps?.reps ? `${ps.reps}` : (e.reps || "reps")))} inputMode={isSkillEx && e.measure === "temps" ? "numeric" : undefined} style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: placeholder = consigne prescrite (unité adaptée : reps, watts, kcal, min…) */}
                         <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                           <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
                         </button>

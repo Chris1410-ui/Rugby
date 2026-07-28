@@ -1003,6 +1003,7 @@
       "weekN": "Week {{n}}",
       "setYour1RM": "vul je 1RM {{movement}} in",
       "seriesN": "S{{n}}",
+      "holdUnit": "s",
       "detailedSeries": "{{n}} gedetailleerde sets",
       "exInfo": "Oefeningdetails",
       "set1rmTitle": "Jouw 1RM — {{movement}}",
@@ -1046,6 +1047,10 @@
       "advanced": "Geavanceerde instellingen",
       "lest": "Extra gewicht",
       "removeLest": "– gewicht",
+      "measure": "Meting",
+      "measure_reps": "Reps",
+      "measure_temps": "Tijd",
+      "hold": "Vasthouden (s)",
       "typeDesc": {
         "strength": "Sets × reps × gewicht",
         "conditioning": "Afstand, tijd, intervallen",

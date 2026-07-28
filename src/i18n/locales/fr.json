@@ -1003,6 +1003,7 @@
       "weekN": "Semaine {{n}}",
       "setYour1RM": "renseigne ton 1RM {{movement}}",
       "seriesN": "S{{n}}",
+      "holdUnit": "s",
       "detailedSeries": "{{n}} séries détaillées",
       "exInfo": "Fiche de l'exercice",
       "set1rmTitle": "Ton 1RM — {{movement}}",
@@ -1046,6 +1047,10 @@
       "advanced": "Réglages avancés",
       "lest": "Lest",
       "removeLest": "– lest",
+      "measure": "Mesure",
+      "measure_reps": "Reps",
+      "measure_temps": "Temps",
+      "hold": "Tenue (s)",
       "typeDesc": {
         "strength": "Séries × reps × charge",
         "conditioning": "Distance, temps, intervalles",

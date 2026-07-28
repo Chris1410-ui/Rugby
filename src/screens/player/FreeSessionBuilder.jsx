@@ -15,9 +15,9 @@ import ExerciseAutocomplete from "../shared/ExerciseAutocomplete.jsx";
 
 const accent = C.green;
 
-// Types réellement saisissables en PR2. Skills/Conditioning/Mixte arrivent en PR3
-// (builder + rendu de log ensemble) → affichés « Bientôt », non sélectionnables.
-const ENABLED_TYPES = ["strength", "bodyweight"];
+// Types réellement saisissables. Conditioning/Mixte arrivent en PR3b-2 (builder à
+// blocs + rendu de log ensemble) → affichés « Bientôt », non sélectionnables.
+const ENABLED_TYPES = ["strength", "bodyweight", "skills"];
 
 /* Compositeur de « séance libre ». Étape 0 : choix du TYPE (modèle de saisie).
    Puis panier adapté au type (la muscu garde séries/reps/charge ; le poids de
@@ -40,12 +40,13 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   const { routines } = useMyRoutines(me?.id);
 
   const isBW = type === "bodyweight";
+  const isSkill = type === "skills";
   const filter = type ? libraryFilterForType(type) : null;
 
   const chooseType = (ty) => { setType(ty); setCode(codeForType(ty)); };
 
   const inCart = (ref) => cart.some((c) => c.ref === ref);
-  const newLine = (ref, name, bodyPart) => ({ ref, name, bodyPart: bodyPart || "", sets: 3, reps: "8", charge: "", lest: "", lestOn: false });
+  const newLine = (ref, name, bodyPart) => ({ ref, name, bodyPart: bodyPart || "", sets: 3, reps: "8", charge: "", lest: "", lestOn: false, measure: "reps", hold: "" });
 
   const quickAdd = (name, id, bodyPart) => {
     const nm = (name || "").trim();
@@ -96,9 +97,11 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   };
 
   // Mappe une ligne panier → item bloc selon le type (kind + champs propres).
-  const toBlock = (c) => (isBW
-    ? { ref: c.ref, name: c.name, kind: "bodyweight", sets: c.sets, reps: c.reps, lest: c.lestOn ? c.lest : "" }
-    : { ref: c.ref, name: c.name, kind: "strength", sets: c.sets, reps: c.reps, charge: c.charge });
+  const toBlock = (c) => {
+    if (isBW) return { ref: c.ref, name: c.name, kind: "bodyweight", sets: c.sets, reps: c.reps, lest: c.lestOn ? c.lest : "" };
+    if (isSkill) return { ref: c.ref, name: c.name, kind: "skill", sets: c.sets, measure: c.measure, reps: c.measure === "reps" ? c.reps : undefined, holdSec: c.measure === "temps" ? c.hold : undefined };
+    return { ref: c.ref, name: c.name, kind: "strength", sets: c.sets, reps: c.reps, charge: c.charge };
+  };
 
   const create = async () => {
     if (cart.length === 0) return;
@@ -218,7 +221,22 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
                   <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontWeight: 700 }}>{c.name}</span>
                   <button onClick={() => remove(c.ref)} title={t("player.freeSession.remove")} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex" }}><Trash2 size={15} /></button>
                 </div>
-                {isBW ? (
+                {isSkill ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr 1fr", gap: 6, alignItems: "end" }}>
+                    <LabeledNum label={t("player.freeSession.sets")} value={c.sets} onChange={(v) => patch(c.ref, { sets: v })} />
+                    <label style={{ display: "block" }}>
+                      <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>{t("player.freeSession.measure")}</span>
+                      <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
+                        {["reps", "temps"].map((m) => (
+                          <button key={m} onClick={() => patch(c.ref, { measure: m })} style={{ flex: 1, padding: "6px 4px", borderRadius: 6, border: c.measure === m ? `1px solid ${accent}` : `1px solid ${C.border}`, background: c.measure === m ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>{t(`player.freeSession.measure_${m}`)}</button>
+                        ))}
+                      </div>
+                    </label>
+                    {c.measure === "temps"
+                      ? <LabeledTxt label={t("player.freeSession.hold")} value={c.hold} onChange={(v) => patch(c.ref, { hold: v })} placeholder="30" />
+                      : <LabeledTxt label={t("player.freeSession.reps")} value={c.reps} onChange={(v) => patch(c.ref, { reps: v })} placeholder="8" />}
+                  </div>
+                ) : isBW ? (
                   <>
                     <div style={{ display: "grid", gridTemplateColumns: c.lestOn ? "1fr 1fr 1fr" : "1fr 1fr", gap: 6 }}>
                       <LabeledNum label={t("player.freeSession.sets")} value={c.sets} onChange={(v) => patch(c.ref, { sets: v })} />

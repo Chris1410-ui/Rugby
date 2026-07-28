@@ -78,7 +78,18 @@ describe("séances libres — dispatch par kind (PR2)", () => {
   it("cardio_interval : gardé si reps + effort, sinon écarté", () => {
     const [i] = normalizeFreeExercises([{ kind: "cardio_interval", reps: 10, effort: { durationSec: 30 }, recovery: { durationSec: 30 }, pctVMA: 100 }]);
     expect(i).toMatchObject({ kind: "cardio_interval", reps: 10, effort: { durationSec: 30 }, recovery: { durationSec: 30 }, pctVMA: 100 });
+    expect(i.repPlan).toBeUndefined();
     expect(normalizeFreeExercises([{ kind: "cardio_interval", reps: 10 }])).toHaveLength(0);
+  });
+
+  it("cardio_interval : repPlan (variation par répétition) normalisé, effort requis par rép", () => {
+    const [i] = normalizeFreeExercises([{ kind: "cardio_interval", reps: 2, effort: { distanceM: 200 }, repPlan: [
+      { effort: { distanceM: 200 }, recovery: { durationSec: 90 }, pctVMA: 100 },
+      { effort: { distanceM: 200 }, recovery: { durationSec: 120 }, pctVMA: 95 },
+      { recovery: { durationSec: 60 } }, // sans effort → écarté
+    ] }]);
+    expect(i.repPlan).toHaveLength(2);
+    expect(i.repPlan[1]).toEqual({ effort: { distanceM: 200 }, recovery: { durationSec: 120 }, pctVMA: 95 });
   });
 
   it("cardio_circuit : mode normalisé + items du tour filtrés", () => {

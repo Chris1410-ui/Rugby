@@ -60,11 +60,19 @@ const NORMALIZERS = {
     return { id: e.id || uid(), kind: "cardio_continuous", name: str(e.name) || null, distanceM, durationSec, pctVMA: clampPct(e.pctVMA), hrTarget: posInt(e.hrTarget), note: str(e.note) || null };
   },
 
-  // Cardio intervalles : N × (effort) / (récup), %VMA optionnel.
+  // Cardio intervalles : N × (effort) / (récup), %VMA optionnel. Variation par
+  // répétition possible via repPlan (effort/récup/%VMA propres à chaque rép).
   cardio_interval: (e) => {
     const reps = posInt(e.reps), effort = effortSpec(e.effort), recovery = effortSpec(e.recovery);
+    const repPlan = (Array.isArray(e.repPlan) ? e.repPlan : [])
+      .map((rp) => { const ef = effortSpec(rp?.effort); return ef ? { effort: ef, recovery: effortSpec(rp?.recovery), pctVMA: clampPct(rp?.pctVMA) } : null; })
+      .filter(Boolean);
     if (!reps || !effort) return null;
-    return { id: e.id || uid(), kind: "cardio_interval", name: str(e.name) || null, reps, effort, recovery, pctVMA: clampPct(e.pctVMA), note: str(e.note) || null };
+    return {
+      id: e.id || uid(), kind: "cardio_interval", name: str(e.name) || null,
+      reps, effort, recovery, pctVMA: clampPct(e.pctVMA), note: str(e.note) || null,
+      ...(repPlan.length ? { repPlan } : {}),
+    };
   },
 
   // Circuit / AMRAP / EMOM : durée totale + items du tour.
