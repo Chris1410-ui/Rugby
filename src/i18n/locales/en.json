@@ -3223,5 +3223,21 @@
     "current": "here",
     "next": "aim",
     "aim": "Next step: {{label}}"
+  },
+  "gps": {
+    "heatmaps": {
+      "title": "Heatmaps",
+      "subtitle": "Heat maps from your GPS uploads",
+      "periodAll": "All",
+      "period30": "30 d",
+      "period90": "90 d",
+      "kindAll": "All",
+      "kindMatch": "Match",
+      "kindTraining": "Training",
+      "providerAll": "All",
+      "empty": "No heatmap yet. Tag a capture as “Heatmap” when uploading.",
+      "prev": "Previous",
+      "next": "Next"
+    }
   }
 }

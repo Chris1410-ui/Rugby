@@ -3223,5 +3223,21 @@
     "current": "ici",
     "next": "à viser",
     "aim": "Prochaine étape : {{label}}"
+  },
+  "gps": {
+    "heatmaps": {
+      "title": "Heatmaps",
+      "subtitle": "Cartes de chaleur de tes dépôts GPS",
+      "periodAll": "Tout",
+      "period30": "30 j",
+      "period90": "90 j",
+      "kindAll": "Toutes",
+      "kindMatch": "Match",
+      "kindTraining": "Entraînement",
+      "providerAll": "Tous",
+      "empty": "Aucune heatmap pour le moment. Marque une capture comme « Heatmap » au dépôt.",
+      "prev": "Précédent",
+      "next": "Suivant"
+    }
   }
 }

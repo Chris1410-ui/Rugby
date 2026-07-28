@@ -20,6 +20,7 @@ import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
 import SessionPlayCard from "./SessionPlayCard.jsx";
 import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
 import GpsDeposit from "./GpsDeposit.jsx";
+import HeatmapsGallery from "../shared/HeatmapsGallery.jsx";
 import ProgramView from "../shared/ProgramView.jsx";
 import Defis from "./Defis.jsx";
 import Taches from "./Taches.jsx";
@@ -44,6 +45,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
   const [gpsOpen, setGpsOpen] = useState(false);
+  const [heatOpen, setHeatOpen] = useState(false);
   const [justCreated, setJustCreated] = useState(null); // id d'une séance libre à ouvrir dès qu'elle arrive
   const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
   const { checkins } = usePlayerCheckins(me.id, 21);
@@ -220,6 +222,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
 
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
         <ActionCard emoji="📡" title={t("player.gps.actionTitle")} sub={t("player.gps.actionSub")} state={null} accent={accent} onClick={() => !preview && setGpsOpen(true)} t={t} />
+        <ActionCard emoji="🗺️" title={t("gps.heatmaps.title")} sub={t("gps.heatmaps.subtitle")} state={null} accent={accent} onClick={() => setHeatOpen(true)} t={t} />
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
         {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
@@ -302,6 +305,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
 
       {building && <FreeSessionBuilder me={me} onClose={() => setBuilding(false)} onCreated={(id) => { setBuilding(false); setJustCreated(id); refresh(); onData?.(); }} />}
       {gpsOpen && <GpsDeposit me={me} sessions={sessions} onClose={() => setGpsOpen(false)} />}
+      {heatOpen && <HeatmapsGallery playerId={me.id} showNames onClose={() => setHeatOpen(false)} />}
     </div>
   );
 }

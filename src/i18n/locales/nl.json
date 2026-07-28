@@ -3223,5 +3223,21 @@
     "current": "hier",
     "next": "doel",
     "aim": "Volgende stap: {{label}}"
+  },
+  "gps": {
+    "heatmaps": {
+      "title": "Heatmaps",
+      "subtitle": "Heatmaps van je GPS-uploads",
+      "periodAll": "Alles",
+      "period30": "30 d",
+      "period90": "90 d",
+      "kindAll": "Alle",
+      "kindMatch": "Wedstrijd",
+      "kindTraining": "Training",
+      "providerAll": "Alle",
+      "empty": "Nog geen heatmap. Markeer een opname als “Heatmap” bij het uploaden.",
+      "prev": "Vorige",
+      "next": "Volgende"
+    }
   }
 }
