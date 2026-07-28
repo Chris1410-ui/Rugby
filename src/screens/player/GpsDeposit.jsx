@@ -7,6 +7,7 @@ import { Plus, Trash2 } from "../../lib/icons.jsx";
 import { usePreview } from "../../lib/preview.js";
 import { SPEED_ZONES, normalizeGpsMetrics, hasAnyMetric } from "../../lib/gps.js";
 import { useGpsSessions, createGpsSession, uploadGpsImages, deleteGpsSession, newGpsId } from "../../data/gps.js";
+import { analyzeGpsShot } from "../../data/gpsAI.js";
 import { useTeamTrainings } from "../../data/trainings.js";
 
 const PROVIDERS = ["pitchero", "catapult", "statsports", "other"];
@@ -14,6 +15,9 @@ const inp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px 
 const lbl = { fontSize: 9.5, color: "rgba(255,255,255,0.55)", fontWeight: 700, display: "block", marginBottom: 3 };
 const num = (v) => v.replace(/[^\d.]/g, "");
 const int = (v) => v.replace(/[^\d]/g, "");
+const s = (v) => (v == null ? "" : String(v)); // null (non lu) → champ vide
+// Palier de confiance IA d'un champ → couleur de pastille (haute / moyenne / basse).
+const confColor = (c) => (c == null ? null : c >= 0.75 ? C.green : c >= 0.5 ? "#f5b301" : C.coral);
 
 /* Dépôt manuel de données GPS (GPS-2). Le joueur rattache la session à une
    séance/convocation du jour, ajoute éventuellement des captures (stockées, non
@@ -34,6 +38,12 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
   const [zones, setZones] = useState(emptyZones);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  // État IA : source du dépôt courant, confiance par champ, alerte nom, warnings,
+  // et message de repli (IA non configurée / quota atteint).
+  const [source, setSource] = useState("manual");
+  const [ai, setAi] = useState(null);            // { conf:{field:0..1}, nameDetected, warnings, confidence }
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiMsg, setAiMsg] = useState("");
 
   const { sessions: mine, refresh } = useGpsSessions(me?.id);
   const { trainings } = useTeamTrainings(me?.team);
@@ -55,9 +65,43 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
       distance_m: f.distance_m, m_per_min: f.m_per_min, hsr_m: f.hsr_m, hsr_count: f.hsr_count,
       vmax_kmh: f.vmax_kmh, vavg_kmh: f.vavg_kmh, duration_sec: duration_sec || "",
       session_name: f.session_name, provider, speed_zones,
+      // Métadonnées IA conservées quand le dépôt vient d'une analyse (sinon ignorées).
+      ...(source === "ai" ? { confidence: ai?.conf || {}, name_detected: !!ai?.nameDetected } : {}),
     };
   };
   const canSave = !preview && !busy && hasAnyMetric(normalizeGpsMetrics(buildMetrics()));
+  // Confiance IA d'un champ (uniquement en mode dépôt IA), sinon null → pas de pastille.
+  const cf = (k) => (source === "ai" && ai ? ai.conf?.[k] : null) ?? null;
+
+  // Analyse IA des captures : l'IA PRÉ-REMPLIT, le joueur vérifie/valide. Les
+  // champs non lus restent vides (jamais inventés). Repli manuel si non dispo.
+  const analyze = async () => {
+    if (preview || aiBusy || !files.length) return;
+    setAiBusy(true); setAiMsg(""); setErr("");
+    const r = await analyzeGpsShot(files);
+    if (r.source !== "claude") {
+      setAiMsg(r.note === "over_quota" ? t("player.gps.ai.overQuota", { used: r.used ?? 5, limit: r.limit ?? 5 })
+        : r.note === "no_api_key" ? t("player.gps.ai.notConfigured")
+        : t("player.gps.ai.failed"));
+      setAiBusy(false);
+      return;
+    }
+    const m = r.metrics;
+    const mm = Math.floor((m.durationSec || 0) / 60), ss = (m.durationSec || 0) % 60;
+    setF({
+      distance_m: s(m.distanceM), m_per_min: s(m.mPerMin), hsr_m: s(m.hsrM), hsr_count: s(m.hsrCount),
+      vmax_kmh: s(m.vmaxKmh), vavg_kmh: s(m.vavgKmh),
+      durMin: m.durationSec != null ? s(mm) : "", durSec: m.durationSec != null ? s(ss) : "",
+      session_name: s(m.sessionName), notes: f.notes,
+    });
+    const z = emptyZones();
+    (m.speedZones || []).forEach((x) => { if (z[x.zone]) z[x.zone] = { sec: s(x.sec), pct: s(x.pct) }; });
+    setZones(z);
+    if (m.provider) setProvider(m.provider);
+    setSource("ai");
+    setAi({ conf: m.confidence || {}, nameDetected: !!m.nameDetected, warnings: r.warnings || [], confidence: r.confidence });
+    setAiBusy(false);
+  };
 
   const save = async () => {
     if (!canSave) return;
@@ -67,12 +111,12 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
       const paths = files.length ? await uploadGpsImages(me.team, me.id, id, files) : [];
       await createGpsSession({
         id, playerId: me.id, teamId: me.team, date,
-        metrics: buildMetrics(), imagePaths: paths, source: "manual",
+        metrics: buildMetrics(), imagePaths: paths, source,
         linkedSessionId: link?.type === "session" ? link.id : null,
         linkedTrainingId: link?.type === "training" ? link.id : null,
       });
       setFiles([]); setF({ distance_m: "", m_per_min: "", hsr_m: "", hsr_count: "", vmax_kmh: "", vavg_kmh: "", durMin: "", durSec: "", session_name: "", notes: "" });
-      setZones(emptyZones()); setLink(null); setProvider("");
+      setZones(emptyZones()); setLink(null); setProvider(""); setSource("manual"); setAi(null); setAiMsg("");
       refresh();
     } catch (e) {
       setErr(t("common.actionFailed", { err: e.message }));
@@ -119,18 +163,40 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
             </label>
           )}
         </div>
-        <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>{t("player.gps.capturesHint")}</div>
+        <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>{t("player.gps.capturesHint")}</div>
+
+        {/* Analyse IA (optionnelle) : pré-remplit les métriques, le joueur valide. */}
+        {!preview && files.length > 0 && (
+          <button onClick={analyze} disabled={aiBusy} style={{ width: "100%", background: aiBusy ? "rgba(255,255,255,0.08)" : `${accent}22`, border: `1px solid ${accent}`, borderRadius: 10, padding: 11, color: "#fff", fontWeight: 800, fontSize: 12.5, cursor: aiBusy ? "default" : "pointer", marginBottom: 8 }}>
+            {aiBusy ? t("player.gps.ai.analyzing") : `✨ ${t("player.gps.ai.analyze")}`}
+          </button>
+        )}
+        {aiMsg && <div style={{ fontSize: 11, color: "#f5b301", background: "rgba(245,179,1,0.1)", borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>{aiMsg}</div>}
+        {source === "ai" && ai && (
+          <div style={{ background: `${accent}12`, border: `1px solid ${accent}44`, borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 800, color: accent, marginBottom: 4 }}>✨ {t("player.gps.ai.previewTitle")}</div>
+            <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.7)", marginBottom: ai.nameDetected || ai.warnings.length ? 8 : 0 }}>{t("player.gps.ai.unreadLeftBlank")}</div>
+            {ai.nameDetected && (
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: "#f5b301", background: "rgba(245,179,1,0.12)", borderRadius: 8, padding: "7px 9px", marginBottom: ai.warnings.length ? 8 : 0 }}>⚠️ {t("player.gps.ai.nameAlert")}</div>
+            )}
+            {ai.warnings.length > 0 && (
+              <ul style={{ margin: 0, paddingLeft: 16, fontSize: 10, color: "rgba(255,255,255,0.55)" }}>
+                {ai.warnings.slice(0, 5).map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Métriques */}
         <Section title={t("player.gps.metrics")}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <Field label={t("player.gps.distance")} value={f.distance_m} onChange={(v) => setField("distance_m", int(v))} />
-            <Field label={t("player.gps.mPerMin")} value={f.m_per_min} onChange={(v) => setField("m_per_min", num(v))} />
-            <Field label={t("player.gps.hsr")} value={f.hsr_m} onChange={(v) => setField("hsr_m", int(v))} />
-            <Field label={t("player.gps.hsrCount")} value={f.hsr_count} onChange={(v) => setField("hsr_count", int(v))} />
-            <Field label={t("player.gps.vmax")} value={f.vmax_kmh} onChange={(v) => setField("vmax_kmh", num(v))} />
-            <Field label={t("player.gps.vavg")} value={f.vavg_kmh} onChange={(v) => setField("vavg_kmh", num(v))} />
-            <label style={{ display: "block" }}><span style={lbl}>{t("player.gps.duration")}</span>
+            <Field label={t("player.gps.distance")} value={f.distance_m} onChange={(v) => setField("distance_m", int(v))} conf={cf("distance_m")} />
+            <Field label={t("player.gps.mPerMin")} value={f.m_per_min} onChange={(v) => setField("m_per_min", num(v))} conf={cf("m_per_min")} />
+            <Field label={t("player.gps.hsr")} value={f.hsr_m} onChange={(v) => setField("hsr_m", int(v))} conf={cf("hsr_m")} />
+            <Field label={t("player.gps.hsrCount")} value={f.hsr_count} onChange={(v) => setField("hsr_count", int(v))} conf={cf("hsr_count")} />
+            <Field label={t("player.gps.vmax")} value={f.vmax_kmh} onChange={(v) => setField("vmax_kmh", num(v))} conf={cf("vmax_kmh")} />
+            <Field label={t("player.gps.vavg")} value={f.vavg_kmh} onChange={(v) => setField("vavg_kmh", num(v))} conf={cf("vavg_kmh")} />
+            <label style={{ display: "block" }}><span style={lbl}>{t("player.gps.duration")}{confDot(cf("duration_sec"))}</span>
               <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
                 <input value={f.durMin} onChange={(e) => setField("durMin", int(e.target.value))} inputMode="numeric" placeholder={t("player.session.min")} style={{ ...inp, textAlign: "center" }} />
                 <span style={{ color: "rgba(255,255,255,0.4)" }}>:</span>
@@ -165,7 +231,7 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
 
         {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8 }}>{err}</div>}
         <button onClick={save} disabled={!canSave} style={{ width: "100%", background: canSave ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: 13, color: "#fff", fontWeight: 800, fontSize: 13, cursor: canSave ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>
-          {busy ? t("player.gps.saving") : t("player.gps.save")}
+          {busy ? t("player.gps.saving") : source === "ai" ? t("player.gps.ai.validateSave") : t("player.gps.save")}
         </button>
 
         {/* Mes dépôts récents */}
@@ -189,10 +255,17 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
   );
 }
 
-function Field({ label, value, onChange, type }) {
+// Pastille de confiance IA (verte/orange/rouge) à côté du libellé d'un champ pré-rempli.
+function confDot(c) {
+  const color = confColor(c);
+  if (!color) return null;
+  return <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 3, background: color, marginLeft: 5, verticalAlign: "middle" }} />;
+}
+
+function Field({ label, value, onChange, type, conf }) {
   return (
     <label style={{ display: "block" }}>
-      <span style={lbl}>{label}</span>
+      <span style={lbl}>{label}{confDot(conf)}</span>
       <input value={value} onChange={(e) => onChange(e.target.value)} inputMode={type === "text" ? undefined : "decimal"} style={{ ...inp, textAlign: type === "text" ? "left" : "center" }} />
     </label>
   );

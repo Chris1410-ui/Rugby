@@ -1155,7 +1155,18 @@
       "actionSub": "Wedstrijd of training — screenshot of invoer",
       "aiTag": "AI",
       "pointsBadge": "+{{n}} ptn",
-      "pointsHint": "+10 punten per geregistreerde GPS-sessie"
+      "pointsHint": "+10 punten per geregistreerde GPS-sessie",
+      "ai": {
+        "analyze": "Analyseren met AI",
+        "analyzing": "Bezig met analyseren…",
+        "previewTitle": "AI-suggesties — controleer voor het opslaan",
+        "unreadLeftBlank": "Niet-gelezen waarden blijven leeg: vul ze zelf in.",
+        "nameAlert": "Er lijkt een naam zichtbaar op de schermafbeelding. Die wordt nooit aan je teamgenoten getoond.",
+        "validateSave": "Valideren en opslaan",
+        "overQuota": "Dagelijkse AI-analyselimiet bereikt ({{used}}/{{limit}}). Voer waarden handmatig in.",
+        "notConfigured": "AI-analyse niet geconfigureerd. Voer waarden handmatig in.",
+        "failed": "AI-analyse momenteel niet beschikbaar. Voer waarden handmatig in."
+      }
     }
   },
   "staff": {

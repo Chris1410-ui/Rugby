@@ -1155,7 +1155,18 @@
       "actionSub": "Match ou entraînement — capture ou saisie",
       "aiTag": "IA",
       "pointsBadge": "+{{n}} pts",
-      "pointsHint": "+10 points par séance GPS déposée"
+      "pointsHint": "+10 points par séance GPS déposée",
+      "ai": {
+        "analyze": "Analyser avec l’IA",
+        "analyzing": "Analyse en cours…",
+        "previewTitle": "Propositions de l’IA — vérifie avant d’enregistrer",
+        "unreadLeftBlank": "Les valeurs non lues restent vides : complète-les toi-même.",
+        "nameAlert": "Un nom semble visible sur la capture. Il ne sera jamais montré à tes coéquipiers.",
+        "validateSave": "Valider et enregistrer",
+        "overQuota": "Limite d’analyses IA atteinte pour aujourd’hui ({{used}}/{{limit}}). Saisis à la main.",
+        "notConfigured": "Analyse IA non configurée. Saisis les valeurs à la main.",
+        "failed": "Analyse IA indisponible pour le moment. Saisis à la main."
+      }
     }
   },
   "staff": {

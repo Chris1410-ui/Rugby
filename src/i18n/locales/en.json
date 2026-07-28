@@ -1155,7 +1155,18 @@
       "actionSub": "Match or training — screenshot or entry",
       "aiTag": "AI",
       "pointsBadge": "+{{n}} pts",
-      "pointsHint": "+10 points per GPS session logged"
+      "pointsHint": "+10 points per GPS session logged",
+      "ai": {
+        "analyze": "Analyse with AI",
+        "analyzing": "Analysing…",
+        "previewTitle": "AI suggestions — check before saving",
+        "unreadLeftBlank": "Unread values are left blank: fill them in yourself.",
+        "nameAlert": "A name appears to be visible on the screenshot. It will never be shown to your teammates.",
+        "validateSave": "Validate and save",
+        "overQuota": "Daily AI analysis limit reached ({{used}}/{{limit}}). Enter values manually.",
+        "notConfigured": "AI analysis not configured. Enter values manually.",
+        "failed": "AI analysis unavailable right now. Enter values manually."
+      }
     }
   },
   "staff": {
