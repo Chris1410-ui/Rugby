@@ -10,6 +10,7 @@ import { effectiveNature, natureLabel } from "../../lib/nature.js";
 import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
 import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
+import { useRoutineLog } from "../../data/morningRoutine.js";
 import { useProgramDocs, getProgramDoc } from "../../data/programDocs.js";
 import { useTeamProgramAssignments } from "../../data/programAssignments.js";
 import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
@@ -61,6 +62,8 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   );
 
   const today = todayISO();
+  // Routine du matin (staff-athlète uniquement) : état du jour pour la carte d'accès.
+  const { log: routineLog } = useRoutineLog(me?.isStaffAthlete ? me.id : null, today);
 
   // Info d'un jour : séances assignées + statut, bilans matin/soir, complétude.
   // « Jour validé » (pastille verte + objectif hebdo) = au moins UNE séance
@@ -220,6 +223,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         {/* Séance libre — secondaire, pour les jours sans assignation */}
         <ActionCard emoji="➕" title={t("player.today.freeSession")} sub={t("player.today.freeSessionSecondary")} state={null} accent={accent} muted onClick={() => !preview && setBuilding(true)} t={t} />
 
+        {me?.isStaffAthlete && <ActionCard emoji="🌅" title={t("nav.routine")} sub={t("player.today.routineSub")} state={routineLog?.done ? "done" : "todo"} accent={accent} onClick={() => onNavigate && onNavigate("routine")} t={t} />}
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
         <ActionCard emoji="📡" title={t("player.gps.actionTitle")} sub={t("player.gps.actionSub")} state={null} accent={accent} onClick={() => !preview && setGpsOpen(true)} t={t} />
         <ActionCard emoji="🗺️" title={t("gps.heatmaps.title")} sub={t("gps.heatmaps.subtitle")} state={null} accent={accent} onClick={() => setHeatOpen(true)} t={t} />

@@ -315,7 +315,8 @@
     "exercices": "Bibliothèque",
     "invites": "Invitations",
     "adhesions": "Demandes d'adhésion",
-    "heatmaps": "Heatmaps"
+    "heatmaps": "Heatmaps",
+    "myAthlete": "Mon athlète"
   },
   "roles": {
     "preparateur": "Préparateur physique",
@@ -341,7 +342,9 @@
     "activateAthlete": "Activer mon profil athlète",
     "activating": "Activation…",
     "viewAsAthlete": "Passer en vue athlète",
-    "viewAsStaff": "Revenir en vue staff"
+    "viewAsStaff": "Revenir en vue staff",
+    "deactivateAthlete": "Désactiver mon profil athlète",
+    "deactivateAthleteConfirm": "Désactiver ton profil athlète ? Il sera retiré du classement (ton historique est conservé, tu peux le réactiver)."
   },
   "onboarding": {
     "skip": "Passer",
@@ -796,7 +799,8 @@
       "tracking": "Ton suivi",
       "trackingHint": "Appuie pour l'historique",
       "trackingRange": "{{count}} derniers relevés",
-      "week": "Ta semaine"
+      "week": "Ta semaine",
+      "routineSub": "Ta routine du matin"
     },
     "messages": {
       "staffTitle": "Staff — Préparateur physique"

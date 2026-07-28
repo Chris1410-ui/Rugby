@@ -315,7 +315,8 @@
     "exercices": "Bibliotheek",
     "invites": "Uitnodigingen",
     "adhesions": "Lidmaatschapsaanvragen",
-    "heatmaps": "Heatmaps"
+    "heatmaps": "Heatmaps",
+    "myAthlete": "Mijn atleet"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -341,7 +342,9 @@
     "activateAthlete": "Mijn atletenprofiel activeren",
     "activating": "Activeren…",
     "viewAsAthlete": "Naar atletenweergave",
-    "viewAsStaff": "Terug naar stafweergave"
+    "viewAsStaff": "Terug naar stafweergave",
+    "deactivateAthlete": "Mijn atletenprofiel deactiveren",
+    "deactivateAthleteConfirm": "Je atletenprofiel deactiveren? Het wordt uit het klassement verwijderd (je geschiedenis blijft bewaard, je kunt het opnieuw activeren)."
   },
   "onboarding": {
     "skip": "Overslaan",
@@ -796,7 +799,8 @@
       "tracking": "Jouw opvolging",
       "trackingHint": "Tik voor geschiedenis",
       "trackingRange": "Laatste {{count}} metingen",
-      "week": "Jouw week"
+      "week": "Jouw week",
+      "routineSub": "Je ochtendroutine"
     },
     "messages": {
       "staffTitle": "Staf — Fysiek trainer"

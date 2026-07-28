@@ -315,7 +315,8 @@
     "exercices": "Library",
     "invites": "Invitations",
     "adhesions": "Membership requests",
-    "heatmaps": "Heatmaps"
+    "heatmaps": "Heatmaps",
+    "myAthlete": "My athlete"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -341,7 +342,9 @@
     "activateAthlete": "Activate my athlete profile",
     "activating": "Activating…",
     "viewAsAthlete": "Switch to athlete view",
-    "viewAsStaff": "Back to staff view"
+    "viewAsStaff": "Back to staff view",
+    "deactivateAthlete": "Deactivate my athlete profile",
+    "deactivateAthleteConfirm": "Deactivate your athlete profile? It will be removed from the leaderboard (your history is kept, you can reactivate it)."
   },
   "onboarding": {
     "skip": "Skip",
@@ -796,7 +799,8 @@
       "tracking": "Your tracking",
       "trackingHint": "Tap for history",
       "trackingRange": "Last {{count}} readings",
-      "week": "Your week"
+      "week": "Your week",
+      "routineSub": "Your morning routine"
     },
     "messages": {
       "staffTitle": "Staff — Strength & conditioning"
