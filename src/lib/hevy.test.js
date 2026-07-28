@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseChargeKg, prescribedVsRealized, initSetLikeSets } from "./hevy.js";
+import { parseChargeKg, prescribedVsRealized, initSetLikeSets, fillEmptySetsFromOneRM } from "./hevy.js";
 
 describe("parseChargeKg", () => {
   it("parses plain and suffixed numbers", () => {
@@ -114,5 +114,45 @@ describe("initSetLikeSets — pré-remplissage du lecteur de séance", () => {
     expect(a.sets[0].w).toBe("100");
     expect(b.sets[0].w).toBe("60");
     expect(b.sets).toHaveLength(2);
+  });
+});
+
+describe("fillEmptySetsFromOneRM — report d'un 1RM saisi en séance", () => {
+  const S = (w = "", reps = "8") => ({ w, reps, type: "normal", done: false });
+
+  it("@% uniforme : remplit UNIQUEMENT la série 1 vide (charge = %·1RM)", () => {
+    const out = fillEmptySetsFromOneRM([S(), S(), S()], { pct: 80, sets: "3" }, 100);
+    expect(out[0].w).toBe("80");
+    expect(out[1].w).toBe("");
+    expect(out[2].w).toBe("");
+  });
+
+  it("ne réécrit JAMAIS une série déjà saisie (souveraineté)", () => {
+    const sets = [S("90"), S(), S()];
+    const out = fillEmptySetsFromOneRM(sets, { pct: 80, sets: "3" }, 100);
+    expect(out[0].w).toBe("90"); // saisie conservée
+    // série 1 déjà remplie → série 2/3 non concernées (uniforme = série 1 only)
+    expect(out[1].w).toBe("");
+  });
+
+  it("séries détaillées : chaque série VIDE reçoit sa charge résolue, les autres restent", () => {
+    const sets = [S("", "10"), S("87.5", "8"), S("", "6")];
+    const out = fillEmptySetsFromOneRM(sets, { setPlan: [{ reps: 10, pct: 80 }, { reps: 8, pct: 85 }, { reps: 6, pct: 90 }] }, 100);
+    expect(out[0].w).toBe("80");   // vide → résolu
+    expect(out[1].w).toBe("87.5"); // saisi → conservé
+    expect(out[2].w).toBe("90");   // vide → résolu
+  });
+
+  it("aucune série vide remplissable → renvoie le MÊME tableau (référence)", () => {
+    const sets = [S("80"), S("80")];
+    expect(fillEmptySetsFromOneRM(sets, { pct: 80 }, 100)).toBe(sets);
+    // exercice sans @% ni setPlan → rien à calculer, même référence
+    const plain = [S(), S()];
+    expect(fillEmptySetsFromOneRM(plain, { sets: "2" }, 100)).toBe(plain);
+  });
+
+  it("1RM absent (≤0) → aucun changement", () => {
+    const sets = [S(), S()];
+    expect(fillEmptySetsFromOneRM(sets, { pct: 80 }, 0)).toBe(sets);
   });
 });

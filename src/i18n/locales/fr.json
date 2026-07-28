@@ -1046,7 +1046,13 @@
       "useChrono": "Chrono : {{n}} min",
       "durationPlanned": "Prévu : {{n}} min",
       "durationReal": "réalisé : {{n}} min",
-      "ssHint": "ss"
+      "ssHint": "ss",
+      "rmRef": "1RM {{movement}} : {{kg}} kg",
+      "rmLoad": "@{{pct}} % ≈ {{kg}} kg",
+      "rm1rm": "1RM",
+      "rm5rm": "5RM",
+      "rm5rmHint": "Le 5RM est converti en 1RM estimé (Epley).",
+      "edit1rmTitle": "Corriger le 1RM {{movement}}"
     },
     "freeSession": {
       "newButton": "Créer une séance libre",

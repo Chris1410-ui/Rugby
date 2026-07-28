@@ -114,6 +114,25 @@ export function initSetLikeSets(e, { saved = null, oneRM = null } = {}) {
   };
 }
 
+/* Reporte une charge suggérée depuis un 1RM (renseigné/corrigé en séance) sur les
+   séries VIDES d'un exercice — jamais sur une série déjà saisie (souveraineté).
+   Uniforme (@%) → série 1 ; séries détaillées (setPlan) → chaque série vide reçoit
+   sa charge résolue. Renvoie le MÊME tableau (référence identique) si rien n'a
+   changé, un nouveau sinon. PURE. */
+export function fillEmptySetsFromOneRM(sets, e, oneRMkg) {
+  if (!(oneRMkg > 0) || !Array.isArray(sets) || !sets.length) return sets;
+  const plan = Array.isArray(e?.setPlan) && e.setPlan.length ? resolveSetPlan(e.setPlan, oneRMkg) : null;
+  let changed = false;
+  const out = sets.map((x, i) => {
+    if (x.w) return x; // déjà saisi → intouchable
+    const kg = plan ? (plan[i]?.kg ?? null) : (i === 0 && e?.pct ? computeLoadKg(e.pct, oneRMkg) : null);
+    if (kg == null) return x;
+    changed = true;
+    return { ...x, w: String(kg) };
+  });
+  return changed ? out : sets;
+}
+
 /* Comparatif PRESCRIT (séance) vs RÉALISÉ (log). `ex` = exercice de la séance
    (sets/reps/charge prescrits), `pe` = perExercise[eid] du log (séries réalisées).
    Purement informatif — ne modifie aucune formule de charge (sRPE). Renvoie les

@@ -1046,7 +1046,13 @@
       "useChrono": "Timer: {{n}} min",
       "durationPlanned": "Gepland: {{n}} min",
       "durationReal": "werkelijk: {{n}} min",
-      "ssHint": "ss"
+      "ssHint": "ss",
+      "rmRef": "1RM {{movement}}: {{kg}} kg",
+      "rmLoad": "@{{pct}}% ≈ {{kg}} kg",
+      "rm1rm": "1RM",
+      "rm5rm": "5RM",
+      "rm5rmHint": "De 5RM wordt omgezet naar een geschatte 1RM (Epley).",
+      "edit1rmTitle": "Corrigeer de 1RM {{movement}}"
     },
     "freeSession": {
       "newButton": "Vrije sessie maken",
