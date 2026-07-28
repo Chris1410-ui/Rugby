@@ -4,13 +4,15 @@
 //
 // Entrée  (POST JSON) : { images: [{ media_type, data(base64) }], provider? }
 //   (le client envoie ≤3 captures DÉJÀ downscalées ; cf. src/data/gpsAI.js)
-// Sortie  (JSON)      : { source:"claude", metrics, warnings, confidence }
+// Sortie  (JSON)      : { source:"claude", metrics, images, warnings, confidence }
 //                     | { source:"fallback", note, used?, limit? }
 //
 //   metrics = { distance_m, m_per_min, hsr_m, hsr_count, vmax_kmh, vavg_kmh,
 //               duration_sec (int|null), speed_zones:[{zone,sec,pct}],
 //               session_name (string|null), provider (string|null),
 //               name_detected (bool), confidence:{<field>:0..1} }
+//   images  = [{ index, kind:'heatmap'|'stats'|'chart', tab, confidence }]
+//             classement PAR capture (GPS-5) — le client mappe index → fichier.
 //
 // Garde-fous :
 //  - QUOTA : la fonction appelle gps_ai_quota_consume(5) AVEC le JWT du joueur
@@ -52,6 +54,16 @@ const zoneSchema = {
   },
   required: ["zone"],
 };
+const imageClassSchema = {
+  type: "object", additionalProperties: false,
+  properties: {
+    index: { type: "integer", description: "Index (0-based) de la capture dans l'ordre reçu" },
+    kind: { type: "string", enum: ["heatmap", "stats", "chart"], description: "heatmap = fond de terrain + zones colorées ; stats = tableau de chiffres ; chart = graphe/courbe" },
+    tab: { type: ["string", "null"], enum: ["speed", "distance", "intensity", "other", null], description: "Pour une heatmap : onglet d'origine (vitesse/distance/intensité) si lisible, sinon other/null" },
+    confidence: { type: "number", description: "Confiance 0..1 sur ce classement" },
+  },
+  required: ["index", "kind"],
+};
 const metricsToolSchema = {
   type: "object", additionalProperties: false,
   properties: {
@@ -66,11 +78,12 @@ const metricsToolSchema = {
     session_name: { type: ["string", "null"], description: "Libellé lisible de la séance (ex: 'Match vs X', 'Training'). Peut contenir un nom : c'est le SEUL endroit où un nom est autorisé." },
     provider: { type: ["string", "null"], enum: ["pitchero", "catapult", "statsports", "other", null], description: "Fournisseur GPS identifié d'après l'UI" },
     name_detected: { type: "boolean", description: "true si un NOM/PRÉNOM de joueur est visible sur la capture" },
+    images: { type: "array", items: imageClassSchema, description: "Classement PAR capture reçue (une entrée par index). heatmap = carte de chaleur sur fond de terrain." },
     confidence: { type: "object", additionalProperties: { type: "number" }, description: "Confiance 0..1 PAR champ renseigné (clé = nom du champ)" },
     warnings: { type: "array", items: S, description: "Ce qui n'a pas pu être lu avec certitude" },
     global_confidence: { type: "number", description: "Confiance globale 0..1 sur la fidélité de lecture" },
   },
-  required: ["name_detected", "confidence", "warnings", "global_confidence"],
+  required: ["name_detected", "images", "confidence", "warnings", "global_confidence"],
 };
 
 const SYSTEM =
@@ -87,7 +100,11 @@ const SYSTEM =
   "4. `confidence` : un score honnête 0..1 par champ que tu remplis (clé = nom du " +
   "champ, ex: distance_m). Sois prudent sur les chiffres partiellement masqués.\n" +
   "5. Si plusieurs captures montrent la même séance, fusionne sans double compter. " +
-  "Si tu ne lis presque rien, renvoie surtout des null + des warnings — ne force rien.";
+  "Si tu ne lis presque rien, renvoie surtout des null + des warnings — ne force rien.\n" +
+  "6. `images` : classe CHAQUE capture reçue (une entrée par `index`, dans l'ordre). " +
+  "Une HEATMAP = carte de chaleur sur un fond de terrain (zones colorées, tracés) ; " +
+  "précise son onglet (speed/distance/intensity) si lisible. `stats` = tableau de " +
+  "chiffres, `chart` = graphe/courbe. Ne lis AUCUN nom sur une heatmap.";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -160,9 +177,19 @@ Deno.serve(async (req) => {
       name_detected: o.name_detected === true,
       confidence: o.confidence && typeof o.confidence === "object" ? o.confidence : {},
     };
+    // Classement par capture (le client mappe `index` → fichier uploadé).
+    const imagesOut = (Array.isArray(o.images) ? o.images : [])
+      .filter((im: { index?: unknown; kind?: unknown }) => typeof im?.index === "number" && ["heatmap", "stats", "chart"].includes(String(im?.kind)))
+      .map((im: { index: number; kind: string; tab?: unknown; confidence?: unknown }) => ({
+        index: im.index,
+        kind: im.kind,
+        tab: ["speed", "distance", "intensity", "other"].includes(String(im.tab)) ? im.tab : null,
+        confidence: typeof im.confidence === "number" ? im.confidence : null,
+      }));
     return json({
       source: "claude",
       metrics,
+      images: imagesOut,
       warnings: Array.isArray(o.warnings) ? o.warnings.map(String) : [],
       confidence: typeof o.global_confidence === "number" ? o.global_confidence : null,
     });

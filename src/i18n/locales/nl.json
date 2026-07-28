@@ -1166,6 +1166,19 @@
         "overQuota": "Dagelijkse AI-analyselimiet bereikt ({{used}}/{{limit}}). Voer waarden handmatig in.",
         "notConfigured": "AI-analyse niet geconfigureerd. Voer waarden handmatig in.",
         "failed": "AI-analyse momenteel niet beschikbaar. Voer waarden handmatig in."
+      },
+      "img": {
+        "auto": "Auto",
+        "heatmap": "Heatmap",
+        "stats": "Stats",
+        "chart": "Grafiek",
+        "tab": "Tabblad"
+      },
+      "tab": {
+        "speed": "Snelheid",
+        "distance": "Afstand",
+        "intensity": "Intensiteit",
+        "other": "Andere"
       }
     }
   },

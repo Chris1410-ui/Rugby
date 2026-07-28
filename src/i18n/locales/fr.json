@@ -1166,6 +1166,19 @@
         "overQuota": "Limite d’analyses IA atteinte pour aujourd’hui ({{used}}/{{limit}}). Saisis à la main.",
         "notConfigured": "Analyse IA non configurée. Saisis les valeurs à la main.",
         "failed": "Analyse IA indisponible pour le moment. Saisis à la main."
+      },
+      "img": {
+        "auto": "Auto",
+        "heatmap": "Heatmap",
+        "stats": "Stats",
+        "chart": "Graphe",
+        "tab": "Onglet"
+      },
+      "tab": {
+        "speed": "Vitesse",
+        "distance": "Distance",
+        "intensity": "Intensité",
+        "other": "Autre"
       }
     }
   },

@@ -66,9 +66,17 @@ export async function analyzeGpsShot(files) {
   const raw = data.metrics || {};
   const metrics = normalizeGpsMetrics({ ...raw, source: "ai" });
   metrics.speedZones = normalizeSpeedZones(raw.speed_zones);
+  // Classement par capture : index → {kind, tab}. Le tab n'a de sens que pour une
+  // heatmap. L'appelant mappe `index` sur le fichier correspondant (même ordre).
+  const KINDS = ["heatmap", "stats", "chart"];
+  const TABS = ["speed", "distance", "intensity", "other"];
+  const imageKinds = (Array.isArray(data.images) ? data.images : [])
+    .filter((im) => Number.isInteger(im?.index) && KINDS.includes(im?.kind))
+    .map((im) => ({ index: im.index, kind: im.kind, tab: im.kind === "heatmap" && TABS.includes(im.tab) ? im.tab : null }));
   return {
     source: "claude",
     metrics,
+    imageKinds,
     confidence: typeof data.confidence === "number" ? data.confidence : null,
     warnings: Array.isArray(data.warnings) ? data.warnings : [],
   };

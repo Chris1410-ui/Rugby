@@ -1166,6 +1166,19 @@
         "overQuota": "Daily AI analysis limit reached ({{used}}/{{limit}}). Enter values manually.",
         "notConfigured": "AI analysis not configured. Enter values manually.",
         "failed": "AI analysis unavailable right now. Enter values manually."
+      },
+      "img": {
+        "auto": "Auto",
+        "heatmap": "Heatmap",
+        "stats": "Stats",
+        "chart": "Chart",
+        "tab": "Tab"
+      },
+      "tab": {
+        "speed": "Speed",
+        "distance": "Distance",
+        "intensity": "Intensity",
+        "other": "Other"
       }
     }
   },
