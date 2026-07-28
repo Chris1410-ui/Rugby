@@ -2,10 +2,25 @@ import { describe, it, expect, beforeAll } from "vitest";
 import i18n from "../i18n/config.js";
 import {
   acwrZ, wbToWellness, computeReadiness, playerLoad, enrichPlayers, computePoints, todayISO, buildAlerts,
-  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, alertText, alertCat, sessionDisplayState, loadDaily,
+  SLEEP_OPTIONS, sleepLabel, rankLeaderboard, rankingVisiblePlayers, alertText, alertCat, sessionDisplayState, loadDaily,
 } from "./metrics.js";
 
 beforeAll(async () => { await i18n.changeLanguage("fr"); });
+
+describe("rankingVisiblePlayers — visibilité des staff-athlètes", () => {
+  const roster = [
+    { id: "j1", name: "Joueur 1" },
+    { id: "s1", name: "Staff 1", isStaffAthlete: true },
+    { id: "j2", name: "Joueur 2" },
+    { id: "s2", name: "Staff 2", isStaffAthlete: true },
+  ];
+  it("vue joueur/athlète → staff-athlètes VISIBLES (concourent avec les joueurs)", () => {
+    expect(rankingVisiblePlayers(roster, true).map((p) => p.id)).toEqual(["j1", "s1", "j2", "s2"]);
+  });
+  it("vue staff → tous les staff-athlètes MASQUÉS (les staff ne se voient pas entre eux)", () => {
+    expect(rankingVisiblePlayers(roster, false).map((p) => p.id)).toEqual(["j1", "j2"]);
+  });
+});
 
 describe("rankLeaderboard — ex æquo (rang partagé + départage stable)", () => {
   const opts = { pointsOf: (r) => r.pts, labelOf: (r) => r.name, rankKey: "rank" };

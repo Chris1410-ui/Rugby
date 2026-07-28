@@ -204,6 +204,15 @@ export function rankLeaderboard(items, { pointsOf, labelOf, rankKey = "rank" }) 
   });
 }
 
+/* Effectif VISIBLE au classement selon le spectateur. Un staff-athlète (carte
+   `is_staff_athlete`) ne concourt QUE face aux joueurs : seuls les joueurs (et le
+   staff-athlète lui-même en vue athlète) le voient. En vue STAFF (viewerIsPlayer
+   = false), tous les staff-athlètes sont masqués — les staff ne se voient pas
+   entre eux. Aucun barème modifié : simple filtre d'affichage. PUR. */
+export function rankingVisiblePlayers(players = [], viewerIsPlayer) {
+  return viewerIsPlayer ? players : players.filter((p) => !p.isStaffAthlete);
+}
+
 // SOURCE DE VÉRITÉ UNIQUE : enrichit chaque joueur (charge + bilan du jour → risque & readiness)
 export function enrichPlayers(players, sessions, logs, daily) {
   return players.map((p) => {

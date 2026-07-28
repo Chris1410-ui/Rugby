@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { grpLabel } from "../../lib/positions.js";
-import { computePoints, nextDiv, fmtShort, rankLeaderboard, pointLabel, badgeLabel, divLabel } from "../../lib/metrics.js";
+import { computePoints, nextDiv, fmtShort, rankLeaderboard, rankingVisiblePlayers, pointLabel, badgeLabel, divLabel } from "../../lib/metrics.js";
 import { bilanEventsOf } from "../../data/checkins.js";
 import { bannerOf, bannerGradient } from "../../lib/crews.js";
 import { useTeamTop14 } from "../../data/tests.js";
@@ -34,7 +34,11 @@ const Move = ({ m }) =>
 export default function Classement({ players, sessions, crews = [], me, accent = C.coral }) {
   const { t } = useTranslation();
   const isJoueur = !!me;
-  const groups = [...new Set(players.map((p) => p.grp))];
+  // Visibilité des staff-athlètes : seuls les joueurs (et le staff-athlète lui-même
+  // en vue athlète → isJoueur) les voient au classement ; en vue staff ils sont
+  // masqués (les staff ne se voient pas entre eux). Cf. rankingVisiblePlayers.
+  const rankPlayers = useMemo(() => rankingVisiblePlayers(players, isJoueur), [players, isJoueur]);
+  const groups = [...new Set(rankPlayers.map((p) => p.grp))];
   const [scope, setScope] = useState("all");
   const [mode, setMode] = useState("indiv"); // indiv | team (bascule #6)
   const [sel, setSel] = useState(null);
@@ -66,7 +70,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const { activities: clubActivities, bilans: clubBilans } = useTeamCheckinEvents(teamId);
 
   const data = useMemo(() => {
-    const all = players.map((p) => {
+    const all = rankPlayers.map((p) => {
       const events = top14ByPlayer[p.id] || [];
       const taskEvents = (taskPtsByPlayer[p.id] || []).map((t) => ({ label: t.titre, date: t.date }));
       const reactEvents = reactByPlayer[p.id] || [];
@@ -87,7 +91,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [players, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, athletePublic]);
+  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, athletePublic]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
