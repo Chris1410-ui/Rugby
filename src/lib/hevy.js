@@ -3,6 +3,7 @@
    (logs[sessionId][playerId].perExercise[eid].sets) et la liste `sessions`. */
 
 import { C } from "./tokens.js";
+import { resolveSetPlan, computeLoadKg } from "./oneRM.js";
 
 export const e1RM = (w, reps) => (w > 0 && reps > 0 ? Math.round(w * (1 + reps / 30)) : 0); // Epley
 export const workingSets = (pe) => (pe?.sets || []).filter((s) => s.type !== "warmup" && s.done);
@@ -70,6 +71,48 @@ export const parseChargeKg = (v) => {
   const n = parseFloat(String(v ?? "").replace(",", ".").replace(/[^\d.]/g, ""));
   return isNaN(n) ? null : n;
 };
+
+/* Valeurs INITIALES des séries d'un exercice set-like (muscu / poids de corps /
+   skill) dans le lecteur de séance. Règles (source de vérité du pré-remplissage) :
+
+   1. Si un log est déjà enregistré (`saved.sets`) → on restitue TEL QUEL le réalisé
+      du joueur ; la prescription ne le réécrit jamais.
+   2. Séries détaillées (`setPlan`) → CHAQUE série calcule SA valeur initiale UNE
+      seule fois, indépendamment des autres (charge résolue du 1RM si dispo).
+   3. Prescription uniforme → SEULE la série 1 est pré-remplie (charge @% résolue du
+      1RM, ou charge littérale ; + reps). Les séries suivantes restent VIDES — elles
+      ne sont jamais écrasées par la prescription (le joueur les remplit).
+   4. Un exercice SANS `pct` n'est jamais touché par le calcul de 1RM.
+
+   Fonction PURE (aucun état React) → testable et rejouable à l'identique. `oneRM` =
+   1RM courant (kg) du mouvement de référence, ou null si inconnu. */
+export function initSetLikeSets(e, { saved = null, oneRM = null } = {}) {
+  if (saved?.sets) return { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" };
+  if (Array.isArray(e?.setPlan) && e.setPlan.length) {
+    const resolved = resolveSetPlan(e.setPlan, oneRM);
+    return {
+      sets: e.setPlan.map((sp, i) => {
+        const rk = resolved[i];
+        const kg = rk ? (rk.kg != null ? rk.kg : rk.charge) : null;
+        return { w: kg != null ? String(kg) : "", reps: sp?.reps != null ? String(sp.reps) : "", type: "normal", done: false };
+      }),
+      note: "",
+    };
+  }
+  const n = parseSetsN(e?.sets);
+  // Charge de la série 1 : littérale prescrite si présente, sinon @% résolue du 1RM.
+  const kg = e?.pct && oneRM ? computeLoadKg(e.pct, oneRM) : null;
+  const firstW = e?.charge != null && e.charge !== "" ? String(e.charge) : (kg != null ? String(kg) : "");
+  return {
+    sets: Array.from({ length: n }, (_, i) => ({
+      w: i === 0 ? firstW : "",
+      reps: i === 0 && e?.reps != null && e.reps !== "" ? String(e.reps) : "",
+      type: "normal",
+      done: false,
+    })),
+    note: "",
+  };
+}
 
 /* Comparatif PRESCRIT (séance) vs RÉALISÉ (log). `ex` = exercice de la séance
    (sets/reps/charge prescrits), `pe` = perExercise[eid] du log (séries réalisées).

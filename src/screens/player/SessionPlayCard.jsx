@@ -6,7 +6,7 @@ import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from
 import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users, Clock } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
-  e1RM, SET_TYPES, nextSetType, parseSetsN,
+  e1RM, SET_TYPES, nextSetType, initSetLikeSets,
   lastExercisePerf, exerciseRecords, exerciseHistory, prescribedVsRealized,
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
@@ -99,15 +99,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
         b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ done: !!sv?.[i]?.done, actual: sv?.[i]?.actual ?? "" })), note: saved?.note || "" };
         return;
       }
-      // Set-like : muscu / poids de corps / skill (+ séries détaillées).
-      if (saved?.sets) { b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" }; return; }
-      const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
-      if (Array.isArray(e.setPlan) && e.setPlan.length) {
-        b[e.id] = { sets: e.setPlan.map((sp, i) => ({ w: prev?.sets?.[i]?.w || "", reps: String(sp.reps ?? ""), type: "normal", done: false })), note: "" };
-      } else {
-        const n = parseSetsN(e.sets);
-        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
-      }
+      // Set-like : muscu / poids de corps / skill (+ séries détaillées). Le
+      // pré-remplissage (série 1 uniquement en uniforme, chaque série une fois en
+      // détaillé) est centralisé dans un helper PUR ; la saisie du joueur (saved)
+      // est restituée telle quelle et n'est jamais recalculée. Le perf précédent
+      // n'est qu'un INDICE au rendu (placeholder), pas une valeur pré-remplie.
+      b[e.id] = initSetLikeSets(e, { saved, oneRM: exOneRM(e) });
     });
     return b;
   };
