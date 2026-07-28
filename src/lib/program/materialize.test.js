@@ -77,4 +77,26 @@ describe("docToSessions — sans semaine type", () => {
     expect(sessions).toEqual([]);
     expect(warnings.join(" ")).toMatch(/Aucune séance/i);
   });
+
+  it("émet setPlan depuis une cellule à séries détaillées (+ rmLabel si %)", () => {
+    const doc = {
+      meta: { title: "P", weeks: 1, nature: "force" },
+      sections: [{ type: "exercises", title: "Force", rows: [{
+        name: "Bench", weeks: [{ text: "4 séries", sets: [
+          { reps: "10", pct1rm: 80 }, { reps: "8", pct1rm: 85 }, { reps: "6", charge: 95 },
+        ] }],
+      }] }],
+    };
+    const exo = docToSessions(doc).sessions[0].exercises[0];
+    expect(exo.name).toBe("Bench");
+    expect(exo.setPlan).toEqual([
+      { reps: "10", pct: 80 }, { reps: "8", pct: 85 }, { reps: "6", charge: 95 },
+    ]);
+    expect(exo.rmLabel).toBe("Bench"); // référence %1RM (pas de rmRef → le mouvement lui-même)
+  });
+
+  it("pas de setPlan si aucune cellule détaillée (rétro-compat)", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [{ type: "exercises", title: "S", rows: [{ name: "Squat", weeks: [{ text: "4×8" }] }] }] };
+    expect(docToSessions(doc).sessions[0].exercises[0].setPlan).toBeUndefined();
+  });
 });

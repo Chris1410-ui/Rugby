@@ -557,6 +557,10 @@ function SaveTemplateModal({ teamId, section, defaultName, onClose, t }) {
    (texte libre « 4×8 R7 » + bascule pic ★), + bloc / tempo / repos / note. */
 function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
   const cellW = 92;
+  // Éditeur « détailler les séries » : ligne dépliée + semaine ciblée.
+  const [seriesRow, setSeriesRow] = useState(null);
+  const [seriesWk, setSeriesWk] = useState(0);
+  const cellSets = (ri, wi) => (Array.isArray(section.rows[ri]?.weeks?.[wi]?.sets) ? section.rows[ri].weeks[wi].sets : []);
   return (
     <div>
       {/* Légende des conventions de saisie acceptées. */}
@@ -619,6 +623,7 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                 })}
                 <input value={r.note} onChange={(e) => onRow(ri, { note: e.target.value })} placeholder={t("protocols.notePh")} style={{ ...cellInput, flex: 1, minWidth: 150, borderLeft: `1px solid ${C.border2}` }} />
                 <div style={{ width: 38, flexShrink: 0, display: "flex", flexDirection: "column", borderLeft: `1px solid ${C.border2}` }}>
+                  <button onClick={() => { setSeriesRow(seriesRow === ri ? null : ri); setSeriesWk((w) => Math.min(w, weeks - 1)); }} title={t("protocols.detailSeries")} style={{ ...rowMini, color: (r.weeks || []).some((c) => Array.isArray(c?.sets) && c.sets.length) ? C.viol : "rgba(255,255,255,0.5)", fontWeight: 800, fontSize: 12 }}>≣</button>
                   <button onClick={() => onMoveRow(ri, -1)} disabled={ri === 0} title={t("protocols.moveUp")} style={{ ...rowMini, opacity: ri === 0 ? 0.3 : 1 }}><ChevronDown size={11} style={{ transform: "rotate(180deg)" }} /></button>
                   <button onClick={() => onMoveRow(ri, 1)} disabled={ri === section.rows.length - 1} title={t("protocols.moveDown")} style={{ ...rowMini, opacity: ri === section.rows.length - 1 ? 0.3 : 1 }}><ChevronDown size={11} /></button>
                   <button onClick={() => onDelRow(ri)} title={t("protocols.removeRow")} style={{ ...rowMini, color: C.coral }}><Trash2 size={11} /></button>
@@ -637,6 +642,44 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                   {anyUnknown && <span style={{ color: C.coral, fontWeight: 700 }}>{t("protocols.syntaxWarn")}</span>}
                 </div>
               )}
+              {seriesRow === ri && (() => {
+                const wk = Math.min(seriesWk, weeks - 1);
+                const series = cellSets(ri, wk);
+                const writeSeries = (arr) => onCell(ri, wk, { sets: arr });
+                const patchS = (si, p) => writeSeries(series.map((s, j) => (j === si ? { ...s, ...p } : s)));
+                const numOr = (v) => { if (v === "" || v == null) return null; const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };
+                return (
+                  <div style={{ padding: "8px 12px 10px 47px", borderBottom: `1px solid ${C.border2}`, background: "rgba(139,124,246,0.06)" }}>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{t("protocols.detailSeriesFor")}</span>
+                      {section.weekLabels.map((wl, wi) => (
+                        <button key={wi} onClick={() => setSeriesWk(wi)} style={{ padding: "3px 8px", borderRadius: 6, border: wk === wi ? `1px solid ${C.viol}` : `1px solid ${C.border}`, background: wk === wi ? `${C.viol}22` : "transparent", color: "#fff", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>
+                          {wl || `S${wi + 1}`}{cellSets(ri, wi).length ? ` ·${cellSets(ri, wi).length}` : ""}
+                        </button>
+                      ))}
+                    </div>
+                    {series.length === 0 && <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{t("protocols.detailSeriesEmpty")}</div>}
+                    {series.map((sp, si) => {
+                      const mode = sp.charge != null ? "kg" : "pct";
+                      const val = sp.pct1rm ?? sp.charge ?? "";
+                      return (
+                        <div key={si} style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 5 }}>
+                          <span style={{ fontSize: 10, width: 22, color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>{t("protocols.seriesShort", { n: si + 1 })}</span>
+                          <input value={sp.reps ?? ""} onChange={(e) => patchS(si, { reps: e.target.value })} placeholder={t("protocols.seriesReps")} style={{ ...cellInput, width: 70, border: `1px solid ${C.border}`, borderRadius: 6, textAlign: "center" }} />
+                          <select value={mode} onChange={(e) => patchS(si, e.target.value === "kg" ? { charge: numOr(val), pct1rm: null } : { pct1rm: numOr(val), charge: null })} style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 6, color: "#fff", fontSize: 11, padding: "6px 4px", outline: "none" }}>
+                            <option value="pct">{t("protocols.seriesModePct")}</option>
+                            <option value="kg">{t("protocols.seriesModeKg")}</option>
+                          </select>
+                          <input value={val} onChange={(e) => patchS(si, mode === "kg" ? { charge: numOr(e.target.value) } : { pct1rm: numOr(e.target.value) })} inputMode="decimal" placeholder={mode === "kg" ? "kg" : "%"} style={{ ...cellInput, width: 64, border: `1px solid ${C.border}`, borderRadius: 6, textAlign: "center" }} />{/* i18n-ok: unités % / kg */}
+                          <button onClick={() => writeSeries(series.filter((_, j) => j !== si))} title={t("protocols.removeRow")} style={{ background: "none", border: "none", color: C.coral, cursor: "pointer", display: "flex" }}><Trash2 size={13} /></button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => writeSeries([...series, { reps: "", pct1rm: null }])} style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 6, padding: "4px 10px", color: C.viol, fontSize: 10.5, fontWeight: 700, cursor: "pointer", marginTop: 2 }}>+ {t("protocols.addSeries")}</button>
+                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.45)", marginTop: 6 }}>{t("protocols.detailSeriesHint")}</div>
+                  </div>
+                );
+              })()}
               </Fragment>
             );
           })}

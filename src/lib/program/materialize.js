@@ -52,7 +52,7 @@ function rowToExo(row) {
   const { sets, reps } = parseScheme(cell);
   const block = String(row?.block || "").trim();
   const name = String(row?.name || "").trim() || block || presc || "Exercice";
-  return {
+  const exo = {
     name,
     sets: sets || "",
     reps: reps || presc,
@@ -62,6 +62,26 @@ function rowToExo(row) {
     note: String(row?.note || "").trim() || null,
     presc: presc || null,
   };
+  // MODE DÉTAILLÉ PAR SÉRIE (schéma pyramidal d'une cellule) → exo.setPlan, comme
+  // planMaterialize. On prend la 1re cellule qui porte des séries. Chaque série :
+  // reps + pct(%1RM) OU charge (kg). La carte joueur résout les kg via son 1RM.
+  const cellWithSets = (Array.isArray(row?.weeks) ? row.weeks : []).find((c) => Array.isArray(c?.sets) && c.sets.length);
+  if (cellWithSets) {
+    exo.setPlan = cellWithSets.sets.map((s) => {
+      const o = { reps: s.reps ?? "" };
+      if (s.pct1rm != null) o.pct = s.pct1rm; else if (s.charge != null) o.charge = s.charge;
+      if (s.tempo) o.tempo = s.tempo;
+      if (s.rest != null) o.rest = s.rest;
+      if (s.note) o.note = s.note;
+      return o;
+    });
+    if (exo.setPlan.some((s) => s.pct != null)) {
+      const ref = String(row?.rmRef || "").trim();
+      exo.rmLabel = ref || name;                            // référence %1RM commune aux séries
+      exo.rmExerciseId = ref ? null : (row?.exerciseId || null);
+    }
+  }
+  return exo;
 }
 
 const exosOfSection = (s) => (Array.isArray(s?.rows) ? s.rows : []).map(rowToExo).filter(Boolean);

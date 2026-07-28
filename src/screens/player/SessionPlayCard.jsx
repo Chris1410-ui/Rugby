@@ -13,7 +13,7 @@ import { saveLog } from "../../data/logs.js";
 import { getProgramDoc } from "../../data/programDocs.js";
 import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { useExercisePerf } from "../../data/exercisePerf.js";
-import { summarize1RM, computeLoadKg, movementIdentity } from "../../lib/oneRM.js";
+import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
@@ -48,6 +48,11 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
     return { pct: e.pct, kg: cur ? computeLoadKg(e.pct, cur.value) : null, label: e.rmLabel || e.name, kind: cur?.kind, missing: !cur };
   };
+  // 1RM courant (kg) du mouvement d'un exercice, pour résoudre son setPlan par série.
+  const exOneRM = (e) => {
+    const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
+    return cur ? cur.value : null;
+  };
 
   // Ouvre le PROTOCOLE source complet (consignes, sécurité, progression) en lecture.
   const openProtocol = async () => {
@@ -64,9 +69,15 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
       const saved = log?.perExercise?.[e.id];
       if (saved?.sets) b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" };
       else {
-        const n = parseSetsN(e.sets);
         const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
-        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
+        if (Array.isArray(e.setPlan) && e.setPlan.length) {
+          // Séries détaillées : une entrée par série, préremplie avec la reps prescrite
+          // (la charge cible s'affiche via resolveSetPlan au rendu, jamais figée ici).
+          b[e.id] = { sets: e.setPlan.map((sp, i) => ({ w: prev?.sets?.[i]?.w || "", reps: String(sp.reps ?? ""), type: "normal", done: false })), note: "" };
+        } else {
+          const n = parseSetsN(e.sets);
+          b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
+        }
       }
     });
     return b;
@@ -228,6 +239,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
             const pl = pctLoad(e); // charge calculée depuis le 1RM si exprimé en %
+            // Séries détaillées : consigne + charge résolue (1RM) par série (arrondi 2,5).
+            const plan = Array.isArray(e.setPlan) && e.setPlan.length ? resolveSetPlan(e.setPlan, exOneRM(e)) : null;
             const ecart = cmp.diff
               ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
                  cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
@@ -247,7 +260,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   </div>
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {e.presc || `${e.sets}×${e.reps}${e.charge ? ` @ ${e.charge}` : ""}`}{e.tempo ? ` · ${t("player.session.tempo")} ${e.tempo}` : ""}{e.rest ? ` · ${t("player.session.restPresc", { n: e.rest })}` : ""}</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {plan ? (e.presc || t("player.session.detailedSeries", { n: plan.length })) : (e.presc || `${e.sets}×${e.reps}${e.charge ? ` @ ${e.charge}` : ""}`)}{e.tempo ? ` · ${t("player.session.tempo")} ${e.tempo}` : ""}{e.rest ? ` · ${t("player.session.restPresc", { n: e.rest })}` : ""}</span>
                   <span>{t("player.session.prev")} {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
                   {rec.top > 0 && <span style={{ color: C.amb }}>{t("player.session.recBadge", { top: rec.top, orm: rec.oneRM })}</span>}
                 </div>
@@ -274,14 +287,29 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                 {ex[e.id].sets.map((x, i) => {
                   const stype = SET_TYPES[x.type] || SET_TYPES.normal;
                   const ph = prev?.sets?.[i];
+                  const ps = plan?.[i]; // consigne de CETTE série (setPlan résolu)
+                  const psKg = ps ? (ps.kg != null ? ps.kg : (ps.charge != null ? ps.charge : null)) : null;
                   return (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: "26px 1fr 1fr 34px", gap: 6, alignItems: "center", marginBottom: 5 }}>
-                      <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
-                      <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (pl?.kg != null ? `${pl.kg}` : "kg")} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
-                      <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph?.reps ? `${ph.reps}` : (e.reps || "reps")} style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: placeholder = consigne prescrite (unité adaptée : reps, watts, kcal, min…) */}
-                      <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                        <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
-                      </button>
+                    <div key={i} style={{ marginBottom: 5 }}>
+                      {ps && (
+                        <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", margin: "0 0 3px 32px", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 800, color: "rgba(255,255,255,0.8)" }}>{t("player.session.seriesN", { n: i + 1 })}</span>
+                          <span>{[ps.reps ? `${ps.reps}` : null, ps.pct ? `${ps.pct}%` : null].filter(Boolean).join(" · ")}</span>
+                          {psKg != null ? (
+                            <span style={{ color: C.viol, fontWeight: 800 }}>→ {psKg} {t("player.session.kg")}</span>
+                          ) : ps.needs1RM ? (
+                            <button onClick={() => setSet1rm({ label: e.rmLabel || e.name })} style={{ fontWeight: 800, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "0 6px", cursor: "pointer" }}>{ps.pct}% · {t("player.session.setYour1RM", { movement: e.rmLabel || e.name })}</button>
+                          ) : null}
+                        </div>
+                      )}
+                      <div style={{ display: "grid", gridTemplateColumns: "26px 1fr 1fr 34px", gap: 6, alignItems: "center" }}>
+                        <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
+                        <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (psKg != null ? `${psKg}` : (pl?.kg != null ? `${pl.kg}` : "kg"))} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
+                        <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph?.reps ? `${ph.reps}` : (ps?.reps ? `${ps.reps}` : (e.reps || "reps"))} style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: placeholder = consigne prescrite (unité adaptée : reps, watts, kcal, min…) */}
+                        <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                          <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
