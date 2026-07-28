@@ -12,7 +12,7 @@ import SessionPlayCard from "./SessionPlayCard.jsx";
 import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
 
 /* Mes séances (joueur) — inscriptions ouvertes + séance libre + à faire + historique. */
-export default function Seances({ me, sessions, logs, teamId, accent }) {
+export default function Seances({ me, sessions, logs, teamId, accent, onNavigate }) {
   const { t } = useTranslation();
   const preview = usePreview();
   const [building, setBuilding] = useState(false);
@@ -47,7 +47,7 @@ export default function Seances({ me, sessions, logs, teamId, accent }) {
             <>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>{t("player.seances.todo")} · {upcoming.length}</div>
               {upcoming.map((s) => (
-                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onDelete={onDelete} />
+                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onDelete={onDelete} onNavigate={onNavigate} />
               ))}
             </>
           )}
@@ -55,7 +55,7 @@ export default function Seances({ me, sessions, logs, teamId, accent }) {
             <>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700, margin: "16px 0 10px" }}>{t("player.seances.history")}</div>
               {pastOnes.map((s) => (
-                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onDelete={onDelete} />
+                <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onDelete={onDelete} onNavigate={onNavigate} />
               ))}
             </>
           )}

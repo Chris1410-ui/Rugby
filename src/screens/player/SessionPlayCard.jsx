@@ -13,7 +13,13 @@ import { saveLog } from "../../data/logs.js";
 import { getProgramDoc } from "../../data/programDocs.js";
 import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { useExercisePerf } from "../../data/exercisePerf.js";
-import { summarize1RM, computeLoadKg, movementIdentity } from "../../lib/oneRM.js";
+import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
+import { blockKind } from "../../lib/sessionType.js";
+import { computeTargetPace, paceSecPerKmFromDistanceTime, speedKmhFromDistanceTime, formatPace, formatSpeed } from "../../lib/pace.js";
+import { TEST_METRICS } from "../../data/tests.js";
+
+// Libellé + unité d'un test de la batterie (pour les blocs cardio_test).
+const testMeta = (key) => TEST_METRICS.find((m) => m.key === key) || null;
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
@@ -22,7 +28,7 @@ const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", bo
 const durBtn = { flexShrink: 0, width: 38, height: 38, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer" };
 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
-export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete }) {
+export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete, onNavigate }) {
   const { t } = useTranslation();
   const preview = usePreview(); // aperçu owner/staff → lecture seule
   const past = s.date <= todayISO();
@@ -48,6 +54,11 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
     return { pct: e.pct, kg: cur ? computeLoadKg(e.pct, cur.value) : null, label: e.rmLabel || e.name, kind: cur?.kind, missing: !cur };
   };
+  // 1RM courant (kg) du mouvement d'un exercice, pour résoudre son setPlan par série.
+  const exOneRM = (e) => {
+    const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
+    return cur ? cur.value : null;
+  };
 
   // Ouvre le PROTOCOLE source complet (consignes, sécurité, progression) en lecture.
   const openProtocol = async () => {
@@ -61,11 +72,40 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const init = () => {
     const b = {};
     s.exercises.forEach((e) => {
+      const k = blockKind(e);
       const saved = log?.perExercise?.[e.id];
-      if (saved?.sets) b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" };
-      else {
+      // Bloc mono (cardio continu) : distance/temps/FC + « fait ».
+      if (k === "cardio_continuous") {
+        const m = saved && saved.kind === "cardio_continuous" ? saved : null;
+        b[e.id] = { mono: { distanceM: m?.distanceM ?? "", durationSec: m?.durationSec ?? "", hrAvg: m?.hrAvg ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Circuit / AMRAP : compteur de tours (mono).
+      if (k === "cardio_circuit") {
+        const m = saved && saved.kind === "cardio_circuit" ? saved : null;
+        b[e.id] = { mono: { roundsDone: m?.roundsDone ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Test : saisie du résultat (mono) — l'unité vient de la batterie.
+      if (k === "cardio_test") {
+        const m = saved && saved.kind === "cardio_test" ? saved : null;
+        b[e.id] = { mono: { value: m?.value ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Cardio intervalles : une entrée cochable par répétition (réalisé par rép).
+      if (k === "cardio_interval") {
+        const n = Array.isArray(e.repPlan) && e.repPlan.length ? e.repPlan.length : (Number(e.reps) > 0 ? Number(e.reps) : 4);
+        const sv = saved && Array.isArray(saved.reps) ? saved.reps : null;
+        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ done: !!sv?.[i]?.done, actual: sv?.[i]?.actual ?? "" })), note: saved?.note || "" };
+        return;
+      }
+      // Set-like : muscu / poids de corps / skill (+ séries détaillées).
+      if (saved?.sets) { b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" }; return; }
+      const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
+      if (Array.isArray(e.setPlan) && e.setPlan.length) {
+        b[e.id] = { sets: e.setPlan.map((sp, i) => ({ w: prev?.sets?.[i]?.w || "", reps: String(sp.reps ?? ""), type: "normal", done: false })), note: "" };
+      } else {
         const n = parseSetsN(e.sets);
-        const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
         b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
       }
     });
@@ -122,6 +162,17 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const addSet = (eid) => { setDirty(true); setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; }); };
   const delSet = (eid, i) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.filter((_, j) => j !== i) } })); };
   const setExNote = (eid, note) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], note } })); };
+  // Bloc mono (cardio continu) : maj d'un champ de l'état { mono: {...} }.
+  const setMono = (eid, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], mono: { ...v[eid].mono, ...patch } } })); };
+  const numOrU = (v) => (Number(v) > 0 ? Number(v) : undefined);
+  // Unités faites / total d'un bloc, tous kinds (séries, répétitions, ou 1 pour un mono).
+  const blockUnits = (e) => {
+    const stt = ex[e.id];
+    if (!stt) return { done: 0, total: 0 };
+    if (stt.sets) return { done: stt.sets.filter((x) => x.done).length, total: stt.sets.length };
+    if (stt.mono) return { done: stt.mono.done ? 1 : 0, total: 1 };
+    return { done: 0, total: 0 };
+  };
 
   const toggleSet = (e, i) => {
     const cur = ex[e.id].sets[i];
@@ -151,7 +202,23 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
     setBusy(true);
     const pe = {};
-    s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, note: (ex[e.id].note || "").trim(), ...summarize(sets) }; });
+    s.exercises.forEach((e) => {
+      const k = blockKind(e); const stt = ex[e.id];
+      if (k === "cardio_continuous") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: k, distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "cardio_interval") {
+        pe[e.id] = { kind: k, reps: (stt.sets || []).map((x) => ({ done: !!x.done, actual: x.actual ?? "" })), note: (stt.note || "").trim() };
+      } else if (k === "cardio_circuit") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: k, roundsDone: numOrU(m.roundsDone), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "cardio_test") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: k, value: String(m.value ?? "").trim(), unit: (testMeta(e.testKey)?.unit || "").trim(), done: !!m.done, note: (stt.note || "").trim() };
+      } else {
+        const sets = stt.sets; pe[e.id] = { sets, note: (stt.note || "").trim(), ...summarize(sets) };
+      }
+    });
     try {
       await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb, duration: status === "done" ? Number(dur) || plannedDur : null });
       setDirty(false); // enregistré → la resync depuis la base est de nouveau autorisée
@@ -164,8 +231,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setBusy(false);
   };
 
-  const doneSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.filter((x) => x.done).length, 0);
-  const totSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.length, 0);
+  const doneSets = s.exercises.reduce((a, e) => a + blockUnits(e).done, 0);
+  const totSets = s.exercises.reduce((a, e) => a + blockUnits(e).total, 0);
 
   // Séance-test : les résultats sont saisis par le staff → carte informative,
   // pas de logging set-par-set côté joueur.
@@ -224,10 +291,19 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           </div>
 
           {s.exercises.map((e) => {
+            const k = blockKind(e);
+            // Blocs cardio : rendus dédiés (jamais de kg ; distance/temps/allure).
+            if (k === "cardio_continuous") return <CardioContinuous key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
+            if (k === "cardio_interval") return <CardioInterval key={e.id} e={e} st={ex[e.id]} onRep={(i, p) => setSet(e.id, i, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
+            if (k === "cardio_circuit") return <CardioCircuit key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} t={t} accent={accent} />;
+            if (k === "cardio_test") return <CardioTest key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} onNavigate={onNavigate} t={t} accent={accent} />;
             const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
             const pl = pctLoad(e); // charge calculée depuis le 1RM si exprimé en %
+            // Séries détaillées : consigne + charge résolue (1RM) par série (arrondi 2,5).
+            const plan = Array.isArray(e.setPlan) && e.setPlan.length ? resolveSetPlan(e.setPlan, exOneRM(e)) : null;
+            const isSkillEx = k === "skill"; // pas de kg : reps ou tenue (s)
             const ecart = cmp.diff
               ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
                  cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
@@ -247,7 +323,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                   </div>
                 </div>
                 <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {e.presc || `${e.sets}×${e.reps}${e.charge ? ` @ ${e.charge}` : ""}`}{e.tempo ? ` · ${t("player.session.tempo")} ${e.tempo}` : ""}{e.rest ? ` · ${t("player.session.restPresc", { n: e.rest })}` : ""}</span>
+                  <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.prescribed")} {plan ? (e.presc || t("player.session.detailedSeries", { n: plan.length })) : (e.presc || `${e.sets}×${e.reps ?? (e.holdSec ? `${e.holdSec}s` : "")}${e.charge ? ` @ ${e.charge}` : ""}`)}{e.tempo ? ` · ${t("player.session.tempo")} ${e.tempo}` : ""}{e.rest ? ` · ${t("player.session.restPresc", { n: e.rest })}` : ""}</span>
                   <span>{t("player.session.prev")} {prev ? prev.sets.map((x) => `${x.w || "–"}×${x.reps || "–"}`).join("  ") : "—"}</span>
                   {rec.top > 0 && <span style={{ color: C.amb }}>{t("player.session.recBadge", { top: rec.top, orm: rec.oneRM })}</span>}
                 </div>
@@ -274,14 +350,29 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                 {ex[e.id].sets.map((x, i) => {
                   const stype = SET_TYPES[x.type] || SET_TYPES.normal;
                   const ph = prev?.sets?.[i];
+                  const ps = plan?.[i]; // consigne de CETTE série (setPlan résolu)
+                  const psKg = ps ? (ps.kg != null ? ps.kg : (ps.charge != null ? ps.charge : null)) : null;
                   return (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: "26px 1fr 1fr 34px", gap: 6, alignItems: "center", marginBottom: 5 }}>
-                      <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
-                      <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (pl?.kg != null ? `${pl.kg}` : "kg")} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: unité kg */}
-                      <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph?.reps ? `${ph.reps}` : (e.reps || "reps")} style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: placeholder = consigne prescrite (unité adaptée : reps, watts, kcal, min…) */}
-                      <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                        <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
-                      </button>
+                    <div key={i} style={{ marginBottom: 5 }}>
+                      {ps && (
+                        <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", margin: "0 0 3px 32px", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 800, color: "rgba(255,255,255,0.8)" }}>{t("player.session.seriesN", { n: i + 1 })}</span>
+                          <span>{[ps.reps ? `${ps.reps}` : null, ps.pct ? `${ps.pct}%` : null].filter(Boolean).join(" · ")}</span>
+                          {psKg != null ? (
+                            <span style={{ color: C.viol, fontWeight: 800 }}>→ {psKg} {t("player.session.kg")}</span>
+                          ) : ps.needs1RM ? (
+                            <button onClick={() => setSet1rm({ label: e.rmLabel || e.name })} style={{ fontWeight: 800, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "0 6px", cursor: "pointer" }}>{ps.pct}% · {t("player.session.setYour1RM", { movement: e.rmLabel || e.name })}</button>
+                          ) : null}
+                        </div>
+                      )}
+                      <div style={{ display: "grid", gridTemplateColumns: isSkillEx ? "26px 1fr 34px" : "26px 1fr 1fr 34px", gap: 6, alignItems: "center" }}>
+                        <button onClick={() => setSet(e.id, i, { type: nextSetType(x.type) })} title={stype.name} style={{ height: 32, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.06)", color: stype.c, fontSize: 11, fontWeight: 800, cursor: "pointer" }}>{stype.l}</button>
+                        {!isSkillEx && <input value={x.w} onChange={(ev) => setSet(e.id, i, { w: ev.target.value })} placeholder={ph?.w ? `${ph.w}` : (psKg != null ? `${psKg}` : (pl?.kg != null ? `${pl.kg}` : "kg"))} inputMode="decimal" style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />}{/* i18n-ok: unité kg */}
+                        <input value={x.reps} onChange={(ev) => setSet(e.id, i, { reps: ev.target.value })} placeholder={ph?.reps ? `${ph.reps}` : (isSkillEx ? (e.measure === "temps" ? t("player.session.holdUnit") : (e.reps || "reps")) : (ps?.reps ? `${ps.reps}` : (e.reps || "reps")))} inputMode={isSkillEx && e.measure === "temps" ? "numeric" : undefined} style={{ ...playInp, opacity: x.done ? 0.6 : 1 }} />{/* i18n-ok: placeholder = consigne prescrite (unité adaptée : reps, watts, kcal, min…) */}
+                        <button onClick={() => toggleSet(e, i)} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                          <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -421,6 +512,154 @@ function ExerciseVideo({ url, accent }) {
           />
         </div>
       )}
+    </div>
+  );
+}
+
+// Durée courte lisible : « 30 s » (<60) ou « 1:30 ».
+const fmtDurShort = (sec) => { const s = Number(sec) || 0; return s < 60 ? `${s} s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+// Libellé d'un effort/récup { durationSec | distanceM }.
+const effLabel = (o) => (o?.distanceM ? `${o.distanceM} m` : o?.durationSec ? fmtDurShort(o.durationSec) : "—");
+const cardioBox = (accent) => ({ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`, borderLeft: `3px solid ${accent}`, borderRadius: 10, padding: 12, marginBottom: 14 });
+const cardioInp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "8px 8px", color: "#fff", fontSize: 13, outline: "none", textAlign: "center", boxSizing: "border-box" };
+
+/* C3 — Cardio CONTINU : distance / temps saisis → allure & vitesse réalisées ;
+   allure cible depuis %VMA + MAS du joueur (jamais de valeur fausse). */
+function CardioContinuous({ e, st, onField, onNote, masKmh, t, accent }) {
+  const m = st?.mono || {};
+  const target = computeTargetPace(e.pctVMA, masKmh);
+  const realPace = paceSecPerKmFromDistanceTime(m.distanceM, m.durationSec);
+  const realSpeed = speedKmhFromDistanceTime(m.distanceM, m.durationSec);
+  const dsec = Number(m.durationSec) || 0;
+  const setDur = (mn, sc) => onField({ durationSec: Math.max(0, (Number(mn) || 0) * 60 + (Number(sc) || 0)) });
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name || t("player.session.cardio.continuous")}</span>
+        <Tag c={accent}>{t("player.session.cardio.continuous")}</Tag>
+      </div>
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+        {t("player.session.cardio.target")} {[e.distanceM ? `${e.distanceM} m` : null, e.durationSec ? fmtDurShort(e.durationSec) : null, e.pctVMA ? `${e.pctVMA}% VMA` : null].filter(Boolean).join(" · ") || "—"}
+        {e.pctVMA ? (target.needsMas ? ` · ${t("player.session.cardio.noMas")}` : ` · ${t("player.session.cardio.targetPace", { pace: formatPace(target.secPerKm), speed: formatSpeed(target.speedKmh) })}`) : ""}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.4fr 1fr", gap: 8, alignItems: "end", marginBottom: 8 }}>
+        <label><span style={miniLbl}>{t("player.session.cardio.distanceM")}</span><input value={m.distanceM ?? ""} onChange={(ev) => onField({ distanceM: ev.target.value.replace(/[^\d]/g, "") })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.cardio.duration")}</span>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <input value={dsec ? Math.floor(dsec / 60) : ""} onChange={(ev) => setDur(ev.target.value.replace(/[^\d]/g, ""), dsec % 60)} inputMode="numeric" placeholder={t("player.session.min")} style={cardioInp} />
+            <span style={{ color: "rgba(255,255,255,0.4)" }}>:</span>
+            <input value={dsec ? String(dsec % 60).padStart(2, "0") : ""} onChange={(ev) => setDur(Math.floor(dsec / 60), ev.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" placeholder={t("player.session.ssHint")} style={cardioInp} />
+          </div>
+        </label>
+        <label><span style={miniLbl}>{t("player.session.cardio.hr")}</span><input value={m.hrAvg ?? ""} onChange={(ev) => onField({ hrAvg: ev.target.value.replace(/[^\d]/g, "") })} inputMode="numeric" style={cardioInp} /></label>
+      </div>
+      {(realPace || realSpeed) && (
+        <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8 }}>
+          {t("player.session.cardio.realPace", { pace: formatPace(realPace), speed: formatSpeed(realSpeed) })}
+        </div>
+      )}
+      <button onClick={() => onField({ done: !m.done })} style={{ width: "100%", background: m.done ? C.green : "rgba(255,255,255,0.05)", border: m.done ? "none" : `1px solid ${C.border}`, borderRadius: 8, padding: "9px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <CheckCircle size={14} color={m.done ? "#fff" : "rgba(255,255,255,0.4)"} /> {m.done ? t("player.session.cardio.done") : t("player.session.cardio.markDone")}
+      </button>
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", marginTop: 8, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+
+/* C2 — Cardio INTERVALLES : une ligne cochable par répétition, cible (effort /
+   récup / allure %VMA, éventuellement propre à la rép via repPlan) + réalisé. */
+function CardioInterval({ e, st, onRep, onNote, masKmh, t, accent }) {
+  const reps = st?.sets || [];
+  const specFor = (i) => (Array.isArray(e.repPlan) && e.repPlan[i]) ? e.repPlan[i] : { effort: e.effort, recovery: e.recovery, pctVMA: e.pctVMA };
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name || t("player.session.cardio.interval")}</span>
+        <Tag c={accent}>{t("player.session.cardio.interval")}</Tag>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{reps.length} × {effLabel(e.effort)}{e.recovery ? ` / ${effLabel(e.recovery)}` : ""}</span>
+      </div>
+      {reps.map((x, i) => {
+        const sp = specFor(i);
+        const tp = computeTargetPace(sp.pctVMA, masKmh);
+        const unit = sp.effort?.distanceM ? "m" : "s";
+        return (
+          <div key={i} style={{ marginBottom: 5 }}>
+            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", margin: "0 0 3px 2px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontWeight: 800, color: "rgba(255,255,255,0.8)" }}>{t("player.session.seriesN", { n: i + 1 })}</span>
+              <span>{effLabel(sp.effort)}{sp.recovery ? ` / ${effLabel(sp.recovery)}` : ""}</span>
+              {sp.pctVMA ? (tp.needsMas ? <span style={{ color: C.amb }}>{sp.pctVMA}% · {t("player.session.cardio.noMas")}</span> : <span style={{ color: C.viol, fontWeight: 700 }}>{sp.pctVMA}% · {t("player.session.cardio.pacePerKm", { pace: formatPace(tp.secPerKm) })}</span>) : null}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 34px", gap: 6, alignItems: "center" }}>
+              <input value={x.actual ?? ""} onChange={(ev) => onRep(i, { actual: ev.target.value })} placeholder={t("player.session.cardio.realizedUnit", { unit })} style={{ ...cardioInp, textAlign: "left", opacity: x.done ? 0.6 : 1 }} />
+              <button onClick={() => onRep(i, { done: !x.done })} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", marginTop: 6, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+const miniLbl = { fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 700, display: "block", marginBottom: 3 };
+
+/* C4 — Circuit / AMRAP : compteur de tours réalisés. */
+function CardioCircuit({ e, st, onField, onNote, t, accent }) {
+  const m = st?.mono || {};
+  const rounds = Number(m.roundsDone) || 0;
+  const step = (d) => onField({ roundsDone: Math.max(0, rounds + d), done: true });
+  const items = Array.isArray(e.roundItems) ? e.roundItems : [];
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name || t(`player.session.cardio.mode_${e.mode || "circuit"}`)}</span>
+        <Tag c={accent}>{t(`player.session.cardio.mode_${e.mode || "circuit"}`)}</Tag>
+        {e.totalDurationSec ? <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{fmtDurShort(e.totalDurationSec)}</span> : null}
+      </div>
+      {items.length > 0 && (
+        <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+          {items.map((it) => `${it.name}${it.reps ? ` ×${it.reps}` : it.sec ? ` ${fmtDurShort(it.sec)}` : ""}`).join(" · ")}
+        </div>
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 8 }}>
+        <button onClick={() => step(-1)} style={{ ...durBtn, width: 40, height: 40 }}>−</button>
+        <div style={{ textAlign: "center", minWidth: 80 }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: accent }}>{rounds}</div>
+          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{t("player.session.cardio.rounds")}</div>
+        </div>
+        <button onClick={() => step(1)} style={{ ...durBtn, width: 40, height: 40 }}>+</button>
+      </div>
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+
+/* C5 — Test : saisie du résultat (valeur + unité de la batterie) ; deep-link vers
+   la Fiche. On stocke le résultat dans le log ; test_results reste saisi par le staff. */
+function CardioTest({ e, st, onField, onNote, onNavigate, t, accent }) {
+  const m = st?.mono || {};
+  const meta = testMeta(e.testKey);
+  const unit = (meta?.unit || "").trim();
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 20 }}>🧪</span>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{meta?.label || e.name || t("player.session.testTag")}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 44px 34px", gap: 6, alignItems: "center", marginBottom: 8 }}>
+        <input value={m.value ?? ""} onChange={(ev) => onField({ value: ev.target.value })} placeholder={t("player.session.cardio.result")} style={{ ...cardioInp, textAlign: "left" }} />
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center" }}>{unit || "—"}</span>{/* i18n-ok: unité issue de la batterie */}
+        <button onClick={() => onField({ done: !m.done })} style={{ height: 32, borderRadius: 6, border: m.done ? "none" : `1px solid ${C.border}`, background: m.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <CheckCircle size={15} color={m.done ? "#fff" : "rgba(255,255,255,0.3)"} />
+        </button>
+      </div>
+      {onNavigate && (
+        <button onClick={() => onNavigate("fiche")} style={{ background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: 7, padding: "6px 10px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+          <ExternalLink size={13} /> {t("player.session.cardio.reportTest")}
+        </button>
+      )}
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
     </div>
   );
 }

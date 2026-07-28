@@ -15,6 +15,8 @@ import PlayerPrograms from "./PlayerPrograms.jsx";
 import PlayerSessionHistory from "./PlayerSessionHistory.jsx";
 import PlayerAttendance from "./PlayerAttendance.jsx";
 import Player1RM from "./Player1RM.jsx";
+import GpsFicheSection from "./GpsFicheSection.jsx";
+import GpsDeposit from "../player/GpsDeposit.jsx";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
 import { normalizeInitials } from "../../lib/identity.js";
@@ -532,6 +534,13 @@ function FicheInner({ player, canEdit = false, self = false, players = [], hide 
 
       <Player1RM player={player} self={self} canEdit={canEdit} />
 
+      {/* Dépôt de données GPS (capture / saisie manuelle) — sur sa propre fiche. */}
+      {self && <GpsFicheButton player={player} />}
+
+      {/* Section GPS (charge externe) — records, courbes, comparaison k-anon
+          (self), juxtaposition externe/interne. Lecture staff + joueur (RLS). */}
+      <GpsFicheSection player={player} self={self} />
+
       {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
       {(() => {
         const ch = chargeLabel(player.charge7j);
@@ -663,6 +672,20 @@ function FicheInner({ player, canEdit = false, self = false, players = [], hide 
    plante (champ inattendu, joueur non enrichi), on affiche une erreur lisible
    dans la modale au lieu de blanchir toute l'app (l'ancien comportement, le
    boundary racine remplaçant l'écran entier). Le reste de l'app reste utilisable. */
+/* Bouton « Ajouter mes données GPS » sur sa propre fiche → ouvre le dépôt. */
+function GpsFicheButton({ player }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)} style={{ width: "100%", marginTop: 12, background: `${C.teal}18`, border: `1px solid ${C.teal}55`, borderRadius: 10, padding: 12, color: C.teal, fontWeight: 800, fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+        📡 {t("player.gps.actionTitle")}
+      </button>
+      {open && <GpsDeposit me={{ id: player.id, team: player.team }} sessions={[]} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
 export default function Fiche(props) {
   return (
     <ErrorBoundary compact onClose={props.onClose}>

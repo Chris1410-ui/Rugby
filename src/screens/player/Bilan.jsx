@@ -19,6 +19,7 @@ import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
 import SessionPlayCard from "./SessionPlayCard.jsx";
 import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
+import GpsDeposit from "./GpsDeposit.jsx";
 import ProgramView from "../shared/ProgramView.jsx";
 import Defis from "./Defis.jsx";
 import Taches from "./Taches.jsx";
@@ -33,7 +34,7 @@ import Convocations from "./Convocations.jsx";
    (WEEKLY_GOAL_DAYS) ; la pastille du bandeau suit la même définition. Tout se
    valide sur place, saisie du JOUR MÊME ; jours passés = lecture seule. Formules
    readiness/points INCHANGÉES (on réorganise l'accès, pas le calcul). */
-export default function Bilan({ me, accent = C.green, teamId, players = [], sessions = [], logs = {}, bilans = {}, badges = {}, onData }) {
+export default function Bilan({ me, accent = C.green, teamId, players = [], sessions = [], logs = {}, bilans = {}, badges = {}, onData, onNavigate }) {
   const { t } = useTranslation();
   const preview = usePreview();
   const { day, refresh } = useMyDay(me.id);
@@ -42,6 +43,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   const [viewingProto, setViewingProto] = useState(null); // protocole ouvert en consultation
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
+  const [gpsOpen, setGpsOpen] = useState(false);
   const [justCreated, setJustCreated] = useState(null); // id d'une séance libre à ouvrir dès qu'elle arrive
   const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
   const { checkins } = usePlayerCheckins(me.id, 21);
@@ -217,6 +219,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         <ActionCard emoji="➕" title={t("player.today.freeSession")} sub={t("player.today.freeSessionSecondary")} state={null} accent={accent} muted onClick={() => !preview && setBuilding(true)} t={t} />
 
         <ActionCard emoji="⚡" title={t("player.today.activities")} sub={t("player.today.activitiesSub")} state={(day.matin?.activities?.length) ? "done" : "todo"} accent={accent} onClick={() => setSheet("activities")} t={t} />
+        <ActionCard emoji="📡" title={t("player.gps.actionTitle")} sub={t("player.gps.actionSub")} state={null} accent={accent} onClick={() => !preview && setGpsOpen(true)} t={t} />
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
         {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
@@ -255,7 +258,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
             <div style={{ padding: "0 16px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
               {list.length === 0
                 ? <div style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12.5, padding: 18 }}>{t("player.today.noSessionToday")}</div>
-                : list.map((s) => <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onSaved={refresh} />)}
+                : list.map((s) => <SessionPlayCard key={s.id} s={s} me={me} log={logs?.[s.id]?.[me.id]} sessions={sessions} logs={logs} accent={accent} onSaved={refresh} onNavigate={onNavigate} />)}
             </div>
           </Overlay>
         );
@@ -298,6 +301,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
       )}
 
       {building && <FreeSessionBuilder me={me} onClose={() => setBuilding(false)} onCreated={(id) => { setBuilding(false); setJustCreated(id); refresh(); onData?.(); }} />}
+      {gpsOpen && <GpsDeposit me={me} sessions={sessions} onClose={() => setGpsOpen(false)} />}
     </div>
   );
 }

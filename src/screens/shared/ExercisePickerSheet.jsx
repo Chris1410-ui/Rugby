@@ -13,7 +13,7 @@ const accent = C.green;
    la « séance libre » du joueur ET le compositeur de programmes du staff.
    `isAdded(ex)` marque les exercices déjà présents dans la cible (non
    sélectionnables). « Ajouter (N) » renvoie les exercices choisis via onAdd. */
-export default function ExercisePickerSheet({ onAdd, onClose, isAdded }) {
+export default function ExercisePickerSheet({ onAdd, onClose, isAdded, filter = null }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [bodyPart, setBodyPart] = useState("");
@@ -23,8 +23,12 @@ export default function ExercisePickerSheet({ onAdd, onClose, isAdded }) {
   const [picked, setPicked] = useState({}); // ref → exercice choisi
   const [detail, setDetail] = useState(null);
 
+  // Filtre par type de séance actif → les facettes partie-du-corps/matériel sont
+  // pré-contraintes ; on les masque pour éviter un ET vide (ex. « poids de corps »
+  // + « barre »). Recherche + muscle ciblé restent disponibles.
+  const typed = !!filter;
   const facets = useExerciseFacets();
-  const { exercises, total, loading } = useExerciseLibrary({ search, bodyPart, equipment, target, page });
+  const { exercises, total, loading } = useExerciseLibrary({ search, bodyPart, equipment, target, page, filter });
   const setFilter = (setter) => (v) => { setter(v); setPage(0); };
 
   const nPicked = Object.keys(picked).length;
@@ -48,14 +52,18 @@ export default function ExercisePickerSheet({ onAdd, onClose, isAdded }) {
           <input value={search} onChange={(e) => setFilter(setSearch)(e.target.value)} placeholder={t("shared.exlib.search")} style={{ width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 12px 9px 32px", color: "#fff", fontSize: 12.5, outline: "none" }} />
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-          <select value={bodyPart} onChange={(e) => setFilter(setBodyPart)(e.target.value)} style={selStyle}>
-            <option value="">{t("shared.exlib.allBodyParts")}</option>
-            {facets.bodyParts.map((v) => <option key={v} value={v}>{bodyPartLabel(t, v)}</option>)}
-          </select>
-          <select value={equipment} onChange={(e) => setFilter(setEquipment)(e.target.value)} style={selStyle}>
-            <option value="">{t("shared.exlib.allEquipment")}</option>
-            {facets.equipment.map((v) => <option key={v} value={v}>{equipmentLabel(t, v)}</option>)}
-          </select>
+          {!typed && (
+            <>
+              <select value={bodyPart} onChange={(e) => setFilter(setBodyPart)(e.target.value)} style={selStyle}>
+                <option value="">{t("shared.exlib.allBodyParts")}</option>
+                {facets.bodyParts.map((v) => <option key={v} value={v}>{bodyPartLabel(t, v)}</option>)}
+              </select>
+              <select value={equipment} onChange={(e) => setFilter(setEquipment)(e.target.value)} style={selStyle}>
+                <option value="">{t("shared.exlib.allEquipment")}</option>
+                {facets.equipment.map((v) => <option key={v} value={v}>{equipmentLabel(t, v)}</option>)}
+              </select>
+            </>
+          )}
           <select value={target} onChange={(e) => setFilter(setTarget)(e.target.value)} style={selStyle}>
             <option value="">{t("shared.exlib.allTargets")}</option>
             {facets.targets.map((v) => <option key={v} value={v}>{targetLabel(t, v)}</option>)}

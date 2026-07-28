@@ -14,6 +14,7 @@
 
 import { normalizeProgram } from "./model.js";
 import { norm } from "../catalog/detect.js";
+import { normalizeBlocks } from "../sessionBlocks.js";
 
 // Deux titres se « correspondent » si l'un contient l'autre (normalisés) — pour
 // rattacher un jour de semaine-type à la grille d'exercices homonyme.
@@ -52,7 +53,7 @@ function rowToExo(row) {
   const { sets, reps } = parseScheme(cell);
   const block = String(row?.block || "").trim();
   const name = String(row?.name || "").trim() || block || presc || "Exercice";
-  return {
+  const exo = {
     name,
     sets: sets || "",
     reps: reps || presc,
@@ -62,6 +63,28 @@ function rowToExo(row) {
     note: String(row?.note || "").trim() || null,
     presc: presc || null,
   };
+  // MODE DÉTAILLÉ PAR SÉRIE (schéma pyramidal d'une cellule) → exo.setPlan, comme
+  // planMaterialize. On prend la 1re cellule qui porte des séries. Chaque série :
+  // reps + pct(%1RM) OU charge (kg). La carte joueur résout les kg via son 1RM.
+  const cellWithSets = (Array.isArray(row?.weeks) ? row.weeks : []).find((c) => Array.isArray(c?.sets) && c.sets.length);
+  if (cellWithSets) {
+    exo.setPlan = cellWithSets.sets.map((s) => {
+      const o = { reps: s.reps ?? "" };
+      if (s.pct1rm != null) o.pct = s.pct1rm; else if (s.charge != null) o.charge = s.charge;
+      if (s.tempo) o.tempo = s.tempo;
+      if (s.rest != null) o.rest = s.rest;
+      if (s.note) o.note = s.note;
+      return o;
+    });
+    if (exo.setPlan.some((s) => s.pct != null)) {
+      const ref = String(row?.rmRef || "").trim();
+      exo.rmLabel = ref || name;                            // référence %1RM commune aux séries
+      exo.rmExerciseId = ref ? null : (row?.exerciseId || null);
+    }
+  }
+  const vid = String(row?.video || "").trim();
+  if (vid) exo.video = vid;                                 // vidéo de démo de la ligne (parité planMaterialize)
+  return exo;
 }
 
 const exosOfSection = (s) => (Array.isArray(s?.rows) ? s.rows : []).map(rowToExo).filter(Boolean);
@@ -74,6 +97,13 @@ export function docToSessions(doc) {
   const exSecs = sections.filter((s) => s.type === "exercises");
   const wcal = sections.find((s) => s.type === "weekcalendar" && Array.isArray(s.days) && s.days.length);
   const warnings = [];
+
+  // Sections CONDITIONNING structurées (PR5) → séances cardio loggables (nature
+  // conditioning, code CSB). Blocs normalisés via sessionBlocks (kind cardio_*).
+  const condSessions = sections
+    .filter((s) => s.type === "conditioning")
+    .map((s, i) => ({ weekday: (i % 6) + 1, nature: "conditioning", code: "CSB", titre: s.title || "Conditioning", exercises: normalizeBlocks(s.blocks) }))
+    .filter((s) => s.exercises.length);
 
   // Cas 1 — une « semaine type » existe : chaque jour actif = une séance.
   if (wcal) {
@@ -96,7 +126,7 @@ export function docToSessions(doc) {
           : [{ name: label, sets: "", reps: "", charge: "", rest: 90 }]);
       return { weekday: day.weekday, nature, code: codeForNature(nature), titre: label, exercises: exos };
     });
-    return { sessions, warnings };
+    return { sessions: sessions.concat(condSessions), warnings };
   }
 
   // Cas 2 — pas de semaine type : chaque grille d'exercices = une séance
@@ -112,10 +142,12 @@ export function docToSessions(doc) {
         exercises: exos.length ? exos : [{ name: s.title || "Séance", sets: "", reps: "", charge: "", rest: 90 }],
       };
     });
-    return { sessions, warnings };
+    return { sessions: sessions.concat(condSessions), warnings };
   }
 
-  // Aucun contenu daté dérivable : le protocole seul sera enregistré.
+  // Pas de grille muscu ni de semaine type : seules les séances conditioning
+  // (si présentes) sont datables ; sinon rien.
+  if (condSessions.length) return { sessions: condSessions, warnings };
   warnings.push("Aucune séance datable (ni semaine type, ni grille d'exercices) : seul le protocole sera enregistré.");
   return { sessions: [], warnings };
 }

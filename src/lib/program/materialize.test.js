@@ -77,4 +77,59 @@ describe("docToSessions — sans semaine type", () => {
     expect(sessions).toEqual([]);
     expect(warnings.join(" ")).toMatch(/Aucune séance/i);
   });
+
+  it("émet setPlan depuis une cellule à séries détaillées (+ rmLabel si %)", () => {
+    const doc = {
+      meta: { title: "P", weeks: 1, nature: "force" },
+      sections: [{ type: "exercises", title: "Force", rows: [{
+        name: "Bench", weeks: [{ text: "4 séries", sets: [
+          { reps: "10", pct1rm: 80 }, { reps: "8", pct1rm: 85 }, { reps: "6", charge: 95 },
+        ] }],
+      }] }],
+    };
+    const exo = docToSessions(doc).sessions[0].exercises[0];
+    expect(exo.name).toBe("Bench");
+    expect(exo.setPlan).toEqual([
+      { reps: "10", pct: 80 }, { reps: "8", pct: 85 }, { reps: "6", charge: 95 },
+    ]);
+    expect(exo.rmLabel).toBe("Bench"); // référence %1RM (pas de rmRef → le mouvement lui-même)
+  });
+
+  it("pas de setPlan si aucune cellule détaillée (rétro-compat)", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [{ type: "exercises", title: "S", rows: [{ name: "Squat", weeks: [{ text: "4×8" }] }] }] };
+    expect(docToSessions(doc).sessions[0].exercises[0].setPlan).toBeUndefined();
+  });
+
+  it("matérialise une section conditioning en séance loggable (kind cardio_*)", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [
+      { type: "conditioning", title: "VMA", blocks: [
+        { id: "b1", kind: "cardio_interval", reps: "10", effort: { durationSec: 30 }, recovery: { durationSec: 30 }, pctVMA: "100" },
+        { id: "b2", kind: "cardio_continuous", distanceM: "3000", pctVMA: "65" },
+      ] },
+    ] };
+    const { sessions } = docToSessions(doc);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]).toMatchObject({ nature: "conditioning", code: "CSB", titre: "VMA" });
+    expect(sessions[0].exercises.map((e) => e.kind)).toEqual(["cardio_interval", "cardio_continuous"]);
+  });
+
+  it("conditioning coexiste avec une grille d'exercices (les deux séances)", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [
+      { type: "exercises", title: "Force", rows: [{ name: "Squat", weeks: [{ text: "4×8" }] }] },
+      { type: "conditioning", title: "Cardio", blocks: [{ id: "c1", kind: "cardio_continuous", distanceM: "2000" }] },
+    ] };
+    const natures = docToSessions(doc).sessions.map((s) => s.nature);
+    expect(natures).toContain("conditioning");
+    expect(docToSessions(doc).sessions.length).toBe(2);
+  });
+
+  it("émet la vidéo de la ligne (et rien si absente)", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [{ type: "exercises", title: "S", rows: [
+      { name: "Squat", video: "https://youtu.be/abc", weeks: [{ text: "4×8" }] },
+      { name: "Bench", weeks: [{ text: "5×5" }] },
+    ] }] };
+    const exos = docToSessions(doc).sessions[0].exercises;
+    expect(exos[0].video).toBe("https://youtu.be/abc");
+    expect(exos[1].video).toBeUndefined();
+  });
 });

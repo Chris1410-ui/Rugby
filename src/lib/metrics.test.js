@@ -267,6 +267,13 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 15);
     expect(r.ev.some((e) => e.key === "reactivity")).toBe(true);
   });
+  it("séance GPS déposée : +10 par dépôt (2 le même jour = +20, pas de dédup date)", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const gps = [{ date: todayISO() }, { date: todayISO() }]; // 2 dépôts le même jour
+    const r = computePoints(p, [], {}, [], [], [], [], [], [], [], [], gps);
+    expect(r.pts).toBe(108 + 20);
+    expect(r.ev.filter((e) => e.key === "gps").length).toBe(2);
+  });
 });
 
 describe("buildAlerts — clés stables (file de traitement)", () => {

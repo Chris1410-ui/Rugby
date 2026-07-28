@@ -76,3 +76,24 @@ export function useTeamCheckinEvents(teamId) {
   }, [teamId, fetch]);
   return maps;
 }
+
+/* Events « séance GPS déposée » de TOUT le club (charge externe → +10 par dépôt).
+   La RPC team_gps_events (SECURITY DEFINER) n'expose que (player_id, date) : ni
+   métriques, ni nom de séance privé, ni images. → { [playerId]: [{ date }] }. */
+export function useTeamGpsEvents(teamId) {
+  const [byPlayer, setByPlayer] = useState({});
+  const fetch = useCallback(async () => {
+    if (!teamId) { setByPlayer({}); return; }
+    const { data, error } = await supabase.rpc("team_gps_events", { p_team: teamId });
+    if (error) { console.error("[team_gps_events]", error.message); return; }
+    const m = {}; (data ?? []).forEach((r) => { (m[r.player_id] = m[r.player_id] || []).push({ date: r.at }); });
+    setByPlayer(m);
+  }, [teamId]);
+  useEffect(() => {
+    fetch(); if (!teamId) return;
+    const ch = supabase.channel(uniqueTopic(`lb-gps:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "gps_sessions" }, () => fetch()).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [teamId, fetch]);
+  return { byPlayer, refresh: fetch };
+}

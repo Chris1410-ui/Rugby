@@ -1,7 +1,10 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
-import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
+import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check, Video } from "../../../lib/icons.jsx";
+import { useTeamMedia } from "../../../data/media.js";
+import { Overlay } from "../../../lib/ui.jsx";
+import ConditioningBuilder from "../../player/ConditioningBuilder.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
 import { overridesForDoc, resetOverride } from "../../../data/protocolOverrides.js";
@@ -13,7 +16,7 @@ import { todayISO } from "../../../lib/metrics.js";
 import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
-  emptyChecklistSection, emptyWeekCalendarSection, emptyCardioSection, emptyTableSection,
+  emptyChecklistSection, emptyWeekCalendarSection, emptyCardioSection, emptyConditioningSection, emptyTableSection,
   WEEKDAY_NAMES, changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
 } from "../../../lib/program/model.js";
 import { BUILTIN_SECTION_TEMPLATES, freshSection } from "../../../lib/program/sectionTemplates.js";
@@ -166,6 +169,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
     checklist: () => emptyChecklistSection(),
     weekcalendar: () => emptyWeekCalendarSection(),
     cardio: () => emptyCardioSection(),
+    conditioning: () => emptyConditioningSection(),
     table: () => emptyTableSection(),
   };
   const addSection = (type) => setDoc((d) => { d.sections.push((SECTION_FACTORY[type] || SECTION_FACTORY.narrative)()); return d; });
@@ -370,11 +374,13 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
               <WeekCalendarEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : s.type === "cardio" ? (
               <CardioEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
+            ) : s.type === "conditioning" ? (
+              <ConditioningBuilder blocks={s.blocks || []} setBlocks={(blocks) => setSection(si, { blocks })} masKmh={null} t={t} accent={ACCENT} />
             ) : s.type === "table" ? (
               <TableEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : (
               <ExerciseGrid
-                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players} onMissing={setMissingMv}
+                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players} teamId={teamId} onMissing={setMissingMv}
                 onAddFree={() => addRow(si)} onLibrary={() => setPicker(si)}
                 onRow={(ri, p) => setRow(si, ri, p)} onCell={(ri, wi, p) => setCell(si, ri, wi, p)}
                 onMoveRow={(ri, dir) => moveRow(si, ri, dir)} onDelRow={(ri) => delRow(si, ri)}
@@ -500,6 +506,7 @@ function AddSectionMenu({ weeks, teamId, onBlank, onInsert, t }) {
             <MenuItem onClick={() => pick(() => onBlank("checklist"))}>{t("protocols.type_checklist")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("weekcalendar"))}>{t("protocols.type_weekcalendar")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("cardio"))}>{t("protocols.type_cardio")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("conditioning"))}>{t("protocols.type_conditioning")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("table"))}>{t("protocols.type_table")}</MenuItem>
             <MenuLabel>{t("protocols.tplBuiltin")}</MenuLabel>
             {BUILTIN_SECTION_TEMPLATES.map((tpl) => (
@@ -555,8 +562,13 @@ function SaveTemplateModal({ teamId, section, defaultName, onClose, t }) {
 
 /* Grille d'exercices : une ligne par exercice, une cellule éditable par semaine
    (texte libre « 4×8 R7 » + bascule pic ★), + bloc / tempo / repos / note. */
-function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
+function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], teamId, onMissing, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
   const cellW = 92;
+  // Éditeur « détailler les séries » : ligne dépliée + semaine ciblée.
+  const [seriesRow, setSeriesRow] = useState(null);
+  const [seriesWk, setSeriesWk] = useState(0);
+  const [videoRow, setVideoRow] = useState(null); // ligne dont on édite la vidéo
+  const cellSets = (ri, wi) => (Array.isArray(section.rows[ri]?.weeks?.[wi]?.sets) ? section.rows[ri].weeks[wi].sets : []);
   return (
     <div>
       {/* Légende des conventions de saisie acceptées. */}
@@ -605,6 +617,10 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                   />
                   {/* Mouvement de référence du % (sélecteur ; vide = ce mouvement). */}
                   <RmRefPicker value={r.rmRef || ""} onChange={(v) => onRow(ri, { rmRef: v })} t={t} />
+                  {/* Vidéo de démo : médiathèque ou lien YouTube (le joueur la voit en séance). */}
+                  <button onClick={() => setVideoRow(ri)} title={t("protocols.videoTitle")} style={{ background: "none", border: "none", cursor: "pointer", color: r.video ? C.green : "rgba(255,255,255,0.35)", display: "flex", flexShrink: 0, padding: "0 4px" }}>
+                    <Video size={14} />
+                  </button>
                 </div>
                 <input value={r.tempo} onChange={(e) => onRow(ri, { tempo: e.target.value })} placeholder="2010" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
                 <input value={r.rest} onChange={(e) => onRow(ri, { rest: e.target.value })} placeholder="90s" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
@@ -619,6 +635,7 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                 })}
                 <input value={r.note} onChange={(e) => onRow(ri, { note: e.target.value })} placeholder={t("protocols.notePh")} style={{ ...cellInput, flex: 1, minWidth: 150, borderLeft: `1px solid ${C.border2}` }} />
                 <div style={{ width: 38, flexShrink: 0, display: "flex", flexDirection: "column", borderLeft: `1px solid ${C.border2}` }}>
+                  <button onClick={() => { setSeriesRow(seriesRow === ri ? null : ri); setSeriesWk((w) => Math.min(w, weeks - 1)); }} title={t("protocols.detailSeries")} style={{ ...rowMini, color: (r.weeks || []).some((c) => Array.isArray(c?.sets) && c.sets.length) ? C.viol : "rgba(255,255,255,0.5)", fontWeight: 800, fontSize: 12 }}>≣</button>
                   <button onClick={() => onMoveRow(ri, -1)} disabled={ri === 0} title={t("protocols.moveUp")} style={{ ...rowMini, opacity: ri === 0 ? 0.3 : 1 }}><ChevronDown size={11} style={{ transform: "rotate(180deg)" }} /></button>
                   <button onClick={() => onMoveRow(ri, 1)} disabled={ri === section.rows.length - 1} title={t("protocols.moveDown")} style={{ ...rowMini, opacity: ri === section.rows.length - 1 ? 0.3 : 1 }}><ChevronDown size={11} /></button>
                   <button onClick={() => onDelRow(ri)} title={t("protocols.removeRow")} style={{ ...rowMini, color: C.coral }}><Trash2 size={11} /></button>
@@ -637,6 +654,44 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                   {anyUnknown && <span style={{ color: C.coral, fontWeight: 700 }}>{t("protocols.syntaxWarn")}</span>}
                 </div>
               )}
+              {seriesRow === ri && (() => {
+                const wk = Math.min(seriesWk, weeks - 1);
+                const series = cellSets(ri, wk);
+                const writeSeries = (arr) => onCell(ri, wk, { sets: arr });
+                const patchS = (si, p) => writeSeries(series.map((s, j) => (j === si ? { ...s, ...p } : s)));
+                const numOr = (v) => { if (v === "" || v == null) return null; const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };
+                return (
+                  <div style={{ padding: "8px 12px 10px 47px", borderBottom: `1px solid ${C.border2}`, background: "rgba(139,124,246,0.06)" }}>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 700 }}>{t("protocols.detailSeriesFor")}</span>
+                      {section.weekLabels.map((wl, wi) => (
+                        <button key={wi} onClick={() => setSeriesWk(wi)} style={{ padding: "3px 8px", borderRadius: 6, border: wk === wi ? `1px solid ${C.viol}` : `1px solid ${C.border}`, background: wk === wi ? `${C.viol}22` : "transparent", color: "#fff", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>
+                          {wl || `S${wi + 1}`}{cellSets(ri, wi).length ? ` ·${cellSets(ri, wi).length}` : ""}
+                        </button>
+                      ))}
+                    </div>
+                    {series.length === 0 && <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{t("protocols.detailSeriesEmpty")}</div>}
+                    {series.map((sp, si) => {
+                      const mode = sp.charge != null ? "kg" : "pct";
+                      const val = sp.pct1rm ?? sp.charge ?? "";
+                      return (
+                        <div key={si} style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 5 }}>
+                          <span style={{ fontSize: 10, width: 22, color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>{t("protocols.seriesShort", { n: si + 1 })}</span>
+                          <input value={sp.reps ?? ""} onChange={(e) => patchS(si, { reps: e.target.value })} placeholder={t("protocols.seriesReps")} style={{ ...cellInput, width: 70, border: `1px solid ${C.border}`, borderRadius: 6, textAlign: "center" }} />
+                          <select value={mode} onChange={(e) => patchS(si, e.target.value === "kg" ? { charge: numOr(val), pct1rm: null } : { pct1rm: numOr(val), charge: null })} style={{ background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 6, color: "#fff", fontSize: 11, padding: "6px 4px", outline: "none" }}>
+                            <option value="pct">{t("protocols.seriesModePct")}</option>
+                            <option value="kg">{t("protocols.seriesModeKg")}</option>
+                          </select>
+                          <input value={val} onChange={(e) => patchS(si, mode === "kg" ? { charge: numOr(e.target.value) } : { pct1rm: numOr(e.target.value) })} inputMode="decimal" placeholder={mode === "kg" ? "kg" : "%"} style={{ ...cellInput, width: 64, border: `1px solid ${C.border}`, borderRadius: 6, textAlign: "center" }} />{/* i18n-ok: unités % / kg */}
+                          <button onClick={() => writeSeries(series.filter((_, j) => j !== si))} title={t("protocols.removeRow")} style={{ background: "none", border: "none", color: C.coral, cursor: "pointer", display: "flex" }}><Trash2 size={13} /></button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => writeSeries([...series, { reps: "", pct1rm: null }])} style={{ background: `${C.viol}18`, border: `1px solid ${C.viol}55`, borderRadius: 6, padding: "4px 10px", color: C.viol, fontSize: 10.5, fontWeight: 700, cursor: "pointer", marginTop: 2 }}>+ {t("protocols.addSeries")}</button>
+                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.45)", marginTop: 6 }}>{t("protocols.detailSeriesHint")}</div>
+                  </div>
+                );
+              })()}
               </Fragment>
             );
           })}
@@ -649,7 +704,57 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
         <button onClick={onAddFree} style={miniBtn}><Plus size={13} /> {t("protocols.addRowFree")}</button>
         <button onClick={onLibrary} style={{ ...miniBtn, borderColor: `${C.green}66`, color: C.green }}><Search size={13} /> {t("protocols.addFromLibrary")}</button>
       </div>
+      {videoRow != null && (
+        <VideoPicker
+          teamId={teamId}
+          value={section.rows[videoRow]?.video || ""}
+          onChange={(url) => onRow(videoRow, { video: url })}
+          onClose={() => setVideoRow(null)}
+          t={t}
+        />
+      )}
     </div>
+  );
+}
+
+/* Attache une vidéo de démo à une ligne d'exercice : lien YouTube collé OU choix
+   dans la médiathèque du club (on ne stocke qu'une URL/référence, jamais le
+   fichier ; la visibilité reste celle de la médiathèque). Le joueur la voit
+   depuis la ligne d'exercice dans le lecteur de séance. */
+function VideoPicker({ teamId, value, onChange, onClose, t }) {
+  const { media } = useTeamMedia(teamId);
+  const [url, setUrl] = useState(value || "");
+  const inp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 11px", color: "#fff", fontSize: 13, outline: "none", boxSizing: "border-box" };
+  return (
+    <Overlay onClose={onClose} sheet>
+      <div style={{ padding: "6px 18px 24px" }}>
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>{t("protocols.videoTitle")}</div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+          <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t("protocols.videoUrlPh")} style={{ ...inp, flex: 1 }} />
+          <button onClick={() => { onChange(url.trim()); onClose(); }} style={{ background: C.green, border: "none", borderRadius: 8, padding: "0 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("protocols.videoSet")}</button>
+        </div>
+        {value && (
+          <button onClick={() => { onChange(""); onClose(); }} style={{ background: "none", border: "none", color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: "2px 0 10px" }}>{t("protocols.videoRemove")}</button>
+        )}
+        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, margin: "8px 0" }}>{t("protocols.videoLib")}</div>
+        {media.length === 0 ? (
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", padding: "6px 0" }}>{t("protocols.videoEmpty")}</div>
+        ) : (
+          media.map((mv) => (
+            <button key={mv.id} onClick={() => { onChange(mv.url); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "8px 0", borderBottom: `1px solid ${C.border2}`, background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
+              {mv.thumbUrl
+                ? <img src={mv.thumbUrl} alt="" style={{ width: 42, height: 30, borderRadius: 5, objectFit: "cover", flexShrink: 0, background: "#000" }} />
+                : <span style={{ width: 42, height: 30, borderRadius: 5, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Video size={14} color="rgba(255,255,255,0.4)" /></span>}
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{mv.titre || mv.url}</span>
+                {mv.theme && <span style={{ display: "block", fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{mv.theme}</span>}
+              </span>
+              {value === mv.url && <Check size={15} color={C.green} />}
+            </button>
+          ))
+        )}
+      </div>
+    </Overlay>
   );
 }
 

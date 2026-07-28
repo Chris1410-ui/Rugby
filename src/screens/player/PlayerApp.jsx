@@ -111,9 +111,9 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <main style={{ flex: 1, padding: 18 }}>
          <PullToRefresh onRefresh={refresh}>
-          {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} badges={{ defis: bDefis, taches: bTaches, convocations: bConv }} onData={refresh} />}
+          {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} badges={{ defis: bDefis, taches: bTaches, convocations: bConv }} onData={refresh} onNavigate={setTab} />}
           {tab === "routine" && me?.isStaffAthlete && <MorningRoutine me={me} accent={ACCENT} />}
-          {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} />}
+          {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} onNavigate={setTab} />}
           {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
