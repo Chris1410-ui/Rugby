@@ -28,6 +28,7 @@ vi.mock("./PlayerPrograms.jsx", () => ({ default: () => null }));
 vi.mock("./PlayerSessionHistory.jsx", () => ({ default: () => null }));
 vi.mock("./PlayerAttendance.jsx", () => ({ default: () => null }));
 vi.mock("./Player1RM.jsx", () => ({ default: () => null }));
+vi.mock("./GpsFicheSection.jsx", () => ({ default: () => null }));
 vi.mock("./PdfImportReview.jsx", () => ({ default: () => null }));
 vi.mock("./TotemPicker.jsx", () => ({ default: () => null }));
 vi.mock("./TestsEvolution.jsx", () => ({ default: () => null }));

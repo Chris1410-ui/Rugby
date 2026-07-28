@@ -2358,7 +2358,30 @@
       "totemSaved": "Totem opgeslagen.",
       "totemTaken": "Die totem is al in gebruik in de club — kies een andere.",
       "totemNotAllowed": "Actie niet toegestaan.",
-      "totemRequired": "Totem mag niet leeg zijn."
+      "totemRequired": "Totem mag niet leeg zijn.",
+      "gps": {
+        "title": "GPS-gegevens",
+        "recVmax": "Topsnelheid",
+        "recDistance": "Max afstand",
+        "recHsr": "Max HSR",
+        "recMmin": "Beste m/min",
+        "m_distance_m": "Afstand (m)",
+        "m_hsr_m": "HSR (m)",
+        "m_vmax_kmh": "Topsnelheid (km/u)",
+        "m_m_per_min": "m·min⁻¹",
+        "compareTitle": "Vergelijking linie / team",
+        "you": "Jij",
+        "line": "Linie",
+        "team": "Team",
+        "needFive": "Vergelijking beschikbaar vanaf 5 spelers in de linie (geanonimiseerd).",
+        "extLoad": "Externe belasting (GPS)",
+        "intLoad": "Interne belasting",
+        "ext7dSessions": "{{count}} sessie(s) in 7 d",
+        "ext7dDistance": "{{km}} km totaal",
+        "ext7dHsr": "{{m}} m HSR",
+        "combineSoon": "Combinatie extern × intern komt eraan.",
+        "historyTitle": "Geschiedenis"
+      }
     },
     "error": {
       "title": "Er is een fout opgetreden",

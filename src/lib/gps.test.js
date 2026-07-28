@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeGpsMetrics, normalizeSpeedZones, hasAnyMetric, gpsRecords, pbMetrics, gpsSeries } from "./gps.js";
+import { normalizeGpsMetrics, normalizeSpeedZones, hasAnyMetric, gpsRecords, pbMetrics, gpsSeries, gpsWindowLoad, gpsPlayerAgg } from "./gps.js";
 
 describe("gps — normalizeGpsMetrics", () => {
   it("nettoie et convertit ; absent/illisible → null (jamais inventé)", () => {
@@ -75,5 +75,20 @@ describe("gps — records / PB / séries", () => {
     expect(gpsSeries(sessions, "hsr_m")).toEqual([
       { date: "2026-07-01", value: 400 }, { date: "2026-07-10", value: 380 },
     ]);
+  });
+
+  it("gpsWindowLoad : cumule sur la fenêtre, trous = 0", () => {
+    const r = gpsWindowLoad(sessions, 7, "2026-07-22"); // fenêtre 16→22 juil → seule c (20/07)
+    expect(r).toEqual({ n: 1, distanceM: 6800, hsrM: 0 }); // c.hsrM = null → 0
+    const all = gpsWindowLoad(sessions, 60, "2026-07-22");
+    expect(all.n).toBe(3);
+    expect(all.distanceM).toBe(20000);
+  });
+
+  it("gpsPlayerAgg : avg distance/hsr/m·min⁻¹, MAX vmax (aligné RPC k-anon)", () => {
+    const a = gpsPlayerAgg(sessions);
+    expect(a.vmax_kmh).toBe(31.5);           // max
+    expect(a.distance_m).toBe(20000 / 3);    // avg
+    expect(a.hsr_m).toBe(390);               // avg des non-null (400,380)
   });
 });

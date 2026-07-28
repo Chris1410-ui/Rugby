@@ -109,6 +109,38 @@ export function pbMetrics(session, prior = []) {
   return out;
 }
 
+/* Synthèse « charge externe » sur une fenêtre de `days` jours se terminant à
+   `today` (ISO) : nombre de séances GPS + distance et HSR cumulés (les trous
+   comptent pour 0). Sert à juxtaposer charge externe (GPS) et interne (sRPE),
+   SANS métrique combinée. PUR. */
+export function gpsWindowLoad(sessions = [], days = 7, today = "") {
+  const end = today || "";
+  const from = end ? new Date(new Date(end).getTime() - (days - 1) * 864e5).toISOString().slice(0, 10) : "";
+  let n = 0, distanceM = 0, hsrM = 0;
+  for (const s of sessions) {
+    if (!s?.date) continue;
+    if (from && (s.date < from || s.date > end)) continue;
+    n += 1;
+    if (s.distanceM != null) distanceM += s.distanceM;
+    if (s.hsrM != null) hsrM += s.hsrM;
+  }
+  return { n, distanceM, hsrM };
+}
+
+/* Agrégat personnel aligné sur les RPC k-anon (avg pour distance/hsr/m·min⁻¹,
+   MAX pour vmax) → { metricKey: number|null }, pour la comparaison ligne/équipe. PUR. */
+export function gpsPlayerAgg(sessions = []) {
+  const avg = (field) => {
+    const vs = sessions.map((s) => s?.[field]).filter((v) => v != null);
+    return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null;
+  };
+  const max = (field) => {
+    const vs = sessions.map((s) => s?.[field]).filter((v) => v != null);
+    return vs.length ? Math.max(...vs) : null;
+  };
+  return { distance_m: avg("distanceM"), hsr_m: avg("hsrM"), m_per_min: avg("mPerMin"), vmax_kmh: max("vmaxKmh") };
+}
+
 /* Série temporelle d'une métrique → [{date, value}] triée (pour les courbes).
    Ignore les sessions sans valeur. PUR. */
 export function gpsSeries(sessions = [], metricKey) {

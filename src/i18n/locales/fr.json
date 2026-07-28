@@ -2358,7 +2358,30 @@
       "totemSaved": "Totem enregistré.",
       "totemTaken": "Ce totem est déjà pris dans le club — choisis-en un autre.",
       "totemNotAllowed": "Action non autorisée.",
-      "totemRequired": "Le totem ne peut pas être vide."
+      "totemRequired": "Le totem ne peut pas être vide.",
+      "gps": {
+        "title": "Données GPS",
+        "recVmax": "Record vitesse",
+        "recDistance": "Distance max",
+        "recHsr": "HSR max",
+        "recMmin": "Meilleur m/min",
+        "m_distance_m": "Distance (m)",
+        "m_hsr_m": "HSR (m)",
+        "m_vmax_kmh": "Vitesse max (km/h)",
+        "m_m_per_min": "m·min⁻¹",
+        "compareTitle": "Comparaison ligne / équipe",
+        "you": "Toi",
+        "line": "Ligne",
+        "team": "Équipe",
+        "needFive": "Comparaison disponible dès 5 joueurs de la ligne (anonymisée).",
+        "extLoad": "Charge externe (GPS)",
+        "intLoad": "Charge interne",
+        "ext7dSessions": "{{count}} séance(s) sur 7 j",
+        "ext7dDistance": "{{km}} km cumulés",
+        "ext7dHsr": "{{m}} m HSR",
+        "combineSoon": "Combinaison externe × interne à venir.",
+        "historyTitle": "Historique"
+      }
     },
     "error": {
       "title": "Une erreur est survenue",

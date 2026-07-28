@@ -15,6 +15,7 @@ import PlayerPrograms from "./PlayerPrograms.jsx";
 import PlayerSessionHistory from "./PlayerSessionHistory.jsx";
 import PlayerAttendance from "./PlayerAttendance.jsx";
 import Player1RM from "./Player1RM.jsx";
+import GpsFicheSection from "./GpsFicheSection.jsx";
 import GpsDeposit from "../player/GpsDeposit.jsx";
 import PdfImportReview from "./PdfImportReview.jsx";
 import { pwdStrength } from "../../lib/password.js";
@@ -535,6 +536,10 @@ function FicheInner({ player, canEdit = false, self = false, players = [], hide 
 
       {/* Dépôt de données GPS (capture / saisie manuelle) — sur sa propre fiche. */}
       {self && <GpsFicheButton player={player} />}
+
+      {/* Section GPS (charge externe) — records, courbes, comparaison k-anon
+          (self), juxtaposition externe/interne. Lecture staff + joueur (RLS). */}
+      <GpsFicheSection player={player} self={self} />
 
       {/* indicateurs clés — lisibles staff & joueur (vert / ambre / rouge) */}
       {(() => {
