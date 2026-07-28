@@ -1005,6 +1005,21 @@
       "seriesN": "S{{n}}",
       "holdUnit": "s",
       "detailedSeries": "{{n}} gedetailleerde sets",
+      "cardio": {
+        "continuous": "Continu",
+        "interval": "Intervallen",
+        "target": "Doel:",
+        "targetPace": "tempo {{pace}}/km · {{speed}}",
+        "noMas": "MAS niet ingesteld",
+        "distanceM": "Afstand (m)",
+        "duration": "Duur",
+        "hr": "Gem. HS",
+        "realPace": "Gedaan: {{pace}}/km · {{speed}}",
+        "realizedUnit": "werkelijk ({{unit}})",
+        "done": "Klaar ✓",
+        "markDone": "Markeer als klaar",
+        "pacePerKm": "{{pace}}/km"
+      },
       "exInfo": "Oefeningdetails",
       "set1rmTitle": "Jouw 1RM — {{movement}}",
       "set1rmHint": "Voer je maximale belasting (1 herhaling) in om %-belastingen te berekenen.",
@@ -1016,7 +1031,8 @@
       "min": "min",
       "useChrono": "Timer: {{n}} min",
       "durationPlanned": "Gepland: {{n}} min",
-      "durationReal": "werkelijk: {{n}} min"
+      "durationReal": "werkelijk: {{n}} min",
+      "ssHint": "ss"
     },
     "freeSession": {
       "newButton": "Vrije sessie maken",
@@ -1051,6 +1067,22 @@
       "measure_reps": "Reps",
       "measure_temps": "Tijd",
       "hold": "Vasthouden (s)",
+      "cond": {
+        "addBlock": "Blok toevoegen",
+        "continuous": "Continu",
+        "interval": "Intervallen",
+        "name": "Naam (optioneel)",
+        "distanceM": "Afstand (m)",
+        "duration": "Duur",
+        "reps": "Herhalingen",
+        "effort": "Inspanning",
+        "recovery": "Herstel",
+        "pctVMA": "% MAS",
+        "note": "Notitie (optioneel)",
+        "targetPace": "Doeltempo",
+        "varyOn": "+ per herhaling detailleren",
+        "varyOff": "– variatie per herhaling"
+      },
       "typeDesc": {
         "strength": "Sets × reps × gewicht",
         "conditioning": "Afstand, tijd, intervallen",

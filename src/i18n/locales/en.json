@@ -1005,6 +1005,21 @@
       "seriesN": "S{{n}}",
       "holdUnit": "s",
       "detailedSeries": "{{n}} detailed sets",
+      "cardio": {
+        "continuous": "Continuous",
+        "interval": "Intervals",
+        "target": "Target:",
+        "targetPace": "pace {{pace}}/km · {{speed}}",
+        "noMas": "MAS not set",
+        "distanceM": "Distance (m)",
+        "duration": "Duration",
+        "hr": "Avg HR",
+        "realPace": "Done: {{pace}}/km · {{speed}}",
+        "realizedUnit": "actual ({{unit}})",
+        "done": "Done ✓",
+        "markDone": "Mark as done",
+        "pacePerKm": "{{pace}}/km"
+      },
       "exInfo": "Exercise details",
       "set1rmTitle": "Your 1RM — {{movement}}",
       "set1rmHint": "Enter your max load (1 rep) to compute %-based loads.",
@@ -1016,7 +1031,8 @@
       "min": "min",
       "useChrono": "Timer: {{n}} min",
       "durationPlanned": "Planned: {{n}} min",
-      "durationReal": "actual: {{n}} min"
+      "durationReal": "actual: {{n}} min",
+      "ssHint": "ss"
     },
     "freeSession": {
       "newButton": "Create a free session",
@@ -1051,6 +1067,22 @@
       "measure_reps": "Reps",
       "measure_temps": "Time",
       "hold": "Hold (s)",
+      "cond": {
+        "addBlock": "Add a block",
+        "continuous": "Continuous",
+        "interval": "Intervals",
+        "name": "Name (optional)",
+        "distanceM": "Distance (m)",
+        "duration": "Duration",
+        "reps": "Reps",
+        "effort": "Effort",
+        "recovery": "Recovery",
+        "pctVMA": "% MAS",
+        "note": "Note (optional)",
+        "targetPace": "Target pace",
+        "varyOn": "+ vary per rep",
+        "varyOff": "– vary per rep"
+      },
       "typeDesc": {
         "strength": "Sets × reps × load",
         "conditioning": "Distance, time, intervals",

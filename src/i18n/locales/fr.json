@@ -1005,6 +1005,21 @@
       "seriesN": "S{{n}}",
       "holdUnit": "s",
       "detailedSeries": "{{n}} séries détaillées",
+      "cardio": {
+        "continuous": "Continu",
+        "interval": "Intervalles",
+        "target": "Cible :",
+        "targetPace": "allure {{pace}}/km · {{speed}}",
+        "noMas": "MAS non renseignée",
+        "distanceM": "Distance (m)",
+        "duration": "Durée",
+        "hr": "FC moy.",
+        "realPace": "Réalisé : {{pace}}/km · {{speed}}",
+        "realizedUnit": "réalisé ({{unit}})",
+        "done": "Fait ✓",
+        "markDone": "Marquer comme fait",
+        "pacePerKm": "{{pace}}/km"
+      },
       "exInfo": "Fiche de l'exercice",
       "set1rmTitle": "Ton 1RM — {{movement}}",
       "set1rmHint": "Saisis ta charge maximale (1 répétition) pour calculer les charges en %.",
@@ -1016,7 +1031,8 @@
       "min": "min",
       "useChrono": "Chrono : {{n}} min",
       "durationPlanned": "Prévu : {{n}} min",
-      "durationReal": "réalisé : {{n}} min"
+      "durationReal": "réalisé : {{n}} min",
+      "ssHint": "ss"
     },
     "freeSession": {
       "newButton": "Créer une séance libre",
@@ -1051,6 +1067,22 @@
       "measure_reps": "Reps",
       "measure_temps": "Temps",
       "hold": "Tenue (s)",
+      "cond": {
+        "addBlock": "Ajouter un bloc",
+        "continuous": "Continu",
+        "interval": "Intervalles",
+        "name": "Nom (optionnel)",
+        "distanceM": "Distance (m)",
+        "duration": "Durée",
+        "reps": "Répétitions",
+        "effort": "Effort",
+        "recovery": "Récup",
+        "pctVMA": "% VMA",
+        "note": "Note (optionnelle)",
+        "targetPace": "Allure cible",
+        "varyOn": "+ détailler par répétition",
+        "varyOff": "– variation par répétition"
+      },
       "typeDesc": {
         "strength": "Séries × reps × charge",
         "conditioning": "Distance, temps, intervalles",

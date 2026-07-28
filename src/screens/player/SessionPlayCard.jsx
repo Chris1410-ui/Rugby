@@ -15,6 +15,7 @@ import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { useExercisePerf } from "../../data/exercisePerf.js";
 import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
 import { blockKind } from "../../lib/sessionType.js";
+import { computeTargetPace, paceSecPerKmFromDistanceTime, speedKmhFromDistanceTime, formatPace, formatSpeed } from "../../lib/pace.js";
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
@@ -67,18 +68,29 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const init = () => {
     const b = {};
     s.exercises.forEach((e) => {
+      const k = blockKind(e);
       const saved = log?.perExercise?.[e.id];
-      if (saved?.sets) b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" };
-      else {
-        const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
-        if (Array.isArray(e.setPlan) && e.setPlan.length) {
-          // Séries détaillées : une entrée par série, préremplie avec la reps prescrite
-          // (la charge cible s'affiche via resolveSetPlan au rendu, jamais figée ici).
-          b[e.id] = { sets: e.setPlan.map((sp, i) => ({ w: prev?.sets?.[i]?.w || "", reps: String(sp.reps ?? ""), type: "normal", done: false })), note: "" };
-        } else {
-          const n = parseSetsN(e.sets);
-          b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
-        }
+      // Bloc mono (cardio continu) : distance/temps/FC + « fait ».
+      if (k === "cardio_continuous") {
+        const m = saved && saved.kind === "cardio_continuous" ? saved : null;
+        b[e.id] = { mono: { distanceM: m?.distanceM ?? "", durationSec: m?.durationSec ?? "", hrAvg: m?.hrAvg ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Cardio intervalles : une entrée cochable par répétition (réalisé par rép).
+      if (k === "cardio_interval") {
+        const n = Array.isArray(e.repPlan) && e.repPlan.length ? e.repPlan.length : (Number(e.reps) > 0 ? Number(e.reps) : 4);
+        const sv = saved && Array.isArray(saved.reps) ? saved.reps : null;
+        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ done: !!sv?.[i]?.done, actual: sv?.[i]?.actual ?? "" })), note: saved?.note || "" };
+        return;
+      }
+      // Set-like : muscu / poids de corps / skill (+ séries détaillées).
+      if (saved?.sets) { b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" }; return; }
+      const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
+      if (Array.isArray(e.setPlan) && e.setPlan.length) {
+        b[e.id] = { sets: e.setPlan.map((sp, i) => ({ w: prev?.sets?.[i]?.w || "", reps: String(sp.reps ?? ""), type: "normal", done: false })), note: "" };
+      } else {
+        const n = parseSetsN(e.sets);
+        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
       }
     });
     return b;
@@ -134,6 +146,17 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const addSet = (eid) => { setDirty(true); setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; }); };
   const delSet = (eid, i) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.filter((_, j) => j !== i) } })); };
   const setExNote = (eid, note) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], note } })); };
+  // Bloc mono (cardio continu) : maj d'un champ de l'état { mono: {...} }.
+  const setMono = (eid, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], mono: { ...v[eid].mono, ...patch } } })); };
+  const numOrU = (v) => (Number(v) > 0 ? Number(v) : undefined);
+  // Unités faites / total d'un bloc, tous kinds (séries, répétitions, ou 1 pour un mono).
+  const blockUnits = (e) => {
+    const stt = ex[e.id];
+    if (!stt) return { done: 0, total: 0 };
+    if (stt.sets) return { done: stt.sets.filter((x) => x.done).length, total: stt.sets.length };
+    if (stt.mono) return { done: stt.mono.done ? 1 : 0, total: 1 };
+    return { done: 0, total: 0 };
+  };
 
   const toggleSet = (e, i) => {
     const cur = ex[e.id].sets[i];
@@ -163,7 +186,17 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
     setBusy(true);
     const pe = {};
-    s.exercises.forEach((e) => { const sets = ex[e.id].sets; pe[e.id] = { sets, note: (ex[e.id].note || "").trim(), ...summarize(sets) }; });
+    s.exercises.forEach((e) => {
+      const k = blockKind(e); const stt = ex[e.id];
+      if (k === "cardio_continuous") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: k, distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "cardio_interval") {
+        pe[e.id] = { kind: k, reps: (stt.sets || []).map((x) => ({ done: !!x.done, actual: x.actual ?? "" })), note: (stt.note || "").trim() };
+      } else {
+        const sets = stt.sets; pe[e.id] = { sets, note: (stt.note || "").trim(), ...summarize(sets) };
+      }
+    });
     try {
       await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb, duration: status === "done" ? Number(dur) || plannedDur : null });
       setDirty(false); // enregistré → la resync depuis la base est de nouveau autorisée
@@ -176,8 +209,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setBusy(false);
   };
 
-  const doneSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.filter((x) => x.done).length, 0);
-  const totSets = s.exercises.reduce((a, e) => a + ex[e.id].sets.length, 0);
+  const doneSets = s.exercises.reduce((a, e) => a + blockUnits(e).done, 0);
+  const totSets = s.exercises.reduce((a, e) => a + blockUnits(e).total, 0);
 
   // Séance-test : les résultats sont saisis par le staff → carte informative,
   // pas de logging set-par-set côté joueur.
@@ -236,13 +269,17 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           </div>
 
           {s.exercises.map((e) => {
+            const k = blockKind(e);
+            // Blocs cardio : rendus dédiés (jamais de kg ; distance/temps/allure).
+            if (k === "cardio_continuous") return <CardioContinuous key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
+            if (k === "cardio_interval") return <CardioInterval key={e.id} e={e} st={ex[e.id]} onRep={(i, p) => setSet(e.id, i, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
             const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
             const pl = pctLoad(e); // charge calculée depuis le 1RM si exprimé en %
             // Séries détaillées : consigne + charge résolue (1RM) par série (arrondi 2,5).
             const plan = Array.isArray(e.setPlan) && e.setPlan.length ? resolveSetPlan(e.setPlan, exOneRM(e)) : null;
-            const isSkillEx = blockKind(e) === "skill"; // pas de kg : reps ou tenue (s)
+            const isSkillEx = k === "skill"; // pas de kg : reps ou tenue (s)
             const ecart = cmp.diff
               ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
                  cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
@@ -454,6 +491,94 @@ function ExerciseVideo({ url, accent }) {
     </div>
   );
 }
+
+// Durée courte lisible : « 30 s » (<60) ou « 1:30 ».
+const fmtDurShort = (sec) => { const s = Number(sec) || 0; return s < 60 ? `${s} s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+// Libellé d'un effort/récup { durationSec | distanceM }.
+const effLabel = (o) => (o?.distanceM ? `${o.distanceM} m` : o?.durationSec ? fmtDurShort(o.durationSec) : "—");
+const cardioBox = (accent) => ({ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`, borderLeft: `3px solid ${accent}`, borderRadius: 10, padding: 12, marginBottom: 14 });
+const cardioInp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "8px 8px", color: "#fff", fontSize: 13, outline: "none", textAlign: "center", boxSizing: "border-box" };
+
+/* C3 — Cardio CONTINU : distance / temps saisis → allure & vitesse réalisées ;
+   allure cible depuis %VMA + MAS du joueur (jamais de valeur fausse). */
+function CardioContinuous({ e, st, onField, onNote, masKmh, t, accent }) {
+  const m = st?.mono || {};
+  const target = computeTargetPace(e.pctVMA, masKmh);
+  const realPace = paceSecPerKmFromDistanceTime(m.distanceM, m.durationSec);
+  const realSpeed = speedKmhFromDistanceTime(m.distanceM, m.durationSec);
+  const dsec = Number(m.durationSec) || 0;
+  const setDur = (mn, sc) => onField({ durationSec: Math.max(0, (Number(mn) || 0) * 60 + (Number(sc) || 0)) });
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name || t("player.session.cardio.continuous")}</span>
+        <Tag c={accent}>{t("player.session.cardio.continuous")}</Tag>
+      </div>
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+        {t("player.session.cardio.target")} {[e.distanceM ? `${e.distanceM} m` : null, e.durationSec ? fmtDurShort(e.durationSec) : null, e.pctVMA ? `${e.pctVMA}% VMA` : null].filter(Boolean).join(" · ") || "—"}
+        {e.pctVMA ? (target.needsMas ? ` · ${t("player.session.cardio.noMas")}` : ` · ${t("player.session.cardio.targetPace", { pace: formatPace(target.secPerKm), speed: formatSpeed(target.speedKmh) })}`) : ""}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.4fr 1fr", gap: 8, alignItems: "end", marginBottom: 8 }}>
+        <label><span style={miniLbl}>{t("player.session.cardio.distanceM")}</span><input value={m.distanceM ?? ""} onChange={(ev) => onField({ distanceM: ev.target.value.replace(/[^\d]/g, "") })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.cardio.duration")}</span>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <input value={dsec ? Math.floor(dsec / 60) : ""} onChange={(ev) => setDur(ev.target.value.replace(/[^\d]/g, ""), dsec % 60)} inputMode="numeric" placeholder={t("player.session.min")} style={cardioInp} />
+            <span style={{ color: "rgba(255,255,255,0.4)" }}>:</span>
+            <input value={dsec ? String(dsec % 60).padStart(2, "0") : ""} onChange={(ev) => setDur(Math.floor(dsec / 60), ev.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" placeholder={t("player.session.ssHint")} style={cardioInp} />
+          </div>
+        </label>
+        <label><span style={miniLbl}>{t("player.session.cardio.hr")}</span><input value={m.hrAvg ?? ""} onChange={(ev) => onField({ hrAvg: ev.target.value.replace(/[^\d]/g, "") })} inputMode="numeric" style={cardioInp} /></label>
+      </div>
+      {(realPace || realSpeed) && (
+        <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8 }}>
+          {t("player.session.cardio.realPace", { pace: formatPace(realPace), speed: formatSpeed(realSpeed) })}
+        </div>
+      )}
+      <button onClick={() => onField({ done: !m.done })} style={{ width: "100%", background: m.done ? C.green : "rgba(255,255,255,0.05)", border: m.done ? "none" : `1px solid ${C.border}`, borderRadius: 8, padding: "9px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <CheckCircle size={14} color={m.done ? "#fff" : "rgba(255,255,255,0.4)"} /> {m.done ? t("player.session.cardio.done") : t("player.session.cardio.markDone")}
+      </button>
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", marginTop: 8, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+
+/* C2 — Cardio INTERVALLES : une ligne cochable par répétition, cible (effort /
+   récup / allure %VMA, éventuellement propre à la rép via repPlan) + réalisé. */
+function CardioInterval({ e, st, onRep, onNote, masKmh, t, accent }) {
+  const reps = st?.sets || [];
+  const specFor = (i) => (Array.isArray(e.repPlan) && e.repPlan[i]) ? e.repPlan[i] : { effort: e.effort, recovery: e.recovery, pctVMA: e.pctVMA };
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name || t("player.session.cardio.interval")}</span>
+        <Tag c={accent}>{t("player.session.cardio.interval")}</Tag>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{reps.length} × {effLabel(e.effort)}{e.recovery ? ` / ${effLabel(e.recovery)}` : ""}</span>
+      </div>
+      {reps.map((x, i) => {
+        const sp = specFor(i);
+        const tp = computeTargetPace(sp.pctVMA, masKmh);
+        const unit = sp.effort?.distanceM ? "m" : "s";
+        return (
+          <div key={i} style={{ marginBottom: 5 }}>
+            <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", margin: "0 0 3px 2px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontWeight: 800, color: "rgba(255,255,255,0.8)" }}>{t("player.session.seriesN", { n: i + 1 })}</span>
+              <span>{effLabel(sp.effort)}{sp.recovery ? ` / ${effLabel(sp.recovery)}` : ""}</span>
+              {sp.pctVMA ? (tp.needsMas ? <span style={{ color: C.amb }}>{sp.pctVMA}% · {t("player.session.cardio.noMas")}</span> : <span style={{ color: C.viol, fontWeight: 700 }}>{sp.pctVMA}% · {t("player.session.cardio.pacePerKm", { pace: formatPace(tp.secPerKm) })}</span>) : null}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 34px", gap: 6, alignItems: "center" }}>
+              <input value={x.actual ?? ""} onChange={(ev) => onRep(i, { actual: ev.target.value })} placeholder={t("player.session.cardio.realizedUnit", { unit })} style={{ ...cardioInp, textAlign: "left", opacity: x.done ? 0.6 : 1 }} />
+              <button onClick={() => onRep(i, { done: !x.done })} style={{ height: 32, borderRadius: 6, border: x.done ? "none" : `1px solid ${C.border}`, background: x.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <CheckCircle size={15} color={x.done ? "#fff" : "rgba(255,255,255,0.3)"} />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", marginTop: 6, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+const miniLbl = { fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 700, display: "block", marginBottom: 3 };
 
 // Une barre horizontale de comparaison (valeur rapportée au max de la vue).
 function CmpBar({ label, sub, value, max, color, unit }) {

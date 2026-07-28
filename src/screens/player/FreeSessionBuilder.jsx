@@ -12,6 +12,7 @@ import {
 } from "../../lib/sessionType.js";
 import ExercisePickerSheet from "../shared/ExercisePickerSheet.jsx";
 import ExerciseAutocomplete from "../shared/ExerciseAutocomplete.jsx";
+import ConditioningBuilder from "./ConditioningBuilder.jsx";
 
 const accent = C.green;
 
@@ -31,6 +32,7 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
   const [durationMin, setDurationMin] = useState(60);
   const [advanced, setAdvanced] = useState(false);
   const [cart, setCart] = useState([]); // [{ ref, name, bodyPart, sets, reps, charge?, lest?, lestOn? }]
+  const [blocks, setBlocks] = useState([]); // conditioning : liste de blocs typés
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [savingRoutine, setSavingRoutine] = useState(false);
@@ -41,6 +43,7 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
 
   const isBW = type === "bodyweight";
   const isSkill = type === "skills";
+  const isCond = type === "conditioning"; // builder « liste de blocs » (gated jusqu'à PR3b-2)
   const filter = type ? libraryFilterForType(type) : null;
 
   const chooseType = (ty) => { setType(ty); setCode(codeForType(ty)); };
@@ -103,13 +106,14 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
     return { ref: c.ref, name: c.name, kind: "strength", sets: c.sets, reps: c.reps, charge: c.charge };
   };
 
+  const items = isCond ? blocks : cart;
   const create = async () => {
-    if (cart.length === 0) return;
+    if (items.length === 0) return;
     setBusy(true); setErr("");
     try {
       const id = await createFreeSession({
         title, code, type, nature: natureForType(type),
-        durationMin, exercises: cart.map(toBlock),
+        durationMin, exercises: isCond ? blocks : cart.map(toBlock),
       });
       onCreated && onCreated(id);
       onClose();
@@ -193,6 +197,9 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
           </div>
         )}
 
+        {isCond ? (
+          <ConditioningBuilder blocks={blocks} setBlocks={setBlocks} masKmh={me?.mas} t={t} accent={accent} />
+        ) : (<>
         {/* Mes routines : chargement en un geste */}
         {routines.length > 0 && (
           <div style={{ marginBottom: 16 }}>
@@ -291,11 +298,12 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
         <button onClick={() => setPicking(true)} style={{ width: "100%", marginTop: 8, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, color: accent, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
           <Plus size={15} /> {t("shared.expick.title")}
         </button>
+        </>)}
 
         {err && <div style={{ fontSize: 11, color: C.coral, margin: "12px 0 0" }}>{err}</div>}
 
-        <button onClick={create} disabled={busy || cart.length === 0} style={{ width: "100%", marginTop: 16, background: cart.length ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: 13, color: "#fff", fontWeight: 800, fontSize: 13, cursor: cart.length ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>
-          {busy ? t("player.freeSession.creating") : t("player.freeSession.create", { count: cart.length })}
+        <button onClick={create} disabled={busy || items.length === 0} style={{ width: "100%", marginTop: 16, background: items.length ? accent : "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: 13, color: "#fff", fontWeight: 800, fontSize: 13, cursor: items.length ? "pointer" : "default", opacity: busy ? 0.6 : 1 }}>
+          {busy ? t("player.freeSession.creating") : t("player.freeSession.create", { count: items.length })}
         </button>
       </div>
 
