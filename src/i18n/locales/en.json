@@ -274,7 +274,8 @@
     "videoSet": "Attach",
     "videoRemove": "Remove video",
     "videoLib": "FROM THE MEDIA LIBRARY",
-    "videoEmpty": "No videos in the club media library."
+    "videoEmpty": "No videos in the club media library.",
+    "type_conditioning": "Structured conditioning"
   },
   "nav": {
     "bilan": "Today",

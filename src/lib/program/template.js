@@ -148,6 +148,23 @@ function genericTable(s) {
   return `<div class="tblx-scroll"><table class="tblx gtable">${cols ? `<thead><tr>${cols}</tr></thead>` : ""}<tbody>${rows}</tbody></table></div>`;
 }
 
+// Section conditioning structurée (PR5) : résumé lisible par bloc (lecture
+// protocole / PDF). Le détail loggable vit dans la séance matérialisée.
+function condSpanTxt(o) { return o ? (o.distanceM ? `${o.distanceM} m` : o.durationSec != null ? `${o.durationSec}s` : "") : ""; }
+function conditioningBody(s) {
+  const blocks = Array.isArray(s.blocks) ? s.blocks : [];
+  const rows = blocks.map((b) => {
+    let d = "";
+    if (b.kind === "cardio_continuous") d = [b.distanceM ? `${b.distanceM} m` : null, b.durationSec ? `${b.durationSec}s` : null, b.pctVMA ? `${b.pctVMA}% VMA` : null].filter(Boolean).join(" · ");
+    else if (b.kind === "cardio_interval") d = `${b.reps || "?"} × ${condSpanTxt(b.effort)}${b.recovery ? ` / ${condSpanTxt(b.recovery)}` : ""}${b.pctVMA ? ` · ${b.pctVMA}% VMA` : ""}`;
+    else if (b.kind === "cardio_circuit") d = `${String(b.mode || "circuit").toUpperCase()}${b.totalDurationSec ? ` · ${b.totalDurationSec}s` : ""}`;
+    else if (b.kind === "cardio_test") d = `Test : ${b.testKey || ""}`;
+    else d = [b.sets && b.reps ? `${b.sets}×${b.reps}` : null, b.charge ? `@ ${b.charge}` : null].filter(Boolean).join(" ");
+    return `<div class="cardio-row"><div class="cardio-h"><span class="cardio-name">${escapeHtml(b.name || b.kind || "")}</span><span class="cardio-k">${escapeHtml(d)}</span></div></div>`;
+  }).join("");
+  return `<div class="cardio">${rows}</div>`;
+}
+
 function renderSection(s, i, opts) {
   const anchor = `${slugify(s.title)}-${i}`;
   const anchorNum = String(i + 1).padStart(2, "0");
@@ -157,6 +174,7 @@ function renderSection(s, i, opts) {
     case "checklist": body = checklistBody(s); break;
     case "weekcalendar": body = weekCalendarBody(s); break;
     case "cardio": body = cardioBody(s); break;
+    case "conditioning": body = conditioningBody(s); break;
     case "table": body = genericTable(s); break;
     default: body = exerciseTable(s, opts);
   }

@@ -14,6 +14,7 @@
 
 import { normalizeProgram } from "./model.js";
 import { norm } from "../catalog/detect.js";
+import { normalizeBlocks } from "../sessionBlocks.js";
 
 // Deux titres se « correspondent » si l'un contient l'autre (normalisés) — pour
 // rattacher un jour de semaine-type à la grille d'exercices homonyme.
@@ -97,6 +98,13 @@ export function docToSessions(doc) {
   const wcal = sections.find((s) => s.type === "weekcalendar" && Array.isArray(s.days) && s.days.length);
   const warnings = [];
 
+  // Sections CONDITIONNING structurées (PR5) → séances cardio loggables (nature
+  // conditioning, code CSB). Blocs normalisés via sessionBlocks (kind cardio_*).
+  const condSessions = sections
+    .filter((s) => s.type === "conditioning")
+    .map((s, i) => ({ weekday: (i % 6) + 1, nature: "conditioning", code: "CSB", titre: s.title || "Conditioning", exercises: normalizeBlocks(s.blocks) }))
+    .filter((s) => s.exercises.length);
+
   // Cas 1 — une « semaine type » existe : chaque jour actif = une séance.
   if (wcal) {
     const active = wcal.days.filter((day) => !day.off && day.weekday != null);
@@ -118,7 +126,7 @@ export function docToSessions(doc) {
           : [{ name: label, sets: "", reps: "", charge: "", rest: 90 }]);
       return { weekday: day.weekday, nature, code: codeForNature(nature), titre: label, exercises: exos };
     });
-    return { sessions, warnings };
+    return { sessions: sessions.concat(condSessions), warnings };
   }
 
   // Cas 2 — pas de semaine type : chaque grille d'exercices = une séance
@@ -134,10 +142,12 @@ export function docToSessions(doc) {
         exercises: exos.length ? exos : [{ name: s.title || "Séance", sets: "", reps: "", charge: "", rest: 90 }],
       };
     });
-    return { sessions, warnings };
+    return { sessions: sessions.concat(condSessions), warnings };
   }
 
-  // Aucun contenu daté dérivable : le protocole seul sera enregistré.
+  // Pas de grille muscu ni de semaine type : seules les séances conditioning
+  // (si présentes) sont datables ; sinon rien.
+  if (condSessions.length) return { sessions: condSessions, warnings };
   warnings.push("Aucune séance datable (ni semaine type, ni grille d'exercices) : seul le protocole sera enregistré.");
   return { sessions: [], warnings };
 }

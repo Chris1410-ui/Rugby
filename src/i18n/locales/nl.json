@@ -274,7 +274,8 @@
     "videoSet": "Koppelen",
     "videoRemove": "Video verwijderen",
     "videoLib": "UIT DE MEDIABIBLIOTHEEK",
-    "videoEmpty": "Geen video's in de clubmediabibliotheek."
+    "videoEmpty": "Geen video's in de clubmediabibliotheek.",
+    "type_conditioning": "Gestructureerde conditioning"
   },
   "nav": {
     "bilan": "Vandaag",

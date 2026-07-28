@@ -4,6 +4,7 @@ import { C } from "../../../lib/tokens.js";
 import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check, Video } from "../../../lib/icons.jsx";
 import { useTeamMedia } from "../../../data/media.js";
 import { Overlay } from "../../../lib/ui.jsx";
+import ConditioningBuilder from "../../player/ConditioningBuilder.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
 import { overridesForDoc, resetOverride } from "../../../data/protocolOverrides.js";
@@ -15,7 +16,7 @@ import { todayISO } from "../../../lib/metrics.js";
 import { NATURES, natureLabel } from "../../../lib/nature.js";
 import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
-  emptyChecklistSection, emptyWeekCalendarSection, emptyCardioSection, emptyTableSection,
+  emptyChecklistSection, emptyWeekCalendarSection, emptyCardioSection, emptyConditioningSection, emptyTableSection,
   WEEKDAY_NAMES, changeWeeks, clampWeeks, blockTint, MIN_WEEKS, MAX_WEEKS,
 } from "../../../lib/program/model.js";
 import { BUILTIN_SECTION_TEMPLATES, freshSection } from "../../../lib/program/sectionTemplates.js";
@@ -168,6 +169,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
     checklist: () => emptyChecklistSection(),
     weekcalendar: () => emptyWeekCalendarSection(),
     cardio: () => emptyCardioSection(),
+    conditioning: () => emptyConditioningSection(),
     table: () => emptyTableSection(),
   };
   const addSection = (type) => setDoc((d) => { d.sections.push((SECTION_FACTORY[type] || SECTION_FACTORY.narrative)()); return d; });
@@ -372,6 +374,8 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
               <WeekCalendarEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : s.type === "cardio" ? (
               <CardioEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
+            ) : s.type === "conditioning" ? (
+              <ConditioningBuilder blocks={s.blocks || []} setBlocks={(blocks) => setSection(si, { blocks })} masKmh={null} t={t} accent={ACCENT} />
             ) : s.type === "table" ? (
               <TableEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : (
@@ -502,6 +506,7 @@ function AddSectionMenu({ weeks, teamId, onBlank, onInsert, t }) {
             <MenuItem onClick={() => pick(() => onBlank("checklist"))}>{t("protocols.type_checklist")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("weekcalendar"))}>{t("protocols.type_weekcalendar")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("cardio"))}>{t("protocols.type_cardio")}</MenuItem>
+            <MenuItem onClick={() => pick(() => onBlank("conditioning"))}>{t("protocols.type_conditioning")}</MenuItem>
             <MenuItem onClick={() => pick(() => onBlank("table"))}>{t("protocols.type_table")}</MenuItem>
             <MenuLabel>{t("protocols.tplBuiltin")}</MenuLabel>
             {BUILTIN_SECTION_TEMPLATES.map((tpl) => (

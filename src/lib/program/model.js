@@ -14,7 +14,7 @@ export const MAX_WEEKS = 12;
 // ambre (volume/force), fumée (affûtage), rouge (obligatoire), vert (validé).
 export const ACCENTS = ["c", "a", "m", "r", "v"];
 
-export const SECTION_TYPES = ["narrative", "exercises", "checklist", "weekcalendar", "cardio", "table"];
+export const SECTION_TYPES = ["narrative", "exercises", "checklist", "weekcalendar", "cardio", "conditioning", "table"];
 
 // Jours (semaine type / weekcalendar). Lundi=1 … Dimanche=0 (getDay JS).
 export const WEEKDAY_NAMES = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -125,6 +125,12 @@ export function emptyWeekCalendarSection() {
 export function emptyCardioSection() {
   return { id: uid(), type: "cardio", num: "", title: "", subtitle: "", items: [{ name: "", kind: "", target: "", note: "" }] };
 }
+// Section conditioning STRUCTURÉE (PR5) : blocs cardio typés (mêmes formes que la
+// séance libre), matérialisés en séances loggables (kind cardio_*). Distincte de
+// `cardio` (descriptive, texte libre) qu'on conserve pour compat.
+export function emptyConditioningSection() {
+  return { id: uid(), type: "conditioning", num: "", title: "", subtitle: "", blocks: [] };
+}
 export function emptyTableSection() {
   return { id: uid(), type: "table", num: "", title: "", subtitle: "", columns: ["", ""], rows: [["", ""]] };
 }
@@ -206,6 +212,12 @@ function normalizeCardio(s) {
       name: asStr(it?.name), kind: asStr(it?.kind), target: asStr(it?.target), note: asStr(it?.note),
     })).filter((it) => it.name || it.target) };
 }
+function normalizeConditioning(s) {
+  // Blocs préservés tels quels (forme builder) ; on ne garde que ceux qui portent
+  // un kind. La matérialisation (docToSessions) les normalise via sessionBlocks.
+  return { ...head(s), type: "conditioning",
+    blocks: (Array.isArray(s.blocks) ? s.blocks : []).filter((b) => b && typeof b === "object" && b.kind) };
+}
 function normalizeTable(s) {
   const cols = (Array.isArray(s.columns) ? s.columns : []).map(asStr);
   const rows = (Array.isArray(s.rows) ? s.rows : []).map((r) => (Array.isArray(r) ? r.map(asStr) : []));
@@ -229,6 +241,7 @@ function normalizeSection(sec, w) {
     case "checklist": return normalizeChecklist(s);
     case "weekcalendar": return normalizeWeekCalendar(s);
     case "cardio": return normalizeCardio(s);
+    case "conditioning": return normalizeConditioning(s);
     case "table": return normalizeTable(s);
     case "exercises": return normalizeExercises(s, w);
     default:

@@ -274,7 +274,8 @@
     "videoSet": "Attacher",
     "videoRemove": "Retirer la vidéo",
     "videoLib": "DEPUIS LA MÉDIATHÈQUE",
-    "videoEmpty": "Aucune vidéo dans la médiathèque du club."
+    "videoEmpty": "Aucune vidéo dans la médiathèque du club.",
+    "type_conditioning": "Conditioning structuré"
   },
   "nav": {
     "bilan": "Aujourd'hui",
