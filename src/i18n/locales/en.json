@@ -1153,7 +1153,9 @@
       "myDeposits": "MY UPLOADS",
       "actionTitle": "Add my GPS data",
       "actionSub": "Match or training — screenshot or entry",
-      "aiTag": "AI"
+      "aiTag": "AI",
+      "pointsBadge": "+{{n}} pts",
+      "pointsHint": "+10 points per GPS session logged"
     }
   },
   "staff": {
@@ -2797,7 +2799,8 @@
     "reactivity": "⚡ Top 2 responsiveness",
     "bilanMorning": "Morning check-in completed",
     "bilanEvening": "Evening check-in completed",
-    "morningRoutine": "Morning routine completed"
+    "morningRoutine": "Morning routine completed",
+    "gps": "GPS session logged"
   },
   "badges": {
     "assidu": "Regular",

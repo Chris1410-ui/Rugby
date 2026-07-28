@@ -17,7 +17,8 @@ const int = (v) => v.replace(/[^\d]/g, "");
 
 /* Dépôt manuel de données GPS (GPS-2). Le joueur rattache la session à une
    séance/convocation du jour, ajoute éventuellement des captures (stockées, non
-   analysées ici), et saisit les métriques à la main. Points câblés en GPS-2b. */
+   analysées ici), et saisit les métriques à la main. Chaque dépôt vaut +10 pts
+   (charge externe → sans impact sur sRPE/ACWR ; barème câblé en GPS-2b). */
 export default function GpsDeposit({ me, sessions = [], onClose }) {
   const { t } = useTranslation();
   const preview = usePreview();
@@ -177,6 +178,7 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{fmtShort(g.date)}{g.source === "manual" ? "" : ` · ${t("player.gps.aiTag")}`}</div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{[g.distanceM != null ? `${g.distanceM} m` : null, g.vmaxKmh != null ? `${g.vmaxKmh} km/h` : null, g.hsrM != null ? `HSR ${g.hsrM} m` : null].filter(Boolean).join(" · ") || "—"}</div>
                 </div>
+                <span title={t("player.gps.pointsHint")} style={{ fontSize: 9.5, fontWeight: 800, color: C.green, background: "rgba(52,211,153,0.12)", borderRadius: 6, padding: "2px 6px", whiteSpace: "nowrap" }}>{t("player.gps.pointsBadge", { n: 10 })}</span>
                 {!preview && <button onClick={() => del(g)} title={t("common.delete")} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex" }}><Trash2 size={15} /></button>}
               </div>
             ))}

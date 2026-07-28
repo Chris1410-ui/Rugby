@@ -1153,7 +1153,9 @@
       "myDeposits": "MIJN UPLOADS",
       "actionTitle": "Mijn GPS-gegevens toevoegen",
       "actionSub": "Wedstrijd of training — screenshot of invoer",
-      "aiTag": "AI"
+      "aiTag": "AI",
+      "pointsBadge": "+{{n}} ptn",
+      "pointsHint": "+10 punten per geregistreerde GPS-sessie"
     }
   },
   "staff": {
@@ -2797,7 +2799,8 @@
     "reactivity": "⚡ Top 2 reactiviteit",
     "bilanMorning": "Ochtendcheck voltooid",
     "bilanEvening": "Avondcheck voltooid",
-    "morningRoutine": "Ochtendroutine voltooid"
+    "morningRoutine": "Ochtendroutine voltooid",
+    "gps": "GPS-sessie geregistreerd"
   },
   "badges": {
     "assidu": "Volhardend",

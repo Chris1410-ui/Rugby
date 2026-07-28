@@ -310,7 +310,7 @@ export const badgeLabel = (t, b) => t(`badges.${b.key}`);
 // `top14Events` : tests validés Top 14 → [{ key, date }] (calculés en amont via
 //   lib/top14.js, `key` = clé du test). +30 pts par test, DATÉS de la 1re validation
 //   → un seul crédit par test (pas de double comptage aux re-saisies).
-export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = []) {
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = [], gpsEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -415,6 +415,13 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
   (routineEvents || []).forEach((e) => {
     const inWk = e.date >= wkAgo && e.date <= today;
     add(10, "morningRoutine", e.date, inWk);
+  });
+  // Séance GPS déposée (charge externe, source = ligne gps_sessions) : +10, datée,
+  // 1 dépôt = 1 event (pas de dédup par date : 2 séances GPS le même jour = +20).
+  // Barèmes séance / sRPE / ACWR inchangés ; pas de double comptage.
+  (gpsEvents || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(10, "gps", e.date, inWk);
   });
   if (streak >= 5) add(15, "streak5", today, true);
   else if (streak >= 3) add(5, "streak3", today, true);

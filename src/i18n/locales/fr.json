@@ -1153,7 +1153,9 @@
       "myDeposits": "MES DÉPÔTS",
       "actionTitle": "Ajouter mes données GPS",
       "actionSub": "Match ou entraînement — capture ou saisie",
-      "aiTag": "IA"
+      "aiTag": "IA",
+      "pointsBadge": "+{{n}} pts",
+      "pointsHint": "+10 points par séance GPS déposée"
     }
   },
   "staff": {
@@ -2797,7 +2799,8 @@
     "reactivity": "⚡ Top 2 réactivité",
     "bilanMorning": "Bilan du matin complété",
     "bilanEvening": "Bilan du soir complété",
-    "morningRoutine": "Routine du matin complétée"
+    "morningRoutine": "Routine du matin complétée",
+    "gps": "Séance GPS déposée"
   },
   "badges": {
     "assidu": "Assidu",
