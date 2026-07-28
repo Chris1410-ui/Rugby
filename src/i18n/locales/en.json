@@ -268,7 +268,13 @@
     "tblColPh": "Column",
     "tblDelCol": "Delete column",
     "tblAddCol": "Column",
-    "tblAddRow": "Add row"
+    "tblAddRow": "Add row",
+    "videoTitle": "Demo video",
+    "videoUrlPh": "Paste a YouTube link…",
+    "videoSet": "Attach",
+    "videoRemove": "Remove video",
+    "videoLib": "FROM THE MEDIA LIBRARY",
+    "videoEmpty": "No videos in the club media library."
   },
   "nav": {
     "bilan": "Today",

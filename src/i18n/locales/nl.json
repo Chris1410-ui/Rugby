@@ -268,7 +268,13 @@
     "tblColPh": "Kolom",
     "tblDelCol": "Kolom verwijderen",
     "tblAddCol": "Kolom",
-    "tblAddRow": "Rij toevoegen"
+    "tblAddRow": "Rij toevoegen",
+    "videoTitle": "Demovideo",
+    "videoUrlPh": "Plak een YouTube-link…",
+    "videoSet": "Koppelen",
+    "videoRemove": "Video verwijderen",
+    "videoLib": "UIT DE MEDIABIBLIOTHEEK",
+    "videoEmpty": "Geen video's in de clubmediabibliotheek."
   },
   "nav": {
     "bilan": "Vandaag",

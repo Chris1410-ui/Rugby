@@ -99,4 +99,14 @@ describe("docToSessions — sans semaine type", () => {
     const doc = { meta: { title: "P", weeks: 1 }, sections: [{ type: "exercises", title: "S", rows: [{ name: "Squat", weeks: [{ text: "4×8" }] }] }] };
     expect(docToSessions(doc).sessions[0].exercises[0].setPlan).toBeUndefined();
   });
+
+  it("émet la vidéo de la ligne (et rien si absente)", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [{ type: "exercises", title: "S", rows: [
+      { name: "Squat", video: "https://youtu.be/abc", weeks: [{ text: "4×8" }] },
+      { name: "Bench", weeks: [{ text: "5×5" }] },
+    ] }] };
+    const exos = docToSessions(doc).sessions[0].exercises;
+    expect(exos[0].video).toBe("https://youtu.be/abc");
+    expect(exos[1].video).toBeUndefined();
+  });
 });

@@ -81,6 +81,8 @@ function rowToExo(row) {
       exo.rmExerciseId = ref ? null : (row?.exerciseId || null);
     }
   }
+  const vid = String(row?.video || "").trim();
+  if (vid) exo.video = vid;                                 // vidéo de démo de la ligne (parité planMaterialize)
   return exo;
 }
 

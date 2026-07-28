@@ -268,7 +268,13 @@
     "tblColPh": "Colonne",
     "tblDelCol": "Supprimer la colonne",
     "tblAddCol": "Colonne",
-    "tblAddRow": "Ajouter une ligne"
+    "tblAddRow": "Ajouter une ligne",
+    "videoTitle": "Vidéo de démo",
+    "videoUrlPh": "Coller un lien YouTube…",
+    "videoSet": "Attacher",
+    "videoRemove": "Retirer la vidéo",
+    "videoLib": "DEPUIS LA MÉDIATHÈQUE",
+    "videoEmpty": "Aucune vidéo dans la médiathèque du club."
   },
   "nav": {
     "bilan": "Aujourd'hui",

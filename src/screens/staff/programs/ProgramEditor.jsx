@@ -1,7 +1,9 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../../lib/tokens.js";
-import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check } from "../../../lib/icons.jsx";
+import { ChevronLeft, ChevronDown, Plus, Trash2, FileText, Dumbbell, Search, Check, Video } from "../../../lib/icons.jsx";
+import { useTeamMedia } from "../../../data/media.js";
+import { Overlay } from "../../../lib/ui.jsx";
 import { getProgramDoc, updateProgramDoc } from "../../../data/programDocs.js";
 import { plansForDoc, replanAllForDoc } from "../../../data/programPlans.js";
 import { overridesForDoc, resetOverride } from "../../../data/protocolOverrides.js";
@@ -374,7 +376,7 @@ export default function ProgramEditor({ id, onClose, teamId, players = [] }) {
               <TableEditor section={s} t={t} onPatch={(p) => setSection(si, p)} />
             ) : (
               <ExerciseGrid
-                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players} onMissing={setMissingMv}
+                section={s} weeks={weeks} t={t} team1rm={team1rm} players={players} teamId={teamId} onMissing={setMissingMv}
                 onAddFree={() => addRow(si)} onLibrary={() => setPicker(si)}
                 onRow={(ri, p) => setRow(si, ri, p)} onCell={(ri, wi, p) => setCell(si, ri, wi, p)}
                 onMoveRow={(ri, dir) => moveRow(si, ri, dir)} onDelRow={(ri) => delRow(si, ri)}
@@ -555,11 +557,12 @@ function SaveTemplateModal({ teamId, section, defaultName, onClose, t }) {
 
 /* Grille d'exercices : une ligne par exercice, une cellule éditable par semaine
    (texte libre « 4×8 R7 » + bascule pic ★), + bloc / tempo / repos / note. */
-function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
+function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], teamId, onMissing, onAddFree, onLibrary, onRow, onCell, onMoveRow, onDelRow, onWeekAccent, onWeekLabel }) {
   const cellW = 92;
   // Éditeur « détailler les séries » : ligne dépliée + semaine ciblée.
   const [seriesRow, setSeriesRow] = useState(null);
   const [seriesWk, setSeriesWk] = useState(0);
+  const [videoRow, setVideoRow] = useState(null); // ligne dont on édite la vidéo
   const cellSets = (ri, wi) => (Array.isArray(section.rows[ri]?.weeks?.[wi]?.sets) ? section.rows[ri].weeks[wi].sets : []);
   return (
     <div>
@@ -609,6 +612,10 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
                   />
                   {/* Mouvement de référence du % (sélecteur ; vide = ce mouvement). */}
                   <RmRefPicker value={r.rmRef || ""} onChange={(v) => onRow(ri, { rmRef: v })} t={t} />
+                  {/* Vidéo de démo : médiathèque ou lien YouTube (le joueur la voit en séance). */}
+                  <button onClick={() => setVideoRow(ri)} title={t("protocols.videoTitle")} style={{ background: "none", border: "none", cursor: "pointer", color: r.video ? C.green : "rgba(255,255,255,0.35)", display: "flex", flexShrink: 0, padding: "0 4px" }}>
+                    <Video size={14} />
+                  </button>
                 </div>
                 <input value={r.tempo} onChange={(e) => onRow(ri, { tempo: e.target.value })} placeholder="2010" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
                 <input value={r.rest} onChange={(e) => onRow(ri, { rest: e.target.value })} placeholder="90s" style={{ ...cellInput, width: 70, flexShrink: 0, borderLeft: `1px solid ${C.border2}` }} />
@@ -692,7 +699,57 @@ function ExerciseGrid({ section, weeks, t, team1rm = [], players = [], onMissing
         <button onClick={onAddFree} style={miniBtn}><Plus size={13} /> {t("protocols.addRowFree")}</button>
         <button onClick={onLibrary} style={{ ...miniBtn, borderColor: `${C.green}66`, color: C.green }}><Search size={13} /> {t("protocols.addFromLibrary")}</button>
       </div>
+      {videoRow != null && (
+        <VideoPicker
+          teamId={teamId}
+          value={section.rows[videoRow]?.video || ""}
+          onChange={(url) => onRow(videoRow, { video: url })}
+          onClose={() => setVideoRow(null)}
+          t={t}
+        />
+      )}
     </div>
+  );
+}
+
+/* Attache une vidéo de démo à une ligne d'exercice : lien YouTube collé OU choix
+   dans la médiathèque du club (on ne stocke qu'une URL/référence, jamais le
+   fichier ; la visibilité reste celle de la médiathèque). Le joueur la voit
+   depuis la ligne d'exercice dans le lecteur de séance. */
+function VideoPicker({ teamId, value, onChange, onClose, t }) {
+  const { media } = useTeamMedia(teamId);
+  const [url, setUrl] = useState(value || "");
+  const inp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 11px", color: "#fff", fontSize: 13, outline: "none", boxSizing: "border-box" };
+  return (
+    <Overlay onClose={onClose} sheet>
+      <div style={{ padding: "6px 18px 24px" }}>
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>{t("protocols.videoTitle")}</div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+          <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t("protocols.videoUrlPh")} style={{ ...inp, flex: 1 }} />
+          <button onClick={() => { onChange(url.trim()); onClose(); }} style={{ background: C.green, border: "none", borderRadius: 8, padding: "0 14px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("protocols.videoSet")}</button>
+        </div>
+        {value && (
+          <button onClick={() => { onChange(""); onClose(); }} style={{ background: "none", border: "none", color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: "2px 0 10px" }}>{t("protocols.videoRemove")}</button>
+        )}
+        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, margin: "8px 0" }}>{t("protocols.videoLib")}</div>
+        {media.length === 0 ? (
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", padding: "6px 0" }}>{t("protocols.videoEmpty")}</div>
+        ) : (
+          media.map((mv) => (
+            <button key={mv.id} onClick={() => { onChange(mv.url); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "8px 0", borderBottom: `1px solid ${C.border2}`, background: "none", border: "none", cursor: "pointer", color: "#fff" }}>
+              {mv.thumbUrl
+                ? <img src={mv.thumbUrl} alt="" style={{ width: 42, height: 30, borderRadius: 5, objectFit: "cover", flexShrink: 0, background: "#000" }} />
+                : <span style={{ width: 42, height: 30, borderRadius: 5, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Video size={14} color="rgba(255,255,255,0.4)" /></span>}
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{mv.titre || mv.url}</span>
+                {mv.theme && <span style={{ display: "block", fontSize: 9.5, color: "rgba(255,255,255,0.5)" }}>{mv.theme}</span>}
+              </span>
+              {value === mv.url && <Check size={15} color={C.green} />}
+            </button>
+          ))
+        )}
+      </div>
+    </Overlay>
   );
 }
 
