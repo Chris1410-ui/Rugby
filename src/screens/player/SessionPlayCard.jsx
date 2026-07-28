@@ -16,6 +16,10 @@ import { useExercisePerf } from "../../data/exercisePerf.js";
 import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
 import { blockKind } from "../../lib/sessionType.js";
 import { computeTargetPace, paceSecPerKmFromDistanceTime, speedKmhFromDistanceTime, formatPace, formatSpeed } from "../../lib/pace.js";
+import { TEST_METRICS } from "../../data/tests.js";
+
+// Libellé + unité d'un test de la batterie (pour les blocs cardio_test).
+const testMeta = (key) => TEST_METRICS.find((m) => m.key === key) || null;
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
 import { usePreview } from "../../lib/preview.js";
@@ -24,7 +28,7 @@ const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", bo
 const durBtn = { flexShrink: 0, width: 38, height: 38, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer" };
 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
-export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete }) {
+export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete, onNavigate }) {
   const { t } = useTranslation();
   const preview = usePreview(); // aperçu owner/staff → lecture seule
   const past = s.date <= todayISO();
@@ -74,6 +78,18 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
       if (k === "cardio_continuous") {
         const m = saved && saved.kind === "cardio_continuous" ? saved : null;
         b[e.id] = { mono: { distanceM: m?.distanceM ?? "", durationSec: m?.durationSec ?? "", hrAvg: m?.hrAvg ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Circuit / AMRAP : compteur de tours (mono).
+      if (k === "cardio_circuit") {
+        const m = saved && saved.kind === "cardio_circuit" ? saved : null;
+        b[e.id] = { mono: { roundsDone: m?.roundsDone ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Test : saisie du résultat (mono) — l'unité vient de la batterie.
+      if (k === "cardio_test") {
+        const m = saved && saved.kind === "cardio_test" ? saved : null;
+        b[e.id] = { mono: { value: m?.value ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
         return;
       }
       // Cardio intervalles : une entrée cochable par répétition (réalisé par rép).
@@ -193,6 +209,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
         pe[e.id] = { kind: k, distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
       } else if (k === "cardio_interval") {
         pe[e.id] = { kind: k, reps: (stt.sets || []).map((x) => ({ done: !!x.done, actual: x.actual ?? "" })), note: (stt.note || "").trim() };
+      } else if (k === "cardio_circuit") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: k, roundsDone: numOrU(m.roundsDone), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "cardio_test") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: k, value: String(m.value ?? "").trim(), unit: (testMeta(e.testKey)?.unit || "").trim(), done: !!m.done, note: (stt.note || "").trim() };
       } else {
         const sets = stt.sets; pe[e.id] = { sets, note: (stt.note || "").trim(), ...summarize(sets) };
       }
@@ -273,6 +295,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             // Blocs cardio : rendus dédiés (jamais de kg ; distance/temps/allure).
             if (k === "cardio_continuous") return <CardioContinuous key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
             if (k === "cardio_interval") return <CardioInterval key={e.id} e={e} st={ex[e.id]} onRep={(i, p) => setSet(e.id, i, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
+            if (k === "cardio_circuit") return <CardioCircuit key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} t={t} accent={accent} />;
+            if (k === "cardio_test") return <CardioTest key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} onNavigate={onNavigate} t={t} accent={accent} />;
             const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
@@ -579,6 +603,66 @@ function CardioInterval({ e, st, onRep, onNote, masKmh, t, accent }) {
   );
 }
 const miniLbl = { fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 700, display: "block", marginBottom: 3 };
+
+/* C4 — Circuit / AMRAP : compteur de tours réalisés. */
+function CardioCircuit({ e, st, onField, onNote, t, accent }) {
+  const m = st?.mono || {};
+  const rounds = Number(m.roundsDone) || 0;
+  const step = (d) => onField({ roundsDone: Math.max(0, rounds + d), done: true });
+  const items = Array.isArray(e.roundItems) ? e.roundItems : [];
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name || t(`player.session.cardio.mode_${e.mode || "circuit"}`)}</span>
+        <Tag c={accent}>{t(`player.session.cardio.mode_${e.mode || "circuit"}`)}</Tag>
+        {e.totalDurationSec ? <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{fmtDurShort(e.totalDurationSec)}</span> : null}
+      </div>
+      {items.length > 0 && (
+        <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+          {items.map((it) => `${it.name}${it.reps ? ` ×${it.reps}` : it.sec ? ` ${fmtDurShort(it.sec)}` : ""}`).join(" · ")}
+        </div>
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 8 }}>
+        <button onClick={() => step(-1)} style={{ ...durBtn, width: 40, height: 40 }}>−</button>
+        <div style={{ textAlign: "center", minWidth: 80 }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: accent }}>{rounds}</div>
+          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>{t("player.session.cardio.rounds")}</div>
+        </div>
+        <button onClick={() => step(1)} style={{ ...durBtn, width: 40, height: 40 }}>+</button>
+      </div>
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+
+/* C5 — Test : saisie du résultat (valeur + unité de la batterie) ; deep-link vers
+   la Fiche. On stocke le résultat dans le log ; test_results reste saisi par le staff. */
+function CardioTest({ e, st, onField, onNote, onNavigate, t, accent }) {
+  const m = st?.mono || {};
+  const meta = testMeta(e.testKey);
+  const unit = (meta?.unit || "").trim();
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 20 }}>🧪</span>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{meta?.label || e.name || t("player.session.testTag")}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 44px 34px", gap: 6, alignItems: "center", marginBottom: 8 }}>
+        <input value={m.value ?? ""} onChange={(ev) => onField({ value: ev.target.value })} placeholder={t("player.session.cardio.result")} style={{ ...cardioInp, textAlign: "left" }} />
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center" }}>{unit || "—"}</span>{/* i18n-ok: unité issue de la batterie */}
+        <button onClick={() => onField({ done: !m.done })} style={{ height: 32, borderRadius: 6, border: m.done ? "none" : `1px solid ${C.border}`, background: m.done ? C.green : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <CheckCircle size={15} color={m.done ? "#fff" : "rgba(255,255,255,0.3)"} />
+        </button>
+      </div>
+      {onNavigate && (
+        <button onClick={() => onNavigate("fiche")} style={{ background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: 7, padding: "6px 10px", color: accent, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+          <ExternalLink size={13} /> {t("player.session.cardio.reportTest")}
+        </button>
+      )}
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
 
 // Une barre horizontale de comparaison (valeur rapportée au max de la vue).
 function CmpBar({ label, sub, value, max, color, unit }) {

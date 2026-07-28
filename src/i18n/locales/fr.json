@@ -1018,7 +1018,13 @@
         "realizedUnit": "réalisé ({{unit}})",
         "done": "Fait ✓",
         "markDone": "Marquer comme fait",
-        "pacePerKm": "{{pace}}/km"
+        "pacePerKm": "{{pace}}/km",
+        "mode_amrap": "AMRAP",
+        "mode_emom": "EMOM",
+        "mode_circuit": "Circuit",
+        "rounds": "tours",
+        "result": "Résultat",
+        "reportTest": "Voir / reporter dans mes tests"
       },
       "exInfo": "Fiche de l'exercice",
       "set1rmTitle": "Ton 1RM — {{movement}}",
@@ -1081,7 +1087,21 @@
         "note": "Note (optionnelle)",
         "targetPace": "Allure cible",
         "varyOn": "+ détailler par répétition",
-        "varyOff": "– variation par répétition"
+        "varyOff": "– variation par répétition",
+        "circuit": "Circuit / AMRAP",
+        "test": "Test",
+        "typeStrength": "Muscu",
+        "typeBodyweight": "Poids de corps",
+        "typeSkill": "Skill",
+        "typeCardio": "Cardio",
+        "mode_amrap": "AMRAP",
+        "mode_emom": "EMOM",
+        "mode_circuit": "Circuit",
+        "totalDuration": "Durée totale",
+        "roundItems": "Exercices du tour",
+        "itemName": "Exercice",
+        "addItem": "Ajouter un exercice",
+        "testKey": "Test"
       },
       "typeDesc": {
         "strength": "Séries × reps × charge",

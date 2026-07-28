@@ -16,9 +16,8 @@ import ConditioningBuilder from "./ConditioningBuilder.jsx";
 
 const accent = C.green;
 
-// Types réellement saisissables. Conditioning/Mixte arrivent en PR3b-2 (builder à
-// blocs + rendu de log ensemble) → affichés « Bientôt », non sélectionnables.
-const ENABLED_TYPES = ["strength", "bodyweight", "skills"];
+// Les 5 types sont saisissables et loggables (PR3b-2 : flag levé).
+const ENABLED_TYPES = ["strength", "bodyweight", "skills", "conditioning", "mixed"];
 
 /* Compositeur de « séance libre ». Étape 0 : choix du TYPE (modèle de saisie).
    Puis panier adapté au type (la muscu garde séries/reps/charge ; le poids de
@@ -43,7 +42,8 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
 
   const isBW = type === "bodyweight";
   const isSkill = type === "skills";
-  const isCond = type === "conditioning"; // builder « liste de blocs » (gated jusqu'à PR3b-2)
+  const isMixed = type === "mixed";
+  const isBlocks = type === "conditioning" || isMixed; // builder « liste de blocs »
   const filter = type ? libraryFilterForType(type) : null;
 
   const chooseType = (ty) => { setType(ty); setCode(codeForType(ty)); };
@@ -106,14 +106,14 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
     return { ref: c.ref, name: c.name, kind: "strength", sets: c.sets, reps: c.reps, charge: c.charge };
   };
 
-  const items = isCond ? blocks : cart;
+  const items = isBlocks ? blocks : cart;
   const create = async () => {
     if (items.length === 0) return;
     setBusy(true); setErr("");
     try {
       const id = await createFreeSession({
         title, code, type, nature: natureForType(type),
-        durationMin, exercises: isCond ? blocks : cart.map(toBlock),
+        durationMin, exercises: isBlocks ? blocks : cart.map(toBlock),
       });
       onCreated && onCreated(id);
       onClose();
@@ -197,8 +197,8 @@ export default function FreeSessionBuilder({ me, onClose, onCreated }) {
           </div>
         )}
 
-        {isCond ? (
-          <ConditioningBuilder blocks={blocks} setBlocks={setBlocks} masKmh={me?.mas} t={t} accent={accent} />
+        {isBlocks ? (
+          <ConditioningBuilder blocks={blocks} setBlocks={setBlocks} masKmh={me?.mas} t={t} accent={accent} mixed={isMixed} />
         ) : (<>
         {/* Mes routines : chargement en un geste */}
         {routines.length > 0 && (

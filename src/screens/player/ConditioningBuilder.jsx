@@ -2,6 +2,11 @@ import { useState } from "react";
 import { C } from "../../lib/tokens.js";
 import { Trash2, Plus } from "../../lib/icons.jsx";
 import { computeTargetPace, formatPace } from "../../lib/pace.js";
+import { TEST_METRICS } from "../../data/tests.js";
+import ExerciseAutocomplete from "../shared/ExerciseAutocomplete.jsx";
+
+// Tests pertinents pour un bloc « test » de conditioning.
+const COND_TESTS = ["bronco", "yoyo", "mas", "cmj_overall"];
 
 /* Builder « liste de blocs » du conditioning (séance libre). Un bloc = un format
    (continu / intervalles). Produit directement la forme attendue par le
@@ -13,32 +18,56 @@ const inp = { width: "100%", background: "rgba(255,255,255,0.07)", border: `1px 
 const lbl = { fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 700, display: "block", marginBottom: 3 };
 const num = (v) => v.replace(/[^\d]/g, "");
 
-export default function ConditioningBuilder({ blocks, setBlocks, masKmh, t, accent = C.green }) {
-  const [adding, setAdding] = useState(false);
-  const add = (kind) => {
-    const base = { id: uid(), kind, name: "", note: "", pctVMA: "" };
-    setBlocks([...blocks, kind === "cardio_continuous"
-      ? { ...base, distanceM: "", durationSec: 0, hrTarget: "" }
-      : { ...base, reps: "8", effort: { durationSec: 30 }, recovery: { durationSec: 30 }, repPlan: null }]);
-    setAdding(false);
-  };
+const BLOCK_DEFAULTS = (id, kind) => ({
+  strength: { id, kind, name: "", sets: "3", reps: "8", charge: "" },
+  bodyweight: { id, kind, name: "", sets: "3", reps: "8", lest: "" },
+  skill: { id, kind, name: "", sets: "3", measure: "reps", reps: "8", holdSec: "" },
+  cardio_continuous: { id, kind, name: "", note: "", pctVMA: "", distanceM: "", durationSec: 0, hrTarget: "" },
+  cardio_interval: { id, kind, name: "", note: "", pctVMA: "", reps: "8", effort: { durationSec: 30 }, recovery: { durationSec: 30 }, repPlan: null },
+  cardio_circuit: { id, kind, name: "", note: "", mode: "amrap", totalDurationSec: 0, roundItems: [] },
+  cardio_test: { id, kind, name: "", note: "", testKey: "bronco" },
+}[kind]);
+
+const CARDIO_FORMATS = [["cardio_continuous", "continuous"], ["cardio_interval", "interval"], ["cardio_circuit", "circuit"], ["cardio_test", "test"]];
+
+/* `mixed=false` → conditioning (formats cardio seuls). `mixed=true` → tous types :
+   le chooser demande d'abord Muscu/PdC/Skill/Cardio, puis le format si cardio. */
+export default function ConditioningBuilder({ blocks, setBlocks, masKmh, t, accent = C.green, mixed = false }) {
+  const [adding, setAdding] = useState(null); // null | 'root' | 'cardio'
+  const add = (kind) => { setBlocks([...blocks, BLOCK_DEFAULTS(uid(), kind)]); setAdding(null); };
   const patch = (id, p) => setBlocks(blocks.map((b) => (b.id === id ? { ...b, ...p } : b)));
   const remove = (id) => setBlocks(blocks.filter((b) => b.id !== id));
 
+  const renderBlock = (b) => {
+    const common = { key: b.id, b, onPatch: (p) => patch(b.id, p), onRemove: () => remove(b.id), t, accent };
+    switch (b.kind) {
+      case "cardio_continuous": return <ContinuEditor {...common} masKmh={masKmh} />;
+      case "cardio_interval": return <IntervalEditor {...common} masKmh={masKmh} />;
+      case "cardio_circuit": return <CircuitEditor {...common} />;
+      case "cardio_test": return <TestEditor {...common} />;
+      default: return <ExerciseBlockEditor {...common} />; // strength / bodyweight / skill
+    }
+  };
+
   return (
     <div>
-      {blocks.map((b) => (b.kind === "cardio_continuous"
-        ? <ContinuEditor key={b.id} b={b} onPatch={(p) => patch(b.id, p)} onRemove={() => remove(b.id)} masKmh={masKmh} t={t} accent={accent} />
-        : <IntervalEditor key={b.id} b={b} onPatch={(p) => patch(b.id, p)} onRemove={() => remove(b.id)} masKmh={masKmh} t={t} accent={accent} />))}
+      {blocks.map(renderBlock)}
 
-      {adding ? (
+      {adding === "cardio" ? (
         <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-          <button onClick={() => add("cardio_continuous")} style={fmtBtn}>{t("player.freeSession.cond.continuous")}</button>
-          <button onClick={() => add("cardio_interval")} style={fmtBtn}>{t("player.freeSession.cond.interval")}</button>
-          <button onClick={() => setAdding(false)} style={{ ...fmtBtn, color: "rgba(255,255,255,0.6)" }}>{t("common.cancel")}</button>
+          {CARDIO_FORMATS.map(([kind, label]) => <button key={kind} onClick={() => add(kind)} style={fmtBtn}>{t(`player.freeSession.cond.${label}`)}</button>)}
+          <button onClick={() => setAdding(mixed ? "root" : null)} style={{ ...fmtBtn, color: "rgba(255,255,255,0.6)" }}>{t("common.cancel")}</button>
+        </div>
+      ) : adding === "root" ? (
+        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+          <button onClick={() => add("strength")} style={fmtBtn}>{t("player.freeSession.cond.typeStrength")}</button>
+          <button onClick={() => add("bodyweight")} style={fmtBtn}>{t("player.freeSession.cond.typeBodyweight")}</button>
+          <button onClick={() => add("skill")} style={fmtBtn}>{t("player.freeSession.cond.typeSkill")}</button>
+          <button onClick={() => setAdding("cardio")} style={fmtBtn}>{t("player.freeSession.cond.typeCardio")}</button>
+          <button onClick={() => setAdding(null)} style={{ ...fmtBtn, color: "rgba(255,255,255,0.6)" }}>{t("common.cancel")}</button>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", marginTop: 8, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, color: accent, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+        <button onClick={() => setAdding(mixed ? "root" : "cardio")} style={{ width: "100%", marginTop: 8, background: "rgba(255,255,255,0.06)", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, color: accent, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
           <Plus size={15} /> {t("player.freeSession.cond.addBlock")}
         </button>
       )}
@@ -148,5 +177,80 @@ function IntervalEditor({ b, onPatch, onRemove, masKmh, t }) {
         </div>
       ))}
     </BlockShell>
+  );
+}
+
+const MODES = ["amrap", "emom", "circuit"];
+function CircuitEditor({ b, onPatch, onRemove, t }) {
+  const items = Array.isArray(b.roundItems) ? b.roundItems : [];
+  const setItem = (i, p) => onPatch({ roundItems: items.map((it, j) => (j === i ? { ...it, ...p } : it)) });
+  return (
+    <BlockShell title={t("player.freeSession.cond.circuit")} onRemove={onRemove} note={b.note} onNote={(v) => onPatch({ note: v })} t={t}>
+      <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+        {MODES.map((mo) => (
+          <button key={mo} onClick={() => onPatch({ mode: mo })} style={{ flex: 1, padding: "6px 4px", borderRadius: 6, border: b.mode === mo ? `1px solid ${C.green}` : `1px solid ${C.border}`, background: b.mode === mo ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t(`player.freeSession.cond.mode_${mo}`)}</button>
+        ))}
+      </div>
+      <DurationField label={t("player.freeSession.cond.totalDuration")} sec={b.totalDurationSec} onChange={(v) => onPatch({ totalDurationSec: v })} t={t} />
+      <div style={{ ...lbl, marginTop: 8 }}>{t("player.freeSession.cond.roundItems")}</div>
+      {items.map((it, i) => (
+        <div key={i} style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 4 }}>
+          <input value={it.name || ""} onChange={(e) => setItem(i, { name: e.target.value })} placeholder={t("player.freeSession.cond.itemName")} style={{ ...inp, flex: 1 }} />
+          <input value={it.reps ?? ""} onChange={(e) => setItem(i, { reps: num(e.target.value) })} inputMode="numeric" placeholder={t("player.freeSession.cond.reps")} style={{ ...inp, width: 66, textAlign: "center" }} />
+          <button onClick={() => onPatch({ roundItems: items.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: C.coral, cursor: "pointer", display: "flex" }}><Trash2 size={13} /></button>
+        </div>
+      ))}
+      <button onClick={() => onPatch({ roundItems: [...items, { name: "", reps: "" }] })} style={{ background: "none", border: "none", color: C.green, fontSize: 10.5, fontWeight: 700, cursor: "pointer", padding: "4px 0" }}>+ {t("player.freeSession.cond.addItem")}</button>
+    </BlockShell>
+  );
+}
+
+function TestEditor({ b, onPatch, onRemove, t }) {
+  return (
+    <BlockShell title={t("player.freeSession.cond.test")} onRemove={onRemove} note={b.note} onNote={(v) => onPatch({ note: v })} t={t}>
+      <label style={{ display: "block" }}>
+        <span style={lbl}>{t("player.freeSession.cond.testKey")}</span>
+        <select value={b.testKey} onChange={(e) => onPatch({ testKey: e.target.value })} style={{ ...inp, cursor: "pointer" }}>
+          {COND_TESTS.map((k) => { const m = TEST_METRICS.find((x) => x.key === k); return <option key={k} value={k}>{m?.label || k}</option>; })}
+        </select>
+      </label>
+    </BlockShell>
+  );
+}
+
+// Bloc mono-exercice (mixte) : muscu / poids de corps / skill.
+function ExerciseBlockEditor({ b, onPatch, onRemove, t, accent }) {
+  const titleKey = { strength: "typeStrength", bodyweight: "typeBodyweight", skill: "typeSkill" }[b.kind];
+  return (
+    <div style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ flex: 1, fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.6)", letterSpacing: 0.5 }}>{t(`player.freeSession.cond.${titleKey}`)}</span>
+        <button onClick={onRemove} style={{ background: "none", border: "none", cursor: "pointer", color: C.coral, display: "flex" }}><Trash2 size={15} /></button>
+      </div>
+      <ExerciseAutocomplete value={b.name} onChange={(v) => onPatch({ name: v })} onPick={(it) => it && onPatch({ name: it.name })} placeholder={t("player.freeSession.cond.name")} style={{ ...inp, marginBottom: 8 }} />
+      {b.kind === "skill" ? (
+        <div style={{ display: "grid", gridTemplateColumns: "0.8fr 1.2fr 1fr", gap: 6, alignItems: "end" }}>
+          <label><span style={lbl}>{t("player.freeSession.sets")}</span><input value={b.sets} onChange={(e) => onPatch({ sets: num(e.target.value) })} inputMode="numeric" style={{ ...inp, textAlign: "center" }} /></label>
+          <label><span style={lbl}>{t("player.freeSession.measure")}</span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {["reps", "temps"].map((mo) => (
+                <button key={mo} onClick={() => onPatch({ measure: mo })} style={{ flex: 1, padding: "6px 2px", borderRadius: 6, border: b.measure === mo ? `1px solid ${accent}` : `1px solid ${C.border}`, background: b.measure === mo ? `${accent}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>{t(`player.freeSession.measure_${mo}`)}</button>
+              ))}
+            </div>
+          </label>
+          {b.measure === "temps"
+            ? <label><span style={lbl}>{t("player.freeSession.hold")}</span><input value={b.holdSec} onChange={(e) => onPatch({ holdSec: num(e.target.value) })} inputMode="numeric" style={{ ...inp, textAlign: "center" }} /></label>
+            : <label><span style={lbl}>{t("player.freeSession.reps")}</span><input value={b.reps} onChange={(e) => onPatch({ reps: e.target.value })} style={{ ...inp, textAlign: "center" }} /></label>}
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+          <label><span style={lbl}>{t("player.freeSession.sets")}</span><input value={b.sets} onChange={(e) => onPatch({ sets: num(e.target.value) })} inputMode="numeric" style={{ ...inp, textAlign: "center" }} /></label>
+          <label><span style={lbl}>{t("player.freeSession.reps")}</span><input value={b.reps} onChange={(e) => onPatch({ reps: e.target.value })} style={{ ...inp, textAlign: "center" }} /></label>
+          {b.kind === "bodyweight"
+            ? <label><span style={lbl}>{t("player.freeSession.lest")}</span><input value={b.lest} onChange={(e) => onPatch({ lest: num(e.target.value) })} inputMode="numeric" placeholder="kg" style={{ ...inp, textAlign: "center" }} />{/* i18n-ok: unité kg */}</label>
+            : <label><span style={lbl}>{t("player.freeSession.charge")}</span><input value={b.charge} onChange={(e) => onPatch({ charge: e.target.value })} placeholder="kg" style={{ ...inp, textAlign: "center" }} />{/* i18n-ok: unité kg */}</label>}
+        </div>
+      )}
+    </div>
   );
 }

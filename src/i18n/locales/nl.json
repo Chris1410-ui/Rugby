@@ -1018,7 +1018,13 @@
         "realizedUnit": "werkelijk ({{unit}})",
         "done": "Klaar ✓",
         "markDone": "Markeer als klaar",
-        "pacePerKm": "{{pace}}/km"
+        "pacePerKm": "{{pace}}/km",
+        "mode_amrap": "AMRAP",
+        "mode_emom": "EMOM",
+        "mode_circuit": "Circuit",
+        "rounds": "rondes",
+        "result": "Resultaat",
+        "reportTest": "Bekijk / rapporteer in mijn tests"
       },
       "exInfo": "Oefeningdetails",
       "set1rmTitle": "Jouw 1RM — {{movement}}",
@@ -1081,7 +1087,21 @@
         "note": "Notitie (optioneel)",
         "targetPace": "Doeltempo",
         "varyOn": "+ per herhaling detailleren",
-        "varyOff": "– variatie per herhaling"
+        "varyOff": "– variatie per herhaling",
+        "circuit": "Circuit / AMRAP",
+        "test": "Test",
+        "typeStrength": "Kracht",
+        "typeBodyweight": "Lichaamsgewicht",
+        "typeSkill": "Skill",
+        "typeCardio": "Cardio",
+        "mode_amrap": "AMRAP",
+        "mode_emom": "EMOM",
+        "mode_circuit": "Circuit",
+        "totalDuration": "Totale duur",
+        "roundItems": "Oefeningen per ronde",
+        "itemName": "Oefening",
+        "addItem": "Oefening toevoegen",
+        "testKey": "Test"
       },
       "typeDesc": {
         "strength": "Sets × reps × gewicht",

@@ -1018,7 +1018,13 @@
         "realizedUnit": "actual ({{unit}})",
         "done": "Done ✓",
         "markDone": "Mark as done",
-        "pacePerKm": "{{pace}}/km"
+        "pacePerKm": "{{pace}}/km",
+        "mode_amrap": "AMRAP",
+        "mode_emom": "EMOM",
+        "mode_circuit": "Circuit",
+        "rounds": "rounds",
+        "result": "Result",
+        "reportTest": "View / report in my tests"
       },
       "exInfo": "Exercise details",
       "set1rmTitle": "Your 1RM — {{movement}}",
@@ -1081,7 +1087,21 @@
         "note": "Note (optional)",
         "targetPace": "Target pace",
         "varyOn": "+ vary per rep",
-        "varyOff": "– vary per rep"
+        "varyOff": "– vary per rep",
+        "circuit": "Circuit / AMRAP",
+        "test": "Test",
+        "typeStrength": "Strength",
+        "typeBodyweight": "Bodyweight",
+        "typeSkill": "Skill",
+        "typeCardio": "Cardio",
+        "mode_amrap": "AMRAP",
+        "mode_emom": "EMOM",
+        "mode_circuit": "Circuit",
+        "totalDuration": "Total duration",
+        "roundItems": "Round exercises",
+        "itemName": "Exercise",
+        "addItem": "Add an exercise",
+        "testKey": "Test"
       },
       "typeDesc": {
         "strength": "Sets × reps × load",

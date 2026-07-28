@@ -111,6 +111,24 @@ describe("séances libres — dispatch par kind (PR2)", () => {
     ]);
     expect(out.map((e) => e.kind)).toEqual(["strength", "cardio_interval"]);
   });
+
+  it("panier mixte complet (7 kinds depuis les formes du builder)", () => {
+    const out = normalizeFreeExercises([
+      { kind: "strength", name: "Squat", sets: "4", reps: "5", charge: "90" },
+      { kind: "bodyweight", name: "Traction", sets: "3", reps: "8", lest: "10" },
+      { kind: "skill", name: "Handstand", sets: "3", measure: "temps", holdSec: "30" },
+      { kind: "cardio_continuous", name: "Footing", distanceM: "3000", pctVMA: "65" },
+      { kind: "cardio_interval", name: "30-30", reps: "10", effort: { durationSec: 30 }, recovery: { durationSec: 30 } },
+      { kind: "cardio_circuit", mode: "amrap", totalDurationSec: 600, roundItems: [{ name: "Burpee", reps: "10" }] },
+      { kind: "cardio_test", testKey: "bronco" },
+    ]);
+    expect(out.map((e) => e.kind)).toEqual([
+      "strength", "bodyweight", "skill", "cardio_continuous", "cardio_interval", "cardio_circuit", "cardio_test",
+    ]);
+    expect(out[1].charge).toBe("10"); // lest → charge
+    expect(out[2]).toMatchObject({ measure: "temps", holdSec: 30 });
+    expect(out[5].roundItems).toHaveLength(1);
+  });
 });
 
 describe("séances libres — createFreeSession", () => {
