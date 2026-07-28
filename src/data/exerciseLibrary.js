@@ -38,13 +38,30 @@ function dbToExercise(r) {
   };
 }
 
+/* Construit la clause OR PostgREST d'un descripteur de filtre par type de séance
+   (cf. libraryFilterForType, sessionType.js). Les critères présents se combinent
+   en OU (un exo pertinent matche AU MOINS un critère) ; la clause s'ajoute en ET
+   aux autres filtres. Renvoie null si le descripteur est vide. */
+export function buildTypeFilterOr(filter) {
+  if (!filter) return null;
+  const parts = [];
+  if (filter.bodyPart) parts.push(`body_part.eq.${filter.bodyPart}`);
+  if (filter.equipment) parts.push(`equipment.eq.${filter.equipment}`);
+  if (filter.noEquipment) parts.push("no_equipment.is.true");
+  if (filter.calisthenics) parts.push("is_calisthenics.is.true");
+  if (Array.isArray(filter.exerciseType) && filter.exerciseType.length) parts.push(`exercise_type.in.(${filter.exerciseType.join(",")})`);
+  return parts.length ? parts.join(",") : null;
+}
+
 /* Liste paginée + filtrée côté serveur. Renvoie la page courante, le total (pour
    la pagination) et l'état de chargement. Réinitialise `page` en amont quand un
-   filtre change (fait par l'écran). */
-export function useExerciseLibrary({ search = "", bodyPart = "", equipment = "", target = "", page = 0 } = {}) {
+   filtre change (fait par l'écran). `filter` (optionnel) restreint au type de
+   séance (descripteur de sessionType.js). */
+export function useExerciseLibrary({ search = "", bodyPart = "", equipment = "", target = "", page = 0, filter = null } = {}) {
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const orClause = buildTypeFilterOr(filter);
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -57,13 +74,14 @@ export function useExerciseLibrary({ search = "", bodyPart = "", equipment = "",
     if (bodyPart) q = q.eq("body_part", bodyPart);
     if (equipment) q = q.eq("equipment", equipment);
     if (target) q = q.eq("target_muscle", target);
+    if (orClause) q = q.or(orClause);
     q = q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
     const { data, error, count } = await q;
     if (error) { console.error("[exercise_library]", error.message); setLoading(false); return; }
     setRows((data ?? []).map(dbToExercise));
     setTotal(count ?? 0);
     setLoading(false);
-  }, [search, bodyPart, equipment, target, page]);
+  }, [search, bodyPart, equipment, target, page, orClause]);
 
   useEffect(() => { fetch(); }, [fetch]);
 

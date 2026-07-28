@@ -1027,7 +1027,21 @@
       "deleteRoutine": "Supprimer la routine",
       "routineNamePlaceholder": "Nom de la routine",
       "saveRoutineConfirm": "Enregistrer",
-      "saveAsRoutine": "Enregistrer comme routine"
+      "saveAsRoutine": "Enregistrer comme routine",
+      "chooseType": "Choisis le type de séance",
+      "changeType": "changer",
+      "soon": "Bientôt",
+      "duration": "Durée totale prévue",
+      "advanced": "Réglages avancés",
+      "lest": "Lest",
+      "removeLest": "– lest",
+      "typeDesc": {
+        "strength": "Séries × reps × charge",
+        "conditioning": "Distance, temps, intervalles",
+        "bodyweight": "Séries × reps, sans charge",
+        "skills": "Reps ou tenue, sans charge",
+        "mixed": "Combine plusieurs blocs"
+      }
     }
   },
   "staff": {
@@ -2634,6 +2648,13 @@
       "technique": "Technique",
       "mobilite": "Mobilité",
       "autre": "Autre"
+    },
+    "sessionType": {
+      "strength": "Salle / Muscu",
+      "conditioning": "Conditioning / Cardio",
+      "bodyweight": "Poids de corps",
+      "skills": "Skills / Technique",
+      "mixed": "Mixte"
     }
   },
   "points": {

@@ -1027,7 +1027,21 @@
       "deleteRoutine": "Delete routine",
       "routineNamePlaceholder": "Routine name",
       "saveRoutineConfirm": "Save",
-      "saveAsRoutine": "Save as routine"
+      "saveAsRoutine": "Save as routine",
+      "chooseType": "Choose the session type",
+      "changeType": "change",
+      "soon": "Soon",
+      "duration": "Planned total duration",
+      "advanced": "Advanced settings",
+      "lest": "Added load",
+      "removeLest": "– load",
+      "typeDesc": {
+        "strength": "Sets × reps × load",
+        "conditioning": "Distance, time, intervals",
+        "bodyweight": "Sets × reps, no load",
+        "skills": "Reps or hold, no load",
+        "mixed": "Combine several blocks"
+      }
     }
   },
   "staff": {
@@ -2634,6 +2648,13 @@
       "technique": "Skills",
       "mobilite": "Mobility",
       "autre": "Other"
+    },
+    "sessionType": {
+      "strength": "Gym / Strength",
+      "conditioning": "Conditioning / Cardio",
+      "bodyweight": "Bodyweight",
+      "skills": "Skills / Technique",
+      "mixed": "Mixed"
     }
   },
   "points": {

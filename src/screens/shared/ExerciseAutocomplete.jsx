@@ -8,7 +8,18 @@ import { searchExercises, equipmentLabel, targetLabel } from "../../data/exercis
    la ligne à son `exercise_id` (via onPick) ; sinon le nom libre est conservé
    (création auto de l'exo perso à l'enregistrement). `style` reprend le style de
    la cellule hôte pour rester homogène. */
-export default function ExerciseAutocomplete({ value, onChange, onPick, placeholder, style }) {
+// Filtre d'autocomplétion approximatif par type de séance (champs dispo côté RPC :
+// category=body_part, equipment, isCalisthenics — OU des critères présents). La
+// feuille biblio (ExercisePickerSheet) applique le filtre EXACT côté serveur.
+function matchesFilter(it, filter) {
+  if (!filter) return true;
+  if (filter.bodyPart && it.category === filter.bodyPart) return true;
+  if (filter.equipment && it.equipment === filter.equipment) return true;
+  if (filter.calisthenics && it.isCalisthenics) return true;
+  return false;
+}
+
+export default function ExerciseAutocomplete({ value, onChange, onPick, placeholder, style, filter = null }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
@@ -23,10 +34,10 @@ export default function ExerciseAutocomplete({ value, onChange, onPick, placehol
     const my = ++seq.current;
     const id = setTimeout(async () => {
       const res = await searchExercises(q, 10);
-      if (my === seq.current) { setItems(res); setHi(0); }
+      if (my === seq.current) { setItems(filter ? res.filter((it) => matchesFilter(it, filter)) : res); setHi(0); }
     }, 160);
     return () => clearTimeout(id);
-  }, [value, open]);
+  }, [value, open, filter]);
 
   useEffect(() => {
     const onDoc = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };

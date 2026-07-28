@@ -1027,7 +1027,21 @@
       "deleteRoutine": "Routine verwijderen",
       "routineNamePlaceholder": "Routinenaam",
       "saveRoutineConfirm": "Opslaan",
-      "saveAsRoutine": "Opslaan als routine"
+      "saveAsRoutine": "Opslaan als routine",
+      "chooseType": "Kies het type sessie",
+      "changeType": "wijzigen",
+      "soon": "Binnenkort",
+      "duration": "Geplande totale duur",
+      "advanced": "Geavanceerde instellingen",
+      "lest": "Extra gewicht",
+      "removeLest": "– gewicht",
+      "typeDesc": {
+        "strength": "Sets × reps × gewicht",
+        "conditioning": "Afstand, tijd, intervallen",
+        "bodyweight": "Sets × reps, zonder gewicht",
+        "skills": "Reps of houden, zonder gewicht",
+        "mixed": "Combineer meerdere blokken"
+      }
     }
   },
   "staff": {
@@ -2634,6 +2648,13 @@
       "technique": "Techniek",
       "mobilite": "Mobiliteit",
       "autre": "Overig"
+    },
+    "sessionType": {
+      "strength": "Zaal / Kracht",
+      "conditioning": "Conditioning / Cardio",
+      "bodyweight": "Lichaamsgewicht",
+      "skills": "Skills / Techniek",
+      "mixed": "Gemengd"
     }
   },
   "points": {

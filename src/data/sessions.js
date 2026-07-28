@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "./messages.js";
 import { makeRecurrenceOps } from "./recurrence.js";
+import { effectiveSessionType } from "../lib/sessionType.js";
 
 /* Séances (sessions). En attendant les programmes complets (étape 7), les séances
    sont des lignes datées directes. `assigned` (jsonb) définit les destinataires. */
@@ -94,6 +95,7 @@ export function dbToSession(row, roster) {
     date: row.date,
     code: row.code || "RS",
     nature: row.nature || null,   // nature descriptive (lib/nature.js) ; repli code-dérivé à l'affichage
+    sessionType: effectiveSessionType(row.session_type), // modèle de saisie (0110) ; 'strength' par défaut/legacy
     titre: row.titre || "Séance",
     progTitle: row.titre || "Séance",
     dur: row.duration_min || 60,
