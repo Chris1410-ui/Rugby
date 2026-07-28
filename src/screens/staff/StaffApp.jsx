@@ -61,6 +61,7 @@ import TestsBatch from "./TestsBatch.jsx";
 import ImportPlayers from "./ImportPlayers.jsx";
 import Historique from "./Historique.jsx";
 import ComparaisonAB from "./ComparaisonAB.jsx";
+import ClubHeatmaps from "./ClubHeatmaps.jsx";
 import Abonnements from "./Abonnements.jsx";
 
 const ACCENT = C.coral;
@@ -122,6 +123,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
     ["compare", t("nav.compare"), Activity],
+    ["heatmaps", t("nav.heatmaps"), Activity],
     ["recos", t("nav.recos"), Sparkles],
     ["adherence", t("nav.adherence"), TrendingUp],
     ["efficacite", t("nav.efficacite"), TrendingUp],
@@ -167,6 +169,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}
+        {tab === "heatmaps" && <ClubHeatmaps teamId={profile.team_id} players={players} />}
         {tab === "recos" && <Recommandations teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
         {tab === "adherence" && <Adherence players={players} sessions={sessions} logs={logs} />}
         {tab === "efficacite" && <ProtocolEfficacy teamId={profile.team_id} sessions={sessions} />}

@@ -28,6 +28,9 @@ export default function HeatmapsGallery({ playerId, showNames = false, onClose }
   const [kind, setKind] = useState("all");      // all | match | training
   const [provider, setProvider] = useState("all");
   const [viewer, setViewer] = useState(null);   // index (dans `items` filtré) ouvert en plein écran
+  const [compare, setCompare] = useState(false); // mode sélection pour comparer
+  const [sel, setSel] = useState([]);            // clés sélectionnées (max 4)
+  const [cmpOpen, setCmpOpen] = useState(false); // vue comparative ouverte
 
   // Aplatit les heatmaps de toutes les séances → items { session, path, tab }.
   const all = useMemo(
@@ -43,6 +46,14 @@ export default function HeatmapsGallery({ playerId, showNames = false, onClose }
   );
 
   const providersPresent = useMemo(() => PROVIDERS.filter((p) => all.some((it) => it.session.provider === p)), [all]);
+
+  const keyOf = (it) => `${it.session.id}:${it.path}`;
+  const toggleSel = (it) => {
+    const k = keyOf(it);
+    setSel((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : cur.length >= 4 ? cur : [...cur, k]));
+  };
+  const selItems = useMemo(() => items.filter((it) => sel.includes(keyOf(it))), [items, sel]);
+  const onTile = (it, i) => (compare ? toggleSel(it) : setViewer(i));
 
   const seg = (val, cur, set, label) => (
     <button key={val} onClick={() => set(val)} style={{ padding: "5px 9px", borderRadius: 7, border: cur === val ? `1px solid ${C.teal}` : `1px solid ${C.border}`, background: cur === val ? `${C.teal}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 10.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>{label}</button>
@@ -66,9 +77,18 @@ export default function HeatmapsGallery({ playerId, showNames = false, onClose }
           {seg("training", kind, setKind, t("gps.heatmaps.kindTraining"))}
         </div>
         {providersPresent.length > 0 && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
             {seg("all", provider, setProvider, t("gps.heatmaps.providerAll"))}
             {providersPresent.map((p) => seg(p, provider, setProvider, t(`player.gps.provider_${p}`)))}
+          </div>
+        )}
+
+        {/* Bascule « comparer » : sélectionne 2 à 4 heatmaps → vue côte à côte. */}
+        {all.length > 1 && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14 }}>
+            <button onClick={() => { setCompare((c) => !c); setSel([]); }} style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${compare ? C.teal : C.border}`, background: compare ? `${C.teal}22` : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>{compare ? t("gps.heatmaps.compareCancel") : `⇄ ${t("gps.heatmaps.compare")}`}</button>
+            {compare && <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)" }}>{t("gps.heatmaps.compareHint", { n: sel.length })}</span>}
+            {compare && sel.length >= 2 && <button onClick={() => setCmpOpen(true)} style={{ marginLeft: "auto", padding: "5px 12px", borderRadius: 7, border: "none", background: C.teal, color: "#fff", fontSize: 10.5, fontWeight: 800, cursor: "pointer" }}>{t("gps.heatmaps.compareGo", { n: sel.length })}</button>}
           </div>
         )}
 
@@ -76,8 +96,11 @@ export default function HeatmapsGallery({ playerId, showNames = false, onClose }
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", textAlign: "center", padding: "24px 0" }}>{t("gps.heatmaps.empty")}</div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 8 }}>
-            {items.map((it, i) => (
-              <button key={`${it.session.id}:${it.path}`} onClick={() => setViewer(i)} style={{ padding: 0, border: "none", background: "none", cursor: "pointer", textAlign: "left" }}>
+            {items.map((it, i) => {
+              const on = compare && sel.includes(keyOf(it));
+              return (
+              <button key={keyOf(it)} onClick={() => onTile(it, i)} style={{ padding: 0, border: "none", background: "none", cursor: "pointer", textAlign: "left", position: "relative", outline: on ? `2px solid ${C.teal}` : "none", outlineOffset: 2, borderRadius: 8 }}>
+                {on && <span style={{ position: "absolute", top: 4, right: 4, zIndex: 1, background: C.teal, color: "#fff", borderRadius: 10, width: 18, height: 18, fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{sel.indexOf(keyOf(it)) + 1}</span>}
                 <Thumb path={it.path} />
                 <div style={{ fontSize: 9.5, fontWeight: 700, marginTop: 3 }}>{fmtShort(it.session.date)}</div>
                 <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.5)", display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -85,7 +108,8 @@ export default function HeatmapsGallery({ playerId, showNames = false, onClose }
                   {it.session.provider && <span>{t(`player.gps.provider_${it.session.provider}`)}</span>}
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -99,6 +123,7 @@ export default function HeatmapsGallery({ playerId, showNames = false, onClose }
           onClose={() => setViewer(null)}
         />
       )}
+      {cmpOpen && selItems.length >= 2 && <HeatmapCompare items={selItems} showNames={showNames} onClose={() => setCmpOpen(false)} />}
     </Overlay>
   );
 }
@@ -110,6 +135,33 @@ function Thumb({ path }) {
   return (
     <div style={{ width: "100%", aspectRatio: "3 / 4", borderRadius: 8, background: "#000", border: `1px solid ${C.border}`, overflow: "hidden" }}>
       {url && <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+    </div>
+  );
+}
+
+/* Comparaison côte à côte de 2 à 4 heatmaps (même joueur, même échelle
+   d'affichage) pour comparer l'occupation du terrain entre deux matchs/périodes. */
+function HeatmapCompare({ items, showNames, onClose }) {
+  const { t } = useTranslation();
+  const cols = items.length >= 3 ? 2 : items.length; // 2 → 1 rangée ; 3-4 → grille 2×2
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 410, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", padding: "12px 16px" }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ flex: 1, fontSize: 13, fontWeight: 800 }}>⇄ {t("gps.heatmaps.compareTitle", { n: items.length })}</div>
+        <button onClick={onClose} style={{ background: "none", border: "none", color: "#fff", fontSize: 24, lineHeight: 1, cursor: "pointer" }}>×</button>{/* i18n-ok: symbole fermeture */}
+      </div>
+      <div onClick={(e) => e.stopPropagation()} style={{ flex: 1, overflow: "auto", padding: "0 12px 16px", display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 8, alignContent: "start" }}>
+        {items.map((it) => (
+          <div key={`${it.session.id}:${it.path}`} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800 }}>{fmtShort(it.session.date)}{it.tab ? ` · ${t(`player.gps.tab.${it.tab}`)}` : ""}</div>
+            {showNames && it.session.sessionName && <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.session.sessionName}</div>}
+            <Thumb path={it.path} />
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.65)", lineHeight: 1.5 }}>
+              {[it.session.distanceM != null ? `${it.session.distanceM} m` : null, it.session.vmaxKmh != null ? `${it.session.vmaxKmh} km/h` : null, it.session.hsrM != null ? `HSR ${it.session.hsrM} m` : null].filter(Boolean).join(" · ") || "—"}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

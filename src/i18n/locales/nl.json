@@ -314,7 +314,8 @@
     "abonnements": "Abonnementen",
     "exercices": "Bibliotheek",
     "invites": "Uitnodigingen",
-    "adhesions": "Lidmaatschapsaanvragen"
+    "adhesions": "Lidmaatschapsaanvragen",
+    "heatmaps": "Heatmaps"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -3237,7 +3238,17 @@
       "providerAll": "Alle",
       "empty": "Nog geen heatmap. Markeer een opname als “Heatmap” bij het uploaden.",
       "prev": "Vorige",
-      "next": "Volgende"
+      "next": "Volgende",
+      "compare": "Vergelijken",
+      "compareCancel": "Annuleren",
+      "compareHint": "{{n}}/4 geselecteerd",
+      "compareGo": "Vergelijk ({{n}})",
+      "compareTitle": "Vergelijking — {{n}} heatmaps",
+      "clubTitle": "Wedstrijdoverzicht",
+      "clubSubtitle": "Club-heatmaps per datum — één miniatuur per speler",
+      "allPlayers": "Alle",
+      "clubEmpty": "Nog geen heatmap geüpload in de club.",
+      "nPlayers": "{{count}} speler(s)"
     }
   }
 }

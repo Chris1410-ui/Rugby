@@ -55,6 +55,36 @@ export function useGpsSessions(playerId) {
   return { sessions, loading, refresh: fetch };
 }
 
+/* Sessions GPS de TOUT le club (staff — la RLS gps_sel autorise le staff de la
+   même équipe à lire les lignes de ses joueurs). Temps réel. Sert au parcours
+   match / à la galerie club (GPS-5c). Pseudonymisation : l'appelant n'affiche
+   jamais le session_name en vue collective (cf. HeatmapsGallery/ClubHeatmaps). */
+export function useClubGps(teamId) {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setSessions([]); setLoading(false); return; }
+    const { data, error } = await supabase
+      .from("gps_sessions").select("*").eq("team_id", teamId).order("date", { ascending: false });
+    if (error) { console.error("[gps club]", error.message); setLoading(false); return; }
+    setSessions((data ?? []).map(dbToGps));
+    setLoading(false);
+  }, [teamId]);
+
+  useEffect(() => {
+    fetch();
+    if (!teamId) return;
+    const channel = supabase
+      .channel(uniqueTopic(`gps-club:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "gps_sessions", filter: `team_id=eq.${teamId}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [teamId, fetch]);
+
+  return { sessions, loading, refresh: fetch };
+}
+
 // Upload des captures vers le bucket privé → chemins stockés. Best-effort par image.
 export async function uploadGpsImages(teamId, playerId, gpsId, files) {
   const folder = gpsFolder(teamId, playerId, gpsId);

@@ -314,7 +314,8 @@
     "abonnements": "Abonnements",
     "exercices": "Bibliothèque",
     "invites": "Invitations",
-    "adhesions": "Demandes d'adhésion"
+    "adhesions": "Demandes d'adhésion",
+    "heatmaps": "Heatmaps"
   },
   "roles": {
     "preparateur": "Préparateur physique",
@@ -3237,7 +3238,17 @@
       "providerAll": "Tous",
       "empty": "Aucune heatmap pour le moment. Marque une capture comme « Heatmap » au dépôt.",
       "prev": "Précédent",
-      "next": "Suivant"
+      "next": "Suivant",
+      "compare": "Comparer",
+      "compareCancel": "Annuler",
+      "compareHint": "{{n}}/4 sélectionnées",
+      "compareGo": "Comparer ({{n}})",
+      "compareTitle": "Comparaison — {{n}} heatmaps",
+      "clubTitle": "Parcours match",
+      "clubSubtitle": "Heatmaps du club par date — une vignette par joueur",
+      "allPlayers": "Tous",
+      "clubEmpty": "Aucune heatmap déposée dans le club.",
+      "nPlayers": "{{count}} joueur(s)"
     }
   }
 }

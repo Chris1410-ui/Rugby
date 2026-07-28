@@ -314,7 +314,8 @@
     "abonnements": "Subscriptions",
     "exercices": "Library",
     "invites": "Invitations",
-    "adhesions": "Membership requests"
+    "adhesions": "Membership requests",
+    "heatmaps": "Heatmaps"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -3237,7 +3238,17 @@
       "providerAll": "All",
       "empty": "No heatmap yet. Tag a capture as “Heatmap” when uploading.",
       "prev": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "compare": "Compare",
+      "compareCancel": "Cancel",
+      "compareHint": "{{n}}/4 selected",
+      "compareGo": "Compare ({{n}})",
+      "compareTitle": "Comparison — {{n}} heatmaps",
+      "clubTitle": "Match browse",
+      "clubSubtitle": "Club heatmaps by date — one thumbnail per player",
+      "allPlayers": "All",
+      "clubEmpty": "No heatmap uploaded in the club yet.",
+      "nPlayers": "{{count}} player(s)"
     }
   }
 }
