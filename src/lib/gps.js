@@ -18,6 +18,10 @@ export const GPS_METRICS = [
 
 const PROVIDERS = ["pitchero", "catapult", "statsports", "other"];
 
+// Type d'une capture GPS et, pour une heatmap, l'onglet d'origine (GPS-5).
+export const IMAGE_KINDS = ["heatmap", "stats", "chart"];
+export const HEATMAP_TABS = ["speed", "distance", "intensity", "other"];
+
 // Nombre ≥ 0 lisible, sinon null (0 lu = valeur ; absent/vide/négatif/NaN = null).
 const num = (v) => {
   if (v == null || v === "") return null;
@@ -150,4 +154,32 @@ export function gpsSeries(sessions = [], metricKey) {
     .filter((s) => s?.[field] != null && s?.date)
     .map((s) => ({ date: s.date, value: s[field] }))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+}
+
+/* Normalise la métadonnée d'images d'un dépôt (GPS-5) → [{ path, kind, tab }].
+   `kind` restreint à IMAGE_KINDS (sinon null) ; `tab` restreint à HEATMAP_TABS et
+   pertinent seulement pour une heatmap (sinon null). `fallbackPaths` (image_paths)
+   complète les chemins non décrits (anciens dépôts) en kind=null. Dédoublonne par
+   path. PUR — n'invente jamais de type. */
+export function normalizeImages(images, fallbackPaths = []) {
+  const out = [];
+  const seen = new Set();
+  const push = (path, kind, tab) => {
+    const p = typeof path === "string" ? path.trim() : "";
+    if (!p || seen.has(p)) return;
+    seen.add(p);
+    const k = IMAGE_KINDS.includes(kind) ? kind : null;
+    const tb = k === "heatmap" && HEATMAP_TABS.includes(tab) ? tab : null;
+    out.push({ path: p, kind: k, tab: tb });
+  };
+  for (const im of Array.isArray(images) ? images : []) push(im?.path, im?.kind, im?.tab);
+  for (const p of Array.isArray(fallbackPaths) ? fallbackPaths : []) push(p, null, null);
+  return out;
+}
+
+/* Heatmaps d'un dépôt normalisé (objet portant `images` et/ou `imagePaths`) →
+   [{ path, tab }]. Ne renvoie que les captures explicitement marquées heatmap. PUR. */
+export function heatmapsOf(session) {
+  const imgs = normalizeImages(session?.images, session?.imagePaths);
+  return imgs.filter((i) => i.kind === "heatmap").map((i) => ({ path: i.path, tab: i.tab }));
 }

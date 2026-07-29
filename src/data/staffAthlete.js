@@ -14,6 +14,14 @@ export async function activateStaffAthlete() {
   return data; // players.id de la carte athlète
 }
 
+/* Désactive le profil athlète (réversible, migration 0117) : délie le profil et
+   passe la carte en 'inactive' (retirée de l'effectif/classement). Historique
+   conservé → réactiver réutilise la même carte. */
+export async function deactivateStaffAthlete() {
+  const { error } = await supabase.rpc("deactivate_staff_athlete");
+  if (error) throw error;
+}
+
 /* Projection PUBLIQUE des staff-athlètes d'un club (RPC SECURITY DEFINER, 0098) :
    par athlète { sessions_done, natures {nature: n}, routine_today }. C'est TOUT ce
    qu'un joueur voit d'eux (avec points/badges du classement) — jamais les charges,

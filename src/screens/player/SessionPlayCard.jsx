@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
-import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users, Clock } from "../../lib/icons.jsx";
+import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users, Clock, Pencil } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
-  e1RM, SET_TYPES, nextSetType, parseSetsN,
+  e1RM, SET_TYPES, nextSetType, initSetLikeSets, fillEmptySetsFromOneRM,
   lastExercisePerf, exerciseRecords, exerciseHistory, prescribedVsRealized,
 } from "../../lib/hevy.js";
 import { saveLog } from "../../data/logs.js";
@@ -52,7 +52,20 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   const pctLoad = (e) => {
     if (!e?.pct) return null;
     const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
-    return { pct: e.pct, kg: cur ? computeLoadKg(e.pct, cur.value) : null, label: e.rmLabel || e.name, kind: cur?.kind, missing: !cur };
+    return { pct: e.pct, kg: cur ? computeLoadKg(e.pct, cur.value) : null, oneRM: cur?.value ?? null, label: e.rmLabel || e.name, kind: cur?.kind, missing: !cur };
+  };
+
+  // 1RM renseigné/corrigé DEPUIS la séance (source unique = fiche joueur, via
+  // add1RM). Pré-remplit la charge des séries VIDES de CET exercice uniquement —
+  // jamais d'écrasement d'une valeur déjà saisie (souveraineté). Uniforme → série
+  // 1 ; séries détaillées → chaque série vide reçoit sa charge résolue.
+  const applyOneRM = (e, oneRMkg) => {
+    const st = ex[e.id];
+    if (!st?.sets?.length) return;
+    const sets = fillEmptySetsFromOneRM(st.sets, e, oneRMkg);
+    if (sets === st.sets) return; // aucune série vide remplie → rien à faire
+    setDirty(true);
+    setEx((v) => ({ ...v, [e.id]: { ...v[e.id], sets } }));
   };
   // 1RM courant (kg) du mouvement d'un exercice, pour résoudre son setPlan par série.
   const exOneRM = (e) => {
@@ -99,15 +112,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
         b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ done: !!sv?.[i]?.done, actual: sv?.[i]?.actual ?? "" })), note: saved?.note || "" };
         return;
       }
-      // Set-like : muscu / poids de corps / skill (+ séries détaillées).
-      if (saved?.sets) { b[e.id] = { sets: saved.sets.map((x) => ({ ...x })), note: saved.note || "" }; return; }
-      const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
-      if (Array.isArray(e.setPlan) && e.setPlan.length) {
-        b[e.id] = { sets: e.setPlan.map((sp, i) => ({ w: prev?.sets?.[i]?.w || "", reps: String(sp.reps ?? ""), type: "normal", done: false })), note: "" };
-      } else {
-        const n = parseSetsN(e.sets);
-        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ w: prev?.sets?.[i]?.w || e.charge || "", reps: e.reps || "", type: "normal", done: false })), note: "" };
-      }
+      // Set-like : muscu / poids de corps / skill (+ séries détaillées). Le
+      // pré-remplissage (série 1 uniquement en uniforme, chaque série une fois en
+      // détaillé) est centralisé dans un helper PUR ; la saisie du joueur (saved)
+      // est restituée telle quelle et n'est jamais recalculée. Le perf précédent
+      // n'est qu'un INDICE au rendu (placeholder), pas une valeur pré-remplie.
+      b[e.id] = initSetLikeSets(e, { saved, oneRM: exOneRM(e) });
     });
     return b;
   };
@@ -329,17 +339,18 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                 </div>
                 {e.note && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 6, fontStyle: "italic" }}>💬 {e.note}</div>}
                 {pl && (
-                  <div style={{ fontSize: 11, fontWeight: 800, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", color: pl.kg != null ? C.viol : C.amb }}>
-                    <span>{pl.pct}%</span>
-                    {pl.kg != null ? (
-                      <>
-                        <span>· {pl.kg} {t("player.session.kg")}</span>
-                        {pl.kind === "estime" && <span style={{ fontSize: 9, fontWeight: 700, color: C.amb }}>({t("oneRM.estimated")})</span>}
-                      </>
-                    ) : (
-                      <button onClick={() => setSet1rm({ label: pl.label })} style={{ fontWeight: 800, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "1px 7px", cursor: "pointer" }}>· {t("player.session.setYour1RM", { movement: pl.label })}</button>
-                    )}
-                  </div>
+                  pl.oneRM != null ? (
+                    // 1RM connu → ligne d'info COMPACTE et discrète, cliquable pour corriger sur place.
+                    <button onClick={() => !preview && setSet1rm({ e })} disabled={preview} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 6, background: "none", border: "none", padding: 0, cursor: preview ? "default" : "pointer", textAlign: "left", fontSize: 10.5 }}>
+                      <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{t("player.session.rmRef", { movement: pl.label, kg: pl.oneRM })}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: pl.kind === "estime" ? C.amb : C.green }}>({t(pl.kind === "estime" ? "oneRM.estimated" : "oneRM.tested")})</span>
+                      <span style={{ color: C.viol, fontWeight: 800 }}>· {t("player.session.rmLoad", { pct: pl.pct, kg: pl.kg })}</span>
+                      {!preview && <Pencil size={11} color="rgba(255,255,255,0.4)" />}
+                    </button>
+                  ) : (
+                    // 1RM manquant → badge orange, saisie EN PLACE (sans quitter la séance).
+                    <button onClick={() => !preview && setSet1rm({ e })} style={{ fontSize: 11, fontWeight: 800, marginBottom: 6, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "3px 8px", cursor: "pointer" }}>@{pl.pct}% · {t("player.session.setYour1RM", { movement: pl.label })}</button>
+                  )
                 )}
                 {ecart && (
                   <div style={{ fontSize: 10, color: C.amb, marginBottom: 6, display: "flex", alignItems: "center", gap: 5, fontWeight: 700 }}>
@@ -361,7 +372,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
                           {psKg != null ? (
                             <span style={{ color: C.viol, fontWeight: 800 }}>→ {psKg} {t("player.session.kg")}</span>
                           ) : ps.needs1RM ? (
-                            <button onClick={() => setSet1rm({ label: e.rmLabel || e.name })} style={{ fontWeight: 800, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "0 6px", cursor: "pointer" }}>{ps.pct}% · {t("player.session.setYour1RM", { movement: e.rmLabel || e.name })}</button>
+                            <button onClick={() => !preview && setSet1rm({ e })} style={{ fontWeight: 800, color: C.amb, background: `${C.amb}18`, border: `1px solid ${C.amb}55`, borderRadius: 5, padding: "0 6px", cursor: "pointer" }}>{ps.pct}% · {t("player.session.setYour1RM", { movement: e.rmLabel || e.name })}</button>
                           ) : null}
                         </div>
                       )}
@@ -443,28 +454,48 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
       {graphEx && <ExoProgressModal pid={me.id} exName={graphEx} sessions={sessions} logs={logs} accent={accent} onClose={() => setGraphEx(null)} />}
       {proto && <ProgramView id={proto.id} doc={proto.doc} title={proto.title} onClose={() => setProto(null)} />}
       {infoEx && <ExerciseInfoModal name={infoEx} onClose={() => setInfoEx(null)} />}
-      {set1rm && !preview && <Quick1RM label={set1rm.label} me={me} t={t} onClose={() => setSet1rm(null)} />}
+      {set1rm && !preview && <Quick1RM e={set1rm.e} current={exOneRM(set1rm.e)} me={me} t={t} onSaved={(kg) => applyOneRM(set1rm.e, kg)} onClose={() => setSet1rm(null)} />}
     </div>
   );
 }
 
-/* Saisie rapide, par le JOUEUR, de son 1RM manquant pour un mouvement (depuis la
-   carte de séance quand une consigne @% n'a pas de 1RM). add1RM source 'player'. */
-function Quick1RM({ label, me, t, onClose }) {
-  const [v, setV] = useState("");
+/* Saisie / correction rapide, par le JOUEUR, de son 1RM pour un mouvement, SANS
+   quitter la séance. Choix 1RM (direct) ou 5RM (converti en 1RM estimé via Epley).
+   Écrit dans la FICHE (add1RM, source unique) ; `onSaved(kg)` transmet le 1RM
+   résultant pour pré-remplir la charge des séries vides de l'exercice. */
+function Quick1RM({ e, current, me, t, onSaved, onClose }) {
+  const label = e.rmLabel || e.name;
+  const [mode, setMode] = useState("1rm"); // 1rm (direct) | 5rm (sous-max → Epley)
+  const [v, setV] = useState(current != null ? String(current) : "");
   const [busy, setBusy] = useState(false);
   const save = async () => {
-    if (!(Number(v) > 0)) return;
+    const val = Number(v);
+    if (!(val > 0)) return;
     setBusy(true);
-    try { await add1RM(me.team, me.id, { name: label, valueKg: v, source: "player" }); onClose(); }
-    catch (e) { console.error("[quick1rm]", e.message); setBusy(false); }
+    try {
+      const oneRMkg = mode === "5rm" ? e1RM(val, 5) : val; // Epley pour le 5RM
+      await add1RM(me.team, me.id, {
+        name: label, exerciseId: e.rmExerciseId || null,
+        valueKg: mode === "1rm" ? val : null,
+        testWeight: mode === "5rm" ? val : null,
+        testReps: mode === "5rm" ? 5 : null,
+        source: "player",
+      });
+      onSaved && onSaved(oneRMkg);
+      onClose();
+    } catch (err) { console.error("[quick1rm]", err.message); setBusy(false); }
   };
+  const pill = (on) => ({ flex: 1, padding: "7px 0", borderRadius: 8, border: "none", fontSize: 11.5, fontWeight: 800, cursor: "pointer", background: on ? C.viol : "rgba(255,255,255,0.07)", color: "#fff" });
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.82)", zIndex: 340, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: C.panel, borderRadius: 16, padding: 18 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>{t("player.session.set1rmTitle", { movement: label })}</div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 12 }}>{t("player.session.set1rmHint")}</div>
-        <input value={v} onChange={(e) => setV(e.target.value)} inputMode="decimal" autoFocus placeholder={t("oneRM.kg")} style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px", color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", textAlign: "center", marginBottom: 12, boxSizing: "border-box" }} />
+      <div onClick={(ev) => ev.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: C.panel, borderRadius: 16, padding: 18 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>{t(current != null ? "player.session.edit1rmTitle" : "player.session.set1rmTitle", { movement: label })}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 12 }}>{mode === "5rm" ? t("player.session.rm5rmHint") : t("player.session.set1rmHint")}</div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+          <button onClick={() => setMode("1rm")} style={pill(mode === "1rm")}>{t("player.session.rm1rm")}</button>
+          <button onClick={() => setMode("5rm")} style={pill(mode === "5rm")}>{t("player.session.rm5rm")}</button>
+        </div>
+        <input value={v} onChange={(ev) => setV(ev.target.value)} inputMode="decimal" autoFocus placeholder={t("oneRM.kg")} style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "10px 12px", color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", textAlign: "center", marginBottom: 12, boxSizing: "border-box" }} />
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={save} disabled={busy} style={{ flex: 1, background: C.green, border: "none", borderRadius: 9, padding: 11, color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "…" : t("player.session.set1rmSave")}</button>
           <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, padding: "11px 14px", color: "rgba(255,255,255,0.7)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("common.cancel")}</button>

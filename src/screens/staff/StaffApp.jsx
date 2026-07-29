@@ -61,18 +61,23 @@ import TestsBatch from "./TestsBatch.jsx";
 import ImportPlayers from "./ImportPlayers.jsx";
 import Historique from "./Historique.jsx";
 import ComparaisonAB from "./ComparaisonAB.jsx";
+import ClubHeatmaps from "./ClubHeatmaps.jsx";
 import Abonnements from "./Abonnements.jsx";
 
 const ACCENT = C.coral;
 
 /* Espace staff. Une seule dérivation (useTeamData → enrichPlayers) ; tous les
    onglets lisent l'effectif enrichi. */
-export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: forceReadOnly = false }) {
+export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete = null, readOnly: forceReadOnly = false }) {
   const { t } = useTranslation();
   const [tabState, setTabState] = useState("effectif");
   const tab = tabProp ?? tabState;               // piloté par AppShell (mobile) ou interne
   const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
-  const go = (t, intent = null) => { (onTab || setTabState)(t); setNewIntent(intent); };
+  // « Mon athlète » (hub Plus) : bascule vers la vue athlète du staff (pas un onglet).
+  const go = (t, intent = null) => {
+    if (t === "myathlete" && onViewAthlete) { onViewAthlete(); return; }
+    (onTab || setTabState)(t); setNewIntent(intent);
+  };
   const mobile = useIsMobile();
   // Lecture seule si : coach (miroir RLS can_write()) OU owner en « Voir comme »
   // (forceReadOnly) — dans les deux cas, toutes les commandes d'écriture masquées.
@@ -105,6 +110,8 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
   const nav = [
     ["effectif", t("nav.effectif"), Users, resetReqs.length],
     ["aujourdhui", t("nav.aujourdhui"), Sun],
+    // Bascule vers son propre profil athlète (si activé) — accès depuis le hub Plus.
+    ...(onViewAthlete ? [["myathlete", t("nav.myAthlete"), Sun]] : []),
     ["alertes", t("nav.alertes"), Bell, bAlertes],
     ["messages", t("nav.messages"), MessageSquare, unread],
     ["programmes", t("nav.programmes"), Dumbbell],
@@ -122,6 +129,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
     ["media", t("nav.media"), Film],
     ["classement", t("nav.classement"), Trophy],
     ["compare", t("nav.compare"), Activity],
+    ["heatmaps", t("nav.heatmaps"), Activity],
     ["recos", t("nav.recos"), Sparkles],
     ["adherence", t("nav.adherence"), TrendingUp],
     ["efficacite", t("nav.efficacite"), TrendingUp],
@@ -167,6 +175,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, readOnly: force
         {tab === "media" && <Mediatheque teamId={profile.team_id} canEdit={!readOnly} accent={ACCENT} />}
         {tab === "classement" && <Classement players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
         {tab === "compare" && <ComparaisonAB teamId={profile.team_id} players={players} />}
+        {tab === "heatmaps" && <ClubHeatmaps teamId={profile.team_id} players={players} />}
         {tab === "recos" && <Recommandations teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
         {tab === "adherence" && <Adherence players={players} sessions={sessions} logs={logs} />}
         {tab === "efficacite" && <ProtocolEfficacy teamId={profile.team_id} sessions={sessions} />}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseChargeKg, prescribedVsRealized } from "./hevy.js";
+import { parseChargeKg, prescribedVsRealized, initSetLikeSets, fillEmptySetsFromOneRM } from "./hevy.js";
 
 describe("parseChargeKg", () => {
   it("parses plain and suffixed numbers", () => {
@@ -56,5 +56,103 @@ describe("prescribedVsRealized", () => {
     const r = prescribedVsRealized({ sets: "3", reps: "8", charge: "" }, { sets: [set(80, 8), set(80, 8), set(80, 8)] });
     expect(r.chargeDiff).toBe(false);
     expect(r.diff).toBe(false);
+  });
+});
+
+describe("initSetLikeSets — pré-remplissage du lecteur de séance", () => {
+  it("prescription uniforme : SEULE la série 1 reçoit charge + reps, les autres restent vides", () => {
+    const { sets } = initSetLikeSets({ sets: "4", reps: "8", charge: "80" });
+    expect(sets).toHaveLength(4);
+    expect(sets[0]).toMatchObject({ w: "80", reps: "8" });
+    // Séries 2..4 : jamais pré-remplies par la prescription.
+    for (let i = 1; i < 4; i++) expect(sets[i]).toMatchObject({ w: "", reps: "" });
+  });
+
+  it("@% : la charge de la série 1 est calculée depuis le 1RM (série 1 uniquement)", () => {
+    const { sets } = initSetLikeSets({ sets: "3", reps: "5", pct: 80 }, { oneRM: 100 });
+    expect(sets[0]).toMatchObject({ w: "80", reps: "5" }); // 80% de 100
+    expect(sets[1]).toMatchObject({ w: "", reps: "" });
+    expect(sets[2]).toMatchObject({ w: "", reps: "" });
+  });
+
+  it("exercice SANS @% n'est jamais affecté par le 1RM (charge littérale ou vide)", () => {
+    const lit = initSetLikeSets({ sets: "3", reps: "8", charge: "60" }, { oneRM: 200 });
+    expect(lit.sets[0]).toMatchObject({ w: "60", reps: "8" }); // littéral, pas 1RM
+    const none = initSetLikeSets({ sets: "3", reps: "8" }, { oneRM: 200 });
+    expect(none.sets[0]).toMatchObject({ w: "", reps: "8" }); // aucune charge → vide
+  });
+
+  it("séries détaillées : chaque série calcule SA valeur une fois, indépendamment", () => {
+    const { sets } = initSetLikeSets(
+      { setPlan: [{ reps: 10, pct: 80 }, { reps: 8, pct: 85 }, { reps: 6, pct: 90 }] },
+      { oneRM: 100 },
+    );
+    expect(sets).toHaveLength(3);
+    expect(sets[0]).toMatchObject({ w: "80", reps: "10" });
+    expect(sets[1]).toMatchObject({ w: "85", reps: "8" });
+    expect(sets[2]).toMatchObject({ w: "90", reps: "6" });
+  });
+
+  it("setPlan @% sans 1RM → charge vide (jamais fabriquée), reps conservées", () => {
+    const { sets } = initSetLikeSets({ setPlan: [{ reps: 10, pct: 80 }, { reps: 8, pct: 85 }] }, { oneRM: null });
+    expect(sets[0]).toMatchObject({ w: "", reps: "10" });
+    expect(sets[1]).toMatchObject({ w: "", reps: "8" });
+  });
+
+  it("la saisie enregistrée (saved) est restituée TELLE QUELLE — jamais recalculée", () => {
+    const saved = { sets: [{ w: "85", reps: "6", type: "normal", done: true }, { w: "82.5", reps: "6", type: "normal", done: true }], note: "dur" };
+    const { sets, note } = initSetLikeSets({ sets: "4", reps: "8", pct: 80 }, { saved, oneRM: 100 });
+    expect(note).toBe("dur");
+    expect(sets).toHaveLength(2); // structure du réalisé (2 séries) ≠ prescrit (4) — l'écart est simplement affiché
+    expect(sets[0]).toMatchObject({ w: "85", reps: "6" });
+    expect(sets[1]).toMatchObject({ w: "82.5", reps: "6" });
+  });
+
+  it("exercices distincts : le pré-remplissage de l'un n'affecte pas l'autre", () => {
+    const a = initSetLikeSets({ sets: "3", reps: "8", charge: "100" });
+    const b = initSetLikeSets({ sets: "2", reps: "5", charge: "60" });
+    expect(a.sets[0].w).toBe("100");
+    expect(b.sets[0].w).toBe("60");
+    expect(b.sets).toHaveLength(2);
+  });
+});
+
+describe("fillEmptySetsFromOneRM — report d'un 1RM saisi en séance", () => {
+  const S = (w = "", reps = "8") => ({ w, reps, type: "normal", done: false });
+
+  it("@% uniforme : remplit UNIQUEMENT la série 1 vide (charge = %·1RM)", () => {
+    const out = fillEmptySetsFromOneRM([S(), S(), S()], { pct: 80, sets: "3" }, 100);
+    expect(out[0].w).toBe("80");
+    expect(out[1].w).toBe("");
+    expect(out[2].w).toBe("");
+  });
+
+  it("ne réécrit JAMAIS une série déjà saisie (souveraineté)", () => {
+    const sets = [S("90"), S(), S()];
+    const out = fillEmptySetsFromOneRM(sets, { pct: 80, sets: "3" }, 100);
+    expect(out[0].w).toBe("90"); // saisie conservée
+    // série 1 déjà remplie → série 2/3 non concernées (uniforme = série 1 only)
+    expect(out[1].w).toBe("");
+  });
+
+  it("séries détaillées : chaque série VIDE reçoit sa charge résolue, les autres restent", () => {
+    const sets = [S("", "10"), S("87.5", "8"), S("", "6")];
+    const out = fillEmptySetsFromOneRM(sets, { setPlan: [{ reps: 10, pct: 80 }, { reps: 8, pct: 85 }, { reps: 6, pct: 90 }] }, 100);
+    expect(out[0].w).toBe("80");   // vide → résolu
+    expect(out[1].w).toBe("87.5"); // saisi → conservé
+    expect(out[2].w).toBe("90");   // vide → résolu
+  });
+
+  it("aucune série vide remplissable → renvoie le MÊME tableau (référence)", () => {
+    const sets = [S("80"), S("80")];
+    expect(fillEmptySetsFromOneRM(sets, { pct: 80 }, 100)).toBe(sets);
+    // exercice sans @% ni setPlan → rien à calculer, même référence
+    const plain = [S(), S()];
+    expect(fillEmptySetsFromOneRM(plain, { sets: "2" }, 100)).toBe(plain);
+  });
+
+  it("1RM absent (≤0) → aucun changement", () => {
+    const sets = [S(), S()];
+    expect(fillEmptySetsFromOneRM(sets, { pct: 80 }, 0)).toBe(sets);
   });
 });

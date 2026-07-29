@@ -5,7 +5,8 @@ import { Section, KPI, Tag } from "../../lib/ui.jsx";
 import { fmtShort, todayISO } from "../../lib/metrics.js";
 import { MultiLine, Bars } from "../../lib/charts.jsx";
 import { useGpsSessions, fetchGpsAggregates } from "../../data/gps.js";
-import { gpsRecords, gpsSeries, gpsWindowLoad, gpsPlayerAgg } from "../../lib/gps.js";
+import { gpsRecords, gpsSeries, gpsWindowLoad, gpsPlayerAgg, heatmapsOf } from "../../lib/gps.js";
+import HeatmapsGallery from "./HeatmapsGallery.jsx";
 
 /* Section GPS de la Fiche (GPS-4) — charge EXTERNE, lecture staff + joueur (RLS).
    Records (vmax phare), courbes d'évolution, comparaison k-anon ligne/équipe
@@ -24,6 +25,7 @@ export default function GpsFicheSection({ player, self = false }) {
   const { t } = useTranslation();
   const { sessions } = useGpsSessions(player?.id);
   const [agg, setAgg] = useState(null);
+  const [heatOpen, setHeatOpen] = useState(false);
 
   useEffect(() => {
     // Comparaison k-anon : seulement en self (les RPC sont calées sur my_player_id).
@@ -42,6 +44,7 @@ export default function GpsFicheSection({ player, self = false }) {
   const rec = (key) => records[key];
   const recSub = (key) => (rec(key)?.date ? fmtShort(rec(key).date) : "—");
   const metricLabel = (k) => t(`shared.fiche.gps.m_${k}`);
+  const hasHeatmaps = sessions.some((g) => heatmapsOf(g).length);
 
   // Une métrique n'est comparée que si la ligne OU l'équipe passe le seuil (≥5).
   const compareRows = agg
@@ -51,6 +54,14 @@ export default function GpsFicheSection({ player, self = false }) {
 
   return (
     <Section title={`📡 ${t("shared.fiche.gps.title")}`}>
+      {/* Accès aux heatmaps conservées (fiche individuelle : noms autorisés). */}
+      {hasHeatmaps && (
+        <button onClick={() => setHeatOpen(true)} style={{ width: "100%", marginBottom: 12, background: `${C.teal}14`, border: `1px solid ${C.teal}44`, borderRadius: 10, padding: 10, color: C.teal, fontWeight: 800, fontSize: 12, cursor: "pointer" }}>
+          🗺️ {t("gps.heatmaps.title")}
+        </button>
+      )}
+      {heatOpen && <HeatmapsGallery playerId={player.id} showNames onClose={() => setHeatOpen(false)} />}
+
       {/* Records (charge externe) — vmax en tête, comme un record suivi. */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
         <KPI label={t("shared.fiche.gps.recVmax")} value={rec("vmax_kmh") ? `${rec("vmax_kmh").value}` : "—"} sub={rec("vmax_kmh") ? `km/h · ${recSub("vmax_kmh")}` : "—"} color={C.teal} />{/* i18n-ok: unité km/h */}

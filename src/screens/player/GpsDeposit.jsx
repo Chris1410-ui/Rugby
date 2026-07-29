@@ -5,7 +5,7 @@ import { todayISO, fmtShort } from "../../lib/metrics.js";
 import { Overlay, Section } from "../../lib/ui.jsx";
 import { Plus, Trash2 } from "../../lib/icons.jsx";
 import { usePreview } from "../../lib/preview.js";
-import { SPEED_ZONES, normalizeGpsMetrics, hasAnyMetric } from "../../lib/gps.js";
+import { SPEED_ZONES, IMAGE_KINDS, HEATMAP_TABS, normalizeGpsMetrics, hasAnyMetric } from "../../lib/gps.js";
 import { useGpsSessions, createGpsSession, uploadGpsImages, deleteGpsSession, newGpsId } from "../../data/gps.js";
 import { analyzeGpsShot } from "../../data/gpsAI.js";
 import { useTeamTrainings } from "../../data/trainings.js";
@@ -32,6 +32,7 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
   const [date, setDate] = useState(today);
   const [link, setLink] = useState(null);       // { type:'session'|'training', id }
   const [files, setFiles] = useState([]);
+  const [imgMeta, setImgMeta] = useState([]);   // parallèle à files : [{kind:''|'heatmap'|'stats'|'chart', tab}]
   const [provider, setProvider] = useState("");
   const [f, setF] = useState({ distance_m: "", m_per_min: "", hsr_m: "", hsr_count: "", vmax_kmh: "", vavg_kmh: "", durMin: "", durSec: "", session_name: "", notes: "" });
   const emptyZones = () => Object.fromEntries(SPEED_ZONES.map((z) => [z, { sec: "", pct: "" }]));
@@ -56,7 +57,15 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
 
   const setField = (k, v) => setF((s) => ({ ...s, [k]: v }));
   const setZone = (z, k, v) => setZones((s) => ({ ...s, [z]: { ...s[z], [k]: v } }));
-  const addFiles = (fl) => setFiles((cur) => [...cur, ...Array.from(fl || [])].slice(0, 6));
+  const addFiles = (fl) => {
+    const add = Array.from(fl || []);
+    setFiles((cur) => [...cur, ...add].slice(0, 6));
+    setImgMeta((cur) => [...cur, ...add.map(() => ({ kind: "", tab: "" }))].slice(0, 6));
+  };
+  const removeFile = (i) => { setFiles((c) => c.filter((_, j) => j !== i)); setImgMeta((c) => c.filter((_, j) => j !== i)); };
+  // Type d'une capture (auto = "" → inconnu) ; l'onglet ne vaut que pour une heatmap.
+  const setImgKind = (i, kind) => setImgMeta((c) => c.map((m, j) => (j === i ? { kind, tab: kind === "heatmap" ? m.tab : "" } : m)));
+  const setImgTab = (i, tab) => setImgMeta((c) => c.map((m, j) => (j === i ? { ...m, tab } : m)));
 
   const buildMetrics = () => {
     const speed_zones = SPEED_ZONES.map((z) => ({ zone: z, sec: zones[z].sec, pct: zones[z].pct })).filter((x) => x.sec !== "" || x.pct !== "");
@@ -98,6 +107,10 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
     (m.speedZones || []).forEach((x) => { if (z[x.zone]) z[x.zone] = { sec: s(x.sec), pct: s(x.pct) }; });
     setZones(z);
     if (m.provider) setProvider(m.provider);
+    // Pré-remplit le type de chaque capture depuis le classement IA (index → capture).
+    const meta = files.map(() => ({ kind: "", tab: "" }));
+    (r.imageKinds || []).forEach((ik) => { if (ik.index >= 0 && ik.index < meta.length) meta[ik.index] = { kind: ik.kind, tab: ik.tab || "" }; });
+    setImgMeta(meta);
     setSource("ai");
     setAi({ conf: m.confidence || {}, nameDetected: !!m.nameDetected, warnings: r.warnings || [], confidence: r.confidence });
     setAiBusy(false);
@@ -109,13 +122,19 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
     try {
       const id = newGpsId();
       const paths = files.length ? await uploadGpsImages(me.team, me.id, id, files) : [];
+      // Type/onglet par capture, aligné sur l'ordre d'upload (kind "" auto → null).
+      const images = paths.map((path, i) => {
+        const mm = imgMeta[i] || {};
+        const kind = IMAGE_KINDS.includes(mm.kind) ? mm.kind : null;
+        return { path, kind, tab: kind === "heatmap" && mm.tab ? mm.tab : null };
+      });
       await createGpsSession({
         id, playerId: me.id, teamId: me.team, date,
-        metrics: buildMetrics(), imagePaths: paths, source,
+        metrics: buildMetrics(), imagePaths: paths, images, source,
         linkedSessionId: link?.type === "session" ? link.id : null,
         linkedTrainingId: link?.type === "training" ? link.id : null,
       });
-      setFiles([]); setF({ distance_m: "", m_per_min: "", hsr_m: "", hsr_count: "", vmax_kmh: "", vavg_kmh: "", durMin: "", durSec: "", session_name: "", notes: "" });
+      setFiles([]); setImgMeta([]); setF({ distance_m: "", m_per_min: "", hsr_m: "", hsr_count: "", vmax_kmh: "", vavg_kmh: "", durMin: "", durSec: "", session_name: "", notes: "" });
       setZones(emptyZones()); setLink(null); setProvider(""); setSource("manual"); setAi(null); setAiMsg("");
       refresh();
     } catch (e) {
@@ -149,13 +168,30 @@ export default function GpsDeposit({ me, sessions = [], onClose }) {
 
         {/* Captures (optionnelles) */}
         <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.55)", fontWeight: 700, marginBottom: 6 }}>{t("player.gps.captures")}</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-          {previews.map((p, i) => (
-            <div key={i} style={{ position: "relative" }}>
-              <img src={p.url} alt="" style={{ width: 60, height: 84, objectFit: "cover", borderRadius: 8, background: "#000", border: `1px solid ${C.border}` }} />
-              <button onClick={() => setFiles((c) => c.filter((_, j) => j !== i))} style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: 10, background: C.coral, border: "none", color: "#fff", cursor: "pointer", fontSize: 12, lineHeight: "20px", padding: 0 }}>×</button>
-            </div>
-          ))}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 4, alignItems: "flex-start" }}>
+          {previews.map((p, i) => {
+            const kind = imgMeta[i]?.kind || "";
+            const isHeat = kind === "heatmap";
+            return (
+              <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3, width: 60 }}>
+                <div style={{ position: "relative" }}>
+                  <img src={p.url} alt="" style={{ width: 60, height: 84, objectFit: "cover", borderRadius: 8, background: "#000", border: `1px solid ${isHeat ? accent : C.border}` }} />
+                  {isHeat && <span style={{ position: "absolute", bottom: 3, left: 3, fontSize: 11 }} title={t("player.gps.img.heatmap")}>🗺️</span>}
+                  {!preview && <button onClick={() => removeFile(i)} style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: 10, background: C.coral, border: "none", color: "#fff", cursor: "pointer", fontSize: 12, lineHeight: "20px", padding: 0 }}>×</button>}{/* i18n-ok: symbole fermeture */}
+                </div>
+                <select value={kind} onChange={(e) => setImgKind(i, e.target.value)} disabled={preview} style={{ ...inp, padding: "3px 4px", fontSize: 8.5, textAlign: "center" }}>
+                  <option value="">{t("player.gps.img.auto")}</option>
+                  {IMAGE_KINDS.map((k) => <option key={k} value={k}>{t(`player.gps.img.${k}`)}</option>)}
+                </select>
+                {isHeat && (
+                  <select value={imgMeta[i]?.tab || ""} onChange={(e) => setImgTab(i, e.target.value)} disabled={preview} style={{ ...inp, padding: "3px 4px", fontSize: 8.5, textAlign: "center" }}>
+                    <option value="">{t("player.gps.img.tab")}</option>
+                    {HEATMAP_TABS.map((tb) => <option key={tb} value={tb}>{t(`player.gps.tab.${tb}`)}</option>)}
+                  </select>
+                )}
+              </div>
+            );
+          })}
           {files.length < 6 && (
             <label style={{ width: 60, height: 84, borderRadius: 8, border: `1px dashed ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: accent }}>
               <Plus size={20} />

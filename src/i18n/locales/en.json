@@ -314,7 +314,9 @@
     "abonnements": "Subscriptions",
     "exercices": "Library",
     "invites": "Invitations",
-    "adhesions": "Membership requests"
+    "adhesions": "Membership requests",
+    "heatmaps": "Heatmaps",
+    "myAthlete": "My athlete"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -340,7 +342,9 @@
     "activateAthlete": "Activate my athlete profile",
     "activating": "Activating…",
     "viewAsAthlete": "Switch to athlete view",
-    "viewAsStaff": "Back to staff view"
+    "viewAsStaff": "Back to staff view",
+    "deactivateAthlete": "Deactivate my athlete profile",
+    "deactivateAthleteConfirm": "Deactivate your athlete profile? It will be removed from the leaderboard (your history is kept, you can reactivate it)."
   },
   "onboarding": {
     "skip": "Skip",
@@ -795,7 +799,8 @@
       "tracking": "Your tracking",
       "trackingHint": "Tap for history",
       "trackingRange": "Last {{count}} readings",
-      "week": "Your week"
+      "week": "Your week",
+      "routineSub": "Your morning routine"
     },
     "messages": {
       "staffTitle": "Staff — Strength & conditioning"
@@ -1045,7 +1050,13 @@
       "useChrono": "Timer: {{n}} min",
       "durationPlanned": "Planned: {{n}} min",
       "durationReal": "actual: {{n}} min",
-      "ssHint": "ss"
+      "ssHint": "ss",
+      "rmRef": "1RM {{movement}}: {{kg}} kg",
+      "rmLoad": "@{{pct}}% ≈ {{kg}} kg",
+      "rm1rm": "1RM",
+      "rm5rm": "5RM",
+      "rm5rmHint": "The 5RM is converted to an estimated 1RM (Epley).",
+      "edit1rmTitle": "Correct the {{movement}} 1RM"
     },
     "freeSession": {
       "newButton": "Create a free session",
@@ -1166,6 +1177,19 @@
         "overQuota": "Daily AI analysis limit reached ({{used}}/{{limit}}). Enter values manually.",
         "notConfigured": "AI analysis not configured. Enter values manually.",
         "failed": "AI analysis unavailable right now. Enter values manually."
+      },
+      "img": {
+        "auto": "Auto",
+        "heatmap": "Heatmap",
+        "stats": "Stats",
+        "chart": "Chart",
+        "tab": "Tab"
+      },
+      "tab": {
+        "speed": "Speed",
+        "distance": "Distance",
+        "intensity": "Intensity",
+        "other": "Other"
       }
     }
   },
@@ -3210,5 +3234,31 @@
     "current": "here",
     "next": "aim",
     "aim": "Next step: {{label}}"
+  },
+  "gps": {
+    "heatmaps": {
+      "title": "Heatmaps",
+      "subtitle": "Heat maps from your GPS uploads",
+      "periodAll": "All",
+      "period30": "30 d",
+      "period90": "90 d",
+      "kindAll": "All",
+      "kindMatch": "Match",
+      "kindTraining": "Training",
+      "providerAll": "All",
+      "empty": "No heatmap yet. Tag a capture as “Heatmap” when uploading.",
+      "prev": "Previous",
+      "next": "Next",
+      "compare": "Compare",
+      "compareCancel": "Cancel",
+      "compareHint": "{{n}}/4 selected",
+      "compareGo": "Compare ({{n}})",
+      "compareTitle": "Comparison — {{n}} heatmaps",
+      "clubTitle": "Match browse",
+      "clubSubtitle": "Club heatmaps by date — one thumbnail per player",
+      "allPlayers": "All",
+      "clubEmpty": "No heatmap uploaded in the club yet.",
+      "nPlayers": "{{count}} player(s)"
+    }
   }
 }

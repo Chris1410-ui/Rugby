@@ -11,7 +11,7 @@ import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
 import Onboarding from "./shared/Onboarding.jsx";
 import { markOnboardingSeen } from "../data/onboarding.js";
-import { activateStaffAthlete } from "../data/staffAthlete.js";
+import { activateStaffAthlete, deactivateStaffAthlete } from "../data/staffAthlete.js";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import OwnerApp from "./OwnerApp.jsx";
@@ -145,6 +145,16 @@ export default function AppShell() {
     catch (e) { console.error("[staff athlete]", e.message); }
     finally { setActivating(false); setAvatarOpen(false); }
   };
+  // Désactivation (réversible) du profil athlète : retour en vue staff, carte
+  // retirée de l'effectif/classement (historique conservé → réactivable).
+  const deactivateAthlete = async () => {
+    if (activating) return;
+    if (!window.confirm(t("shell.deactivateAthleteConfirm"))) { setAvatarOpen(false); return; }
+    setActivating(true);
+    try { await deactivateStaffAthlete(); setViewAs("staff"); setNavTab(null); await refreshProfile(); }
+    catch (e) { console.error("[staff athlete off]", e.message); }
+    finally { setActivating(false); setAvatarOpen(false); }
+  };
   const goHome = () => goTab(homeTab);
   const name = profile.full_name || user?.email || "Moi";
   const initial = (name.trim()[0] || "?").toUpperCase();
@@ -194,7 +204,10 @@ export default function AppShell() {
                   {/* Navigation retirée du header : « Ma fiche » / « Vue joueur » sont
                      déjà dans la barre du bas + hub « Plus » (un seul système). */}
                   {staffRole && (hasAthlete ? (
-                    <MenuItem label={asAthlete ? t("shell.viewAsStaff") : t("shell.viewAsAthlete")} onClick={() => switchView(asAthlete ? "staff" : "athlete")} />
+                    <>
+                      <MenuItem label={asAthlete ? t("shell.viewAsStaff") : t("shell.viewAsAthlete")} onClick={() => switchView(asAthlete ? "staff" : "athlete")} />
+                      <MenuItem label={activating ? t("shell.activating") : t("shell.deactivateAthlete")} onClick={deactivateAthlete} />
+                    </>
                   ) : (
                     <MenuItem label={activating ? t("shell.activating") : t("shell.activateAthlete")} onClick={activateAthlete} />
                   ))}
@@ -209,7 +222,7 @@ export default function AppShell() {
         </header>
 
         {staff
-          ? <StaffApp profile={profile} tab={tab} onTab={goTab} />
+          ? <StaffApp profile={profile} tab={tab} onTab={goTab} onViewAthlete={hasAthlete ? () => switchView("athlete") : null} />
           : <PlayerApp profile={profile} tab={tab} onTab={goTab} />}
       </div>
       {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} playerId={profile.player_id} teamId={profile.team_id} />}

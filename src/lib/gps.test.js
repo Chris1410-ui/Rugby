@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeGpsMetrics, normalizeSpeedZones, hasAnyMetric, gpsRecords, pbMetrics, gpsSeries, gpsWindowLoad, gpsPlayerAgg } from "./gps.js";
+import { normalizeGpsMetrics, normalizeSpeedZones, hasAnyMetric, gpsRecords, pbMetrics, gpsSeries, gpsWindowLoad, gpsPlayerAgg, normalizeImages, heatmapsOf } from "./gps.js";
 
 describe("gps — normalizeGpsMetrics", () => {
   it("nettoie et convertit ; absent/illisible → null (jamais inventé)", () => {
@@ -90,5 +90,41 @@ describe("gps — records / PB / séries", () => {
     expect(a.vmax_kmh).toBe(31.5);           // max
     expect(a.distance_m).toBe(20000 / 3);    // avg
     expect(a.hsr_m).toBe(390);               // avg des non-null (400,380)
+  });
+});
+
+describe("gps — images / heatmaps (GPS-5)", () => {
+  it("normalizeImages : borne kind/tab, complète via image_paths, dédoublonne", () => {
+    const out = normalizeImages(
+      [
+        { path: "a.jpg", kind: "heatmap", tab: "speed" },
+        { path: "b.jpg", kind: "stats", tab: "speed" },   // tab ignoré (pas heatmap)
+        { path: "c.jpg", kind: "bogus" },                  // kind inconnu → null
+        { path: "a.jpg", kind: "chart" },                  // doublon → ignoré
+      ],
+      ["a.jpg", "d.jpg"], // d.jpg absent des images → ajouté en kind null
+    );
+    expect(out).toEqual([
+      { path: "a.jpg", kind: "heatmap", tab: "speed" },
+      { path: "b.jpg", kind: "stats", tab: null },
+      { path: "c.jpg", kind: null, tab: null },
+      { path: "d.jpg", kind: null, tab: null },
+    ]);
+  });
+
+  it("heatmapsOf : ne renvoie que les captures marquées heatmap", () => {
+    const session = {
+      images: [
+        { path: "hm1.jpg", kind: "heatmap", tab: "distance" },
+        { path: "st.jpg", kind: "stats" },
+        { path: "hm2.jpg", kind: "heatmap", tab: "intensity" },
+      ],
+      imagePaths: ["hm1.jpg", "st.jpg", "hm2.jpg"],
+    };
+    expect(heatmapsOf(session)).toEqual([
+      { path: "hm1.jpg", tab: "distance" },
+      { path: "hm2.jpg", tab: "intensity" },
+    ]);
+    expect(heatmapsOf({ imagePaths: ["x.jpg"] })).toEqual([]); // aucune marquée → vide
   });
 });

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "./messages.js";
-import { normalizeGpsMetrics } from "../lib/gps.js";
+import { normalizeGpsMetrics, normalizeImages } from "../lib/gps.js";
 
 /* Données GPS (charge externe) — cf. migration 0113. Le joueur gère les siennes ;
    le staff du même club lit (RLS). Images dans le bucket privé `gps-shots`
@@ -21,6 +21,7 @@ function dbToGps(r) {
     vmaxKmh: r.vmax_kmh, vavgKmh: r.vavg_kmh, durationSec: r.duration_sec,
     speedZones: Array.isArray(r.speed_zones) ? r.speed_zones : [],
     imagePaths: Array.isArray(r.image_paths) ? r.image_paths : [],
+    images: Array.isArray(r.images) ? r.images : [],
     confidence: r.confidence || {}, nameDetected: !!r.name_detected, notes: r.notes || "",
     createdAt: r.created_at,
   };
@@ -50,6 +51,36 @@ export function useGpsSessions(playerId) {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [playerId, fetch]);
+
+  return { sessions, loading, refresh: fetch };
+}
+
+/* Sessions GPS de TOUT le club (staff — la RLS gps_sel autorise le staff de la
+   même équipe à lire les lignes de ses joueurs). Temps réel. Sert au parcours
+   match / à la galerie club (GPS-5c). Pseudonymisation : l'appelant n'affiche
+   jamais le session_name en vue collective (cf. HeatmapsGallery/ClubHeatmaps). */
+export function useClubGps(teamId) {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!teamId) { setSessions([]); setLoading(false); return; }
+    const { data, error } = await supabase
+      .from("gps_sessions").select("*").eq("team_id", teamId).order("date", { ascending: false });
+    if (error) { console.error("[gps club]", error.message); setLoading(false); return; }
+    setSessions((data ?? []).map(dbToGps));
+    setLoading(false);
+  }, [teamId]);
+
+  useEffect(() => {
+    fetch();
+    if (!teamId) return;
+    const channel = supabase
+      .channel(uniqueTopic(`gps-club:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "gps_sessions", filter: `team_id=eq.${teamId}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [teamId, fetch]);
 
   return { sessions, loading, refresh: fetch };
 }
@@ -84,8 +115,11 @@ export async function removeGpsImages(paths) {
 
 /* Crée une session GPS. `metrics` = entrée IA/manuelle (normalisée ici pour ne
    jamais écrire de valeur fabriquée). `id` optionnel (aligne le dossier images). */
-export async function createGpsSession({ id, playerId, teamId, date, metrics = {}, imagePaths = [], linkedSessionId = null, linkedTrainingId = null, source = "manual" }) {
+export async function createGpsSession({ id, playerId, teamId, date, metrics = {}, imagePaths = [], images = [], linkedSessionId = null, linkedTrainingId = null, source = "manual" }) {
   const m = normalizeGpsMetrics({ ...metrics, source });
+  // Métadonnée d'images (type + onglet) normalisée et alignée sur les chemins
+  // réellement stockés — on n'écrit jamais une entrée sans path uploadé.
+  const imgs = normalizeImages(images, imagePaths).filter((i) => imagePaths.includes(i.path));
   const row = {
     ...(id ? { id } : {}),
     player_id: playerId, team_id: teamId, date,
@@ -93,7 +127,7 @@ export async function createGpsSession({ id, playerId, teamId, date, metrics = {
     linked_session_id: linkedSessionId, linked_training_id: linkedTrainingId,
     distance_m: m.distanceM, m_per_min: m.mPerMin, hsr_m: m.hsrM, hsr_count: m.hsrCount,
     vmax_kmh: m.vmaxKmh, vavg_kmh: m.vavgKmh, duration_sec: m.durationSec,
-    speed_zones: m.speedZones, image_paths: imagePaths, confidence: m.confidence,
+    speed_zones: m.speedZones, image_paths: imagePaths, images: imgs, confidence: m.confidence,
     name_detected: m.nameDetected,
   };
   const { data, error } = await supabase.from("gps_sessions").insert(row).select("id").single();

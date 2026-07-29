@@ -8,8 +8,10 @@ import { expandTemplates } from "../data/programs.js";
 describe("referenceProtocol", () => {
   it("mappe les jours au bon split (getDay 0=dim..6=sam)", () => {
     const byWeekday = Object.fromEntries(REF_TEMPLATES.map((t) => [t.weekday, t.titre]));
-    // Jambes : lun(1), mer(3), ven(5), dim(0)
-    [1, 3, 5, 0].forEach((d) => expect(byWeekday[d]).toBe("Jambes"));
+    // Jambes : lun(1), mer(3), ven(5)
+    [1, 3, 5].forEach((d) => expect(byWeekday[d]).toBe("Jambes"));
+    // Dimanche (0) = séance de records (PR le dimanche).
+    expect(byWeekday[0]).toBe("Jambes · PR");
     // Haut du corps : mar(2), jeu(4), sam(6)
     [2, 4, 6].forEach((d) => expect(byWeekday[d]).toBe("Haut du corps"));
     // Les 7 jours sont couverts, une séance par jour.
@@ -27,6 +29,12 @@ describe("referenceProtocol", () => {
       expect(e.name).toBeTruthy();
       expect(e.sets).toBeGreaterThan(0);
     });
+    // Les charges cibles pré-remplissent la série 1 (charges littérales).
+    expect(REF_HAUT.find((e) => e.name === "Développé couché").charge).toBe(100);
+    expect(REF_JAMBES.find((e) => e.name === "Leg press").charge).toBe(250);
+    expect(REF_JAMBES.find((e) => e.name === "Deadlift").charge).toBe(200);
+    // Les accessoires en reps purs n'ont pas de charge cible.
+    expect(REF_HAUT.find((e) => e.name.startsWith("Tractions")).charge).toBeUndefined();
   });
 
   it("REF_WORKOUTS reflète le même contenu que les templates (vue joueur)", () => {

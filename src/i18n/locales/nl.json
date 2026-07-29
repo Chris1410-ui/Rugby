@@ -314,7 +314,9 @@
     "abonnements": "Abonnementen",
     "exercices": "Bibliotheek",
     "invites": "Uitnodigingen",
-    "adhesions": "Lidmaatschapsaanvragen"
+    "adhesions": "Lidmaatschapsaanvragen",
+    "heatmaps": "Heatmaps",
+    "myAthlete": "Mijn atleet"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -340,7 +342,9 @@
     "activateAthlete": "Mijn atletenprofiel activeren",
     "activating": "Activeren…",
     "viewAsAthlete": "Naar atletenweergave",
-    "viewAsStaff": "Terug naar stafweergave"
+    "viewAsStaff": "Terug naar stafweergave",
+    "deactivateAthlete": "Mijn atletenprofiel deactiveren",
+    "deactivateAthleteConfirm": "Je atletenprofiel deactiveren? Het wordt uit het klassement verwijderd (je geschiedenis blijft bewaard, je kunt het opnieuw activeren)."
   },
   "onboarding": {
     "skip": "Overslaan",
@@ -795,7 +799,8 @@
       "tracking": "Jouw opvolging",
       "trackingHint": "Tik voor geschiedenis",
       "trackingRange": "Laatste {{count}} metingen",
-      "week": "Jouw week"
+      "week": "Jouw week",
+      "routineSub": "Je ochtendroutine"
     },
     "messages": {
       "staffTitle": "Staf — Fysiek trainer"
@@ -1045,7 +1050,13 @@
       "useChrono": "Timer: {{n}} min",
       "durationPlanned": "Gepland: {{n}} min",
       "durationReal": "werkelijk: {{n}} min",
-      "ssHint": "ss"
+      "ssHint": "ss",
+      "rmRef": "1RM {{movement}}: {{kg}} kg",
+      "rmLoad": "@{{pct}}% ≈ {{kg}} kg",
+      "rm1rm": "1RM",
+      "rm5rm": "5RM",
+      "rm5rmHint": "De 5RM wordt omgezet naar een geschatte 1RM (Epley).",
+      "edit1rmTitle": "Corrigeer de 1RM {{movement}}"
     },
     "freeSession": {
       "newButton": "Vrije sessie maken",
@@ -1166,6 +1177,19 @@
         "overQuota": "Dagelijkse AI-analyselimiet bereikt ({{used}}/{{limit}}). Voer waarden handmatig in.",
         "notConfigured": "AI-analyse niet geconfigureerd. Voer waarden handmatig in.",
         "failed": "AI-analyse momenteel niet beschikbaar. Voer waarden handmatig in."
+      },
+      "img": {
+        "auto": "Auto",
+        "heatmap": "Heatmap",
+        "stats": "Stats",
+        "chart": "Grafiek",
+        "tab": "Tabblad"
+      },
+      "tab": {
+        "speed": "Snelheid",
+        "distance": "Afstand",
+        "intensity": "Intensiteit",
+        "other": "Andere"
       }
     }
   },
@@ -3210,5 +3234,31 @@
     "current": "hier",
     "next": "doel",
     "aim": "Volgende stap: {{label}}"
+  },
+  "gps": {
+    "heatmaps": {
+      "title": "Heatmaps",
+      "subtitle": "Heatmaps van je GPS-uploads",
+      "periodAll": "Alles",
+      "period30": "30 d",
+      "period90": "90 d",
+      "kindAll": "Alle",
+      "kindMatch": "Wedstrijd",
+      "kindTraining": "Training",
+      "providerAll": "Alle",
+      "empty": "Nog geen heatmap. Markeer een opname als “Heatmap” bij het uploaden.",
+      "prev": "Vorige",
+      "next": "Volgende",
+      "compare": "Vergelijken",
+      "compareCancel": "Annuleren",
+      "compareHint": "{{n}}/4 geselecteerd",
+      "compareGo": "Vergelijk ({{n}})",
+      "compareTitle": "Vergelijking — {{n}} heatmaps",
+      "clubTitle": "Wedstrijdoverzicht",
+      "clubSubtitle": "Club-heatmaps per datum — één miniatuur per speler",
+      "allPlayers": "Alle",
+      "clubEmpty": "Nog geen heatmap geüpload in de club.",
+      "nPlayers": "{{count}} speler(s)"
+    }
   }
 }
