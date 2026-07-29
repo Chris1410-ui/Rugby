@@ -14,7 +14,9 @@ import { getProgramDoc } from "../../data/programDocs.js";
 import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
 import { useExercisePerf } from "../../data/exercisePerf.js";
 import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
-import { blockKind } from "../../lib/sessionType.js";
+import { exerciseInputModel, inputModelUsesLoad } from "../../lib/sessionType.js";
+import { effectiveNature } from "../../lib/nature.js";
+import { parsePrescribedMetrics } from "../../lib/effort.js";
 import { computeTargetPace, paceSecPerKmFromDistanceTime, speedKmhFromDistanceTime, formatPace, formatSpeed } from "../../lib/pace.js";
 import { TEST_METRICS } from "../../data/tests.js";
 
@@ -82,11 +84,36 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setProtoBusy(false);
   };
 
+  // Nature EFFECTIVE de la séance (valeur stockée, sinon dérivée du code) : pilote
+  // le MODÈLE DE SAISIE des exercices « plats » (sans kind) — cf. exerciseInputModel.
+  const effNature = effectiveNature(s.nature, s.code);
+
   const init = () => {
     const b = {};
     s.exercises.forEach((e) => {
-      const k = blockKind(e);
+      const k = exerciseInputModel(e, effNature);
       const saved = log?.perExercise?.[e.id];
+      // Consigne prescrite → métriques prélues (souverain : préremplit un champ
+      // VIDE, jamais une valeur déjà saisie ; le `saved` du joueur prime toujours).
+      const pm = k === "conditioning" || k === "vitesse" || k === "mobility" ? parsePrescribedMetrics(e.presc) : null;
+      // Effort CONDITIONING (mono) : temps / distance / watts / kcal / FC.
+      if (k === "conditioning") {
+        const m = saved && saved.kind === "effort_conditioning" ? saved : null;
+        b[e.id] = { mono: { distanceM: m?.distanceM ?? pm.distanceM ?? "", durationSec: m?.durationSec ?? pm.durationSec ?? "", watts: m?.watts ?? pm.watts ?? "", kcal: m?.kcal ?? pm.kcal ?? "", hrAvg: m?.hrAvg ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Effort VITESSE (mono) : distance / temps / répétitions / récup.
+      if (k === "vitesse") {
+        const m = saved && saved.kind === "effort_vitesse" ? saved : null;
+        b[e.id] = { mono: { distanceM: m?.distanceM ?? pm.distanceM ?? "", durationSec: m?.durationSec ?? pm.durationSec ?? "", reps: m?.reps ?? pm.reps ?? "", recoverySec: m?.recoverySec ?? pm.recoverySec ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
+      // Effort MOBILITÉ (mono) : durée totale / tenue / nombre de tenues.
+      if (k === "mobility") {
+        const m = saved && saved.kind === "effort_mobility" ? saved : null;
+        b[e.id] = { mono: { durationSec: m?.durationSec ?? pm.durationSec ?? "", holdSec: m?.holdSec ?? pm.holdSec ?? "", holds: m?.holds ?? pm.reps ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
+        return;
+      }
       // Bloc mono (cardio continu) : distance/temps/FC + « fait ».
       if (k === "cardio_continuous") {
         const m = saved && saved.kind === "cardio_continuous" ? saved : null;
@@ -213,8 +240,17 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setBusy(true);
     const pe = {};
     s.exercises.forEach((e) => {
-      const k = blockKind(e); const stt = ex[e.id];
-      if (k === "cardio_continuous") {
+      const k = exerciseInputModel(e, effNature); const stt = ex[e.id];
+      if (k === "conditioning") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: "effort_conditioning", distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), watts: numOrU(m.watts), kcal: numOrU(m.kcal), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "vitesse") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: "effort_vitesse", distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), reps: numOrU(m.reps), recoverySec: numOrU(m.recoverySec), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "mobility") {
+        const m = stt.mono || {};
+        pe[e.id] = { kind: "effort_mobility", durationSec: numOrU(m.durationSec), holdSec: numOrU(m.holdSec), holds: numOrU(m.holds), done: !!m.done, note: (stt.note || "").trim() };
+      } else if (k === "cardio_continuous") {
         const m = stt.mono || {};
         pe[e.id] = { kind: k, distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
       } else if (k === "cardio_interval") {
@@ -301,19 +337,23 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
           </div>
 
           {s.exercises.map((e) => {
-            const k = blockKind(e);
-            // Blocs cardio : rendus dédiés (jamais de kg ; distance/temps/allure).
+            const k = exerciseInputModel(e, effNature);
+            // Blocs cardio structurés : rendus dédiés (jamais de kg ; distance/temps/allure).
             if (k === "cardio_continuous") return <CardioContinuous key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
             if (k === "cardio_interval") return <CardioInterval key={e.id} e={e} st={ex[e.id]} onRep={(i, p) => setSet(e.id, i, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
             if (k === "cardio_circuit") return <CardioCircuit key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} t={t} accent={accent} />;
             if (k === "cardio_test") return <CardioTest key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} onNavigate={onNavigate} t={t} accent={accent} />;
+            // Efforts « plats » dérivés de la nature de la séance (pas de kg / %1RM).
+            if (k === "conditioning") return <EffortConditioning key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
+            if (k === "vitesse") return <EffortSpeed key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} t={t} accent={accent} />;
+            if (k === "mobility") return <EffortMobility key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} t={t} accent={accent} />;
             const prev = lastExercisePerf(logs, sessions, me.id, e.name, s.date);
             const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
             const cmp = prescribedVsRealized(e, { sets: ex[e.id].sets }); // prescrit vs réalisé (live)
             const pl = pctLoad(e); // charge calculée depuis le 1RM si exprimé en %
             // Séries détaillées : consigne + charge résolue (1RM) par série (arrondi 2,5).
             const plan = Array.isArray(e.setPlan) && e.setPlan.length ? resolveSetPlan(e.setPlan, exOneRM(e)) : null;
-            const isSkillEx = k === "skill"; // pas de kg : reps ou tenue (s)
+            const isSkillEx = !inputModelUsesLoad(k); // pas de kg : reps ou tenue (skill)
             const ecart = cmp.diff
               ? [cmp.setsDiff ? t("player.session.setsDiff", { done: cmp.doneSets, presc: cmp.prescSets }) : null,
                  cmp.chargeDiff ? t("player.session.chargeDiff", { real: cmp.realTop, presc: cmp.prescCharge }) : null]
@@ -691,6 +731,128 @@ function CardioTest({ e, st, onField, onNote, onNavigate, t, accent }) {
         </button>
       )}
       <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" }} />
+    </div>
+  );
+}
+
+// Ligne « consigne » d'un effort (rappel de la prescription brute du coach).
+function EffortPresc({ presc, t }) {
+  if (!presc) return null;
+  return (
+    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+      <span style={{ fontWeight: 700 }}>{t("player.session.effort.target")}</span> {presc}
+    </div>
+  );
+}
+// Bouton « fait ✓ » commun aux efforts mono.
+function EffortDone({ done, onToggle, t }) {
+  return (
+    <button onClick={onToggle} style={{ width: "100%", background: done ? C.green : "rgba(255,255,255,0.05)", border: done ? "none" : `1px solid ${C.border}`, borderRadius: 8, padding: "9px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+      <CheckCircle size={14} color={done ? "#fff" : "rgba(255,255,255,0.4)"} /> {done ? t("player.session.effort.done") : t("player.session.effort.markDone")}
+    </button>
+  );
+}
+const effNoteStyle = { width: "100%", marginTop: 8, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 9px", color: "#fff", fontSize: 11.5, outline: "none", resize: "none", height: 34, boxSizing: "border-box" };
+const onlyDigits = (v) => String(v).replace(/[^\d]/g, "");
+
+/* Effort CONDITIONING (mono) : temps / distance / watts / kcal / FC. Allure &
+   vitesse réalisées calculées depuis distance+temps ; allure cible depuis %VMA
+   + MAS du joueur (jamais de valeur fausse). Aucune charge kg / %1RM. */
+function EffortConditioning({ e, st, onField, onNote, masKmh, t, accent }) {
+  const m = st?.mono || {};
+  const target = computeTargetPace(e.pctVMA, masKmh);
+  const realPace = paceSecPerKmFromDistanceTime(m.distanceM, m.durationSec);
+  const realSpeed = speedKmhFromDistanceTime(m.distanceM, m.durationSec);
+  const dsec = Number(m.durationSec) || 0;
+  const setDur = (mn, sc) => onField({ durationSec: Math.max(0, (Number(mn) || 0) * 60 + (Number(sc) || 0)) });
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</span>
+        <Tag c={accent}>{t("player.session.effort.conditioning")}</Tag>
+      </div>
+      <EffortPresc presc={e.presc} t={t} />
+      {e.pctVMA ? (
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+          {`${e.pctVMA}% VMA · ${target.needsMas ? t("player.session.cardio.noMas") : t("player.session.cardio.targetPace", { pace: formatPace(target.secPerKm), speed: formatSpeed(target.speedKmh) })}`}
+        </div>
+      ) : null}
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.4fr 1fr", gap: 8, alignItems: "end", marginBottom: 8 }}>
+        <label><span style={miniLbl}>{t("player.session.effort.distanceM")}</span><input value={m.distanceM ?? ""} onChange={(ev) => onField({ distanceM: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.effort.duration")}</span>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <input value={dsec ? Math.floor(dsec / 60) : ""} onChange={(ev) => setDur(onlyDigits(ev.target.value), dsec % 60)} inputMode="numeric" placeholder={t("player.session.min")} style={cardioInp} />
+            <span style={{ color: "rgba(255,255,255,0.4)" }}>:</span>
+            <input value={dsec ? String(dsec % 60).padStart(2, "0") : ""} onChange={(ev) => setDur(Math.floor(dsec / 60), onlyDigits(ev.target.value))} inputMode="numeric" placeholder={t("player.session.ssHint")} style={cardioInp} />
+          </div>
+        </label>
+        <label><span style={miniLbl}>{t("player.session.effort.hr")}</span><input value={m.hrAvg ?? ""} onChange={(ev) => onField({ hrAvg: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, alignItems: "end", marginBottom: 8 }}>
+        <label><span style={miniLbl}>{t("player.session.effort.watts")}</span><input value={m.watts ?? ""} onChange={(ev) => onField({ watts: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.effort.kcal")}</span><input value={m.kcal ?? ""} onChange={(ev) => onField({ kcal: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+      </div>
+      {(realPace || realSpeed) && (
+        <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8 }}>
+          {t("player.session.cardio.realPace", { pace: formatPace(realPace), speed: formatSpeed(realSpeed) })}
+        </div>
+      )}
+      <EffortDone done={!!m.done} onToggle={() => onField({ done: !m.done })} t={t} />
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={effNoteStyle} />
+    </div>
+  );
+}
+
+/* Effort VITESSE (mono) : distance / temps / répétitions / récup. Sprints courts
+   → temps en secondes. Vitesse réalisée calculée depuis distance+temps. Pas de kg. */
+function EffortSpeed({ e, st, onField, onNote, t, accent }) {
+  const m = st?.mono || {};
+  const realSpeed = speedKmhFromDistanceTime(m.distanceM, m.durationSec);
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</span>
+        <Tag c={accent}>{t("player.session.effort.vitesse")}</Tag>
+      </div>
+      <EffortPresc presc={e.presc} t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, alignItems: "end", marginBottom: 8 }}>
+        <label><span style={miniLbl}>{t("player.session.effort.distanceM")}</span><input value={m.distanceM ?? ""} onChange={(ev) => onField({ distanceM: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.effort.duration")} (s)</span><input value={m.durationSec ?? ""} onChange={(ev) => onField({ durationSec: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>{/* i18n-ok: unité s (secondes) */}
+        <label><span style={miniLbl}>{t("player.session.effort.reps")}</span><input value={m.reps ?? ""} onChange={(ev) => onField({ reps: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.effort.recovery")}</span><input value={m.recoverySec ?? ""} onChange={(ev) => onField({ recoverySec: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+      </div>
+      {realSpeed ? <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8 }}>{t("player.session.effort.speed", { speed: formatSpeed(realSpeed) })}</div> : null}
+      <EffortDone done={!!m.done} onToggle={() => onField({ done: !m.done })} t={t} />
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={effNoteStyle} />
+    </div>
+  );
+}
+
+/* Effort MOBILITÉ / récupération (mono) : durée totale / tenue / nb tenues. Pas de kg. */
+function EffortMobility({ e, st, onField, onNote, t, accent }) {
+  const m = st?.mono || {};
+  const dsec = Number(m.durationSec) || 0;
+  const setDur = (mn, sc) => onField({ durationSec: Math.max(0, (Number(mn) || 0) * 60 + (Number(sc) || 0)) });
+  return (
+    <div style={cardioBox(accent)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</span>
+        <Tag c={accent}>{t("player.session.effort.mobility")}</Tag>
+      </div>
+      <EffortPresc presc={e.presc} t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 8, alignItems: "end", marginBottom: 8 }}>
+        <label><span style={miniLbl}>{t("player.session.effort.durationTotal")}</span>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <input value={dsec ? Math.floor(dsec / 60) : ""} onChange={(ev) => setDur(onlyDigits(ev.target.value), dsec % 60)} inputMode="numeric" placeholder={t("player.session.min")} style={cardioInp} />
+            <span style={{ color: "rgba(255,255,255,0.4)" }}>:</span>
+            <input value={dsec ? String(dsec % 60).padStart(2, "0") : ""} onChange={(ev) => setDur(Math.floor(dsec / 60), onlyDigits(ev.target.value))} inputMode="numeric" placeholder={t("player.session.ssHint")} style={cardioInp} />
+          </div>
+        </label>
+        <label><span style={miniLbl}>{t("player.session.effort.hold")}</span><input value={m.holdSec ?? ""} onChange={(ev) => onField({ holdSec: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+        <label><span style={miniLbl}>{t("player.session.effort.holds")}</span><input value={m.holds ?? ""} onChange={(ev) => onField({ holds: onlyDigits(ev.target.value) })} inputMode="numeric" style={cardioInp} /></label>
+      </div>
+      <EffortDone done={!!m.done} onToggle={() => onField({ done: !m.done })} t={t} />
+      <textarea value={st?.note || ""} onChange={(ev) => onNote(ev.target.value)} placeholder={t("player.session.exNote")} style={effNoteStyle} />
     </div>
   );
 }
