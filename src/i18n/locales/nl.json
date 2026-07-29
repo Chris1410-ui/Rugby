@@ -2616,7 +2616,8 @@
     "viewAsTitle": "Open zijn weergave (alleen-lezen)",
     "viewAs": "👁 Bekijk als",
     "impersonateBanner": "👁 Ownerweergave — je bekijkt als {{name}} · {{role}}{{team}} · alleen-lezen",
-    "backToOwner": "Terug naar owner"
+    "backToOwner": "Terug naar owner",
+    "backToOwnerView": "Owner-weergave"
   },
   "data": {
     "lines": {

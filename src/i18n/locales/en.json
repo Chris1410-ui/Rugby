@@ -2616,7 +2616,8 @@
     "viewAsTitle": "Open their view (read-only)",
     "viewAs": "👁 View as",
     "impersonateBanner": "👁 Owner view — you are viewing as {{name}} · {{role}}{{team}} · read-only",
-    "backToOwner": "Back to owner"
+    "backToOwner": "Back to owner",
+    "backToOwnerView": "Owner view"
   },
   "data": {
     "lines": {
