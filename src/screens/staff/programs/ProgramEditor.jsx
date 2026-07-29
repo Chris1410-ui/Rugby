@@ -13,7 +13,7 @@ import { useTeam1RM, add1RM } from "../../../data/player1rm.js";
 import { parseProgressionCell, computeLoadKg, movementTeamStats, movementIdentity } from "../../../lib/oneRM.js";
 import { displayName } from "../../../lib/identity.js";
 import { todayISO } from "../../../lib/metrics.js";
-import { NATURES, natureLabel } from "../../../lib/nature.js";
+import { NATURES, natureLabel, natureLooksInconsistent } from "../../../lib/nature.js";
 import {
   emptyNarrativeSection, emptyExerciseSection, emptyRow, emptyProgram,
   emptyChecklistSection, emptyWeekCalendarSection, emptyCardioSection, emptyConditioningSection, emptyTableSection,
@@ -798,27 +798,68 @@ function ChecklistEditor({ section, t, onPatch }) {
   );
 }
 
-/* Éditeur SEMAINE TYPE : jours (Lun→Dim) avec intitulé, nature, repos/optionnel. */
+/* Éditeur SEMAINE TYPE : jours (Lun→Dim), chacun pouvant porter PLUSIEURS
+   séances (intitulé + nature propres). Modèle plat rétro-compatible : la liste
+   `days` reste [{weekday, label, nature, optional, off}] ; un même weekday peut
+   apparaître sur plusieurs lignes → autant de séances distinctes matérialisées.
+   L'UI regroupe visuellement les lignes par jour et offre « + ajouter une
+   séance » (sibling du même jour) en plus de « + ajouter un jour ». */
 const WD_ORDER = [1, 2, 3, 4, 5, 6, 0];
 function WeekCalendarEditor({ section, t, onPatch }) {
   const days = Array.isArray(section.days) ? section.days : [];
   const setDay = (i, patch) => onPatch({ days: days.map((d, j) => (j === i ? { ...d, ...patch } : d)) });
-  const addDay = () => onPatch({ days: [...days, { weekday: WD_ORDER.find((wd) => !days.some((d) => d.weekday === wd)) ?? 1, label: "", nature: "", optional: false, off: false }] });
   const delDay = (i) => onPatch({ days: days.filter((_, j) => j !== i) });
+  // Déplace TOUTES les séances d'un jour vers un autre weekday (en-tête du groupe).
+  const moveGroup = (fromWd, toWd) =>
+    onPatch({ days: days.map((d) => ((d.weekday ?? 1) === fromWd ? { ...d, weekday: toWd } : d)) });
+  // Ajoute une séance (ligne) sur un jour existant.
+  const addSession = (wd) =>
+    onPatch({ days: [...days, { weekday: wd, label: "", nature: "", optional: false, off: false }] });
+  // Ajoute un nouveau jour (weekday encore inutilisé) avec une première séance.
+  const addDay = () =>
+    onPatch({ days: [...days, { weekday: WD_ORDER.find((wd) => !days.some((d) => (d.weekday ?? 1) === wd)) ?? 1, label: "", nature: "", optional: false, off: false }] });
+
+  // Groupes ordonnés Lun→Dim ; on ne montre que les jours ayant ≥1 séance.
+  const groups = WD_ORDER
+    .map((wd) => ({ wd, rows: days.map((d, i) => ({ d, i })).filter((x) => (x.d.weekday ?? 1) === wd) }))
+    .filter((g) => g.rows.length > 0);
+
   return (
     <div>
-      {days.map((d, i) => (
-        <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center", flexWrap: "wrap" }}>
-          <select style={{ ...inp, width: 92, flexShrink: 0 }} value={d.weekday ?? 1} onChange={(e) => setDay(i, { weekday: Number(e.target.value) })}>
-            {WD_ORDER.map((wd) => <option key={wd} value={wd}>{WEEKDAY_NAMES[wd]}</option>)}
-          </select>
-          <input style={{ ...inp, flex: 1, minWidth: 120 }} value={d.label || ""} onChange={(e) => setDay(i, { label: e.target.value })} placeholder={t("protocols.wcLabelPh")} />
-          <select style={{ ...inp, width: 120, flexShrink: 0 }} value={d.off ? "off" : (d.nature || "")} onChange={(e) => (e.target.value === "off" ? setDay(i, { off: true, nature: "" }) : setDay(i, { off: false, nature: e.target.value }))}>
-            <option value="">{t("protocols.fNatureNone")}</option>
-            {NATURES.map((n) => <option key={n} value={n}>{natureLabel(t, n)}</option>)}
-            <option value="off">{t("protocols.wcOff")}</option>
-          </select>
-          <button onClick={() => delDay(i)} title={t("protocols.remove")} style={iconBtn}><Trash2 size={14} /></button>
+      {groups.map((g) => (
+        <div key={g.wd} style={{ marginBottom: 10, borderLeft: `2px solid ${C.border}`, paddingLeft: 8 }}>
+          <div style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center" }}>
+            <select style={{ ...inp, width: 92, flexShrink: 0, fontWeight: 700 }} value={g.wd} onChange={(e) => moveGroup(g.wd, Number(e.target.value))}>
+              {WD_ORDER.map((wd) => <option key={wd} value={wd}>{WEEKDAY_NAMES[wd]}</option>)}
+            </select>
+            {g.rows.length > 1 && (
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                {t("protocols.wcSessionCount", { count: g.rows.length })}
+              </span>
+            )}
+          </div>
+          {g.rows.map(({ d, i }) => {
+            const warn = !d.off && natureLooksInconsistent(d.label, d.nature);
+            return (
+              <div key={i} style={{ marginBottom: 6 }}>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  <input style={{ ...inp, flex: 1, minWidth: 120 }} value={d.label || ""} onChange={(e) => setDay(i, { label: e.target.value })} placeholder={t("protocols.wcLabelPh")} />
+                  <select style={{ ...inp, width: 120, flexShrink: 0 }} value={d.off ? "off" : (d.nature || "")} onChange={(e) => (e.target.value === "off" ? setDay(i, { off: true, nature: "" }) : setDay(i, { off: false, nature: e.target.value }))}>
+                    <option value="">{t("protocols.fNatureNone")}</option>
+                    {NATURES.map((n) => <option key={n} value={n}>{natureLabel(t, n)}</option>)}
+                    <option value="off">{t("protocols.wcOff")}</option>
+                  </select>
+                  <button onClick={() => delDay(i)} title={t("protocols.remove")} style={iconBtn}><Trash2 size={14} /></button>
+                </div>
+                {warn && (
+                  <div style={{ fontSize: 11.5, color: C.amb, marginTop: 3 }}>
+                    ⚠ {t("protocols.wcNatureHint")}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <button onClick={() => addSession(g.wd)} style={miniBtn}><Plus size={13} /> {t("protocols.wcAddSession")}</button>
         </div>
       ))}
       <button onClick={addDay} style={miniBtn}><Plus size={13} /> {t("protocols.wcAddDay")}</button>

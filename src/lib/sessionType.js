@@ -119,6 +119,56 @@ export const kindUsesLoad = (kind) => LOAD_KINDS.has(kind);
 // Le kind se saisit-il via une grille de séries/répétitions cochables ?
 export const kindIsSetLike = (kind) => SETLIKE_KINDS.has(kind);
 
+/* ── Modèle de SAISIE d'un exercice (carte joueur) ────────────────────────────
+   Quels CHAMPS proposer pour un exercice donné. Deux sources, dans l'ordre :
+   1) le `kind` explicite du bloc (builder conditioning : cardio_*, skill…) fait
+      toujours foi — c'est une saisie structurée voulue par le coach ;
+   2) sinon (exercice « plat » issu d'une semaine-type / import : {name, sets,
+      reps, charge}), on DÉRIVE le modèle de la NATURE de la séance. C'est ce qui
+      corrige le défaut « champs de muscu sur une séance cardio » : une ligne sans
+      kind héritait de 'strength' (kg + %1RM) quelle que soit la nature.
+
+   Modèles de saisie (au-delà des kinds de bloc) :
+   - strength   : séries × reps × kg (+ %1RM)           ← force / prévention
+   - conditioning : temps / distance / watts / kcal / allure (pas de kg)
+   - vitesse    : distance / temps / répétitions / récup (pas de kg)
+   - mobility   : durée / tenue (pas de kg)             ← mobilité / récupération
+   - skill      : reps OU tenue, sans charge            ← technique                */
+export const INPUT_MODELS = [
+  "strength", "bodyweight", "skill", "conditioning", "vitesse", "mobility",
+  "cardio_continuous", "cardio_interval", "cardio_circuit", "cardio_test",
+];
+export const DEFAULT_INPUT_MODEL = "strength";
+
+// Nature (nature.js) → modèle de saisie par défaut d'un exercice SANS kind.
+export const NATURE_INPUT_MODEL = {
+  force: "strength",
+  prevention: "strength",
+  conditioning: "conditioning",
+  vitesse: "vitesse",
+  mobilite: "mobility",
+  recuperation: "mobility",
+  technique: "skill",
+  autre: "strength",
+};
+
+// Modèles « effort » (bloc mono : pas de grille séries × reps × kg cochable).
+const EFFORT_MODELS = new Set(["conditioning", "vitesse", "mobility"]);
+export const inputModelIsEffort = (m) => EFFORT_MODELS.has(m);
+
+// Le modèle porte-t-il une charge externe kg ? (strength/bodyweight oui — lest ;
+// skill/effort/cardio non). Le %1RM n'a de sens que pour 'strength'.
+const LOAD_MODELS = new Set(["strength", "bodyweight"]);
+export const inputModelUsesLoad = (m) => LOAD_MODELS.has(m);
+
+// Modèle de saisie effectif d'un exercice, selon son bloc puis la nature de la
+// séance. PUR. `nature` = nature EFFECTIVE de la séance (effectiveNature).
+export function exerciseInputModel(exo, nature) {
+  const k = exo && exo.kind;
+  if (BLOCK_KINDS.includes(k)) return k;                 // bloc structuré : le kind fait foi
+  return NATURE_INPUT_MODEL[nature] || DEFAULT_INPUT_MODEL;
+}
+
 export const natureForType = (type) => TYPE_DEFAULT_NATURE[normalizeSessionType(type)];
 export const codeForType = (type) => TYPE_DEFAULT_CODE[normalizeSessionType(type)];
 export const allowedKindsForType = (type) => TYPE_ALLOWED_KINDS[normalizeSessionType(type)];
