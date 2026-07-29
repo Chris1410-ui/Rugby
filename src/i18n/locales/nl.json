@@ -18,7 +18,8 @@
     "actionFailed": "Mislukt: {{err}}",
     "tryAgain": "probeer opnieuw.",
     "yes": "Ja",
-    "no": "Nee"
+    "no": "Nee",
+    "clear": "Wissen"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -1962,7 +1963,9 @@
       "alertsTab": "→ tabblad Meldingen",
       "noAlerts": "Geen melding. 👌",
       "invitePlayer": "Deze speler uitnodigen",
-      "kpiReadinessSub": "{{n}} echt"
+      "kpiReadinessSub": "{{n}} echt",
+      "searchPlaceholder": "Zoeken (totem, initialen, nr., positie)",
+      "searchNoResult": "Geen speler voor “{{q}}”"
     },
     "invites": {
       "title": "Staf-uitnodigingen",
@@ -2617,7 +2620,8 @@
     "viewAs": "👁 Bekijk als",
     "impersonateBanner": "👁 Ownerweergave — je bekijkt als {{name}} · {{role}}{{team}} · alleen-lezen",
     "backToOwner": "Terug naar owner",
-    "backToOwnerView": "Owner-weergave"
+    "backToOwnerView": "Owner-weergave",
+    "searchPlayer": "Zoek een speler…"
   },
   "data": {
     "lines": {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
-import { displayName } from "../../lib/identity.js";
+import { displayName, playerMatchesQuery } from "../../lib/identity.js";
 import { ReadOnlyContext, useReadOnly } from "../../lib/readonly.js";
 import { grpLabel, RUGBY_POS, POS_GROUPS, posDisplay, posOptionLabel } from "../../lib/positions.js";
 import { isTotemTaken } from "../../lib/totems.js";
@@ -22,7 +22,7 @@ import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose, EstimatedB
 import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send, Sparkles } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send, Sparkles, Search } from "../../lib/icons.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -240,8 +240,11 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
   const [demoNote, setDemoNote] = useState("");
   const [invited, setInvited] = useState(null); // id du joueur dont le lien vient d'être copié
   const [athleteView, setAthleteView] = useState(null); // staff-athlète ouvert (profil public restreint)
+  const [query, setQuery] = useState(""); // recherche instantanée (totem/initiales/numéro/poste)
   const athletePublic = useTeamAthletePublic(teamId); // projection publique des staff-athlètes
   const demoCount = players.filter((p) => p.isDemo).length;
+  // Filtre insensible casse/accents ; le poste/ligne (traduits) sont ajoutés au foin.
+  const filtered = players.filter((p) => playerMatchesQuery(p, query, `${posDisplay(t, p.pos)} ${grpLabel(p.grp)}`));
 
   // Invite un joueur non revendiqué : crée l'invitation (role=joueur, carte
   // roster) et copie le lien. Le joueur rejoint le club en l'ouvrant.
@@ -293,6 +296,19 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
         )}
       </div>
 
+      {/* Recherche instantanée (totem, initiales, numéro, poste). */}
+      {players.length > 0 && (
+        <div style={{ position: "relative", marginBottom: 12 }}>
+          <Search size={15} color="rgba(255,255,255,0.4)" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("staff.app.searchPlaceholder")} aria-label={t("staff.app.searchPlaceholder")}
+            style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "9px 34px 9px 32px", color: "#fff", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+          {query && (
+            <button onClick={() => setQuery("")} title={t("common.clear")} aria-label={t("common.clear")}
+              style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 22, height: 22, borderRadius: 11, background: "rgba(255,255,255,0.1)", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 13, lineHeight: "22px", padding: 0 }}>×</button>
+          )}{/* i18n-ok: symbole effacement */}
+        </div>
+      )}
+
       {/* Demandes de réinitialisation de mot de passe (joueur → staff) */}
       {!readOnly && resetRequests.length > 0 && (
         <div style={{ background: `${C.amb}14`, border: `1px solid ${C.amb}55`, borderRadius: 12, padding: 12, marginBottom: 12 }}>
@@ -332,9 +348,13 @@ function Effectif({ teamId, players, sessions, logs, activities = {}, loading, o
         <div style={sc({ textAlign: "center", padding: 28, color: "rgba(255,255,255,0.6)", fontSize: 12 })}>
           {t("staff.app.empty")}
         </div>
+      ) : filtered.length === 0 ? (
+        <div style={sc({ textAlign: "center", padding: 24, color: "rgba(255,255,255,0.55)", fontSize: 12 })}>
+          {t("staff.app.searchNoResult", { q: query })}
+        </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {players.map((p) => (
+          {filtered.map((p) => (
             <div key={p.id} onClick={() => (p.isStaffAthlete ? setAthleteView(p) : setFiche(p))} style={sc({ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer" })}>
               <span style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.85)", width: 30, textAlign: "center" }}>{p.num ?? "—"}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
