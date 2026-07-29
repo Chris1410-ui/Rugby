@@ -2616,7 +2616,8 @@
     "viewAsTitle": "Ouvrir sa vue (lecture seule)",
     "viewAs": "👁 Voir comme",
     "impersonateBanner": "👁 Vue owner — tu regardes en tant que {{name}} · {{role}}{{team}} · lecture seule",
-    "backToOwner": "Revenir à l'owner"
+    "backToOwner": "Revenir à l'owner",
+    "backToOwnerView": "Vue owner"
   },
   "data": {
     "lines": {

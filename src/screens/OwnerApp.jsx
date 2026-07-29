@@ -12,6 +12,7 @@ import PlayerApp from "./player/PlayerApp.jsx";
 import PlayerPreview from "./shared/PlayerPreview.jsx";
 import { fetchTeamPlayers } from "../data/players.js";
 import { useOwnerAccounts } from "../data/accounts.js";
+import { activateStaffAthlete, deactivateStaffAthlete } from "../data/staffAthlete.js";
 
 const roleOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
 const ownerMenuItem = { width: "100%", textAlign: "left", background: "none", border: "none", borderRadius: 8, padding: "9px 10px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 };
@@ -21,7 +22,7 @@ const ownerMenuItem = { width: "100%", textAlign: "left", background: "none", bo
    bypass RLS `is_owner()`). Peut aussi OUVRIR LA VUE JOUEUR de N'IMPORTE QUEL
    joueur du club (réel ou démo) en LECTURE SEULE — pour tester l'expérience
    joueur sans se déconnecter (cf. PlayerPreview + usePreview). */
-export default function OwnerApp({ profile, user, signOut }) {
+export default function OwnerApp({ profile, user, signOut, refreshProfile }) {
   const { t } = useTranslation();
   const [clubs, setClubs] = useState([]);
   const [team, setTeam] = useState(null);
@@ -31,6 +32,36 @@ export default function OwnerApp({ profile, user, signOut }) {
   const [showAccounts, setShowAccounts] = useState(false); // console « Comptes »
   const [impersonate, setImpersonate] = useState(null); // compte regardé « en tant que »
   const [menuOpen, setMenuOpen] = useState(false); // popover « Compte » du header
+  // Profil athlète de l'owner (opt-in) : carte `players` rattachée à un club.
+  const hasAthlete = !!profile.player_id;
+  const [viewAs, setViewAs] = useState("owner"); // owner | athlete
+  const [athleteTeam, setAthleteTeam] = useState(null); // club de la carte athlète
+  const [activating, setActivating] = useState(false);
+
+  // Club de la carte athlète (pour la vue athlète — indépendant du club sélectionné).
+  useEffect(() => {
+    if (!hasAthlete) { setAthleteTeam(null); return; }
+    let ok = true;
+    supabase.from("players").select("team_id").eq("id", profile.player_id).maybeSingle()
+      .then(({ data }) => { if (ok) setAthleteTeam(data?.team_id || null); });
+    return () => { ok = false; };
+  }, [hasAthlete, profile.player_id]);
+
+  const activateAthlete = async () => {
+    if (activating || !team) return;
+    setActivating(true);
+    try { await activateStaffAthlete(team); await refreshProfile?.(); setViewAs("athlete"); }
+    catch (e) { console.error("[owner athlete]", e.message); }
+    finally { setActivating(false); setMenuOpen(false); }
+  };
+  const deactivateAthlete = async () => {
+    if (activating) return;
+    if (!window.confirm(t("shell.deactivateAthleteConfirm"))) { setMenuOpen(false); return; }
+    setActivating(true);
+    try { await deactivateStaffAthlete(); setViewAs("owner"); await refreshProfile?.(); }
+    catch (e) { console.error("[owner athlete off]", e.message); }
+    finally { setActivating(false); setMenuOpen(false); }
+  };
 
   useEffect(() => {
     let active = true;
@@ -110,6 +141,15 @@ export default function OwnerApp({ profile, user, signOut }) {
                     </div>
                   )}
                   <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />
+                  {/* Profil athlète de l'owner (opt-in, rattaché au club sélectionné). */}
+                  {hasAthlete ? (
+                    <>
+                      <button onClick={() => { setViewAs(viewAs === "athlete" ? "owner" : "athlete"); setMenuOpen(false); }} style={ownerMenuItem}>🌅 {viewAs === "athlete" ? t("owner.backToOwnerView") : t("nav.myAthlete")}</button>
+                      <button onClick={deactivateAthlete} style={ownerMenuItem}>{activating ? t("shell.activating") : t("shell.deactivateAthlete")}</button>
+                    </>
+                  ) : (
+                    <button onClick={activateAthlete} style={ownerMenuItem}>🌅 {activating ? t("shell.activating") : t("shell.activateAthlete")}</button>
+                  )}
                   <button onClick={() => { setMenuOpen(false); setShowAccounts(true); }} style={ownerMenuItem}><Users size={14} /> {t("owner.accounts")}</button>
                   <button onClick={() => { setMenuOpen(false); signOut(); }} style={{ ...ownerMenuItem, color: C.coral }}>{t("owner.signOut")}</button>
                   <div style={{ height: 1, background: C.border2, margin: "4px 0 0" }} />
@@ -126,8 +166,11 @@ export default function OwnerApp({ profile, user, signOut }) {
           <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>{t("owner.noClub")}</div>
         ) : preview ? (
           <PlayerPreview profile={profile} teamId={team} playerId={preview} playerName={previewName} onExit={() => setPreview(null)} />
+        ) : (viewAs === "athlete" && hasAthlete && athleteTeam) ? (
+          // Vue athlète de l'owner : son propre profil joueur (club de sa carte athlète).
+          <PlayerApp key={`ath-${athleteTeam}`} profile={{ ...profile, team_id: athleteTeam }} />
         ) : (
-          <StaffApp key={team} profile={{ ...profile, team_id: team }} />
+          <StaffApp key={team} profile={{ ...profile, team_id: team }} onViewAthlete={hasAthlete ? () => setViewAs("athlete") : null} />
         )}
       </div>
 

@@ -125,7 +125,7 @@ export default function AppShell() {
   }
 
   // Owner (Head of Performance) : espace multi-clubs dédié
-  if (profile.role === "owner") return <OwnerApp profile={profile} user={user} signOut={signOut} />;
+  if (profile.role === "owner") return <OwnerApp profile={profile} user={user} signOut={signOut} refreshProfile={refreshProfile} />;
 
   const roleObj = roleObjOf(profile.role);
   const staffRole = isStaffRole(profile.role);
