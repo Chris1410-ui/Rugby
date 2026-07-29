@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase.js";
 import { uniqueTopic } from "../data/messages.js";
 import { C, FONT, ROLES } from "../lib/tokens.js";
-import { displayName } from "../lib/identity.js";
+import { displayName, playerMatchesQuery } from "../lib/identity.js";
+import { posDisplay } from "../lib/positions.js";
 import { Users, Search } from "../lib/icons.jsx";
 import { BuildTag } from "../lib/ui.jsx";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
@@ -32,6 +33,7 @@ export default function OwnerApp({ profile, user, signOut, refreshProfile }) {
   const [showAccounts, setShowAccounts] = useState(false); // console « Comptes »
   const [impersonate, setImpersonate] = useState(null); // compte regardé « en tant que »
   const [menuOpen, setMenuOpen] = useState(false); // popover « Compte » du header
+  const [pQuery, setPQuery] = useState(""); // recherche du sélecteur « Vue joueur »
   // Profil athlète de l'owner (opt-in) : carte `players` rattachée à un club.
   const hasAthlete = !!profile.player_id;
   const [viewAs, setViewAs] = useState("owner"); // owner | athlete
@@ -132,12 +134,27 @@ export default function OwnerApp({ profile, user, signOut, refreshProfile }) {
                   {teamPlayers.length > 0 && (
                     <div style={{ padding: "6px 8px 4px" }}>
                       <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.7)", letterSpacing: 0.8, padding: "0 2px 6px" }}>{t("owner.playerView")}</div>
-                      <select value={preview ?? ""} onChange={(e) => { setPreview(e.target.value || null); setMenuOpen(false); }} aria-label={t("owner.openPlayerView")}
-                        style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "9px 10px", color: "#fff", fontSize: 13, fontWeight: 700, outline: "none", boxSizing: "border-box", colorScheme: "dark" }}>
-                        <option value="">{t("owner.choosePlayer")}</option>
-                        {realPlayers.length > 0 && <optgroup label={t("owner.optPlayers")}>{realPlayers.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
-                        {demoOnes.length > 0 && <optgroup label={t("owner.optDemo")}>{demoOnes.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}</optgroup>}
-                      </select>
+                      {/* Recherche instantanée (totem/initiales/numéro/poste) — 34 joueurs
+                          dans une liste déroulante sans recherche = inutilisable. */}
+                      <div style={{ position: "relative", marginBottom: 6 }}>
+                        <Search size={13} color="rgba(255,255,255,0.4)" style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)" }} />
+                        <input value={pQuery} onChange={(e) => setPQuery(e.target.value)} placeholder={t("owner.searchPlayer")} aria-label={t("owner.searchPlayer")}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.08)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 28px 8px 28px", color: "#fff", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                        {pQuery && <button onClick={() => setPQuery("")} title={t("common.clear")} aria-label={t("common.clear")} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", width: 20, height: 20, borderRadius: 10, background: "rgba(255,255,255,0.12)", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 12, lineHeight: "20px", padding: 0 }}>×</button>}{/* i18n-ok: symbole effacement */}
+                      </div>
+                      <div style={{ maxHeight: 210, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+                        {[...realPlayers, ...demoOnes].filter((p) => playerMatchesQuery(p, pQuery, posDisplay(t, p.pos))).map((p) => (
+                          <button key={p.id} onClick={() => { setPreview(p.id); setMenuOpen(false); setPQuery(""); }}
+                            style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", textAlign: "left", background: preview === p.id ? `${C.viol}22` : "rgba(255,255,255,0.04)", border: `1px solid ${preview === p.id ? `${C.viol}66` : "transparent"}`, borderRadius: 8, padding: "7px 9px", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                            <span style={{ minWidth: 18, color: "rgba(255,255,255,0.5)", fontWeight: 800 }}>{p.num ?? ""}</span>
+                            <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(p)}</span>
+                            {p.is_demo && <span style={{ fontSize: 8, fontWeight: 800, color: C.viol }}>{t("owner.optDemo")}</span>}
+                          </button>
+                        ))}
+                        {[...realPlayers, ...demoOnes].filter((p) => playerMatchesQuery(p, pQuery, posDisplay(t, p.pos))).length === 0 && (
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", padding: "6px 4px" }}>{t("staff.app.searchNoResult", { q: pQuery })}</div>
+                        )}
+                      </div>
                     </div>
                   )}
                   <div style={{ height: 1, background: C.border2, margin: "6px 0 4px" }} />

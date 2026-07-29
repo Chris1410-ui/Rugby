@@ -23,3 +23,19 @@ export function displayName(playerOrName, initials) {
   if (!name) return "";
   return ini ? `${name} (${ini})` : name;
 }
+
+/* Normalisation de recherche : minuscule, sans accents, alphanumérique seul.
+   « Éléonore #10 » → « eleonore10 ». Rend la recherche insensible à la casse et
+   aux accents ; les séparateurs (points d'initiales, espaces, #) sont ignorés. */
+export const searchNorm = (s) =>
+  String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
+
+/* Un joueur correspond-il à la requête ? Cherche dans totem + initiales + numéro,
+   plus un texte additionnel `extra` (libellés poste/ligne, déjà traduits par
+   l'appelant). Requête vide → vrai (aucun filtre). PUR. */
+export function playerMatchesQuery(p, query, extra = "") {
+  const q = searchNorm(query);
+  if (!q) return true;
+  const hay = searchNorm([p?.name, p?.initials, p?.num, extra].filter((x) => x != null && x !== "").join(" "));
+  return hay.includes(q);
+}

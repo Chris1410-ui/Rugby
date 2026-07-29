@@ -18,7 +18,8 @@
     "actionFailed": "Échec : {{err}}",
     "tryAgain": "réessaie.",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "clear": "Effacer"
   },
   "header": {
     "brand": "PERFORMANCE"
@@ -1962,7 +1963,9 @@
       "alertsTab": "→ onglet Alertes",
       "noAlerts": "Aucune alerte. 👌",
       "invitePlayer": "Inviter ce joueur",
-      "kpiReadinessSub": "{{n}} réels"
+      "kpiReadinessSub": "{{n}} réels",
+      "searchPlaceholder": "Rechercher (totem, initiales, n°, poste)",
+      "searchNoResult": "Aucun joueur pour « {{q}} »"
     },
     "invites": {
       "title": "Invitations staff",
@@ -2617,7 +2620,8 @@
     "viewAs": "👁 Voir comme",
     "impersonateBanner": "👁 Vue owner — tu regardes en tant que {{name}} · {{role}}{{team}} · lecture seule",
     "backToOwner": "Revenir à l'owner",
-    "backToOwnerView": "Vue owner"
+    "backToOwnerView": "Vue owner",
+    "searchPlayer": "Rechercher un joueur…"
   },
   "data": {
     "lines": {
