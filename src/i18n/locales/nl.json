@@ -348,7 +348,13 @@
     "viewAsAthlete": "Naar atletenweergave",
     "viewAsStaff": "Terug naar stafweergave",
     "deactivateAthlete": "Mijn atletenprofiel deactiveren",
-    "deactivateAthleteConfirm": "Je atletenprofiel deactiveren? Het wordt uit het klassement verwijderd (je geschiedenis blijft bewaard, je kunt het opnieuw activeren)."
+    "deactivateAthleteConfirm": "Je atletenprofiel deactiveren? Het wordt uit het klassement verwijderd (je geschiedenis blijft bewaard, je kunt het opnieuw activeren).",
+    "athleteErrGeneric": "Kan het atletenprofiel niet activeren.",
+    "athleteErrMissing": "Activatiefunctie ontbreekt op de server (migratie niet uitgerold).",
+    "athleteErrRls": "Onvoldoende rechten (RLS) om het atletenprofiel aan te maken.",
+    "athleteErrDuplicate": "Er bestaat al een atletenprofiel voor dit account.",
+    "athleteErrRole": "Je rol staat het activeren van een atletenprofiel niet toe.",
+    "athleteErrNoTeam": "Geen club geselecteerd om het atletenprofiel aan te koppelen."
   },
   "onboarding": {
     "skip": "Overslaan",

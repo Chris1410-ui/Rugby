@@ -348,7 +348,13 @@
     "viewAsAthlete": "Passer en vue athlète",
     "viewAsStaff": "Revenir en vue staff",
     "deactivateAthlete": "Désactiver mon profil athlète",
-    "deactivateAthleteConfirm": "Désactiver ton profil athlète ? Il sera retiré du classement (ton historique est conservé, tu peux le réactiver)."
+    "deactivateAthleteConfirm": "Désactiver ton profil athlète ? Il sera retiré du classement (ton historique est conservé, tu peux le réactiver).",
+    "athleteErrGeneric": "Impossible d'activer le profil athlète.",
+    "athleteErrMissing": "Fonction d'activation absente côté serveur (migration non déployée).",
+    "athleteErrRls": "Droits insuffisants (RLS) pour créer le profil athlète.",
+    "athleteErrDuplicate": "Un profil athlète existe déjà pour ce compte.",
+    "athleteErrRole": "Ton rôle ne permet pas d'activer un profil athlète.",
+    "athleteErrNoTeam": "Aucun club sélectionné pour rattacher le profil athlète."
   },
   "onboarding": {
     "skip": "Passer",

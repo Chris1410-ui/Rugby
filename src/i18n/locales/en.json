@@ -348,7 +348,13 @@
     "viewAsAthlete": "Switch to athlete view",
     "viewAsStaff": "Back to staff view",
     "deactivateAthlete": "Deactivate my athlete profile",
-    "deactivateAthleteConfirm": "Deactivate your athlete profile? It will be removed from the leaderboard (your history is kept, you can reactivate it)."
+    "deactivateAthleteConfirm": "Deactivate your athlete profile? It will be removed from the leaderboard (your history is kept, you can reactivate it).",
+    "athleteErrGeneric": "Could not activate the athlete profile.",
+    "athleteErrMissing": "Activation function missing on the server (migration not deployed).",
+    "athleteErrRls": "Insufficient rights (RLS) to create the athlete profile.",
+    "athleteErrDuplicate": "An athlete profile already exists for this account.",
+    "athleteErrRole": "Your role does not allow activating an athlete profile.",
+    "athleteErrNoTeam": "No club selected to attach the athlete profile."
   },
   "onboarding": {
     "skip": "Skip",
