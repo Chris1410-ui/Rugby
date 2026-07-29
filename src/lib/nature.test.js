@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { NATURES, natureFromCode, effectiveNature, natureColor } from "./nature.js";
+import { NATURES, natureFromCode, effectiveNature, natureColor, labelSuggestsConditioning, natureLooksInconsistent } from "./nature.js";
 
 describe("nature de séance", () => {
   it("dérive une nature par défaut depuis le code rugby", () => {
@@ -29,5 +29,27 @@ describe("nature de séance", () => {
   it("natureColor renvoie une couleur pour chaque nature (repli gris)", () => {
     for (const n of NATURES) expect(typeof natureColor(n)).toBe("string");
     expect(typeof natureColor("inconnue")).toBe("string");
+  });
+});
+
+describe("nature — incohérence douce (intitulé cardio + nature force)", () => {
+  it("labelSuggestsConditioning : détecte les mots-clés cardio (accents/casse ignorés)", () => {
+    expect(labelSuggestsConditioning("Cardio & course")).toBe(true);
+    expect(labelSuggestsConditioning("Vélo endurance")).toBe(true);
+    expect(labelSuggestsConditioning("Fractionné VMA")).toBe(true);
+    expect(labelSuggestsConditioning("Running léger")).toBe(true);
+    expect(labelSuggestsConditioning("RAMEUR 2km")).toBe(true);
+  });
+  it("labelSuggestsConditioning : faux pour un intitulé force / vide", () => {
+    expect(labelSuggestsConditioning("Musculation haut du corps")).toBe(false);
+    expect(labelSuggestsConditioning("Développé couché")).toBe(false);
+    expect(labelSuggestsConditioning("")).toBe(false);
+    expect(labelSuggestsConditioning(null)).toBe(false);
+  });
+  it("natureLooksInconsistent : seulement si intitulé cardio ET nature force", () => {
+    expect(natureLooksInconsistent("Cardio & course", "force")).toBe(true);
+    expect(natureLooksInconsistent("Cardio & course", "conditioning")).toBe(false); // nature cohérente
+    expect(natureLooksInconsistent("Musculation", "force")).toBe(false);            // intitulé cohérent
+    expect(natureLooksInconsistent("", "force")).toBe(false);
   });
 });
