@@ -7,6 +7,7 @@ import {
   kindIsCardio, kindUsesLoad, kindIsSetLike,
   natureForType, codeForType, allowedKindsForType, libraryFilterForType,
   TYPE_DEFAULT_NATURE, TYPE_DEFAULT_CODE,
+  exerciseInputModel, inputModelIsEffort, inputModelUsesLoad, NATURE_INPUT_MODEL,
 } from "./sessionType.js";
 
 describe("sessionType — vocabulaire", () => {
@@ -92,5 +93,40 @@ describe("sessionType — kinds autorisés & filtre biblio par type", () => {
     expect(libraryFilterForType("conditioning")).toEqual({ bodyPart: "cardio" });
     expect(libraryFilterForType("bodyweight")).toMatchObject({ equipment: "body weight", noEquipment: true });
     expect(libraryFilterForType("skills").calisthenics).toBe(true);
+  });
+});
+
+describe("sessionType — modèle de saisie d'un exercice (par nature)", () => {
+  it("un bloc STRUCTURÉ (kind explicite) fait toujours foi, quelle que soit la nature", () => {
+    expect(exerciseInputModel({ kind: "cardio_interval" }, "force")).toBe("cardio_interval");
+    expect(exerciseInputModel({ kind: "skill" }, "conditioning")).toBe("skill");
+    expect(exerciseInputModel({ kind: "strength" }, "conditioning")).toBe("strength");
+  });
+  it("un exercice PLAT (sans kind) dérive de la NATURE de la séance", () => {
+    expect(exerciseInputModel({ name: "Squat" }, "force")).toBe("strength");
+    expect(exerciseInputModel({ name: "Renfo" }, "prevention")).toBe("strength");
+    expect(exerciseInputModel({ name: "Course" }, "conditioning")).toBe("conditioning");
+    expect(exerciseInputModel({ name: "Sprints" }, "vitesse")).toBe("vitesse");
+    expect(exerciseInputModel({ name: "Étirements" }, "mobilite")).toBe("mobility");
+    expect(exerciseInputModel({ name: "Retour au calme" }, "recuperation")).toBe("mobility");
+    expect(exerciseInputModel({ name: "Passes" }, "technique")).toBe("skill");
+  });
+  it("nature absente / inconnue → 'strength' (repli sûr, comportement legacy)", () => {
+    expect(exerciseInputModel({ name: "X" }, "")).toBe("strength");
+    expect(exerciseInputModel({ name: "X" }, "autre")).toBe("strength");
+    expect(exerciseInputModel({ name: "X" }, undefined)).toBe("strength");
+  });
+  it("classe effort (mono) vs charge (kg)", () => {
+    expect(inputModelIsEffort("conditioning")).toBe(true);
+    expect(inputModelIsEffort("vitesse")).toBe(true);
+    expect(inputModelIsEffort("mobility")).toBe(true);
+    expect(inputModelIsEffort("strength")).toBe(false);
+    expect(inputModelUsesLoad("strength")).toBe(true);
+    expect(inputModelUsesLoad("bodyweight")).toBe(true);
+    expect(inputModelUsesLoad("conditioning")).toBe(false);
+    expect(inputModelUsesLoad("skill")).toBe(false);
+  });
+  it("chaque nature du vocabulaire a un modèle de saisie", () => {
+    for (const n of NATURES) expect(typeof NATURE_INPUT_MODEL[n]).toBe("string");
   });
 });
