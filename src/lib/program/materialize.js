@@ -34,6 +34,13 @@ const NATURE_CODE = {
 };
 export const codeForNature = (n) => NATURE_CODE[n] || "RS";
 
+/* Garantit un id UNIQUE & STABLE (par position) sur chaque exercice d'une séance.
+   Indispensable : le lecteur de séance indexe l'état de saisie par exo.id ET s'en
+   sert de clé React. Deux exercices sans id (id: null) partageraient le même état
+   → fuite de valeurs d'un exercice à l'autre. PUR & déterministe (« x0, x1… »). */
+export const withExerciseIds = (exos) =>
+  (Array.isArray(exos) ? exos : []).map((e, i) => (e && e.id ? e : { ...e, id: `x${i}` }));
+
 // Cellule de semaine « 4×8 R7 » / « 3x10 » → { sets, reps }. Le reste (repos,
 // étoile de pic…) reste dans le protocole ; ici on ne garde que sets×reps.
 export function parseScheme(text) {
@@ -102,7 +109,7 @@ export function docToSessions(doc) {
   // conditioning, code CSB). Blocs normalisés via sessionBlocks (kind cardio_*).
   const condSessions = sections
     .filter((s) => s.type === "conditioning")
-    .map((s, i) => ({ weekday: (i % 6) + 1, nature: "conditioning", code: "CSB", titre: s.title || "Conditioning", exercises: normalizeBlocks(s.blocks) }))
+    .map((s, i) => ({ weekday: (i % 6) + 1, nature: "conditioning", code: "CSB", titre: s.title || "Conditioning", exercises: withExerciseIds(normalizeBlocks(s.blocks)) }))
     .filter((s) => s.exercises.length);
 
   // Cas 1 — une « semaine type » existe : chaque jour actif = une séance.
@@ -124,7 +131,7 @@ export function docToSessions(doc) {
         : (soleExos.length && (nature === "force" || /muscu|force|renfo/i.test(label))
           ? soleExos
           : [{ name: label, sets: "", reps: "", charge: "", rest: 90 }]);
-      return { weekday: day.weekday, nature, code: codeForNature(nature), titre: label, exercises: exos };
+      return { weekday: day.weekday, nature, code: codeForNature(nature), titre: label, exercises: withExerciseIds(exos) };
     });
     return { sessions: sessions.concat(condSessions), warnings };
   }
@@ -139,7 +146,7 @@ export function docToSessions(doc) {
         nature: d.meta?.nature || "",
         code: codeForNature(d.meta?.nature || ""),
         titre: s.title || `Séance ${i + 1}`,
-        exercises: exos.length ? exos : [{ name: s.title || "Séance", sets: "", reps: "", charge: "", rest: 90 }],
+        exercises: withExerciseIds(exos.length ? exos : [{ name: s.title || "Séance", sets: "", reps: "", charge: "", rest: 90 }]),
       };
     });
     return { sessions: sessions.concat(condSessions), warnings };

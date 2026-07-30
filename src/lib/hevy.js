@@ -66,6 +66,23 @@ export const parseSetsN = (v) => {
   return isNaN(n) ? 3 : Math.max(1, Math.min(10, n));
 };
 
+/* Plan de reps PRESCRITES depuis la chaîne `reps` (+ `sets`), pour pré-remplir
+   les séries. Deux cas :
+   - PROGRESSION « 5-10-15-20 » (≥3 nombres à tirets) → une valeur PAR SÉRIE, dans
+     l'ordre ; le nombre de séries = la longueur de la progression.
+   - UNIFORME « 30 reps », « 8 », « 3x10 »→reps « 10 », plage « 8-12 » → une valeur
+     unique (1er nombre) ; nb de séries = `sets` (défaut 3). Seule la série 1 la
+     reçoit (les suivantes restent en placeholder — règle validée).
+   Renvoie { perSeries: string[]|null, uniform: string, count }. PUR. */
+export function prescribedRepsPlan(reps, sets) {
+  const raw = String(reps ?? "").trim();
+  const nums = raw.match(/\d+/g) || [];
+  // Progression : au moins 3 nombres séparés par des tirets (« 5-10-15-20 »).
+  const isSequence = /^\s*\d+\s*[-–]\s*\d+(\s*[-–]\s*\d+)+/.test(raw) && nums.length >= 3;
+  if (isSequence) return { perSeries: nums, uniform: "", count: Math.min(nums.length, 12) };
+  return { perSeries: null, uniform: nums[0] || "", count: parseSetsN(sets) };
+}
+
 // Charge prescrite « 120 », « 120 kg », « 120,5 » → nombre (null si non chiffrée)
 export const parseChargeKg = (v) => {
   const n = parseFloat(String(v ?? "").replace(",", ".").replace(/[^\d.]/g, ""));
@@ -99,14 +116,19 @@ export function initSetLikeSets(e, { saved = null, oneRM = null } = {}) {
       note: "",
     };
   }
-  const n = parseSetsN(e?.sets);
+  const rp = prescribedRepsPlan(e?.reps, e?.sets);
+  const n = rp.count;
   // Charge de la série 1 : littérale prescrite si présente, sinon @% résolue du 1RM.
   const kg = e?.pct && oneRM ? computeLoadKg(e.pct, oneRM) : null;
   const firstW = e?.charge != null && e.charge !== "" ? String(e.charge) : (kg != null ? String(kg) : "");
   return {
     sets: Array.from({ length: n }, (_, i) => ({
       w: i === 0 ? firstW : "",
-      reps: i === 0 && e?.reps != null && e.reps !== "" ? String(e.reps) : "",
+      // Progression (« 5-10-15-20 ») → chaque série reçoit SA valeur ; uniforme →
+      // seule la série 1 est pré-remplie (les suivantes en placeholder).
+      reps: rp.perSeries
+        ? (rp.perSeries[i] != null ? String(rp.perSeries[i]) : "")
+        : (i === 0 ? rp.uniform : ""),
       type: "normal",
       done: false,
     })),
