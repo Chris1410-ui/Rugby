@@ -119,7 +119,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "routine" && me?.isStaffAthlete && <MorningRoutine me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} onNavigate={setTab} />}
           {tab === "team" && <TeamTab me={me} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
-          {tab === "moi" && <Profile me={me} teamId={profile.team_id} sessions={sessions} accent={ACCENT} />}
+          {tab === "moi" && <Profile me={me} teamId={profile.team_id} sessions={sessions} logs={logs} accent={ACCENT} />}
           {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}

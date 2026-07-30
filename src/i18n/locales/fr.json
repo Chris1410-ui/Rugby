@@ -2974,7 +2974,12 @@
     "assidu": "Assidu",
     "sansFaute": "Sans faute",
     "enForme": "En forme",
-    "rigoureux": "Rigoureux"
+    "rigoureux": "Rigoureux",
+    "wellness7": "Bien-être 7 j",
+    "monthComplete": "Mois complet",
+    "firstRecord": "Premier record",
+    "gpsImport": "Import GPS",
+    "sets100": "100 séries / sem."
   },
   "alerts": {
     "acwr-high": "ACWR {{acwr}} — zone de surcharge",

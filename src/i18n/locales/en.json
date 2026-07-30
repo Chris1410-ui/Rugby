@@ -2974,7 +2974,12 @@
     "assidu": "Regular",
     "sansFaute": "Flawless",
     "enForme": "In shape",
-    "rigoureux": "Thorough"
+    "rigoureux": "Thorough",
+    "wellness7": "Wellness 7 days",
+    "monthComplete": "Full month",
+    "firstRecord": "First record",
+    "gpsImport": "GPS import",
+    "sets100": "100 sets / week"
   },
   "alerts": {
     "acwr-high": "ACWR {{acwr}} — overload zone",

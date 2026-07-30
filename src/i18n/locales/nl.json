@@ -2974,7 +2974,12 @@
     "assidu": "Volhardend",
     "sansFaute": "Foutloos",
     "enForme": "In vorm",
-    "rigoureux": "Nauwgezet"
+    "rigoureux": "Nauwgezet",
+    "wellness7": "Welzijn 7 d",
+    "monthComplete": "Volledige maand",
+    "firstRecord": "Eerste record",
+    "gpsImport": "GPS-import",
+    "sets100": "100 reeksen / week"
   },
   "alerts": {
     "acwr-high": "ACWR {{acwr}} — overbelastingszone",

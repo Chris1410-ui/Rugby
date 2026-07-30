@@ -1,31 +1,54 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { C } from "../../lib/tokens.js";
-import { divLabel } from "../../lib/metrics.js";
+import { divLabel, todayISO } from "../../lib/metrics.js";
 import { displayName } from "../../lib/identity.js";
+import { deriveAchievements, weeklyLoggedSets } from "../../lib/achievements.js";
 import { usePlayerStanding } from "../../data/clubPoints.js";
+import { usePlayerCheckins } from "../../data/checkins.js";
+import { usePlayer1RM } from "../../data/player1rm.js";
 
 /* En-tête « Moi » — division (Bronze→Élite) + récompenses, VISUEL de la
-   maquette mais 100% sur notre barème existant : points = computePoints,
-   division = DIVS, badges = ceux déjà émis par computePoints (assidu, sans
-   faute, en forme, rigoureux). Aucune table XP, aucun second compteur. Les
-   badges de la maquette sans équivalent dans notre barème ne sont PAS inventés. */
+   maquette, 100% sur des DONNÉES EXISTANTES : points = computePoints, division =
+   DIVS. Deux familles de récompenses, aucune table/monnaie nouvelle :
+   - « forme » : les badges déjà émis par computePoints (assidu…) ;
+   - « accomplissements » : dérivés par lib/achievements.js (bien-être 7 j,
+     mois complet, 1er record, import GPS, 100 séries/sem.). */
 
-// Définitions de badges = miroir exact de computePoints (mêmes clés + emojis).
-const BADGE_DEFS = [
+// Récompenses de FORME (miroir exact de computePoints).
+const FORM_DEFS = [
   { key: "assidu", e: "🔥" },
   { key: "sansFaute", e: "✅" },
   { key: "enForme", e: "💪" },
   { key: "rigoureux", e: "📊" },
 ];
+// Accomplissements dérivés (clés = lib/achievements.js).
+const ACH_DEFS = [
+  { key: "wellness7", e: "🌙" },
+  { key: "monthComplete", e: "📅" },
+  { key: "firstRecord", e: "🏅" },
+  { key: "gpsImport", e: "📡" },
+  { key: "sets100", e: "⚡" },
+];
+const BADGE_DEFS = [...FORM_DEFS, ...ACH_DEFS];
 
-export default function ProfileBadges({ me, teamId, sessions = [], accent = C.green }) {
+export default function ProfileBadges({ me, teamId, sessions = [], logs = {}, accent = C.green }) {
   const { t } = useTranslation();
   const standing = usePlayerStanding(teamId, me, sessions);
+  const { checkins } = usePlayerCheckins(me?.id, 40);
+  const { entries: oneRM } = usePlayer1RM(me?.id);
   const pts = standing?.pts ?? 0;
   const div = standing?.div;
   const next = standing?.next;
-  const earned = useMemo(() => new Set((standing?.badges || []).map((b) => b.key)), [standing]);
+
+  const earned = useMemo(() => {
+    const set = new Set((standing?.badges || []).map((b) => b.key));
+    const today = todayISO();
+    const weeklySets = weeklyLoggedSets(sessions, logs, me?.id, today);
+    deriveAchievements({ checkins, oneRMCount: (oneRM || []).length, gpsCount: standing?.gpsCount || 0, weeklySets, todayIso: today })
+      .forEach((k) => set.add(k));
+    return set;
+  }, [standing, checkins, oneRM, sessions, logs, me]);
 
   const pctToNext = next && div ? Math.max(0, Math.min(100, Math.round(((pts - div.min) / (next.min - div.min)) * 100))) : 100;
 
