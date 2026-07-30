@@ -51,7 +51,9 @@
     "video": "Analyse vidéo",
     "veille": "Veille",
     "compare": "Comparaison A/B",
-    "abonnements": "Abonnements notifications"
+    "abonnements": "Abonnements notifications",
+    "team": "Équipe",
+    "moi": "Moi"
   },
   "recurrence": {
     "once": "Ponctuel",
@@ -320,7 +322,9 @@
     "invites": "Invitations",
     "adhesions": "Demandes d'adhésion",
     "heatmaps": "Heatmaps",
-    "myAthlete": "Mon athlète"
+    "myAthlete": "Mon athlète",
+    "team": "Équipe",
+    "moi": "Moi"
   },
   "roles": {
     "preparateur": "Préparateur physique",
@@ -1112,7 +1116,8 @@
       "rm1rm": "1RM",
       "rm5rm": "5RM",
       "rm5rmHint": "Le 5RM est converti en 1RM estimé (Epley).",
-      "edit1rmTitle": "Corriger le 1RM {{movement}}"
+      "edit1rmTitle": "Corriger le 1RM {{movement}}",
+      "setsCount": "{{done}}/{{total}} séries"
     },
     "freeSession": {
       "newButton": "Créer une séance libre",
@@ -1247,6 +1252,51 @@
         "intensity": "Intensité",
         "other": "Autre"
       }
+    },
+    "live": {
+      "exoOf": "Exercice {{i}} / {{n}}",
+      "nextExo": "Exercice suivant",
+      "finish": "Terminer la séance",
+      "reps": "reps"
+    },
+    "wall": {
+      "title": "Le fil du club",
+      "empty": "Rien de neuf pour l'instant. Sois le premier à valider ta séance !",
+      "factSession": "a validé « {{subject}} »",
+      "factSessionPlain": "a validé sa séance",
+      "factCheckinMorning": "a fait son check-in du matin",
+      "factCheckinEvening": "a fait son bilan du soir",
+      "factChallenge": "a relevé le défi « {{subject}} »",
+      "factChallengePlain": "a relevé un défi",
+      "factConvocation": "était présent·e à « {{subject}} »",
+      "factConvocationPlain": "était présent·e à l'entraînement",
+      "factGps": "a déposé ses données GPS"
+    },
+    "profile": {
+      "rewards": "Récompenses",
+      "points": "{{n}} pts",
+      "toNext": "Plus que {{n}} pts pour {{div}}",
+      "maxDiv": "Palier maximum atteint 🏆"
+    },
+    "duel": {
+      "title": "Duels",
+      "challenge": "Défier",
+      "pickTitle": "Choisis un coéquipier à défier (7 jours)",
+      "noOpponents": "Aucun coéquipier à défier pour l'instant.",
+      "empty": "Aucun duel en cours. Lance un défi !",
+      "vs": "Duel · {{name}}",
+      "metricLabel": "Séances · 7 j",
+      "youChallenge": "{{name}} te défie sur 7 jours.",
+      "waiting": "En attente de {{name}}…",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "cancel": "Annuler",
+      "you": "Toi",
+      "ends": "Fin le {{date}}",
+      "win": "{{name}} l'emporte",
+      "draw": "Égalité",
+      "errActive": "Un duel est déjà en cours avec ce joueur.",
+      "errCreate": "Impossible de créer le duel."
     }
   },
   "staff": {
@@ -2924,7 +2974,12 @@
     "assidu": "Assidu",
     "sansFaute": "Sans faute",
     "enForme": "En forme",
-    "rigoureux": "Rigoureux"
+    "rigoureux": "Rigoureux",
+    "wellness7": "Bien-être 7 j",
+    "monthComplete": "Mois complet",
+    "firstRecord": "Premier record",
+    "gpsImport": "Import GPS",
+    "sets100": "100 séries / sem."
   },
   "alerts": {
     "acwr-high": "ACWR {{acwr}} — zone de surcharge",

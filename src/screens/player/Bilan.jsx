@@ -20,6 +20,7 @@ import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
 import SessionPlayCard from "./SessionPlayCard.jsx";
+import SessionLive from "./SessionLive.jsx";
 import FreeSessionBuilder from "./FreeSessionBuilder.jsx";
 import GpsDeposit from "./GpsDeposit.jsx";
 import HeatmapsGallery from "../shared/HeatmapsGallery.jsx";
@@ -47,6 +48,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
   const [daySel, setDaySel] = useState(null); // iso du jour ouvert en détail
   const [building, setBuilding] = useState(false);
   const [gpsOpen, setGpsOpen] = useState(false);
+  const [liveSession, setLiveSession] = useState(null); // séance ouverte en plein écran (mode live)
   const [heatOpen, setHeatOpen] = useState(false);
   const [justCreated, setJustCreated] = useState(null); // id d'une séance libre à ouvrir dès qu'elle arrive
   const [metric, setMetric] = useState(null); // readiness | wellness | charge (drill-down suivi)
@@ -206,7 +208,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
             titre + contexte + méta durée·X/Y séries + barre + bouton Démarrer.
             « Démarrer » ouvre le lecteur set-par-set existant (setOpenSession). */}
         {todaySessions.map((s) => (
-          <SessionTodayCard key={s.id} s={s} log={logs?.[s.id]?.[me.id]} accent={C.coral} onStart={() => setOpenSession(s)} />
+          <SessionTodayCard key={s.id} s={s} log={logs?.[s.id]?.[me.id]} accent={C.coral} onStart={() => setLiveSession(s)} />
         ))}
 
         {/* Protocoles assignés (consultation) */}
@@ -303,6 +305,11 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 10, textAlign: "center" }}>{t("player.today.trackingRange", { count: metricDefs[metric].pts.length })}</div>
           </div>
         </Overlay>
+      )}
+
+      {liveSession && (
+        <SessionLive s={liveSession} me={me} sessions={sessions} logs={logs} log={logs?.[liveSession.id]?.[me.id]}
+          accent={accent} onClose={() => setLiveSession(null)} onSaved={refresh} onNavigate={onNavigate} />
       )}
 
       {building && <FreeSessionBuilder me={me} onClose={() => setBuilding(false)} onCreated={(id) => { setBuilding(false); setJustCreated(id); refresh(); onData?.(); }} />}

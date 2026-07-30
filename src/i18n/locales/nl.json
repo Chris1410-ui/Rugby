@@ -51,7 +51,9 @@
     "video": "Video-analyse",
     "veille": "Nieuws",
     "compare": "A/B vergelijking",
-    "abonnements": "Push-abonnementen"
+    "abonnements": "Push-abonnementen",
+    "team": "Team",
+    "moi": "Ik"
   },
   "recurrence": {
     "once": "Eenmalig",
@@ -320,7 +322,9 @@
     "invites": "Uitnodigingen",
     "adhesions": "Lidmaatschapsaanvragen",
     "heatmaps": "Heatmaps",
-    "myAthlete": "Mijn atleet"
+    "myAthlete": "Mijn atleet",
+    "team": "Team",
+    "moi": "Ik"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -1112,7 +1116,8 @@
       "rm1rm": "1RM",
       "rm5rm": "5RM",
       "rm5rmHint": "De 5RM wordt omgezet naar een geschatte 1RM (Epley).",
-      "edit1rmTitle": "Corrigeer de 1RM {{movement}}"
+      "edit1rmTitle": "Corrigeer de 1RM {{movement}}",
+      "setsCount": "{{done}}/{{total}} reeksen"
     },
     "freeSession": {
       "newButton": "Vrije sessie maken",
@@ -1247,6 +1252,51 @@
         "intensity": "Intensiteit",
         "other": "Andere"
       }
+    },
+    "live": {
+      "exoOf": "Oefening {{i}} / {{n}}",
+      "nextExo": "Volgende oefening",
+      "finish": "Sessie beëindigen",
+      "reps": "herh."
+    },
+    "wall": {
+      "title": "Clubfeed",
+      "empty": "Nog niets nieuws. Wees de eerste die een sessie logt!",
+      "factSession": "logde “{{subject}}”",
+      "factSessionPlain": "logde een sessie",
+      "factCheckinMorning": "deed de ochtendcheck-in",
+      "factCheckinEvening": "deed de avondevaluatie",
+      "factChallenge": "nam “{{subject}}” aan",
+      "factChallengePlain": "nam een uitdaging aan",
+      "factConvocation": "was aanwezig bij “{{subject}}”",
+      "factConvocationPlain": "was aanwezig op training",
+      "factGps": "uploadde GPS-gegevens"
+    },
+    "profile": {
+      "rewards": "Beloningen",
+      "points": "{{n}} ptn",
+      "toNext": "Nog {{n}} ptn tot {{div}}",
+      "maxDiv": "Hoogste niveau bereikt 🏆"
+    },
+    "duel": {
+      "title": "Duels",
+      "challenge": "Uitdagen",
+      "pickTitle": "Kies een teamgenoot om uit te dagen (7 dagen)",
+      "noOpponents": "Nog geen teamgenoot om uit te dagen.",
+      "empty": "Geen duel bezig. Start er een!",
+      "vs": "Duel · {{name}}",
+      "metricLabel": "Sessies · 7 d",
+      "youChallenge": "{{name}} daagt je uit over 7 dagen.",
+      "waiting": "Wachten op {{name}}…",
+      "accept": "Accepteren",
+      "decline": "Weigeren",
+      "cancel": "Annuleren",
+      "you": "Jij",
+      "ends": "Eindigt {{date}}",
+      "win": "{{name}} wint",
+      "draw": "Gelijkspel",
+      "errActive": "Er loopt al een duel met deze speler.",
+      "errCreate": "Kon het duel niet aanmaken."
     }
   },
   "staff": {
@@ -2924,7 +2974,12 @@
     "assidu": "Volhardend",
     "sansFaute": "Foutloos",
     "enForme": "In vorm",
-    "rigoureux": "Nauwgezet"
+    "rigoureux": "Nauwgezet",
+    "wellness7": "Welzijn 7 d",
+    "monthComplete": "Volledige maand",
+    "firstRecord": "Eerste record",
+    "gpsImport": "GPS-import",
+    "sets100": "100 reeksen / week"
   },
   "alerts": {
     "acwr-high": "ACWR {{acwr}} — overbelastingszone",

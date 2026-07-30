@@ -51,7 +51,9 @@
     "video": "Video analysis",
     "veille": "Watch",
     "compare": "A/B comparison",
-    "abonnements": "Push subscriptions"
+    "abonnements": "Push subscriptions",
+    "team": "Team",
+    "moi": "Me"
   },
   "recurrence": {
     "once": "One-off",
@@ -320,7 +322,9 @@
     "invites": "Invitations",
     "adhesions": "Membership requests",
     "heatmaps": "Heatmaps",
-    "myAthlete": "My athlete"
+    "myAthlete": "My athlete",
+    "team": "Team",
+    "moi": "Me"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -1112,7 +1116,8 @@
       "rm1rm": "1RM",
       "rm5rm": "5RM",
       "rm5rmHint": "The 5RM is converted to an estimated 1RM (Epley).",
-      "edit1rmTitle": "Correct the {{movement}} 1RM"
+      "edit1rmTitle": "Correct the {{movement}} 1RM",
+      "setsCount": "{{done}}/{{total}} sets"
     },
     "freeSession": {
       "newButton": "Create a free session",
@@ -1247,6 +1252,51 @@
         "intensity": "Intensity",
         "other": "Other"
       }
+    },
+    "live": {
+      "exoOf": "Exercise {{i}} / {{n}}",
+      "nextExo": "Next exercise",
+      "finish": "Finish the session",
+      "reps": "reps"
+    },
+    "wall": {
+      "title": "Club feed",
+      "empty": "Nothing new yet. Be the first to log a session!",
+      "factSession": "logged “{{subject}}”",
+      "factSessionPlain": "logged a session",
+      "factCheckinMorning": "did their morning check-in",
+      "factCheckinEvening": "did their evening review",
+      "factChallenge": "took on “{{subject}}”",
+      "factChallengePlain": "took on a challenge",
+      "factConvocation": "attended “{{subject}}”",
+      "factConvocationPlain": "attended training",
+      "factGps": "uploaded GPS data"
+    },
+    "profile": {
+      "rewards": "Rewards",
+      "points": "{{n}} pts",
+      "toNext": "{{n}} pts to reach {{div}}",
+      "maxDiv": "Top division reached 🏆"
+    },
+    "duel": {
+      "title": "Duels",
+      "challenge": "Challenge",
+      "pickTitle": "Pick a teammate to challenge (7 days)",
+      "noOpponents": "No teammate to challenge yet.",
+      "empty": "No duel in progress. Start one!",
+      "vs": "Duel · {{name}}",
+      "metricLabel": "Sessions · 7 d",
+      "youChallenge": "{{name}} challenges you over 7 days.",
+      "waiting": "Waiting for {{name}}…",
+      "accept": "Accept",
+      "decline": "Decline",
+      "cancel": "Cancel",
+      "you": "You",
+      "ends": "Ends {{date}}",
+      "win": "{{name}} wins",
+      "draw": "Draw",
+      "errActive": "A duel is already running with this player.",
+      "errCreate": "Couldn't create the duel."
     }
   },
   "staff": {
@@ -2924,7 +2974,12 @@
     "assidu": "Regular",
     "sansFaute": "Flawless",
     "enForme": "In shape",
-    "rigoureux": "Thorough"
+    "rigoureux": "Thorough",
+    "wellness7": "Wellness 7 days",
+    "monthComplete": "Full month",
+    "firstRecord": "First record",
+    "gpsImport": "GPS import",
+    "sets100": "100 sets / week"
   },
   "alerts": {
     "acwr-high": "ACWR {{acwr}} — overload zone",
