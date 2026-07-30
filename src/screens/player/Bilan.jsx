@@ -15,6 +15,7 @@ import { useProgramDocs, getProgramDoc } from "../../data/programDocs.js";
 import { useTeamProgramAssignments } from "../../data/programAssignments.js";
 import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
+import QuickCheckin from "./bilan/QuickCheckin.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
@@ -192,9 +193,13 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         </div>
       </div>
 
+      {/* Check-in du matin par glissement — débloque la saisie en un geste
+          (remplace la carte « Matin » ; le formulaire 6 marqueurs reste
+          accessible via « détailler » → même feuille MorningForm). */}
+      <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
+
       {/* Cartes d'action du jour */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <ActionCard emoji="☀️" title={t("player.bilan.morning")} sub={t("player.today.morningSub")} state={day.matin ? "done" : "todo"} accent={accent} onClick={() => setSheet("morning")} t={t} />
         <ActionCard emoji="🌙" title={t("player.bilan.evening")} sub={t("player.today.eveningSub")} state={day.soir ? "done" : "todo"} accent={accent} onClick={() => setSheet("evening")} t={t} />
 
         {/* Cartes dynamiques : une par séance/programme assigné aujourd'hui */}

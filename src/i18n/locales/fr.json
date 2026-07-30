@@ -970,6 +970,28 @@
       "activityOn": "✓ +10 pts",
       "activityDeclare": "déclarer"
     },
+    "checkin": {
+      "question": "Comment tu te sens ?",
+      "promise": "Un glissement et c'est plié. +{{pts}} pts, et ta série continue.",
+      "sliderAria": "Ressenti du jour, de 1 (vidé) à 5 (à bloc)",
+      "legendLow": "Vidé",
+      "legendHigh": "À bloc",
+      "scale": {
+        "1": "Vidé",
+        "2": "Bof",
+        "3": "Correct",
+        "4": "Bien",
+        "5": "À bloc"
+      },
+      "verdict": {
+        "low": "Journée à ménager",
+        "mid": "Ça va — gère ta charge",
+        "high": "Prêt à performer"
+      },
+      "doneSub": "Bilan du matin enregistré · +{{pts}} pts",
+      "streak": "série de {{count}} jours",
+      "detail": "Détailler mon bien-être"
+    },
     "session": {
       "testHint": "Tests physiques — le staff saisit tes résultats (fiche + comparaison Top 14).",
       "testTag": "Test",
