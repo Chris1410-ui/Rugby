@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — Aujourd'hui (joueur)</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════
+  ARTEFACT D'ATELIER — maquette autonome de l'écran « Aujourd'hui » (joueur).
+  Reproduction fidèle (couleurs / espacements / typo / états) de la version
+  prod : src/screens/player/Bilan.jsx + SessionPlayCard.jsx, tokens de
+  src/lib/tokens.js. Données d'exemple FIGÉES EN DUR. Aucune dépendance
+  (Supabase / React / i18n). N'est branché à rien. À retravailler librement
+  dans un outil de design. Ne pas réinjecter tel quel dans src/.
+  ════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  /* ── Design tokens (miroir de src/lib/tokens.js) ── */
+  :root {
+    --navy:   #16142E;
+    --panel:  #1E1B3A;
+    --coral:  #E8553B;
+    --blue:   #3E4CA8;
+    --viol:   #6C5CE0;
+    --teal:   #1C7293;
+    --green:  #2C8C5A;
+    --amb:    #C9851F;
+    --gray:   #8A88A0;
+    --card:   rgba(255,255,255,0.055);
+    --card2:  rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.1);
+    --border2:rgba(255,255,255,0.06);
+    --font: -apple-system, BlinkMacSystemFont, Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0F0D20;
+    color: #fff;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; }
+
+  /* Légende d'atelier (hors maquette, supprimable) */
+  .workshop-note {
+    max-width: 760px; margin: 22px auto 6px; padding: 0 18px;
+    font-size: 11px; color: rgba(255,255,255,0.4); text-align: center;
+    letter-spacing: 0.2px;
+  }
+  .workshop-note b { color: rgba(255,255,255,0.62); font-weight: 700; }
+
+  /* ── Frame applicatif (miroir de AppShell.jsx) ── */
+  .app {
+    background: var(--navy);
+    max-width: 760px;
+    margin: 12px auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  header.appbar {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(22,20,46,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border2);
+    padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .home-btn {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px;
+    background: rgba(232,85,59,0.12); border: 1px solid rgba(232,85,59,0.33);
+    color: var(--coral); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .appbar-title { font-size: 17px; font-weight: 800; }
+  .appbar-brand { font-size: 10px; font-weight: 700; color: var(--coral); letter-spacing: 0.4px; }
+  .appbar-brand span { color: rgba(255,255,255,0.55); font-weight: 600; letter-spacing: 0; }
+  .bell {
+    position: relative; background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    border-radius: 9px; padding: 9px; color: rgba(255,255,255,0.7); cursor: pointer; display: flex;
+  }
+  .bell-badge {
+    position: absolute; top: -5px; right: -5px; background: var(--coral); color: #fff;
+    font-size: 8.5px; font-weight: 800; border-radius: 8px; padding: 0 4px;
+    min-width: 14px; text-align: center; line-height: 14px;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 18px;
+    background: rgba(44,140,90,0.2); border: 1px solid rgba(44,140,90,0.4);
+    color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  main { flex: 1; padding: 18px; }
+
+  /* ── Cartes / primitives (sc(), C.card) ── */
+  .sc { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+
+  /* En-tête readiness */
+  .head-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    display: flex; align-items: center; gap: 14px; padding: 16px; margin-bottom: 14px;
+  }
+  .head-kicker { font-size: 9px; color: rgba(255,255,255,0.6); letter-spacing: 1px; font-weight: 700; }
+  .head-name { font-size: 17px; font-weight: 800; margin-top: 2px; }
+  .head-pos { font-size: 11px; color: rgba(255,255,255,0.6); }
+  .ring-label { font-size: 9px; color: rgba(255,255,255,0.5); margin-top: 2px; font-weight: 600; text-align: center; }
+
+  /* Bandeau semaine */
+  .week-title {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.6px; color: rgba(255,255,255,0.55);
+    padding: 0 6px 8px; text-transform: uppercase;
+  }
+  .week-row { display: flex; gap: 4px; }
+  .week-day {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 7px 2px; border-radius: 12px; cursor: pointer;
+    background: transparent; border: 1.5px solid transparent;
+  }
+  .week-day.today { background: rgba(44,140,90,0.12); border-color: var(--green); }
+  .week-dow { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+  .week-num { font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.85); }
+  .week-day.today .week-num { color: #fff; }
+  .week-slot { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+  .dot { width: 6px; height: 6px; border-radius: 4px; }
+
+  /* Objectif de la semaine */
+  .goal-head { display: flex; align-items: baseline; margin-bottom: 8px; }
+  .goal-title { font-size: 12.5px; font-weight: 800; flex: 1; }
+  .goal-count { font-size: 13px; font-weight: 800; color: var(--green); }
+  .goal-count span { color: rgba(255,255,255,0.5); font-weight: 700; }
+  .goal-track { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .goal-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--teal)); border-radius: 6px; }
+  .goal-sub { font-size: 10.5px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+
+  /* Cartes d'action */
+  .actions { display: flex; flex-direction: column; gap: 10px; }
+  .action {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer;
+    text-align: left; width: 100%; color: #fff;
+    transition: transform .12s ease, border-color .12s ease;
+  }
+  .action.muted { opacity: 0.82; background: rgba(255,255,255,0.02); }
+  .action:active { transform: scale(0.985); }
+  .action-emoji { font-size: 26px; width: 34px; text-align: center; flex-shrink: 0; }
+  .action-body { flex: 1; min-width: 0; }
+  .action-title { font-size: 14px; font-weight: 800; }
+  .action-sub { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+  .pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 7px; flex-shrink: 0; }
+  .pill-done { background: rgba(44,140,90,0.13); border: 1px solid rgba(44,140,90,0.4); color: var(--green); }
+  .pill-todo { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: rgba(255,255,255,0.6); }
+  .extra { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 7px;
+           background: rgba(232,85,59,0.09); border: 1px solid rgba(232,85,59,0.33); color: var(--coral); flex-shrink: 0; }
+  .badge-num { background: var(--green); color: #fff; font-size: 10.5px; font-weight: 800;
+               border-radius: 9px; padding: 1px 6px; min-width: 18px; text-align: center; }
+  .chev { color: rgba(255,255,255,0.35); flex-shrink: 0; display: flex; }
+
+  /* Suivi rapide */
+  .track-head { display: flex; align-items: center; gap: 8px; margin: 20px 0 10px; }
+  .track-title { font-size: 14px; font-weight: 800; flex: 1; }
+  .track-hint { font-size: 10px; color: rgba(255,255,255,0.4); }
+  .track-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .track-tile { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: left; cursor: pointer; color:#fff; }
+  .track-label { font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; color: rgba(255,255,255,0.55); text-transform: uppercase; }
+  .track-value { font-size: 20px; font-weight: 900; margin: 2px 0 4px; }
+  .track-value small { font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 700; }
+
+  /* ── Barre de navigation basse (MobileNav) ── */
+  nav.bottom {
+    position: sticky; bottom: 0; z-index: 20;
+    background: rgba(22,20,46,0.96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border2);
+    display: flex; padding: 6px 4px 8px;
+  }
+  .nav-btn {
+    flex: 1; min-width: 0; background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 4px; color: rgba(255,255,255,0.62); position: relative;
+  }
+  .nav-btn.on { color: var(--green); }
+  .nav-btn span { font-size: 9.5px; font-weight: 600; }
+  .nav-btn.on span { font-weight: 800; }
+  .nav-badge {
+    position: absolute; top: 2px; right: 50%; margin-right: -16px; background: var(--coral); color: #fff;
+    font-size: 8px; font-weight: 800; border-radius: 8px; padding: 0 4px; min-width: 13px; text-align: center;
+  }
+
+  /* FAB */
+  .fab {
+    position: absolute; right: 22px; bottom: 84px; z-index: 25;
+    background: var(--green); border: none; border-radius: 24px; padding: 12px 16px;
+    color: #fff; font-weight: 800; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 7px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+
+  /* ── Feuille « Séance du jour » (bottom-sheet / SessionPlayCard ouvert) ── */
+  .sheet-frame {
+    background: var(--navy);
+    max-width: 760px; margin: 12px auto 40px;
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid var(--border2);
+  }
+  .sheet-grip { display: flex; justify-content: center; padding: 10px 0 2px; }
+  .sheet-grip span { width: 40px; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.18); }
+  .sheet-head { display: flex; align-items: center; padding: 4px 18px 12px; }
+  .sheet-head .title { flex: 1; font-size: 16px; font-weight: 800; }
+  .sheet-head .swipe { font-size: 10px; color: rgba(255,255,255,0.4); }
+  .sheet-body { padding: 0 16px 22px; }
+
+  .sess-card {
+    background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--green);
+    border-radius: 14px; padding: 14px;
+  }
+  .sess-top { display: flex; align-items: center; gap: 10px; }
+  .sess-date { font-size: 12px; font-weight: 800; }
+  .tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
+  .sess-title { font-size: 12px; font-weight: 600; }
+  .sess-meta { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+  .sess-open { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .sets-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .sets-head .lbl { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 700; letter-spacing: 1px; }
+  .sets-head .cnt { font-size: 11px; font-weight: 700; }
+
+  .exo { margin-bottom: 14px; }
+  .exo-name-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .exo-name { font-size: 13px; font-weight: 700; }
+  .exo-icons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; color: rgba(255,255,255,0.6); }
+  .exo-presc { font-size: 9.5px; color: rgba(255,255,255,0.55); margin-bottom: 6px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .exo-presc .k { color: rgba(255,255,255,0.7); font-weight: 700; }
+  .exo-rec { color: var(--amb); }
+
+  .set-grid { display: grid; grid-template-columns: 26px 1fr 1fr 34px; gap: 6px; align-items: center; margin-bottom: 5px; }
+  .set-grid.skill { grid-template-columns: 26px 1fr 34px; }
+  .set-type { height: 32px; border-radius: 6px; border: none; background: rgba(255,255,255,0.06);
+              color: rgba(255,255,255,0.75); font-size: 11px; font-weight: 800; cursor: pointer; }
+  .set-inp { min-width: 0; background: rgba(255,255,255,0.07); border: 1px solid var(--border); border-radius: 7px;
+             padding: 7px 8px; color: #fff; font-size: 12px; outline: none; text-align: center; width: 100%; }
+  .set-inp::placeholder { color: rgba(255,255,255,0.35); }
+  .set-check { height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .set-check.done { border: none; background: var(--green); }
+  .set-check.todo { border: 1px solid var(--border); background: rgba(255,255,255,0.04); }
+  .set-done-inp { opacity: 0.6; }
+  .exo-actions { display: flex; gap: 8px; margin-top: 2px; }
+  .add-set { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px;
+             padding: 4px 10px; color: rgba(255,255,255,0.6); font-size: 10px; font-weight: 700; cursor: pointer; }
+  .del-set { background: none; border: none; color: rgba(255,255,255,0.56); font-size: 10px; cursor: pointer; }
+  .exo-note {
+    width: 100%; margin-top: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 7px; padding: 6px 9px; color: #fff; font-size: 11.5px; outline: none; resize: none; height: 34px;
+  }
+
+  .dur-head { font-size: 11px; color: rgba(255,255,255,0.6); margin: 12px 0 8px; display: flex; align-items: center; gap: 6px; }
+  .dur-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .dur-btn { flex-shrink: 0; width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--border);
+             background: rgba(255,255,255,0.06); color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .dur-field { position: relative; flex: 0 0 96px; }
+  .dur-field input { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid var(--border); border-radius: 8px;
+                     padding: 9px 30px 9px 12px; color: #fff; font-size: 15px; font-weight: 800; outline: none; text-align: center; }
+  .dur-field .unit { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10px; color: rgba(255,255,255,0.5); }
+  .dur-note { font-size: 9.5px; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
+
+  .rpe-lbl { font-size: 11px; color: rgba(255,255,255,0.6); margin: 12px 0 8px; }
+  .rpe-row { display: flex; gap: 4px; margin-bottom: 10px; }
+  .rpe-cell { flex: 1; height: 32px; border-radius: 6px; background: rgba(255,255,255,0.07);
+              display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; cursor: pointer;
+              border: 2px solid transparent; }
+  .rpe-cell.sel { border: 2px solid rgba(255,255,255,0.4); }
+  .fb {
+    width: 100%; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; color: #fff; font-size: 12px; outline: none; resize: none; height: 50px; margin-bottom: 10px;
+  }
+  .btn-finish { width: 100%; background: var(--green); border: none; border-radius: 8px; padding: 10px; color: #fff;
+                font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-missed { flex: 1; background: rgba(232,85,59,0.12); border: 1px solid rgba(232,85,59,0.27); border-radius: 8px;
+                padding: 10px; color: var(--coral); font-weight: 700; font-size: 12px; cursor: pointer; }
+  .btn-postpone { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 8px;
+                  padding: 10px; color: rgba(255,255,255,0.75); font-weight: 700; font-size: 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="workshop-note">
+  Maquette d'atelier — écran <b>« Aujourd'hui »</b> (espace joueur). Données fictives, hors production.
+</div>
+
+<!-- ══════════════════ ÉCRAN 1 — AUJOURD'HUI ══════════════════ -->
+<div class="app">
+  <!-- Header (AppShell) -->
+  <header class="appbar">
+    <button class="home-btn" title="Accueil" aria-label="Accueil">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </button>
+    <div style="flex:1; min-width:0;">
+      <div class="appbar-title">Aujourd'hui</div>
+      <div class="appbar-brand">PERFORMANCE · <span>Namur</span></div>
+    </div>
+    <button class="bell" title="Notifications">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="bell-badge">3</span>
+    </button>
+    <button class="avatar" title="Nathan Lefèvre">NL</button>
+  </header>
+
+  <main style="position: relative;">
+    <!-- En-tête : readiness + identité + date -->
+    <div class="head-card">
+      <div>
+        <svg width="78" height="78" viewBox="0 0 78 78">
+          <circle cx="39" cy="39" r="33" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6"/>
+          <circle cx="39" cy="39" r="33" fill="none" stroke="#2C8C5A" stroke-width="6"
+                  stroke-dasharray="207.35" stroke-dashoffset="53.91" stroke-linecap="round"
+                  transform="rotate(-90 39 39)"/>
+          <text x="39" y="40" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="20" font-weight="800" font-family="var(--font)">74</text>
+        </svg>
+        <div class="ring-label">readiness</div>
+      </div>
+      <div style="flex:1;">
+        <div class="head-kicker">AUJOURD'HUI · jeudi 30 juillet</div>
+        <div class="head-name">Nathan Lefèvre</div>
+        <div class="head-pos">Deuxième ligne · Avant</div>
+      </div>
+    </div>
+
+    <!-- Bandeau semaine -->
+    <div class="sc" style="padding: 12px 8px; margin-bottom: 14px;">
+      <div class="week-title">Ta semaine</div>
+      <div class="week-row">
+        <!-- Lun 27 : validé -->
+        <button class="week-day">
+          <span class="week-dow">lun</span><span class="week-num">27</span>
+          <span class="week-slot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2C8C5A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </button>
+        <!-- Mar 28 : validé -->
+        <button class="week-day">
+          <span class="week-dow">mar</span><span class="week-num">28</span>
+          <span class="week-slot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2C8C5A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </button>
+        <!-- Mer 29 : partiel -->
+        <button class="week-day">
+          <span class="week-dow">mer</span><span class="week-num">29</span>
+          <span class="week-slot"><span class="dot" style="background:#C9851F;"></span></span>
+        </button>
+        <!-- Jeu 30 : aujourd'hui, partiel -->
+        <button class="week-day today">
+          <span class="week-dow">jeu</span><span class="week-num">30</span>
+          <span class="week-slot"><span class="dot" style="background:#C9851F;"></span></span>
+        </button>
+        <!-- Ven 31 : rien -->
+        <button class="week-day">
+          <span class="week-dow">ven</span><span class="week-num">31</span>
+          <span class="week-slot"><span class="dot" style="background:rgba(255,255,255,0.12);"></span></span>
+        </button>
+        <!-- Sam 1 : rien -->
+        <button class="week-day">
+          <span class="week-dow">sam</span><span class="week-num">1</span>
+          <span class="week-slot"><span class="dot" style="background:rgba(255,255,255,0.12);"></span></span>
+        </button>
+        <!-- Dim 2 : rien -->
+        <button class="week-day">
+          <span class="week-dow">dim</span><span class="week-num">2</span>
+          <span class="week-slot"><span class="dot" style="background:rgba(255,255,255,0.12);"></span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Objectif de la semaine -->
+    <div class="sc" style="margin-bottom: 14px;">
+      <div class="goal-head">
+        <span class="goal-title">Objectif de la semaine</span>
+        <span class="goal-count">2<span>/3</span></span>
+      </div>
+      <div class="goal-track"><div class="goal-fill" style="width: 66.66%;"></div></div>
+      <div class="goal-sub">Jours avec au moins une séance validée</div>
+    </div>
+
+    <!-- Cartes d'action du jour -->
+    <div class="actions">
+      <!-- Matin (fait) -->
+      <button class="action">
+        <span class="action-emoji">☀️</span>
+        <div class="action-body">
+          <div class="action-title">☀️ Matin</div>
+          <div class="action-sub">Bien-être · sommeil · récup</div>
+        </div>
+        <span class="pill pill-done">Fait ✓</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Soir (à remplir) -->
+      <button class="action">
+        <span class="action-emoji">🌙</span>
+        <div class="action-body">
+          <div class="action-title">🌙 Soir</div>
+          <div class="action-sub">Ressenti de la journée</div>
+        </div>
+        <span class="pill pill-todo">À remplir</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Séance assignée du jour (à valider) -->
+      <button class="action">
+        <span class="action-emoji">🏋️</span>
+        <div class="action-body">
+          <div class="action-title">Renforcement haut du corps</div>
+          <div class="action-sub">Force · Renforcement en Salle · 5 exos</div>
+        </div>
+        <span class="pill pill-todo">À remplir</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Protocole assigné (consultation) -->
+      <button class="action">
+        <span class="action-emoji">📄</span>
+        <div class="action-body">
+          <div class="action-title">Bloc prépa physique — Semaine 3</div>
+          <div class="action-sub">Protocole d'entraînement · consulter</div>
+        </div>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Séance libre (secondaire) -->
+      <button class="action muted">
+        <span class="action-emoji">➕</span>
+        <div class="action-body">
+          <div class="action-title">Séance libre</div>
+          <div class="action-sub">ou crée ta séance à la volée</div>
+        </div>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Activités du jour (à remplir) -->
+      <button class="action">
+        <span class="action-emoji">⚡</span>
+        <div class="action-body">
+          <div class="action-title">Activités du jour</div>
+          <div class="action-sub">Salle · course · natation…</div>
+        </div>
+        <span class="pill pill-todo">À remplir</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- GPS -->
+      <button class="action">
+        <span class="action-emoji">📡</span>
+        <div class="action-body">
+          <div class="action-title">Ajouter mes données GPS</div>
+          <div class="action-sub">Match ou entraînement — capture ou saisie</div>
+        </div>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Heatmaps -->
+      <button class="action">
+        <span class="action-emoji">🗺️</span>
+        <div class="action-body">
+          <div class="action-title">Heatmaps</div>
+          <div class="action-sub">Cartes de chaleur de tes dépôts GPS</div>
+        </div>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Défis du jour (badge) -->
+      <button class="action">
+        <span class="action-emoji">🔥</span>
+        <div class="action-body">
+          <div class="action-title">Défis du jour</div>
+          <div class="action-sub">Relève les défis en attente</div>
+        </div>
+        <span class="badge-num">2</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Tâches du jour (badge) -->
+      <button class="action">
+        <span class="action-emoji">📋</span>
+        <div class="action-body">
+          <div class="action-title">Tâches du jour</div>
+          <div class="action-sub">Ce que le staff attend</div>
+        </div>
+        <span class="badge-num">1</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+
+      <!-- Convocations (badge) -->
+      <button class="action">
+        <span class="action-emoji">📣</span>
+        <div class="action-body">
+          <div class="action-title">Convocations</div>
+          <div class="action-sub">Réponds aux entraînements</div>
+        </div>
+        <span class="badge-num">1</span>
+        <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+    </div>
+
+    <!-- Suivi rapide (sparklines) -->
+    <div class="track-head">
+      <div class="track-title">Ton suivi</div>
+      <span class="track-hint">Appuie pour l'historique</span>
+    </div>
+    <div class="track-grid">
+      <!-- Readiness -->
+      <button class="track-tile">
+        <div class="track-label">readiness</div>
+        <div class="track-value" style="color:#2C8C5A;">74</div>
+        <div style="height:30px;">
+          <svg viewBox="0 0 300 30" width="100%" height="30" preserveAspectRatio="none">
+            <path d="M8 20 L30 17 L52 22 L75 14 L97 16 L119 11 L142 13 L164 9 L186 12 L208 8 L231 10 L253 7 L275 9 L292 8"
+                  fill="none" stroke="#2C8C5A" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+      <!-- Bien-être -->
+      <button class="track-tile">
+        <div class="track-label">Bien-être</div>
+        <div class="track-value" style="color:#3E4CA8;">38<small>/50</small></div>
+        <div style="height:30px;">
+          <svg viewBox="0 0 300 30" width="100%" height="30" preserveAspectRatio="none">
+            <path d="M8 18 L30 20 L52 15 L75 17 L97 12 L119 16 L142 10 L164 13 L186 11 L208 14 L231 9 L253 12 L275 10 L292 11"
+                  fill="none" stroke="#3E4CA8" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+      <!-- Charge -->
+      <button class="track-tile">
+        <div class="track-label">Charge</div>
+        <div class="track-value" style="color:#1C7293;">420</div>
+        <div style="height:30px;">
+          <svg viewBox="0 0 300 30" width="100%" height="30" preserveAspectRatio="none">
+            <path d="M8 22 L30 19 L52 21 L75 14 L97 17 L119 12 L142 15 L164 10 L186 13 L208 16 L231 8 L253 11 L275 14 L292 9"
+                  fill="none" stroke="#1C7293" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+    <div style="height:10px;"></div>
+
+    <!-- FAB « Déclarer une activité » (mobile) -->
+    <button class="fab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Activité
+    </button>
+  </main>
+
+  <!-- Barre de navigation basse (MobileNav) -->
+  <nav class="bottom">
+    <button class="nav-btn on">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2C8C5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>Aujourd'hui</span>
+    </button>
+    <button class="nav-btn">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11"/><path d="M21 21l-1-1"/><path d="M3 3l1 1"/><path d="M18 22l4-4"/><path d="M2 6l4-4"/><path d="M3 10l7-7"/><path d="M14 21l7-7"/></svg>
+      <span>Mes séances</span>
+    </button>
+    <button class="nav-btn">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      <span>Classement</span>
+    </button>
+    <button class="nav-btn">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Messages</span>
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-btn">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Plus</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════ ÉCRAN 2 — SÉANCE DU JOUR (feuille ouverte, exercices) ══════════════════ -->
+<div class="workshop-note">
+  État secondaire — <b>feuille « Séance du jour »</b> ouverte depuis la carte 🏋️ (saisie set-par-set).
+</div>
+<div class="sheet-frame">
+  <div class="sheet-grip"><span></span></div>
+  <div class="sheet-head">
+    <div class="title">Renforcement haut du corps</div>
+    <div class="swipe">Glisse pour fermer</div>
+  </div>
+  <div class="sheet-body">
+    <div class="sess-card">
+      <!-- Bandeau séance -->
+      <div class="sess-top">
+        <span class="dot" style="width:8px;height:8px;border-radius:5px;background:#C9851F;"></span>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+            <span class="sess-date">30/07</span>
+            <span class="tag" style="background:rgba(232,85,59,0.15); color:#E8553B;">RS</span>
+            <span class="tag" style="background:rgba(62,76,168,0.18); color:#8791d8;">Force</span>
+            <span class="sess-title">Renforcement haut du corps</span>
+          </div>
+          <div class="sess-meta">5 exercices · 18 séries</div>
+        </div>
+        <span class="tag" style="background:rgba(201,133,31,0.15); color:#C9851F;">À valider</span>
+      </div>
+
+      <!-- Séance dépliée -->
+      <div class="sess-open">
+        <div class="sets-head">
+          <span class="lbl">SÉRIES — COCHE POUR VALIDER</span>
+          <span class="cnt" style="color:rgba(255,255,255,0.5);">7/18</span>
+        </div>
+
+        <!-- Exo 1 : Développé couché -->
+        <div class="exo">
+          <div class="exo-name-row">
+            <span class="exo-name">Développé couché</span>
+            <div class="exo-icons">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+          </div>
+          <div class="exo-presc">
+            <span class="k">Prescrit 4×8 @ 60kg · repos 90s</span>
+            <span>Préc. : 60×8  60×8  62×7  62×6</span>
+            <span class="exo-rec">Record 65 kg · e1RM 78</span>
+          </div>
+          <!-- séries -->
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp set-done-inp" value="60" disabled/>
+            <input class="set-inp set-done-inp" value="8" disabled/>
+            <div class="set-check done"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp set-done-inp" value="60" disabled/>
+            <input class="set-inp set-done-inp" value="8" disabled/>
+            <div class="set-check done"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" value="62" />
+            <input class="set-inp" value="8" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="62" />
+            <input class="set-inp" placeholder="8" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="exo-actions">
+            <button class="add-set">+ série</button>
+            <button class="del-set">− retirer</button>
+          </div>
+          <textarea class="exo-note" placeholder="Note (ressenti, charge…)"></textarea>
+        </div>
+
+        <!-- Exo 2 : Rowing barre -->
+        <div class="exo">
+          <div class="exo-name-row">
+            <span class="exo-name">Rowing barre</span>
+            <div class="exo-icons">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+          </div>
+          <div class="exo-presc">
+            <span class="k">Prescrit 4×10 @ 50kg · repos 90s</span>
+            <span>Préc. : 50×10  50×10  50×9  50×9</span>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp set-done-inp" value="50" disabled/>
+            <input class="set-inp set-done-inp" value="10" disabled/>
+            <div class="set-check done"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp set-done-inp" value="50" disabled/>
+            <input class="set-inp set-done-inp" value="10" disabled/>
+            <div class="set-check done"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="50" />
+            <input class="set-inp" placeholder="10" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="50" />
+            <input class="set-inp" placeholder="10" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="exo-actions">
+            <button class="add-set">+ série</button>
+            <button class="del-set">− retirer</button>
+          </div>
+          <textarea class="exo-note" placeholder="Note (ressenti, charge…)"></textarea>
+        </div>
+
+        <!-- Exo 3 : Tractions (skill / poids de corps, pas de kg) -->
+        <div class="exo">
+          <div class="exo-name-row">
+            <span class="exo-name">Tractions pronation</span>
+            <div class="exo-icons">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+          </div>
+          <div class="exo-presc">
+            <span class="k">Prescrit 4×max · repos 120s</span>
+            <span>Préc. : 10  9  8  7</span>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp set-done-inp" value="10" disabled/>
+            <div class="set-check done"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="9" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="8" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="7" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="exo-actions">
+            <button class="add-set">+ série</button>
+            <button class="del-set">− retirer</button>
+          </div>
+          <textarea class="exo-note" placeholder="Note (ressenti, charge…)"></textarea>
+        </div>
+
+        <!-- Exo 4 : Développé militaire -->
+        <div class="exo">
+          <div class="exo-name-row">
+            <span class="exo-name">Développé militaire</span>
+            <div class="exo-icons">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+          </div>
+          <div class="exo-presc">
+            <span class="k">Prescrit 3×10 @ 30kg · repos 75s</span>
+            <span>Préc. : 30×10  30×9  30×8</span>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="30" />
+            <input class="set-inp" placeholder="10" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="30" />
+            <input class="set-inp" placeholder="10" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="30" />
+            <input class="set-inp" placeholder="10" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="exo-actions">
+            <button class="add-set">+ série</button>
+            <button class="del-set">− retirer</button>
+          </div>
+          <textarea class="exo-note" placeholder="Note (ressenti, charge…)"></textarea>
+        </div>
+
+        <!-- Exo 5 : Gainage (skill / tenue) -->
+        <div class="exo">
+          <div class="exo-name-row">
+            <span class="exo-name">Gainage planche</span>
+            <div class="exo-icons">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+          </div>
+          <div class="exo-presc">
+            <span class="k">Prescrit 3×45s · repos 45s</span>
+            <span>Préc. : 45s  45s  40s</span>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="tenue (s)" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="tenue (s)" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="set-grid skill">
+            <button class="set-type">N</button>
+            <input class="set-inp" placeholder="tenue (s)" />
+            <div class="set-check todo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          </div>
+          <div class="exo-actions">
+            <button class="add-set">+ série</button>
+            <button class="del-set">− retirer</button>
+          </div>
+          <textarea class="exo-note" placeholder="Note (ressenti, charge…)"></textarea>
+        </div>
+
+        <!-- Durée -->
+        <div class="dur-head">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Durée de la séance
+        </div>
+        <div class="dur-row">
+          <button class="dur-btn">−5</button>
+          <div class="dur-field">
+            <input value="60" />
+            <span class="unit">min</span>
+          </div>
+          <button class="dur-btn">+5</button>
+        </div>
+        <div class="dur-note">Prévu : 60 min</div>
+
+        <!-- RPE -->
+        <div class="rpe-lbl">RPE global de la séance (1–10)</div>
+        <div class="rpe-row">
+          <div class="rpe-cell">1</div>
+          <div class="rpe-cell">2</div>
+          <div class="rpe-cell">3</div>
+          <div class="rpe-cell">4</div>
+          <div class="rpe-cell">5</div>
+          <div class="rpe-cell">6</div>
+          <div class="rpe-cell sel" style="background:#C9851F;">7</div>
+          <div class="rpe-cell">8</div>
+          <div class="rpe-cell">9</div>
+          <div class="rpe-cell">10</div>
+        </div>
+        <textarea class="fb" placeholder="Commentaire (douleur, ressenti…)"></textarea>
+
+        <!-- Validation -->
+        <button class="btn-finish">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Terminer la séance
+        </button>
+        <div class="btn-row">
+          <button class="btn-missed">Séance manquée</button>
+          <button class="btn-postpone">Reporter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
