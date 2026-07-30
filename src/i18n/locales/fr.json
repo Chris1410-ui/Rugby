@@ -1116,7 +1116,8 @@
       "rm1rm": "1RM",
       "rm5rm": "5RM",
       "rm5rmHint": "Le 5RM est converti en 1RM estimé (Epley).",
-      "edit1rmTitle": "Corriger le 1RM {{movement}}"
+      "edit1rmTitle": "Corriger le 1RM {{movement}}",
+      "setsCount": "{{done}}/{{total}} séries"
     },
     "freeSession": {
       "newButton": "Créer une séance libre",
@@ -1251,6 +1252,12 @@
         "intensity": "Intensité",
         "other": "Autre"
       }
+    },
+    "live": {
+      "exoOf": "Exercice {{i}} / {{n}}",
+      "nextExo": "Exercice suivant",
+      "finish": "Terminer la séance",
+      "reps": "reps"
     }
   },
   "staff": {

@@ -1116,7 +1116,8 @@
       "rm1rm": "1RM",
       "rm5rm": "5RM",
       "rm5rmHint": "The 5RM is converted to an estimated 1RM (Epley).",
-      "edit1rmTitle": "Correct the {{movement}} 1RM"
+      "edit1rmTitle": "Correct the {{movement}} 1RM",
+      "setsCount": "{{done}}/{{total}} sets"
     },
     "freeSession": {
       "newButton": "Create a free session",
@@ -1251,6 +1252,12 @@
         "intensity": "Intensity",
         "other": "Other"
       }
+    },
+    "live": {
+      "exoOf": "Exercise {{i}} / {{n}}",
+      "nextExo": "Next exercise",
+      "finish": "Finish the session",
+      "reps": "reps"
     }
   },
   "staff": {

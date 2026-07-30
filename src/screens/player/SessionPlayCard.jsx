@@ -1,30 +1,27 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, CODES, sessionCodeLabel } from "../../lib/tokens.js";
-import { fmtShort, todayISO } from "../../lib/metrics.js";
+import { fmtShort } from "../../lib/metrics.js";
 import { Dot, Tag, NatureTag, RestTimer, LineChart, CloseX, useModalClose } from "../../lib/ui.jsx";
 import { CheckCircle, Trophy, TrendingUp, Video, ExternalLink, FileText, BookOpen, Users, Clock, Pencil } from "../../lib/icons.jsx";
 import { youtubeEmbed, safeVideoUrl } from "../../lib/youtube.js";
 import {
-  e1RM, SET_TYPES, nextSetType, initSetLikeSets, fillEmptySetsFromOneRM,
+  e1RM, SET_TYPES, nextSetType,
   lastExercisePerf, exerciseRecords, exerciseHistory, prescribedVsRealized,
 } from "../../lib/hevy.js";
-import { saveLog } from "../../data/logs.js";
 import { getProgramDoc } from "../../data/programDocs.js";
-import { usePlayer1RM, add1RM } from "../../data/player1rm.js";
+import { add1RM } from "../../data/player1rm.js";
 import { useExercisePerf } from "../../data/exercisePerf.js";
-import { summarize1RM, computeLoadKg, movementIdentity, resolveSetPlan } from "../../lib/oneRM.js";
+import { resolveSetPlan } from "../../lib/oneRM.js";
 import { exerciseInputModel, inputModelUsesLoad } from "../../lib/sessionType.js";
-import { effectiveNature } from "../../lib/nature.js";
-import { parsePrescribedMetrics } from "../../lib/effort.js";
 import { computeTargetPace, paceSecPerKmFromDistanceTime, speedKmhFromDistanceTime, formatPace, formatSpeed } from "../../lib/pace.js";
 import { TEST_METRICS } from "../../data/tests.js";
+import { useSessionLogging } from "./useSessionLogging.js";
 
 // Libellé + unité d'un test de la batterie (pour les blocs cardio_test).
 const testMeta = (key) => TEST_METRICS.find((m) => m.key === key) || null;
 import ProgramView from "../shared/ProgramView.jsx";
 import ExerciseInfoModal from "../shared/ExerciseInfoModal.jsx";
-import { usePreview } from "../../lib/preview.js";
 
 const playInp = { flex: 1, minWidth: 0, background: "rgba(255,255,255,0.07)", border: `1px solid ${C.border}`, borderRadius: 7, padding: "7px 8px", color: "#fff", fontSize: 12, outline: "none", textAlign: "center" };
 const durBtn = { flexShrink: 0, width: 38, height: 38, borderRadius: 9, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer" };
@@ -32,48 +29,27 @@ const durBtn = { flexShrink: 0, width: 38, height: 38, borderRadius: 9, border: 
 /* Logging set-par-set façon Hevy — porté du prototype (persistance Supabase). */
 export default function SessionPlayCard({ s, me, log, sessions, logs, accent, onSaved, onDelete, onNavigate }) {
   const { t } = useTranslation();
-  const preview = usePreview(); // aperçu owner/staff → lecture seule
-  const past = s.date <= todayISO();
   const [open, setOpen] = useState(false);
-  const [rest, setRest] = useState(null);
-  const [justPR, setJustPR] = useState(null);
   const [graphEx, setGraphEx] = useState(null);
-  const [busy, setBusy] = useState(false);
   const [proto, setProto] = useState(null);        // protocole source ouvert en lecture
   const [protoBusy, setProtoBusy] = useState(false);
   const [infoEx, setInfoEx] = useState(null);      // fiche exercice (nom) ouverte
   const [set1rm, setSet1rm] = useState(null);      // { label } : saisie rapide 1RM manquant
 
-  // 1RM du joueur → charge réelle des exercices exprimés en % (PR2).
-  const { entries: my1rm } = usePlayer1RM(me.id);
-  const rmByIdentity = useMemo(() => {
-    const m = {};
-    summarize1RM(my1rm).forEach((r) => { if (!r.missing) m[r.identity] = r; });
-    return m;
-  }, [my1rm]);
-  const pctLoad = (e) => {
-    if (!e?.pct) return null;
-    const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
-    return { pct: e.pct, kg: cur ? computeLoadKg(e.pct, cur.value) : null, oneRM: cur?.value ?? null, label: e.rmLabel || e.name, kind: cur?.kind, missing: !cur };
-  };
-
-  // 1RM renseigné/corrigé DEPUIS la séance (source unique = fiche joueur, via
-  // add1RM). Pré-remplit la charge des séries VIDES de CET exercice uniquement —
-  // jamais d'écrasement d'une valeur déjà saisie (souveraineté). Uniforme → série
-  // 1 ; séries détaillées → chaque série vide reçoit sa charge résolue.
-  const applyOneRM = (e, oneRMkg) => {
-    const st = ex[e.id];
-    if (!st?.sets?.length) return;
-    const sets = fillEmptySetsFromOneRM(st.sets, e, oneRMkg);
-    if (sets === st.sets) return; // aucune série vide remplie → rien à faire
-    setDirty(true);
-    setEx((v) => ({ ...v, [e.id]: { ...v[e.id], sets } }));
-  };
-  // 1RM courant (kg) du mouvement d'un exercice, pour résoudre son setPlan par série.
-  const exOneRM = (e) => {
-    const cur = rmByIdentity[movementIdentity({ exerciseId: e.rmExerciseId, name: e.rmLabel || e.name })];
-    return cur ? cur.value : null;
-  };
+  // État + règles de saisie EXTRAITS dans un hook partagé avec la vue plein écran
+  // (SessionLive) → comportement identique (1RM/reps, isolation (exo, série),
+  // souveraineté). `active: open` pilote le chrono quand la carte est dépliée.
+  const L = useSessionLogging({ s, me, log, sessions, logs, onSaved, active: open });
+  const {
+    preview, past, effNature, exos,
+    ex, rpe, fb, dur, plannedDur, st,
+    rest, setRest, justPR, busy,
+    startedAt, elapsed,
+    pctLoad, exOneRM, applyOneRM,
+    setSet, addSet, delSet, setExNote, setMono, toggleSet,
+    setRpe, setFb, setDur, setDirty,
+    doneSets, totSets, valider,
+  } = L;
 
   // Ouvre le PROTOCOLE source complet (consignes, sécurité, progression) en lecture.
   const openProtocol = async () => {
@@ -84,213 +60,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setProtoBusy(false);
   };
 
-  // Nature EFFECTIVE de la séance (valeur stockée, sinon dérivée du code) : pilote
-  // le MODÈLE DE SAISIE des exercices « plats » (sans kind) — cf. exerciseInputModel.
-  const effNature = effectiveNature(s.nature, s.code);
-
-  // Chaque exercice DOIT porter un id UNIQUE et STABLE : l'état de saisie est indexé
-  // par id (ex[e.id]) et sert de clé React. Les séances matérialisées (semaine-type
-  // / plan) stockent des exercices SANS id (id: null) → sans ce repli, tous les
-  // exercices partageraient le même état ex[null] (fuite d'un exercice à l'autre,
-  // clés React en collision) et la saisie serait écrasée entre voisins. On attribue
-  // donc un id de repli DÉTERMINISTE par position (« x0, x1… »), stable entre rendus
-  // et rechargements — les logs (perExercise) sont indexés par ce même id.
-  const exos = useMemo(
-    () => (Array.isArray(s.exercises) ? s.exercises : []).map((e, i) => (e && e.id ? e : { ...e, id: `x${i}` })),
-    [s.exercises],
-  );
-
-  const init = () => {
-    const b = {};
-    exos.forEach((e) => {
-      const k = exerciseInputModel(e, effNature);
-      const saved = log?.perExercise?.[e.id];
-      // Consigne prescrite → métriques prélues (souverain : préremplit un champ
-      // VIDE, jamais une valeur déjà saisie ; le `saved` du joueur prime toujours).
-      const pm = k === "conditioning" || k === "vitesse" || k === "mobility" ? parsePrescribedMetrics(e.presc) : null;
-      // Effort CONDITIONING (mono) : temps / distance / watts / kcal / FC.
-      if (k === "conditioning") {
-        const m = saved && saved.kind === "effort_conditioning" ? saved : null;
-        b[e.id] = { mono: { distanceM: m?.distanceM ?? pm.distanceM ?? "", durationSec: m?.durationSec ?? pm.durationSec ?? "", watts: m?.watts ?? pm.watts ?? "", kcal: m?.kcal ?? pm.kcal ?? "", hrAvg: m?.hrAvg ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
-        return;
-      }
-      // Effort VITESSE (mono) : distance / temps / répétitions / récup.
-      if (k === "vitesse") {
-        const m = saved && saved.kind === "effort_vitesse" ? saved : null;
-        b[e.id] = { mono: { distanceM: m?.distanceM ?? pm.distanceM ?? "", durationSec: m?.durationSec ?? pm.durationSec ?? "", reps: m?.reps ?? pm.reps ?? "", recoverySec: m?.recoverySec ?? pm.recoverySec ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
-        return;
-      }
-      // Effort MOBILITÉ (mono) : durée totale / tenue / nombre de tenues.
-      if (k === "mobility") {
-        const m = saved && saved.kind === "effort_mobility" ? saved : null;
-        b[e.id] = { mono: { durationSec: m?.durationSec ?? pm.durationSec ?? "", holdSec: m?.holdSec ?? pm.holdSec ?? "", holds: m?.holds ?? pm.reps ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
-        return;
-      }
-      // Bloc mono (cardio continu) : distance/temps/FC + « fait ».
-      if (k === "cardio_continuous") {
-        const m = saved && saved.kind === "cardio_continuous" ? saved : null;
-        b[e.id] = { mono: { distanceM: m?.distanceM ?? "", durationSec: m?.durationSec ?? "", hrAvg: m?.hrAvg ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
-        return;
-      }
-      // Circuit / AMRAP : compteur de tours (mono).
-      if (k === "cardio_circuit") {
-        const m = saved && saved.kind === "cardio_circuit" ? saved : null;
-        b[e.id] = { mono: { roundsDone: m?.roundsDone ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
-        return;
-      }
-      // Test : saisie du résultat (mono) — l'unité vient de la batterie.
-      if (k === "cardio_test") {
-        const m = saved && saved.kind === "cardio_test" ? saved : null;
-        b[e.id] = { mono: { value: m?.value ?? "", done: !!m?.done }, note: (m ? saved.note : "") || "" };
-        return;
-      }
-      // Cardio intervalles : une entrée cochable par répétition (réalisé par rép).
-      if (k === "cardio_interval") {
-        const n = Array.isArray(e.repPlan) && e.repPlan.length ? e.repPlan.length : (Number(e.reps) > 0 ? Number(e.reps) : 4);
-        const sv = saved && Array.isArray(saved.reps) ? saved.reps : null;
-        b[e.id] = { sets: Array.from({ length: n }, (_, i) => ({ done: !!sv?.[i]?.done, actual: sv?.[i]?.actual ?? "" })), note: saved?.note || "" };
-        return;
-      }
-      // Set-like : muscu / poids de corps / skill (+ séries détaillées). Le
-      // pré-remplissage (série 1 uniquement en uniforme, chaque série une fois en
-      // détaillé) est centralisé dans un helper PUR ; la saisie du joueur (saved)
-      // est restituée telle quelle et n'est jamais recalculée. Le perf précédent
-      // n'est qu'un INDICE au rendu (placeholder), pas une valeur pré-remplie.
-      b[e.id] = initSetLikeSets(e, { saved, oneRM: exOneRM(e) });
-    });
-    return b;
+  // Validation depuis la CARTE : ferme la carte + coupe le repos sur succès
+  // (la carte gère son propre pliage ; le hook ne connaît pas `open`).
+  const submit = async (status) => {
+    const ok = await valider(status);
+    if (ok) { setOpen(false); setRest(null); }
   };
-  const [ex, setEx] = useState(init);
-  const [rpe, setRpe] = useState(log?.rpe || null);
-  const [fb, setFb] = useState(log?.feedback || "");
-  // Durée RÉELLE de la séance (min) : pré-remplie avec la durée prévue par le
-  // coach (s.dur) ou la valeur déjà saisie ; alimente le sRPE (charge).
-  const plannedDur = s.dur || 60;
-  const [dur, setDur] = useState(log?.duration || plannedDur);
-  // Chrono optionnel : démarré à l'ouverture de la séance, propose la durée écoulée.
-  const [startedAt, setStartedAt] = useState(null);
-  const [elapsed, setElapsed] = useState(0); // minutes écoulées depuis l'ouverture
-  const st = log?.status || "pending";
-
-  // Persistance (#4) : le log peut arriver APRÈS le montage (fetch async), ou
-  // être mis à jour par le Realtime. `useState(init)` ne se rejoue jamais → sans
-  // ceci, une séance déjà terminée s'afficherait vide tant que le log n'était
-  // pas chargé au 1er rendu. On resynchronise depuis la version PERSISTÉE quand
-  // sa signature change, MAIS seulement si l'utilisateur n'a pas de saisie non
-  // enregistrée en cours (`dirty`) — les données non enregistrées peuvent
-  // disparaître, les données enregistrées sont toujours reflétées.
-  const [dirty, setDirty] = useState(false);
-  const savedSig = log ? `${log.status}|${log.rpe ?? ""}|${JSON.stringify(log.perExercise || {})}` : "";
-  const lastSig = useRef(savedSig);
-  useEffect(() => {
-    if (savedSig === lastSig.current) return;
-    lastSig.current = savedSig;
-    if (dirty) return; // ne jamais écraser une saisie en cours non enregistrée
-    setEx(init());
-    setRpe(log?.rpe || null);
-    setFb(log?.feedback || "");
-    setDur(log?.duration || plannedDur);
-  }, [savedSig]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Chrono optionnel : au premier dépliage d'une séance non terminée, on note
-  // l'heure d'ouverture puis on rafraîchit la durée écoulée chaque minute. Le
-  // joueur peut « utiliser » cette valeur (corrigeable) à la validation.
-  useEffect(() => {
-    if (!open || st === "done" || preview) return;
-    if (startedAt == null) setStartedAt(Date.now());
-  }, [open, st, preview, startedAt]);
-  useEffect(() => {
-    if (startedAt == null) return;
-    const tick = () => setElapsed(Math.max(1, Math.round((Date.now() - startedAt) / 60000)));
-    tick();
-    const id = setInterval(tick, 30000);
-    return () => clearInterval(id);
-  }, [startedAt]);
-
-  const setSet = (eid, i, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.map((x, j) => (j === i ? { ...x, ...patch } : x)) } })); };
-  const addSet = (eid) => { setDirty(true); setEx((v) => { const arr = v[eid].sets; const last = arr[arr.length - 1] || { w: "", reps: "" }; return { ...v, [eid]: { ...v[eid], sets: [...arr, { w: last.w, reps: last.reps, type: "normal", done: false }] } }; }); };
-  const delSet = (eid, i) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], sets: v[eid].sets.filter((_, j) => j !== i) } })); };
-  const setExNote = (eid, note) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], note } })); };
-  // Bloc mono (cardio continu) : maj d'un champ de l'état { mono: {...} }.
-  const setMono = (eid, patch) => { setDirty(true); setEx((v) => ({ ...v, [eid]: { ...v[eid], mono: { ...v[eid].mono, ...patch } } })); };
-  const numOrU = (v) => (Number(v) > 0 ? Number(v) : undefined);
-  // Unités faites / total d'un bloc, tous kinds (séries, répétitions, ou 1 pour un mono).
-  const blockUnits = (e) => {
-    const stt = ex[e.id];
-    if (!stt) return { done: 0, total: 0 };
-    if (stt.sets) return { done: stt.sets.filter((x) => x.done).length, total: stt.sets.length };
-    if (stt.mono) return { done: stt.mono.done ? 1 : 0, total: 1 };
-    return { done: 0, total: 0 };
-  };
-
-  const toggleSet = (e, i) => {
-    const cur = ex[e.id].sets[i];
-    const willDo = !cur.done;
-    setSet(e.id, i, { done: willDo });
-    if (willDo) {
-      setRest({ sec: e.rest || 90, k: Date.now() });
-      const rec = exerciseRecords(logs, sessions, me.id, e.name, s.date);
-      const w = +cur.w, reps = +cur.reps;
-      if (w > 0 && reps > 0) {
-        const orm = e1RM(w, reps);
-        if (rec.n > 0 && (w > rec.top || orm > rec.oneRM)) {
-          setJustPR({ ex: e.name, w, orm });
-          setTimeout(() => setJustPR(null), 3500);
-        }
-      }
-    }
-  };
-
-  const summarize = (peSets) => {
-    const ws = peSets.filter((x) => x.type !== "warmup" && x.done);
-    const top = ws.reduce((m, x) => Math.max(m, +x.w || 0), 0);
-    return { charge: top || "", reps: ws.length ? `${ws.length}×` : "", rpe: "" };
-  };
-
-  const valider = async (status) => {
-    if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
-    setBusy(true);
-    const pe = {};
-    exos.forEach((e) => {
-      const k = exerciseInputModel(e, effNature); const stt = ex[e.id];
-      if (k === "conditioning") {
-        const m = stt.mono || {};
-        pe[e.id] = { kind: "effort_conditioning", distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), watts: numOrU(m.watts), kcal: numOrU(m.kcal), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
-      } else if (k === "vitesse") {
-        const m = stt.mono || {};
-        pe[e.id] = { kind: "effort_vitesse", distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), reps: numOrU(m.reps), recoverySec: numOrU(m.recoverySec), done: !!m.done, note: (stt.note || "").trim() };
-      } else if (k === "mobility") {
-        const m = stt.mono || {};
-        pe[e.id] = { kind: "effort_mobility", durationSec: numOrU(m.durationSec), holdSec: numOrU(m.holdSec), holds: numOrU(m.holds), done: !!m.done, note: (stt.note || "").trim() };
-      } else if (k === "cardio_continuous") {
-        const m = stt.mono || {};
-        pe[e.id] = { kind: k, distanceM: numOrU(m.distanceM), durationSec: numOrU(m.durationSec), hrAvg: numOrU(m.hrAvg), done: !!m.done, note: (stt.note || "").trim() };
-      } else if (k === "cardio_interval") {
-        pe[e.id] = { kind: k, reps: (stt.sets || []).map((x) => ({ done: !!x.done, actual: x.actual ?? "" })), note: (stt.note || "").trim() };
-      } else if (k === "cardio_circuit") {
-        const m = stt.mono || {};
-        pe[e.id] = { kind: k, roundsDone: numOrU(m.roundsDone), done: !!m.done, note: (stt.note || "").trim() };
-      } else if (k === "cardio_test") {
-        const m = stt.mono || {};
-        pe[e.id] = { kind: k, value: String(m.value ?? "").trim(), unit: (testMeta(e.testKey)?.unit || "").trim(), done: !!m.done, note: (stt.note || "").trim() };
-      } else {
-        const sets = stt.sets; pe[e.id] = { sets, note: (stt.note || "").trim(), ...summarize(sets) };
-      }
-    });
-    try {
-      await saveLog(s.id, me.id, { status, rpe: status === "done" ? rpe : null, perExercise: status === "done" ? pe : {}, feedback: fb, duration: status === "done" ? Number(dur) || plannedDur : null });
-      setDirty(false); // enregistré → la resync depuis la base est de nouveau autorisée
-      setOpen(false); setRest(null);
-      onSaved && onSaved();
-    } catch (e) {
-      // garde la carte ouverte ; l'erreur est rare (RLS/connexion)
-      console.error("[saveLog]", e.message);
-    }
-    setBusy(false);
-  };
-
-  const doneSets = exos.reduce((a, e) => a + blockUnits(e).done, 0);
-  const totSets = exos.reduce((a, e) => a + blockUnits(e).total, 0);
 
   // Séance-test : les résultats sont saisis par le staff → carte informative,
   // pas de logging set-par-set côté joueur.
@@ -486,12 +261,12 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             </div>
           ) : (
             <>
-              <button onClick={() => valider("done")} disabled={busy} style={{ width: "100%", background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1, marginBottom: 8 }}>
+              <button onClick={() => submit("done")} disabled={busy} style={{ width: "100%", background: C.green, border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: busy ? 0.6 : 1, marginBottom: 8 }}>
                 <CheckCircle size={13} />{st === "done" ? t("player.session.update") : t("player.session.finish")}
               </button>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => valider("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.missed")}</button>
-                <button onClick={() => valider("postponed")} disabled={busy} title={t("player.session.postponeTitle")} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.postpone")}</button>
+                <button onClick={() => submit("missed")} disabled={busy} style={{ flex: 1, background: "rgba(232,85,59,0.12)", border: `1px solid ${C.coral}44`, borderRadius: 8, padding: "10px", color: C.coral, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.missed")}</button>
+                <button onClick={() => submit("postponed")} disabled={busy} title={t("player.session.postponeTitle")} style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("player.session.postpone")}</button>
               </div>
             </>
           )}
@@ -515,7 +290,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
    quitter la séance. Choix 1RM (direct) ou 5RM (converti en 1RM estimé via Epley).
    Écrit dans la FICHE (add1RM, source unique) ; `onSaved(kg)` transmet le 1RM
    résultant pour pré-remplir la charge des séries vides de l'exercice. */
-function Quick1RM({ e, current, me, t, onSaved, onClose }) {
+export function Quick1RM({ e, current, me, t, onSaved, onClose }) {
   const label = e.rmLabel || e.name;
   const [mode, setMode] = useState("1rm"); // 1rm (direct) | 5rm (sous-max → Epley)
   const [v, setV] = useState(current != null ? String(current) : "");
@@ -560,7 +335,7 @@ function Quick1RM({ e, current, me, t, onSaved, onClose }) {
 /* Vidéo de démonstration d'un exercice (#1). Lecteur YouTube intégré à la
    demande (iframe) ; sinon lien cliquable brut (autre hébergeur). Rien à
    afficher si l'exercice n'a pas de lien exploitable. */
-function ExerciseVideo({ url, accent }) {
+export function ExerciseVideo({ url, accent }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const embed = youtubeEmbed(url);
@@ -608,7 +383,7 @@ const cardioInp = { width: "100%", background: "rgba(255,255,255,0.07)", border:
 
 /* C3 — Cardio CONTINU : distance / temps saisis → allure & vitesse réalisées ;
    allure cible depuis %VMA + MAS du joueur (jamais de valeur fausse). */
-function CardioContinuous({ e, st, onField, onNote, masKmh, t, accent }) {
+export function CardioContinuous({ e, st, onField, onNote, masKmh, t, accent }) {
   const m = st?.mono || {};
   const target = computeTargetPace(e.pctVMA, masKmh);
   const realPace = paceSecPerKmFromDistanceTime(m.distanceM, m.durationSec);
@@ -651,7 +426,7 @@ function CardioContinuous({ e, st, onField, onNote, masKmh, t, accent }) {
 
 /* C2 — Cardio INTERVALLES : une ligne cochable par répétition, cible (effort /
    récup / allure %VMA, éventuellement propre à la rép via repPlan) + réalisé. */
-function CardioInterval({ e, st, onRep, onNote, masKmh, t, accent }) {
+export function CardioInterval({ e, st, onRep, onNote, masKmh, t, accent }) {
   const reps = st?.sets || [];
   const specFor = (i) => (Array.isArray(e.repPlan) && e.repPlan[i]) ? e.repPlan[i] : { effort: e.effort, recovery: e.recovery, pctVMA: e.pctVMA };
   return (
@@ -688,7 +463,7 @@ function CardioInterval({ e, st, onRep, onNote, masKmh, t, accent }) {
 const miniLbl = { fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 700, display: "block", marginBottom: 3 };
 
 /* C4 — Circuit / AMRAP : compteur de tours réalisés. */
-function CardioCircuit({ e, st, onField, onNote, t, accent }) {
+export function CardioCircuit({ e, st, onField, onNote, t, accent }) {
   const m = st?.mono || {};
   const rounds = Number(m.roundsDone) || 0;
   const step = (d) => onField({ roundsDone: Math.max(0, rounds + d), done: true });
@@ -720,7 +495,7 @@ function CardioCircuit({ e, st, onField, onNote, t, accent }) {
 
 /* C5 — Test : saisie du résultat (valeur + unité de la batterie) ; deep-link vers
    la Fiche. On stocke le résultat dans le log ; test_results reste saisi par le staff. */
-function CardioTest({ e, st, onField, onNote, onNavigate, t, accent }) {
+export function CardioTest({ e, st, onField, onNote, onNavigate, t, accent }) {
   const m = st?.mono || {};
   const meta = testMeta(e.testKey);
   const unit = (meta?.unit || "").trim();
@@ -770,7 +545,7 @@ const onlyDigits = (v) => String(v).replace(/[^\d]/g, "");
 /* Effort CONDITIONING (mono) : temps / distance / watts / kcal / FC. Allure &
    vitesse réalisées calculées depuis distance+temps ; allure cible depuis %VMA
    + MAS du joueur (jamais de valeur fausse). Aucune charge kg / %1RM. */
-function EffortConditioning({ e, st, onField, onNote, masKmh, t, accent }) {
+export function EffortConditioning({ e, st, onField, onNote, masKmh, t, accent }) {
   const m = st?.mono || {};
   const target = computeTargetPace(e.pctVMA, masKmh);
   const realPace = paceSecPerKmFromDistanceTime(m.distanceM, m.durationSec);
@@ -817,7 +592,7 @@ function EffortConditioning({ e, st, onField, onNote, masKmh, t, accent }) {
 
 /* Effort VITESSE (mono) : distance / temps / répétitions / récup. Sprints courts
    → temps en secondes. Vitesse réalisée calculée depuis distance+temps. Pas de kg. */
-function EffortSpeed({ e, st, onField, onNote, t, accent }) {
+export function EffortSpeed({ e, st, onField, onNote, t, accent }) {
   const m = st?.mono || {};
   const realSpeed = speedKmhFromDistanceTime(m.distanceM, m.durationSec);
   return (
@@ -841,7 +616,7 @@ function EffortSpeed({ e, st, onField, onNote, t, accent }) {
 }
 
 /* Effort MOBILITÉ / récupération (mono) : durée totale / tenue / nb tenues. Pas de kg. */
-function EffortMobility({ e, st, onField, onNote, t, accent }) {
+export function EffortMobility({ e, st, onField, onNote, t, accent }) {
   const m = st?.mono || {};
   const dsec = Number(m.durationSec) || 0;
   const setDur = (mn, sc) => onField({ durationSec: Math.max(0, (Number(mn) || 0) * 60 + (Number(sc) || 0)) });
@@ -889,7 +664,7 @@ function CmpBar({ label, sub, value, max, color, unit }) {
    donc du réalisé) + comparaison ANONYMISÉE moi / ma ligne / mon équipe. Les
    moyennes ligne/équipe ne sont renvoyées par le serveur qu'à partir de 5
    joueurs (k-anonymat) ; en deçà, on affiche un message, jamais de valeur. */
-function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
+export function ExoProgressModal({ pid, exName, sessions, logs, accent, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
   const { series, agg, loading } = useExercisePerf(exName, true);

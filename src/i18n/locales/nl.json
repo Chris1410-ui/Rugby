@@ -1116,7 +1116,8 @@
       "rm1rm": "1RM",
       "rm5rm": "5RM",
       "rm5rmHint": "De 5RM wordt omgezet naar een geschatte 1RM (Epley).",
-      "edit1rmTitle": "Corrigeer de 1RM {{movement}}"
+      "edit1rmTitle": "Corrigeer de 1RM {{movement}}",
+      "setsCount": "{{done}}/{{total}} reeksen"
     },
     "freeSession": {
       "newButton": "Vrije sessie maken",
@@ -1251,6 +1252,12 @@
         "intensity": "Intensiteit",
         "other": "Andere"
       }
+    },
+    "live": {
+      "exoOf": "Oefening {{i}} / {{n}}",
+      "nextExo": "Volgende oefening",
+      "finish": "Sessie beëindigen",
+      "reps": "herh."
     }
   },
   "staff": {
