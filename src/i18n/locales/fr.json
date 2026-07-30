@@ -1271,6 +1271,12 @@
       "factConvocation": "était présent·e à « {{subject}} »",
       "factConvocationPlain": "était présent·e à l'entraînement",
       "factGps": "a déposé ses données GPS"
+    },
+    "profile": {
+      "rewards": "Récompenses",
+      "points": "{{n}} pts",
+      "toNext": "Plus que {{n}} pts pour {{div}}",
+      "maxDiv": "Palier maximum atteint 🏆"
     }
   },
   "staff": {

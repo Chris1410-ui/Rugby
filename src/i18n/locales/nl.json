@@ -1271,6 +1271,12 @@
       "factConvocation": "was aanwezig bij “{{subject}}”",
       "factConvocationPlain": "was aanwezig op training",
       "factGps": "uploadde GPS-gegevens"
+    },
+    "profile": {
+      "rewards": "Beloningen",
+      "points": "{{n}} ptn",
+      "toNext": "Nog {{n}} ptn tot {{div}}",
+      "maxDiv": "Hoogste niveau bereikt 🏆"
     }
   },
   "staff": {

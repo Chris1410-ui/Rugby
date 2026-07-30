@@ -1271,6 +1271,12 @@
       "factConvocation": "attended “{{subject}}”",
       "factConvocationPlain": "attended training",
       "factGps": "uploaded GPS data"
+    },
+    "profile": {
+      "rewards": "Rewards",
+      "points": "{{n}} pts",
+      "toNext": "{{n}} pts to reach {{div}}",
+      "maxDiv": "Top division reached 🏆"
     }
   },
   "staff": {
