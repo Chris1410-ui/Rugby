@@ -810,7 +810,12 @@
       "trackingHint": "Appuie pour l'historique",
       "trackingRange": "{{count}} derniers relevés",
       "week": "Ta semaine",
-      "routineSub": "Ta routine du matin"
+      "routineSub": "Ta routine du matin",
+      "sessionKicker": "Séance du jour",
+      "sessionMeta": "{{min}} min · {{done}}/{{total}} séries",
+      "sessionStart": "Démarrer la séance",
+      "sessionResume": "Reprendre la séance",
+      "sessionReview": "Revoir la séance"
     },
     "messages": {
       "staffTitle": "Staff — Préparateur physique"

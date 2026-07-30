@@ -810,7 +810,12 @@
       "trackingHint": "Tik voor geschiedenis",
       "trackingRange": "Laatste {{count}} metingen",
       "week": "Jouw week",
-      "routineSub": "Je ochtendroutine"
+      "routineSub": "Je ochtendroutine",
+      "sessionKicker": "Sessie van vandaag",
+      "sessionMeta": "{{min}} min · {{done}}/{{total}} reeksen",
+      "sessionStart": "Sessie starten",
+      "sessionResume": "Sessie hervatten",
+      "sessionReview": "Sessie bekijken"
     },
     "messages": {
       "staffTitle": "Staf — Fysiek trainer"

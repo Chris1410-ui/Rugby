@@ -810,7 +810,12 @@
       "trackingHint": "Tap for history",
       "trackingRange": "Last {{count}} readings",
       "week": "Your week",
-      "routineSub": "Your morning routine"
+      "routineSub": "Your morning routine",
+      "sessionKicker": "Today's session",
+      "sessionMeta": "{{min}} min · {{done}}/{{total}} sets",
+      "sessionStart": "Start the session",
+      "sessionResume": "Resume the session",
+      "sessionReview": "Review the session"
     },
     "messages": {
       "staffTitle": "Staff — Strength & conditioning"
