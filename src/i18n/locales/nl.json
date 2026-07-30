@@ -1258,6 +1258,19 @@
       "nextExo": "Volgende oefening",
       "finish": "Sessie beëindigen",
       "reps": "herh."
+    },
+    "wall": {
+      "title": "Clubfeed",
+      "empty": "Nog niets nieuws. Wees de eerste die een sessie logt!",
+      "factSession": "logde “{{subject}}”",
+      "factSessionPlain": "logde een sessie",
+      "factCheckinMorning": "deed de ochtendcheck-in",
+      "factCheckinEvening": "deed de avondevaluatie",
+      "factChallenge": "nam “{{subject}}” aan",
+      "factChallengePlain": "nam een uitdaging aan",
+      "factConvocation": "was aanwezig bij “{{subject}}”",
+      "factConvocationPlain": "was aanwezig op training",
+      "factGps": "uploadde GPS-gegevens"
     }
   },
   "staff": {

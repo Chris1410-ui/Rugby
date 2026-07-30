@@ -1258,6 +1258,19 @@
       "nextExo": "Exercice suivant",
       "finish": "Terminer la séance",
       "reps": "reps"
+    },
+    "wall": {
+      "title": "Le fil du club",
+      "empty": "Rien de neuf pour l'instant. Sois le premier à valider ta séance !",
+      "factSession": "a validé « {{subject}} »",
+      "factSessionPlain": "a validé sa séance",
+      "factCheckinMorning": "a fait son check-in du matin",
+      "factCheckinEvening": "a fait son bilan du soir",
+      "factChallenge": "a relevé le défi « {{subject}} »",
+      "factChallengePlain": "a relevé un défi",
+      "factConvocation": "était présent·e à « {{subject}} »",
+      "factConvocationPlain": "était présent·e à l'entraînement",
+      "factGps": "a déposé ses données GPS"
     }
   },
   "staff": {
