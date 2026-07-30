@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
-import { displayName } from "../../lib/identity.js";
-import { posDisplay } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
 import { WEEKLY_GOAL_DAYS } from "../../lib/badges.js";
 import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
@@ -14,6 +12,7 @@ import { useProgramDocs, getProgramDoc } from "../../data/programDocs.js";
 import { useTeamProgramAssignments } from "../../data/programAssignments.js";
 import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
+import AccueilHero from "./accueil/AccueilHero.jsx";
 import QuickCheckin from "./bilan/QuickCheckin.jsx";
 import SessionTodayCard from "./bilan/SessionTodayCard.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
@@ -149,15 +148,17 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
 
   return (
     <div>
-      {/* En-tête : readiness + identité + date */}
+      {/* Hero « Accueil » (refonte Open Design) : totem + date + poste/ligne/club. */}
+      <AccueilHero me={me} today={today} />
+
+      {/* En-tête readiness (l'identité/date sont désormais portées par le hero). */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 14 }}>
         <Ring val={hasMorning ? readiness : "—"} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
-            {t("player.bilan.today")} · {dstr(today, { weekday: "long", day: "numeric", month: "long" })}
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.6, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" }}>{t("player.bilan.readiness")}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.85)", marginTop: 3 }}>
+            {hasMorning ? t(readiness > 70 ? "player.checkin.verdict.high" : readiness > 50 ? "player.checkin.verdict.mid" : "player.checkin.verdict.low") : t("shared.fiche.notEncoded")}
           </div>
-          <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{displayName(me)}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, me.pos)}</div>
         </div>
       </div>
 
