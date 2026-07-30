@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — Fiche joueur (vue staff)</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════
+  ARTEFACT D'ATELIER — maquette autonome de la FICHE JOUEUR (vue staff).
+  Reproduction fidèle (couleurs / espacements / typo / états) de la version
+  prod : src/screens/shared/Fiche.jsx (+ Player1RM, Top14Panel, ui.jsx),
+  tokens de src/lib/tokens.js. Données d'exemple FIGÉES EN DUR, pseudonymisées
+  (totem + initiales). Aucune dépendance (React / Supabase / i18n). N'est
+  branché à rien. À retravailler librement dans un outil de design.
+  Ne pas réinjecter tel quel dans src/.
+  ════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root {
+    --navy:#16142E; --panel:#1E1B3A; --coral:#E8553B; --blue:#3E4CA8;
+    --viol:#6C5CE0; --teal:#1C7293; --green:#2C8C5A; --amb:#C9851F; --gray:#8A88A0;
+    --card:rgba(255,255,255,0.055); --card2:rgba(255,255,255,0.03);
+    --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.06);
+    --font:-apple-system,BlinkMacSystemFont,Inter,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; }
+  body { background:#0b0a18; color:#fff; font-family:var(--font); -webkit-font-smoothing:antialiased; }
+  button,input,textarea { font-family:inherit; }
+
+  .workshop-note { max-width:620px; margin:20px auto 8px; padding:0 12px; font-size:11px; color:rgba(255,255,255,0.4); text-align:center; }
+  .workshop-note b { color:rgba(255,255,255,0.62); font-weight:700; }
+
+  /* Modale staff (miroir Fiche.jsx onClose) */
+  .backdrop { min-height:100vh; background:rgba(0,0,0,0.85); display:flex; align-items:flex-start; justify-content:center; padding:16px 12px 60px; }
+  .modal { width:100%; max-width:620px; background:var(--navy); border-radius:18px; padding:20px; }
+  .closebar { display:flex; justify-content:flex-end; margin-bottom:4px; }
+  .closex { width:30px; height:30px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:rgba(255,255,255,0.6); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  /* Carte utilitaire = sc() */
+  .sc { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; }
+
+  /* En-tête identité + readiness */
+  .head { display:flex; align-items:center; gap:14px; padding:16px; }
+  .ring-lbl { font-size:9px; color:rgba(255,255,255,0.5); margin-top:2px; font-weight:600; text-align:center; }
+  .num { font-size:22px; font-weight:900; color:rgba(255,255,255,0.85); }
+  .name { font-size:17px; font-weight:800; display:flex; align-items:center; gap:6px; }
+  .name .ini { font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); }
+  .pos { font-size:11px; color:rgba(255,255,255,0.6); }
+  .pill { background:var(--green); color:#fff; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+  .tag { padding:2px 9px; border-radius:6px; font-size:10px; font-weight:700; }
+  .badge-est { background:rgba(148,162,178,0.16); color:var(--gray); padding:1px 7px; border-radius:6px; font-size:9.5px; font-weight:700; border:1px solid rgba(148,162,178,0.4); white-space:nowrap; }
+
+  /* Barre d'actions staff */
+  .actions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .act { display:inline-flex; align-items:center; gap:6px; padding:9px 12px; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer; border:1px solid var(--border); background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.85); }
+  .act svg { width:14px; height:14px; }
+  .act.viol { background:var(--viol); border-color:transparent; color:#fff; }
+  .act.green { background:rgba(44,140,90,0.14); border-color:rgba(44,140,90,0.4); color:var(--green); }
+
+  /* Report */
+  .report-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:var(--viol); border:none; border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; font-weight:800; cursor:pointer; }
+  .report-note { font-size:10px; color:rgba(255,255,255,0.45); margin-top:8px; line-height:1.5; }
+
+  /* Totem editor */
+  .mini-lbl { font-size:10px; font-weight:700; color:rgba(255,255,255,0.6); letter-spacing:1px; margin-bottom:8px; }
+  .mini-desc { font-size:11px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:10px; }
+  .totem-row { display:flex; gap:8px; }
+  .totem-inp { flex:1; background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:9px; padding:10px 12px; color:#fff; font-size:14px; outline:none; }
+  .btn-save { background:var(--green); border:none; border-radius:9px; padding:10px 16px; color:#fff; font-weight:800; font-size:13px; cursor:pointer; }
+
+  /* KPI grid */
+  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; }
+  .kpi .k { font-size:9px; color:rgba(255,255,255,0.6); font-weight:700; letter-spacing:1px; margin-bottom:5px; }
+  .kpi .v { font-size:26px; font-weight:800; line-height:1; }
+  .kpi .s { font-size:9px; color:rgba(255,255,255,0.56); margin-top:4px; }
+
+  .adv-toggle { width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:8px 12px; color:rgba(255,255,255,0.7); font-size:11px; font-weight:700; cursor:pointer; margin-bottom:12px; text-align:left; }
+
+  /* Section */
+  .section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; }
+  .section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .section-title { font-size:10px; font-weight:700; color:rgba(255,255,255,0.6); letter-spacing:1.5px; }
+  .section-right { font-size:11px; font-weight:700; color:var(--viol); cursor:pointer; background:none; border:none; }
+
+  /* rows */
+  .row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border2); }
+  .row:last-child { border-bottom:none; }
+  .row .lbl { font-size:12px; color:rgba(255,255,255,0.7); }
+  .row .val { font-size:14px; font-weight:800; }
+  .row .lbl .date { font-size:9px; color:rgba(255,255,255,0.45); }
+  .pp { padding-top:10px; }
+  .pp .h { font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:6px; }
+  .pp .h small { font-size:9px; color:rgba(255,255,255,0.5); }
+  .pp .body { font-size:13px; color:rgba(255,255,255,0.9); line-height:1.5; }
+
+  /* 1RM rows */
+  .rm-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border2); }
+  .rm-row:last-child { border-bottom:none; }
+  .rm-name { font-size:13px; font-weight:700; }
+  .rm-sub { font-size:9.5px; color:rgba(255,255,255,0.5); margin-top:1px; }
+  .rm-val { font-size:15px; font-weight:800; }
+  .rm-val small { font-size:10px; color:rgba(255,255,255,0.5); }
+  .rm-inp { width:70px; background:rgba(255,255,255,0.1); border:1px solid rgba(108,92,224,0.4); border-radius:6px; padding:4px 6px; color:#fff; font-size:14px; font-weight:700; text-align:right; outline:none; }
+  .icon-btn { background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.55); display:flex; padding:2px; }
+  .rm-todo { background:rgba(201,133,31,0.12); border:1px solid rgba(201,133,31,0.4); border-radius:10px; padding:9px 11px; margin-bottom:10px; font-size:12px; color:var(--amb); font-weight:700; }
+  .btn-complete { background:rgba(201,133,31,0.12); border:1px solid rgba(201,133,31,0.4); border-radius:8px; padding:6px 11px; color:var(--amb); font-size:11px; font-weight:800; cursor:pointer; }
+
+  /* Top 14 */
+  .t14-item { background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:8px 10px; margin-bottom:8px; }
+  .t14-hd { display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
+  .t14-name { font-size:12px; font-weight:700; flex:1; }
+  .t14-name small { font-size:9px; color:rgba(255,255,255,0.45); }
+  .t14-val { font-size:13px; font-weight:800; }
+  .t14-thr { font-size:10px; color:rgba(255,255,255,0.5); }
+  .t14-badge { font-size:8.5px; font-weight:800; letter-spacing:0.3px; color:#0c2b2b; background:var(--amb); border-radius:5px; padding:1px 5px; }
+  .t14-bar-wrap { display:flex; align-items:center; gap:8px; }
+  .t14-bar { flex:1; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+  .t14-bar i { display:block; height:6px; border-radius:3px; }
+  .t14-pct { font-size:10px; font-weight:800; width:42px; text-align:right; }
+  .t14-foot { font-size:9.5px; color:rgba(255,255,255,0.5); margin-top:8px; line-height:1.5; }
+
+  /* Bilans */
+  .bil-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border2); }
+  .bil-row:last-child { border-bottom:none; }
+  .bil-date { font-size:11px; font-weight:700; color:rgba(255,255,255,0.75); width:64px; flex-shrink:0; }
+  .dot { width:9px; height:9px; border-radius:5px; flex-shrink:0; }
+  .bil-metrics { flex:1; display:flex; gap:12px; font-size:11px; color:rgba(255,255,255,0.7); flex-wrap:wrap; }
+  .bil-metrics b { color:#fff; }
+
+  /* Questionnaire */
+  .q-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border2); }
+  .q-row:last-child{border-bottom:none;}
+  .q-name { font-size:12.5px; font-weight:700; }
+  .q-sub { font-size:9.5px; color:rgba(255,255,255,0.5); }
+
+  /* PDF */
+  .pdf-hd { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .pdf-title { flex:1; font-size:10px; font-weight:700; color:rgba(255,255,255,0.6); letter-spacing:1px; display:flex; align-items:center; gap:6px; }
+  .pdf-add { display:flex; align-items:center; gap:6px; background:rgba(44,140,90,0.14); border:1px solid rgba(44,140,90,0.4); border-radius:8px; padding:6px 12px; color:var(--green); font-size:11px; font-weight:800; cursor:pointer; }
+  .pdf-note { font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:10px; line-height:1.5; }
+  .pdf-item { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:9px; padding:8px 10px; margin-bottom:6px; }
+  .pdf-name { flex:1; min-width:0; }
+  .pdf-name .n { font-size:12.5px; font-weight:700; }
+  .pdf-name .d { font-size:9.5px; color:rgba(255,255,255,0.5); }
+  .pdf-icon { background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:8px; padding:7px; color:rgba(255,255,255,0.7); cursor:pointer; display:flex; }
+
+  /* Badges / division */
+  .badges-wrap { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .chal-badge { font-size:10.5px; font-weight:800; color:#fff; background:rgba(108,92,224,0.25); border:1px solid rgba(108,92,224,0.4); border-radius:6px; padding:3px 9px; }
+  .division { display:flex; align-items:center; gap:12px; }
+  .div-emoji { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+  .div-name { font-size:17px; font-weight:900; }
+  .div-pts { font-size:11.5px; color:rgba(255,255,255,0.6); }
+
+  svg { display:block; }
+</style>
+</head>
+<body>
+
+<div class="workshop-note">Maquette d'atelier — <b>fiche joueur (vue staff)</b>. Données fictives pseudonymisées, hors production.</div>
+
+<div class="backdrop">
+  <div class="modal">
+    <div class="closebar">
+      <button class="closex" title="Fermer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- ══ En-tête : identité + readiness + ACWR (estimé/réel) ══ -->
+    <div class="sc head">
+      <div>
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6"/>
+          <circle cx="36" cy="36" r="30" fill="none" stroke="#2C8C5A" stroke-width="6" stroke-dasharray="188.5" stroke-dashoffset="49" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+          <text x="36" y="37" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="19" font-weight="800">74</text>
+        </svg>
+        <div class="ring-lbl">readiness</div>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="num">5</span>
+          <div>
+            <div class="name">Sanglier <span class="ini">(M.D.)</span></div>
+            <div class="pos">Deuxième ligne · Avants · RC Namur · 24 ans</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap;">
+          <span class="pill">1.18</span>
+          <span class="tag" style="background:rgba(44,140,90,0.13); color:#2C8C5A; border:1px solid rgba(44,140,90,0.27);">Optimal</span>
+          <span class="badge-est" title="Estimé : données partielles">estimé</span>
+          <span class="tag" style="background:rgba(44,140,90,0.13); color:#2C8C5A; border:1px solid rgba(44,140,90,0.27);">bilan du jour ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Actions staff ══ -->
+    <div class="actions">
+      <button class="act green" id="editBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Éditer les tests
+      </button>
+      <button class="act">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Message
+      </button>
+      <button class="act">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Assigner protocole
+      </button>
+    </div>
+
+    <!-- ══ Rapport de performance PDF ══ -->
+    <div class="sc" style="padding:14px;">
+      <button class="report-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Générer le rapport de performance
+      </button>
+      <div class="report-note">PDF récapitulatif (readiness, charge, tests, Top 14, surveillance blessures). Autorisation vérifiée côté serveur.</div>
+    </div>
+
+    <!-- ══ Totem (éditable staff) ══ -->
+    <div class="sc" style="padding:14px;">
+      <div class="mini-lbl">TOTEM DU JOUEUR</div>
+      <div class="mini-desc">Le totem identifie le joueur dans le club. Unicité garantie (un seul « Sanglier » par équipe).</div>
+      <div class="totem-row">
+        <input class="totem-inp" value="Sanglier" />
+        <button class="btn-save" style="background:rgba(255,255,255,0.08);">Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- ══ Indicateurs clés (KPI) ══ -->
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">READINESS</div><div class="v" style="color:#2C8C5A;">74</div><div class="s">/100</div></div>
+      <div class="kpi"><div class="k">BIEN-ÊTRE</div><div class="v" style="color:#2C8C5A;">39/50</div></div>
+      <div class="kpi"><div class="k">SOMMEIL</div><div class="v" style="color:#2C8C5A;">7.5</div><div class="s">heures</div></div>
+      <div class="kpi"><div class="k">CHARGE 7J</div><div class="v" style="color:#2C8C5A;">2100</div><div class="s">UA · normale</div></div>
+      <div class="kpi"><div class="k">ACWR</div><div class="v" style="color:#8A88A0;">1.18</div><div class="s">Optimal · estimé</div></div>
+      <div class="kpi"><div class="k">DISPONIBILITÉ</div><div class="v" style="color:#2C8C5A;">88%</div></div>
+    </div>
+
+    <!-- ══ Détails avancés (repli) ══ -->
+    <button class="adv-toggle" id="advToggle">▸ Détails avancés (monotonie · strain · risque)</button>
+    <div class="kpi-grid" id="advGrid" style="display:none;">
+      <div class="kpi"><div class="k">MONOTONIE</div><div class="v" style="color:#2C8C5A;">1.6</div></div>
+      <div class="kpi"><div class="k">STRAIN</div><div class="v" style="color:#6C5CE0;">3360</div></div>
+      <div class="kpi"><div class="k">RISQUE</div><div class="v" style="color:#2C8C5A;">32</div><div class="s">/100</div></div>
+    </div>
+
+    <!-- ══ Tests physiques ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">TESTS PHYSIQUES</div><button class="section-right" id="editTestsInline">éditer</button></div>
+      <div class="row"><span class="lbl">Poids de corps <span class="date">· 12/07</span></span><span class="val">102 kg</span></div>
+      <div class="row"><span class="lbl">Taille</span><span class="val">194 cm</span></div>
+      <div class="row"><span class="lbl">Séances / semaine</span><span class="val">5</span></div>
+      <div class="row"><span class="lbl">MAS (m/min)</span><span class="val">68</span></div>
+      <div class="row"><span class="lbl">Back Squat (×PDC)</span><span class="val">1.62</span></div>
+      <div class="row"><span class="lbl">CMJ gauche (cm)</span><span class="val">38</span></div>
+      <div class="row"><span class="lbl">CMJ droit (cm)</span><span class="val">36</span></div>
+      <div class="row"><span class="lbl">Ischios gauche</span><span class="val">310</span></div>
+      <div class="row"><span class="lbl">Ischios droit</span><span class="val">290</span></div>
+      <div class="row"><span class="lbl">Asymétrie ischios</span><span class="tag" style="background:rgba(201,133,31,0.13); color:#C9851F; border:1px solid rgba(201,133,31,0.27);">6%</span></div>
+      <div class="pp">
+        <div class="h">Remarques PP <small>(visibles joueur)</small></div>
+        <div class="body">Bon volume de travail en salle. Surveiller la charge excentrique ischios (léger déséquilibre G/D). Objectif squat 1.8×PDC pour la reprise.</div>
+      </div>
+      <div class="pp">
+        <div class="h">Historique blessures <small>(staff uniquement · santé)</small></div>
+        <div class="body">Entorse cheville droite (mars) — RTP complet. Gêne lombaire ponctuelle sur soulevé lourd.</div>
+      </div>
+    </div>
+
+    <!-- ══ 1RM / 5RM par exercice (ligne inline éditable) ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">1RM (5)</div>
+        <button class="section-right"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline-block;vertical-align:-2px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ajouter</button>
+      </div>
+      <div class="rm-todo">1 mouvement demandé attend une valeur.</div>
+      <div id="rmList">
+        <div class="rm-row" data-val="165">
+          <div style="flex:1; min-width:0;"><div class="rm-name">Back Squat</div><div class="rm-sub">05/07 · 3 mesures</div></div>
+          <span class="rm-val"><span class="rm-num">165</span><small> kg</small></span>
+          <span class="tag" style="background:rgba(44,140,90,0.13); color:#2C8C5A; border:1px solid rgba(44,140,90,0.27);">testé</span>
+          <button class="icon-btn rm-edit" title="Éditer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        </div>
+        <div class="rm-row" data-val="120">
+          <div style="flex:1; min-width:0;"><div class="rm-name">Développé couché</div><div class="rm-sub">05/07 · 2 mesures</div></div>
+          <span class="rm-val"><span class="rm-num">120</span><small> kg</small></span>
+          <span class="tag" style="background:rgba(44,140,90,0.13); color:#2C8C5A; border:1px solid rgba(44,140,90,0.27);">testé</span>
+          <button class="icon-btn rm-edit" title="Éditer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        </div>
+        <div class="rm-row" data-val="200">
+          <div style="flex:1; min-width:0;"><div class="rm-name">Soulevé de terre</div><div class="rm-sub">28/06</div></div>
+          <span class="rm-val"><span class="rm-num">200</span><small> kg</small></span>
+          <span class="tag" style="background:rgba(201,133,31,0.13); color:#C9851F; border:1px solid rgba(201,133,31,0.27);">estimé</span>
+          <button class="icon-btn rm-edit" title="Éditer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        </div>
+        <div class="rm-row" data-val="90">
+          <div style="flex:1; min-width:0;"><div class="rm-name">Épaulé suspendu (Hang Clean)</div><div class="rm-sub">21/06</div></div>
+          <span class="rm-val"><span class="rm-num">90</span><small> kg</small></span>
+          <span class="tag" style="background:rgba(44,140,90,0.13); color:#2C8C5A; border:1px solid rgba(44,140,90,0.27);">testé</span>
+          <button class="icon-btn rm-edit" title="Éditer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        </div>
+        <div class="rm-row">
+          <div style="flex:1; min-width:0;"><div class="rm-name">Développé militaire</div><div class="rm-sub">Non renseigné</div></div>
+          <button class="btn-complete">Compléter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Comparaison Top 14 (X/9) ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">COMPARAISON TOP 14</div><span style="font-size:9.5px; font-weight:800; color:#C9851F;">Deuxième ligne · 🏆 ×4</span></div>
+      <div id="t14"></div>
+      <div class="t14-foot">Normes seniors Top 14 (borne basse), par poste. Force en ×PdC (poids de corps requis). +30 pts par test atteint. <b>4/9 atteints.</b></div>
+    </div>
+
+    <!-- ══ Bilans matin / soir — historique récent ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">BILANS RÉCENTS</div></div>
+      <div class="bil-row"><span class="bil-date">jeu 30/07</span><span class="dot" style="background:#2C8C5A;"></span><div class="bil-metrics"><span>☀️ Readiness <b>74</b></span><span>Bien-être <b>39</b></span><span>Sommeil <b>7.5h</b></span><span>🌙 RPE <b>7</b></span></div></div>
+      <div class="bil-row"><span class="bil-date">mer 29/07</span><span class="dot" style="background:#C9851F;"></span><div class="bil-metrics"><span>☀️ Readiness <b>61</b></span><span>Bien-être <b>32</b></span><span>Sommeil <b>6.5h</b></span><span>🌙 — </span></div></div>
+      <div class="bil-row"><span class="bil-date">mar 28/07</span><span class="dot" style="background:#2C8C5A;"></span><div class="bil-metrics"><span>☀️ Readiness <b>80</b></span><span>Bien-être <b>44</b></span><span>Sommeil <b>8h</b></span><span>🌙 RPE <b>8</b></span></div></div>
+      <div class="bil-row"><span class="bil-date">lun 27/07</span><span class="dot" style="background:#2C8C5A;"></span><div class="bil-metrics"><span>☀️ Readiness <b>72</b></span><span>Bien-être <b>38</b></span><span>Sommeil <b>7h</b></span><span>🌙 RPE <b>5</b></span></div></div>
+      <div class="bil-row"><span class="bil-date">dim 26/07</span><span class="dot" style="background:rgba(255,255,255,0.12);"></span><div class="bil-metrics"><span style="color:rgba(255,255,255,0.4);">Aucun bilan encodé</span></div></div>
+    </div>
+
+    <!-- ══ Questionnaire santé / mode de vie ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">QUESTIONNAIRES (1)</div></div>
+      <div class="q-row">
+        <div style="flex:1; min-width:0;"><div class="q-name">Santé & mode de vie</div><div class="q-sub">12 questions · sommeil, nutrition, antécédents</div></div>
+        <span class="tag" style="background:rgba(44,140,90,0.13); color:#2C8C5A; border:1px solid rgba(44,140,90,0.27);">Rempli</span>
+      </div>
+      <div class="q-row">
+        <div style="flex:1; min-width:0;"><div class="q-name">Charge mentale & récupération</div><div class="q-sub">8 questions · stress, disponibilité</div></div>
+        <span class="tag" style="background:rgba(201,133,31,0.13); color:#C9851F; border:1px solid rgba(201,133,31,0.27);">En attente</span>
+      </div>
+    </div>
+
+    <!-- ══ PDF de programme déposés ══ -->
+    <div class="section">
+      <div class="pdf-hd">
+        <div class="pdf-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PROGRAMMES PDF</div>
+        <button class="pdf-add"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Ajouter</button>
+      </div>
+      <div class="pdf-note">Déposés par le joueur, consultés par le staff. Extraction possible en séances datées.</div>
+      <div class="pdf-item">
+        <div class="pdf-name"><div class="n">Bloc prépa physique — hors-saison.pdf</div><div class="d">Ajouté le 08/07 · 1.2 MB</div></div>
+        <button class="pdf-icon" title="Extraire les séances" style="color:#2C8C5A; border-color:rgba(44,140,90,0.4); background:rgba(44,140,90,0.09);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+        <button class="pdf-icon" title="Ouvrir"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button class="pdf-icon" title="Télécharger"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+        <button class="pdf-icon" title="Supprimer" style="color:#E8553B;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      </div>
+      <div class="pdf-item">
+        <div class="pdf-name"><div class="n">Renfo haut du corps — semaines 1-4.pdf</div><div class="d">Ajouté le 24/06 · 640 KB</div></div>
+        <button class="pdf-icon" title="Extraire les séances" style="color:#2C8C5A; border-color:rgba(44,140,90,0.4); background:rgba(44,140,90,0.09);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+        <button class="pdf-icon" title="Ouvrir"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button class="pdf-icon" title="Télécharger"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+        <button class="pdf-icon" title="Supprimer" style="color:#E8553B;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ══ Points · Division · Badges ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">POINTS & DIVISION</div></div>
+      <div class="division" style="margin-bottom:12px;">
+        <span class="div-emoji" style="background:rgba(242,200,75,0.16); border:1px solid rgba(242,200,75,0.4);">🥇</span>
+        <div style="flex:1;">
+          <div class="div-name" style="color:#F2C84B;">Or</div>
+          <div class="div-pts">148 pts · Rang équipe 3ᵉ</div>
+        </div>
+      </div>
+      <div class="badges-wrap">
+        <span class="chal-badge">🔥 Assidu</span>
+        <span class="chal-badge">✅ Sans faute</span>
+        <span class="chal-badge">🏅 Défis ×3</span>
+        <span class="chal-badge">📡 Import GPS</span>
+        <span style="font-size:10.5px; font-weight:700; color:#6C5CE0; align-self:center;">+45 pts défis</span>
+      </div>
+    </div>
+
+    <!-- ══ Compte staff : réinitialiser le mot de passe ══ -->
+    <div class="section">
+      <div class="section-hd"><div class="section-title">COMPTE</div></div>
+      <button class="act" style="width:100%; justify-content:flex-start;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Réinitialiser le mot de passe du joueur
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // JS vanilla minimal (interactions de démo, purement visuelles).
+  // Détails avancés (repli)
+  var advToggle = document.getElementById('advToggle');
+  var advGrid = document.getElementById('advGrid');
+  advToggle.addEventListener('click', function () {
+    var open = advGrid.style.display !== 'none';
+    advGrid.style.display = open ? 'none' : 'grid';
+    advToggle.textContent = (open ? '▸' : '▾') + ' Détails avancés (monotonie · strain · risque)';
+  });
+
+  // 1RM : édition inline d'une ligne (pencil → input → validation à la sortie)
+  document.querySelectorAll('.rm-edit').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var row = btn.closest('.rm-row');
+      var span = row.querySelector('.rm-num');
+      if (row.querySelector('.rm-inp')) return;
+      var cur = span.textContent.trim();
+      var inp = document.createElement('input');
+      inp.className = 'rm-inp'; inp.value = cur; inp.inputMode = 'decimal';
+      span.replaceWith(inp); inp.focus(); inp.select();
+      var commit = function () {
+        var v = document.createElement('span');
+        v.className = 'rm-num'; v.textContent = (inp.value || cur).trim();
+        inp.replaceWith(v);
+      };
+      inp.addEventListener('blur', commit);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') inp.blur(); });
+    });
+  });
+
+  // Top 14 — 9 tests (données figées), rendu identique à Top14Panel.
+  var T14 = [
+    { name: 'Squat 5RM', unit: '×PdC', val: '1.62', thr: '1.80', pct: 90, done: false },
+    { name: 'Bench 5RM', unit: '×PdC', val: '1.10', thr: '1.05', pct: 105, done: true },
+    { name: 'Deadlift', unit: '×PdC', val: '1.96', thr: '2.10', pct: 93, done: false },
+    { name: 'Hang Clean 2RM', unit: '×PdC', val: '0.88', thr: '0.90', pct: 98, done: false },
+    { name: 'Tractions', unit: 'reps', val: '+14', thr: '+12', pct: 116, done: true },
+    { name: 'MAS', unit: 'm/min', val: '68', thr: '66', pct: 103, done: true },
+    { name: 'Bronco', unit: '', val: '4:58', thr: '4:45', pct: 84, done: false },
+    { name: 'Yo-Yo IR1', unit: 'm', val: '1720', thr: '1840', pct: 93, done: false },
+    { name: 'CMJ', unit: 'cm', val: '38', thr: '36', pct: 106, done: true }
+  ];
+  var GREEN = '#2C8C5A', AMB = '#C9851F', CORAL = '#E8553B';
+  document.getElementById('t14').innerHTML = T14.map(function (x) {
+    var barC = x.done ? GREEN : (x.pct >= 90 ? AMB : CORAL);
+    var barW = Math.min(100, x.pct);
+    return '<div class="t14-item">'
+      + '<div class="t14-hd">'
+        + '<span class="t14-name">' + x.name + (x.unit ? ' <small>' + x.unit + '</small>' : '') + '</span>'
+        + '<span class="t14-val">' + x.val + '</span>'
+        + '<span class="t14-thr">/ ' + x.thr + '</span>'
+        + (x.done ? '<span class="t14-badge">TOP 14</span>' : '')
+      + '</div>'
+      + '<div class="t14-bar-wrap">'
+        + '<div class="t14-bar"><i style="width:' + barW + '%; background:' + barC + ';"></i></div>'
+        + '<span class="t14-pct" style="color:' + barC + ';">' + x.pct + '%</span>'
+      + '</div></div>';
+  }).join('');
+</script>
+</body>
+</html>
