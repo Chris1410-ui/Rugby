@@ -16,6 +16,22 @@ export async function activateStaffAthlete(team) {
   return data; // players.id de la carte athlète
 }
 
+/* Traduit une erreur d'activation/désactivation en message LISIBLE (au lieu d'un
+   clic muet). On mappe les causes connues (fonction absente = migration non
+   déployée, RLS, doublon, rôle, club manquant) ET on conserve TOUJOURS le message
+   brut + code pour un diagnostic exact. `t` = i18n de l'appelant. PUR. */
+export function athleteErrText(e, t) {
+  const code = e?.code || "";
+  const raw = e?.message || String(e || "");
+  let key = "shell.athleteErrGeneric";
+  if (code === "PGRST202" || /Could not find the function/i.test(raw)) key = "shell.athleteErrMissing";
+  else if (code === "42501" || /row-level security|permission denied/i.test(raw)) key = "shell.athleteErrRls";
+  else if (code === "23505" || /duplicate key|unique/i.test(raw)) key = "shell.athleteErrDuplicate";
+  else if (/NOT_STAFF/.test(raw)) key = "shell.athleteErrRole";
+  else if (/NO_TEAM/.test(raw)) key = "shell.athleteErrNoTeam";
+  return `${t(key)} — ${raw}${code ? ` (${code})` : ""}`;
+}
+
 /* Désactive le profil athlète (réversible, migration 0117) : délie le profil et
    passe la carte en 'inactive' (retirée de l'effectif/classement). Historique
    conservé → réactiver réutilise la même carte. */

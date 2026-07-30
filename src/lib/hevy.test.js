@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseChargeKg, prescribedVsRealized, initSetLikeSets, fillEmptySetsFromOneRM } from "./hevy.js";
+import { parseChargeKg, prescribedVsRealized, initSetLikeSets, fillEmptySetsFromOneRM, prescribedRepsPlan } from "./hevy.js";
 
 describe("parseChargeKg", () => {
   it("parses plain and suffixed numbers", () => {
@@ -114,6 +114,42 @@ describe("initSetLikeSets — pré-remplissage du lecteur de séance", () => {
     expect(a.sets[0].w).toBe("100");
     expect(b.sets[0].w).toBe("60");
     expect(b.sets).toHaveLength(2);
+  });
+
+  // (b) Les reps pré-remplies reprennent la PRESCRIPTION de CET exercice, jamais
+  // un défaut codé en dur — y compris pour les prescriptions variables.
+  it("reps prescrites : jamais un défaut « 10 » — reprend la valeur de l'exercice", () => {
+    // Tractions « 30 reps » → série 1 = 30 (nombre extrait), pas 10.
+    expect(initSetLikeSets({ sets: "", reps: "30 reps" }).sets[0].reps).toBe("30");
+    // Poulie « 3x10 » (reps « 10 ») → uniforme, série 1 = 10, suivantes vides.
+    const p = initSetLikeSets({ sets: "3", reps: "10" });
+    expect(p.sets.map((x) => x.reps)).toEqual(["10", "", ""]);
+  });
+
+  it("prescription VARIABLE « 5-10-15-20 » → une valeur par série, dans l'ordre", () => {
+    const { sets } = initSetLikeSets({ sets: "", reps: "5-10-15-20...)" });
+    expect(sets).toHaveLength(4);
+    expect(sets.map((x) => x.reps)).toEqual(["5", "10", "15", "20"]);
+  });
+
+  it("progression + @% : reps par série, charge (1RM) sur la série 1 seulement", () => {
+    const { sets } = initSetLikeSets({ reps: "1-2-3-4", sets: "", pct: 80 }, { oneRM: 100 });
+    expect(sets.map((x) => x.reps)).toEqual(["1", "2", "3", "4"]);
+    expect(sets[0].w).toBe("80");                 // 80% de 100 sur la série 1
+    expect(sets.slice(1).every((x) => x.w === "")).toBe(true);
+  });
+});
+
+describe("prescribedRepsPlan — reps prescrites par série", () => {
+  it("progression (≥3 nombres à tirets) → une valeur par série", () => {
+    expect(prescribedRepsPlan("5-10-15-20", "")).toMatchObject({ perSeries: ["5", "10", "15", "20"], count: 4 });
+    expect(prescribedRepsPlan("1-2-3-4-5-6-7-8-9-10", "")).toMatchObject({ count: 10 });
+  });
+  it("uniforme / plage / texte → valeur unique + nb de séries depuis `sets`", () => {
+    expect(prescribedRepsPlan("30 reps", "")).toMatchObject({ perSeries: null, uniform: "30", count: 3 });
+    expect(prescribedRepsPlan("8", "4")).toMatchObject({ perSeries: null, uniform: "8", count: 4 });
+    expect(prescribedRepsPlan("8-12", "3")).toMatchObject({ perSeries: null, uniform: "8", count: 3 }); // plage ≠ progression
+    expect(prescribedRepsPlan("", "")).toMatchObject({ perSeries: null, uniform: "", count: 3 });
   });
 });
 

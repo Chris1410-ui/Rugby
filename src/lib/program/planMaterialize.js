@@ -13,7 +13,7 @@
                            datées, avec source_week = k (1-based) + source_label. */
 
 import { normalizeProgram, clampWeeks } from "./model.js";
-import { codeForNature } from "./materialize.js";
+import { codeForNature, withExerciseIds } from "./materialize.js";
 import { parseProgressionCell } from "../oneRM.js";
 import { parseISO, isoDate } from "../metrics.js";
 import { norm } from "../catalog/detect.js";
@@ -174,7 +174,7 @@ export function planDocToSessions(doc, { startDate, weeks, slots } = {}) {
         nature: nature || null,
         titre: slot.label || "Séance",
         duration_min: 60,
-        exercises: exos.length ? exos : [{ name: slot.label || "Séance", sets: "", reps: "", charge: "", rest: 90 }],
+        exercises: withExerciseIds(exos.length ? exos : [{ name: slot.label || "Séance", sets: "", reps: "", charge: "", rest: 90 }]),
         source_week: k + 1,
         source_label: slot.label || null,
       });

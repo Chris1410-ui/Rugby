@@ -348,7 +348,13 @@
     "viewAsAthlete": "Naar atletenweergave",
     "viewAsStaff": "Terug naar stafweergave",
     "deactivateAthlete": "Mijn atletenprofiel deactiveren",
-    "deactivateAthleteConfirm": "Je atletenprofiel deactiveren? Het wordt uit het klassement verwijderd (je geschiedenis blijft bewaard, je kunt het opnieuw activeren)."
+    "deactivateAthleteConfirm": "Je atletenprofiel deactiveren? Het wordt uit het klassement verwijderd (je geschiedenis blijft bewaard, je kunt het opnieuw activeren).",
+    "athleteErrGeneric": "Kan het atletenprofiel niet activeren.",
+    "athleteErrMissing": "Activatiefunctie ontbreekt op de server (migratie niet uitgerold).",
+    "athleteErrRls": "Onvoldoende rechten (RLS) om het atletenprofiel aan te maken.",
+    "athleteErrDuplicate": "Er bestaat al een atletenprofiel voor dit account.",
+    "athleteErrRole": "Je rol staat het activeren van een atletenprofiel niet toe.",
+    "athleteErrNoTeam": "Geen club geselecteerd om het atletenprofiel aan te koppelen."
   },
   "onboarding": {
     "skip": "Overslaan",
@@ -804,7 +810,12 @@
       "trackingHint": "Tik voor geschiedenis",
       "trackingRange": "Laatste {{count}} metingen",
       "week": "Jouw week",
-      "routineSub": "Je ochtendroutine"
+      "routineSub": "Je ochtendroutine",
+      "sessionKicker": "Sessie van vandaag",
+      "sessionMeta": "{{min}} min · {{done}}/{{total}} reeksen",
+      "sessionStart": "Sessie starten",
+      "sessionResume": "Sessie hervatten",
+      "sessionReview": "Sessie bekijken"
     },
     "messages": {
       "staffTitle": "Staf — Fysiek trainer"
@@ -963,6 +974,28 @@
       "blockTodo": "in te vullen",
       "activityOn": "✓ +10 pts",
       "activityDeclare": "aangeven"
+    },
+    "checkin": {
+      "question": "Hoe voel je je?",
+      "promise": "Één veeg en klaar. +{{pts}} ptn, en je reeks loopt door.",
+      "sliderAria": "Gevoel van vandaag, van 1 (leeg) tot 5 (topfit)",
+      "legendLow": "Leeg",
+      "legendHigh": "Topfit",
+      "scale": {
+        "1": "Leeg",
+        "2": "Matig",
+        "3": "Oké",
+        "4": "Goed",
+        "5": "Topfit"
+      },
+      "verdict": {
+        "low": "Rustig aan vandaag",
+        "mid": "Het gaat — beheer je belasting",
+        "high": "Klaar om te presteren"
+      },
+      "doneSub": "Ochtendcheck-in opgeslagen · +{{pts}} ptn",
+      "streak": "reeks van {{count}} dagen",
+      "detail": "Mijn welzijn detailleren"
     },
     "session": {
       "testHint": "Fysieke tests — de staf voert je resultaten in (fiche + Top 14-vergelijking).",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { docToSessions, codeForNature } from "./materialize.js";
+import { docToSessions, codeForNature, withExerciseIds } from "./materialize.js";
 
 describe("codeForNature", () => {
   it("mappe la nature vers un code rugby, repli RS", () => {
@@ -131,5 +131,31 @@ describe("docToSessions — sans semaine type", () => {
     const exos = docToSessions(doc).sessions[0].exercises;
     expect(exos[0].video).toBe("https://youtu.be/abc");
     expect(exos[1].video).toBeUndefined();
+  });
+
+  // Isolation de la saisie joueur : chaque exercice d'une séance DOIT avoir un id
+  // unique (l'état de saisie est indexé par id → sans cela, fuite entre exercices).
+  it("chaque exercice matérialisé porte un id unique", () => {
+    const doc = { meta: { title: "P", weeks: 1 }, sections: [{ type: "exercises", title: "S", rows: [
+      { name: "Squat", weeks: [{ text: "4×8" }] },
+      { name: "Bench", weeks: [{ text: "5×5" }] },
+      { name: "Tractions", weeks: [{ text: "30 reps" }] },
+    ] }] };
+    const exos = docToSessions(doc).sessions[0].exercises;
+    const ids = exos.map((e) => e.id);
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length); // tous distincts
+  });
+});
+
+describe("withExerciseIds — id unique & stable par position", () => {
+  it("attribue un id de repli aux exercices sans id, préserve les ids existants", () => {
+    const out = withExerciseIds([{ name: "A" }, { name: "B", id: "keep" }, { name: "C" }]);
+    expect(out.map((e) => e.id)).toEqual(["x0", "keep", "x2"]);
+    expect(new Set(out.map((e) => e.id)).size).toBe(3);
+  });
+  it("déterministe : deux appels donnent les mêmes ids (rejouable au rechargement)", () => {
+    const input = [{ name: "A" }, { name: "B" }];
+    expect(withExerciseIds(input).map((e) => e.id)).toEqual(withExerciseIds(input).map((e) => e.id));
   });
 });

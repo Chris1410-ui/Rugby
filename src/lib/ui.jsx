@@ -44,6 +44,21 @@ export function BuildTag({ style }) {
 // Traduction hors composant (atomes sans hook, ex. aria-label de CloseX).
 const tt = (key) => i18n.t(key);
 
+/* Toast d'erreur (ex. activation profil athlète) : bandeau fixe visible même
+   après la fermeture d'un menu/popover. Auto-fermeture après 8 s ; fermeture
+   manuelle. Le message inclut la cause exacte (message brut + code) pour un
+   diagnostic sans ouvrir la console. */
+export function AthleteErrorToast({ msg, onClose }) {
+  useEffect(() => { const id = setTimeout(onClose, 8000); return () => clearTimeout(id); }, [msg, onClose]);
+  return (
+    <div role="alert" style={{ position: "fixed", left: "50%", bottom: 84, transform: "translateX(-50%)", zIndex: 60, maxWidth: 460, width: "calc(100% - 32px)", background: C.panel, border: `1px solid ${C.coral}88`, borderLeft: `4px solid ${C.coral}`, borderRadius: 12, padding: "12px 14px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", gap: 10 }}>
+      <span style={{ fontSize: 16, lineHeight: "20px" }}>⚠️</span>{/* i18n-ok: emoji */}
+      <div style={{ flex: 1, fontSize: 12, color: "#fff", lineHeight: 1.4, wordBreak: "break-word" }}>{msg}</div>
+      <button type="button" onClick={onClose} aria-label={tt("common.close")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 15, fontWeight: 800, lineHeight: "18px" }}>×</button>{/* i18n-ok: glyphe croix */}
+    </div>
+  );
+}
+
 /* ── Fermeture des modaux / bottom sheets (comportement global cohérent) ──
    - CloseX : bouton croix avec cible tactile ≥ 44×44 px (padding cliquable
      autour du glyphe), z-index propre → jamais recouvert par le contenu.

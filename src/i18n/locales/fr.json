@@ -348,7 +348,13 @@
     "viewAsAthlete": "Passer en vue athlète",
     "viewAsStaff": "Revenir en vue staff",
     "deactivateAthlete": "Désactiver mon profil athlète",
-    "deactivateAthleteConfirm": "Désactiver ton profil athlète ? Il sera retiré du classement (ton historique est conservé, tu peux le réactiver)."
+    "deactivateAthleteConfirm": "Désactiver ton profil athlète ? Il sera retiré du classement (ton historique est conservé, tu peux le réactiver).",
+    "athleteErrGeneric": "Impossible d'activer le profil athlète.",
+    "athleteErrMissing": "Fonction d'activation absente côté serveur (migration non déployée).",
+    "athleteErrRls": "Droits insuffisants (RLS) pour créer le profil athlète.",
+    "athleteErrDuplicate": "Un profil athlète existe déjà pour ce compte.",
+    "athleteErrRole": "Ton rôle ne permet pas d'activer un profil athlète.",
+    "athleteErrNoTeam": "Aucun club sélectionné pour rattacher le profil athlète."
   },
   "onboarding": {
     "skip": "Passer",
@@ -804,7 +810,12 @@
       "trackingHint": "Appuie pour l'historique",
       "trackingRange": "{{count}} derniers relevés",
       "week": "Ta semaine",
-      "routineSub": "Ta routine du matin"
+      "routineSub": "Ta routine du matin",
+      "sessionKicker": "Séance du jour",
+      "sessionMeta": "{{min}} min · {{done}}/{{total}} séries",
+      "sessionStart": "Démarrer la séance",
+      "sessionResume": "Reprendre la séance",
+      "sessionReview": "Revoir la séance"
     },
     "messages": {
       "staffTitle": "Staff — Préparateur physique"
@@ -963,6 +974,28 @@
       "blockTodo": "à remplir",
       "activityOn": "✓ +10 pts",
       "activityDeclare": "déclarer"
+    },
+    "checkin": {
+      "question": "Comment tu te sens ?",
+      "promise": "Un glissement et c'est plié. +{{pts}} pts, et ta série continue.",
+      "sliderAria": "Ressenti du jour, de 1 (vidé) à 5 (à bloc)",
+      "legendLow": "Vidé",
+      "legendHigh": "À bloc",
+      "scale": {
+        "1": "Vidé",
+        "2": "Bof",
+        "3": "Correct",
+        "4": "Bien",
+        "5": "À bloc"
+      },
+      "verdict": {
+        "low": "Journée à ménager",
+        "mid": "Ça va — gère ta charge",
+        "high": "Prêt à performer"
+      },
+      "doneSub": "Bilan du matin enregistré · +{{pts}} pts",
+      "streak": "série de {{count}} jours",
+      "detail": "Détailler mon bien-être"
     },
     "session": {
       "testHint": "Tests physiques — le staff saisit tes résultats (fiche + comparaison Top 14).",

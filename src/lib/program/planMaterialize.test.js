@@ -83,6 +83,20 @@ describe("planDocToSessions — déroulé S1→Sn sur les vraies semaines", () =
     expect(warnings).not.toContain("clamp");
   });
 
+  it("chaque exercice d'une séance planifiée porte un id unique (isolation de la saisie)", () => {
+    const multi = { weekday: 3, label: "Haut du corps", nature: "force", code: "RS", rows: [
+      { name: "Bench", weeks: [{ text: "4×8" }] },
+      { name: "Tirage", weeks: [{ text: "4×8" }] },
+      { name: "Tractions", weeks: [{ text: "30 reps" }] },
+    ] };
+    const { rows } = planDocToSessions(docGrid, { startDate: "2026-08-03", weeks: 2, slots: [multi] });
+    rows.forEach((r) => {
+      const ids = r.exercises.map((e) => e.id);
+      expect(ids.every(Boolean)).toBe(true);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+  });
+
   it("N réel > semaines du protocole → clamp sur le dernier bloc + avertissement", () => {
     const { rows, warnings } = planDocToSessions(docGrid, { startDate: "2026-08-03", weeks: 5, slots: [slot] });
     expect(rows).toHaveLength(5);

@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
-import { C, sc, sessionCodeLabel } from "../../lib/tokens.js";
+import { C, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
 import { posDisplay } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
 import { WEEKLY_GOAL_DAYS } from "../../lib/badges.js";
-import { effectiveNature, natureLabel } from "../../lib/nature.js";
 import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
 import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
@@ -15,6 +14,8 @@ import { useProgramDocs, getProgramDoc } from "../../data/programDocs.js";
 import { useTeamProgramAssignments } from "../../data/programAssignments.js";
 import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
+import QuickCheckin from "./bilan/QuickCheckin.jsx";
+import SessionTodayCard from "./bilan/SessionTodayCard.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
@@ -192,24 +193,21 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         </div>
       </div>
 
+      {/* Check-in du matin par glissement — débloque la saisie en un geste
+          (remplace la carte « Matin » ; le formulaire 6 marqueurs reste
+          accessible via « détailler » → même feuille MorningForm). */}
+      <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
+
       {/* Cartes d'action du jour */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <ActionCard emoji="☀️" title={t("player.bilan.morning")} sub={t("player.today.morningSub")} state={day.matin ? "done" : "todo"} accent={accent} onClick={() => setSheet("morning")} t={t} />
         <ActionCard emoji="🌙" title={t("player.bilan.evening")} sub={t("player.today.eveningSub")} state={day.soir ? "done" : "todo"} accent={accent} onClick={() => setSheet("evening")} t={t} />
 
-        {/* Cartes dynamiques : une par séance/programme assigné aujourd'hui */}
-        {todaySessions.map((s) => {
-          const st = statusOfLog(logs, s.id, me.id);
-          const n = (s.exercises || []).length;
-          return (
-            <ActionCard key={s.id} emoji="🏋️"
-              title={s.titre || t("player.today.session")}
-              sub={`${natureLabel(t, effectiveNature(s.nature, s.code))} · ${sessionCodeLabel(t, s.code)} · ${t("player.today.exoCount", { count: n })}`}
-              state={st === "done" ? "done" : "todo"}
-              extra={st === "missed" ? t("player.today.stMissed") : st === "postponed" ? t("player.today.stPostponed") : null}
-              accent={accent} onClick={() => setOpenSession(s)} t={t} />
-          );
-        })}
+        {/* Carte « Séance du jour » : une par séance assignée aujourd'hui —
+            titre + contexte + méta durée·X/Y séries + barre + bouton Démarrer.
+            « Démarrer » ouvre le lecteur set-par-set existant (setOpenSession). */}
+        {todaySessions.map((s) => (
+          <SessionTodayCard key={s.id} s={s} log={logs?.[s.id]?.[me.id]} accent={C.coral} onStart={() => setOpenSession(s)} />
+        ))}
 
         {/* Protocoles assignés (consultation) */}
         {myProtocols.map((d) => (

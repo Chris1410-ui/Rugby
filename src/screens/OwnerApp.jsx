@@ -6,14 +6,14 @@ import { C, FONT, ROLES } from "../lib/tokens.js";
 import { displayName, playerMatchesQuery } from "../lib/identity.js";
 import { posDisplay } from "../lib/positions.js";
 import { Users, Search } from "../lib/icons.jsx";
-import { BuildTag } from "../lib/ui.jsx";
+import { BuildTag, AthleteErrorToast } from "../lib/ui.jsx";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import PlayerApp from "./player/PlayerApp.jsx";
 import PlayerPreview from "./shared/PlayerPreview.jsx";
 import { fetchTeamPlayers } from "../data/players.js";
 import { useOwnerAccounts } from "../data/accounts.js";
-import { activateStaffAthlete, deactivateStaffAthlete } from "../data/staffAthlete.js";
+import { activateStaffAthlete, deactivateStaffAthlete, athleteErrText } from "../data/staffAthlete.js";
 
 const roleOf = (id) => ROLES.find((r) => r.id === id) || { l: id, e: "•", c: C.gray };
 const ownerMenuItem = { width: "100%", textAlign: "left", background: "none", border: "none", borderRadius: 8, padding: "9px 10px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 };
@@ -39,6 +39,7 @@ export default function OwnerApp({ profile, user, signOut, refreshProfile }) {
   const [viewAs, setViewAs] = useState("owner"); // owner | athlete
   const [athleteTeam, setAthleteTeam] = useState(null); // club de la carte athlète
   const [activating, setActivating] = useState(false);
+  const [athleteErr, setAthleteErr] = useState(""); // erreur d'activation → toast visible
 
   // Club de la carte athlète (pour la vue athlète — indépendant du club sélectionné).
   useEffect(() => {
@@ -50,19 +51,20 @@ export default function OwnerApp({ profile, user, signOut, refreshProfile }) {
   }, [hasAthlete, profile.player_id]);
 
   const activateAthlete = async () => {
-    if (activating || !team) return;
-    setActivating(true);
-    try { await activateStaffAthlete(team); await refreshProfile?.(); setViewAs("athlete"); }
-    catch (e) { console.error("[owner athlete]", e.message); }
-    finally { setActivating(false); setMenuOpen(false); }
+    if (activating) return;
+    if (!team) { setAthleteErr(t("shell.athleteErrNoTeam")); setMenuOpen(false); return; }
+    setActivating(true); setAthleteErr("");
+    try { await activateStaffAthlete(team); await refreshProfile?.(); setViewAs("athlete"); setMenuOpen(false); }
+    catch (e) { console.error("[owner athlete]", e); setAthleteErr(athleteErrText(e, t)); }
+    finally { setActivating(false); }
   };
   const deactivateAthlete = async () => {
     if (activating) return;
     if (!window.confirm(t("shell.deactivateAthleteConfirm"))) { setMenuOpen(false); return; }
-    setActivating(true);
-    try { await deactivateStaffAthlete(); setViewAs("owner"); await refreshProfile?.(); }
-    catch (e) { console.error("[owner athlete off]", e.message); }
-    finally { setActivating(false); setMenuOpen(false); }
+    setActivating(true); setAthleteErr("");
+    try { await deactivateStaffAthlete(); setViewAs("owner"); await refreshProfile?.(); setMenuOpen(false); }
+    catch (e) { console.error("[owner athlete off]", e); setAthleteErr(athleteErrText(e, t)); }
+    finally { setActivating(false); }
   };
 
   useEffect(() => {
@@ -197,6 +199,7 @@ export default function OwnerApp({ profile, user, signOut, refreshProfile }) {
           onImpersonate={(acc) => { setShowAccounts(false); setImpersonate(acc); }}
         />
       )}
+      {athleteErr && <AthleteErrorToast msg={athleteErr} onClose={() => setAthleteErr("")} />}
     </div>
   );
 }

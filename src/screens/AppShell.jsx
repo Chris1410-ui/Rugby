@@ -5,13 +5,13 @@ import { acceptClubInvitation, readPendingInvite, clearPendingInvite } from "../
 import { joinClubWithCode, readPendingJoin, clearPendingJoin } from "../data/clubCodes.js";
 import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
 import { Bell, Shield } from "../lib/icons.jsx";
-import { BuildTag } from "../lib/ui.jsx";
+import { BuildTag, AthleteErrorToast } from "../lib/ui.jsx";
 import { useNotifications } from "../data/notifications.js";
 import LanguageSelector from "../i18n/LanguageSelector.jsx";
 import NotificationCenter from "./shared/NotificationCenter.jsx";
 import Onboarding from "./shared/Onboarding.jsx";
 import { markOnboardingSeen } from "../data/onboarding.js";
-import { activateStaffAthlete, deactivateStaffAthlete } from "../data/staffAthlete.js";
+import { activateStaffAthlete, deactivateStaffAthlete, athleteErrText } from "../data/staffAthlete.js";
 import PlayerApp from "./player/PlayerApp.jsx";
 import StaffApp from "./staff/StaffApp.jsx";
 import OwnerApp from "./OwnerApp.jsx";
@@ -32,6 +32,7 @@ export default function AppShell() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [viewAs, setViewAs] = useState("staff"); // staff-athlète : bascule staff ↔ athlète (même login)
   const [activating, setActivating] = useState(false);
+  const [athleteErr, setAthleteErr] = useState(""); // erreur d'activation/désactivation → toast visible
   const [tourReplay, setTourReplay] = useState(false);   // « Revoir le tutoriel » (menu)
   const [tourDismissed, setTourDismissed] = useState(false); // masque immédiat le temps du refresh profil
   // Filet d'adhésion : true tant qu'une invitation nominative OU un code partagé
@@ -140,20 +141,20 @@ export default function AppShell() {
   const switchView = (v) => { setViewAs(v); setNavTab(null); setAvatarOpen(false); };
   const activateAthlete = async () => {
     if (activating) return;
-    setActivating(true);
-    try { await activateStaffAthlete(); await refreshProfile(); setViewAs("athlete"); setNavTab(null); }
-    catch (e) { console.error("[staff athlete]", e.message); }
-    finally { setActivating(false); setAvatarOpen(false); }
+    setActivating(true); setAthleteErr("");
+    try { await activateStaffAthlete(); await refreshProfile(); setViewAs("athlete"); setNavTab(null); setAvatarOpen(false); }
+    catch (e) { console.error("[staff athlete]", e); setAthleteErr(athleteErrText(e, t)); }
+    finally { setActivating(false); }
   };
   // Désactivation (réversible) du profil athlète : retour en vue staff, carte
   // retirée de l'effectif/classement (historique conservé → réactivable).
   const deactivateAthlete = async () => {
     if (activating) return;
     if (!window.confirm(t("shell.deactivateAthleteConfirm"))) { setAvatarOpen(false); return; }
-    setActivating(true);
-    try { await deactivateStaffAthlete(); setViewAs("staff"); setNavTab(null); await refreshProfile(); }
-    catch (e) { console.error("[staff athlete off]", e.message); }
-    finally { setActivating(false); setAvatarOpen(false); }
+    setActivating(true); setAthleteErr("");
+    try { await deactivateStaffAthlete(); setViewAs("staff"); setNavTab(null); await refreshProfile(); setAvatarOpen(false); }
+    catch (e) { console.error("[staff athlete off]", e); setAthleteErr(athleteErrText(e, t)); }
+    finally { setActivating(false); }
   };
   const goHome = () => goTab(homeTab);
   const name = profile.full_name || user?.email || "Moi";
@@ -227,6 +228,7 @@ export default function AppShell() {
       </div>
       {!staff && notifOpen && <NotificationCenter notifs={notifs} onNavigate={goTab} onClose={() => setNotifOpen(false)} accent={C.green} playerId={profile.player_id} teamId={profile.team_id} />}
       {showTour && <Onboarding role={staff ? "staff" : "joueur"} onClose={closeTour} />}
+      {athleteErr && <AthleteErrorToast msg={athleteErr} onClose={() => setAthleteErr("")} />}
     </div>
   );
 }

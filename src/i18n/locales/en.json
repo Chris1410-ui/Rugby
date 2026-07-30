@@ -348,7 +348,13 @@
     "viewAsAthlete": "Switch to athlete view",
     "viewAsStaff": "Back to staff view",
     "deactivateAthlete": "Deactivate my athlete profile",
-    "deactivateAthleteConfirm": "Deactivate your athlete profile? It will be removed from the leaderboard (your history is kept, you can reactivate it)."
+    "deactivateAthleteConfirm": "Deactivate your athlete profile? It will be removed from the leaderboard (your history is kept, you can reactivate it).",
+    "athleteErrGeneric": "Could not activate the athlete profile.",
+    "athleteErrMissing": "Activation function missing on the server (migration not deployed).",
+    "athleteErrRls": "Insufficient rights (RLS) to create the athlete profile.",
+    "athleteErrDuplicate": "An athlete profile already exists for this account.",
+    "athleteErrRole": "Your role does not allow activating an athlete profile.",
+    "athleteErrNoTeam": "No club selected to attach the athlete profile."
   },
   "onboarding": {
     "skip": "Skip",
@@ -804,7 +810,12 @@
       "trackingHint": "Tap for history",
       "trackingRange": "Last {{count}} readings",
       "week": "Your week",
-      "routineSub": "Your morning routine"
+      "routineSub": "Your morning routine",
+      "sessionKicker": "Today's session",
+      "sessionMeta": "{{min}} min · {{done}}/{{total}} sets",
+      "sessionStart": "Start the session",
+      "sessionResume": "Resume the session",
+      "sessionReview": "Review the session"
     },
     "messages": {
       "staffTitle": "Staff — Strength & conditioning"
@@ -963,6 +974,28 @@
       "blockTodo": "to fill in",
       "activityOn": "✓ +10 pts",
       "activityDeclare": "declare"
+    },
+    "checkin": {
+      "question": "How are you feeling?",
+      "promise": "One swipe and it's done. +{{pts}} pts, and your streak keeps going.",
+      "sliderAria": "Today's feeling, from 1 (drained) to 5 (full gas)",
+      "legendLow": "Drained",
+      "legendHigh": "Full gas",
+      "scale": {
+        "1": "Drained",
+        "2": "Meh",
+        "3": "OK",
+        "4": "Good",
+        "5": "Full gas"
+      },
+      "verdict": {
+        "low": "Ease into today",
+        "mid": "You're fine — manage your load",
+        "high": "Ready to perform"
+      },
+      "doneSub": "Morning check-in saved · +{{pts}} pts",
+      "streak": "{{count}}-day streak",
+      "detail": "Detail my wellness"
     },
     "session": {
       "testHint": "Physical tests — the staff enters your results (profile + Top 14 comparison).",

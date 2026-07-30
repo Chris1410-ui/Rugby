@@ -88,9 +88,21 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
   // le MODÈLE DE SAISIE des exercices « plats » (sans kind) — cf. exerciseInputModel.
   const effNature = effectiveNature(s.nature, s.code);
 
+  // Chaque exercice DOIT porter un id UNIQUE et STABLE : l'état de saisie est indexé
+  // par id (ex[e.id]) et sert de clé React. Les séances matérialisées (semaine-type
+  // / plan) stockent des exercices SANS id (id: null) → sans ce repli, tous les
+  // exercices partageraient le même état ex[null] (fuite d'un exercice à l'autre,
+  // clés React en collision) et la saisie serait écrasée entre voisins. On attribue
+  // donc un id de repli DÉTERMINISTE par position (« x0, x1… »), stable entre rendus
+  // et rechargements — les logs (perExercise) sont indexés par ce même id.
+  const exos = useMemo(
+    () => (Array.isArray(s.exercises) ? s.exercises : []).map((e, i) => (e && e.id ? e : { ...e, id: `x${i}` })),
+    [s.exercises],
+  );
+
   const init = () => {
     const b = {};
-    s.exercises.forEach((e) => {
+    exos.forEach((e) => {
       const k = exerciseInputModel(e, effNature);
       const saved = log?.perExercise?.[e.id];
       // Consigne prescrite → métriques prélues (souverain : préremplit un champ
@@ -239,7 +251,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     if (preview) return; // lecture seule : aucune écriture sous l'identité du joueur
     setBusy(true);
     const pe = {};
-    s.exercises.forEach((e) => {
+    exos.forEach((e) => {
       const k = exerciseInputModel(e, effNature); const stt = ex[e.id];
       if (k === "conditioning") {
         const m = stt.mono || {};
@@ -277,8 +289,8 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
     setBusy(false);
   };
 
-  const doneSets = s.exercises.reduce((a, e) => a + blockUnits(e).done, 0);
-  const totSets = s.exercises.reduce((a, e) => a + blockUnits(e).total, 0);
+  const doneSets = exos.reduce((a, e) => a + blockUnits(e).done, 0);
+  const totSets = exos.reduce((a, e) => a + blockUnits(e).total, 0);
 
   // Séance-test : les résultats sont saisis par le staff → carte informative,
   // pas de logging set-par-set côté joueur.
@@ -307,7 +319,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             {s.origin === "libre" && <Tag c={C.viol}>{t("player.session.freeTag")}</Tag>}
             <span style={{ fontSize: 12, fontWeight: 600 }}>{s.titre}</span>
           </div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("player.session.exercisesSeries", { ex: s.exercises.length, sets: totSets })}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>{t("player.session.exercisesSeries", { ex: exos.length, sets: totSets })}</div>
         </div>
         {st === "done" && rpe && <span style={{ fontSize: 14, fontWeight: 800, color: C.green }}>{t("player.session.rpeShort")} {rpe}</span>}
         {st === "pending" && past && <Tag c={C.amb}>{t("player.session.toValidate")}</Tag>}
@@ -336,7 +348,7 @@ export default function SessionPlayCard({ s, me, log, sessions, logs, accent, on
             <span style={{ fontSize: 11, fontWeight: 700, color: doneSets === totSets && totSets ? C.green : "rgba(255,255,255,0.5)" }}>{doneSets}/{totSets}</span>
           </div>
 
-          {s.exercises.map((e) => {
+          {exos.map((e) => {
             const k = exerciseInputModel(e, effNature);
             // Blocs cardio structurés : rendus dédiés (jamais de kg ; distance/temps/allure).
             if (k === "cardio_continuous") return <CardioContinuous key={e.id} e={e} st={ex[e.id]} onField={(p) => setMono(e.id, p)} onNote={(v) => setExNote(e.id, v)} masKmh={me.mas} t={t} accent={accent} />;
