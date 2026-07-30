@@ -1277,6 +1277,26 @@
       "points": "{{n}} pts",
       "toNext": "Plus que {{n}} pts pour {{div}}",
       "maxDiv": "Palier maximum atteint 🏆"
+    },
+    "duel": {
+      "title": "Duels",
+      "challenge": "Défier",
+      "pickTitle": "Choisis un coéquipier à défier (7 jours)",
+      "noOpponents": "Aucun coéquipier à défier pour l'instant.",
+      "empty": "Aucun duel en cours. Lance un défi !",
+      "vs": "Duel · {{name}}",
+      "metricLabel": "Séances · 7 j",
+      "youChallenge": "{{name}} te défie sur 7 jours.",
+      "waiting": "En attente de {{name}}…",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "cancel": "Annuler",
+      "you": "Toi",
+      "ends": "Fin le {{date}}",
+      "win": "{{name}} l'emporte",
+      "draw": "Égalité",
+      "errActive": "Un duel est déjà en cours avec ce joueur.",
+      "errCreate": "Impossible de créer le duel."
     }
   },
   "staff": {

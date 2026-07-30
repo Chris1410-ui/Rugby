@@ -1277,6 +1277,26 @@
       "points": "{{n}} ptn",
       "toNext": "Nog {{n}} ptn tot {{div}}",
       "maxDiv": "Hoogste niveau bereikt 🏆"
+    },
+    "duel": {
+      "title": "Duels",
+      "challenge": "Uitdagen",
+      "pickTitle": "Kies een teamgenoot om uit te dagen (7 dagen)",
+      "noOpponents": "Nog geen teamgenoot om uit te dagen.",
+      "empty": "Geen duel bezig. Start er een!",
+      "vs": "Duel · {{name}}",
+      "metricLabel": "Sessies · 7 d",
+      "youChallenge": "{{name}} daagt je uit over 7 dagen.",
+      "waiting": "Wachten op {{name}}…",
+      "accept": "Accepteren",
+      "decline": "Weigeren",
+      "cancel": "Annuleren",
+      "you": "Jij",
+      "ends": "Eindigt {{date}}",
+      "win": "{{name}} wint",
+      "draw": "Gelijkspel",
+      "errActive": "Er loopt al een duel met deze speler.",
+      "errCreate": "Kon het duel niet aanmaken."
     }
   },
   "staff": {

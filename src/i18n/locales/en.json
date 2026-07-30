@@ -1277,6 +1277,26 @@
       "points": "{{n}} pts",
       "toNext": "{{n}} pts to reach {{div}}",
       "maxDiv": "Top division reached 🏆"
+    },
+    "duel": {
+      "title": "Duels",
+      "challenge": "Challenge",
+      "pickTitle": "Pick a teammate to challenge (7 days)",
+      "noOpponents": "No teammate to challenge yet.",
+      "empty": "No duel in progress. Start one!",
+      "vs": "Duel · {{name}}",
+      "metricLabel": "Sessions · 7 d",
+      "youChallenge": "{{name}} challenges you over 7 days.",
+      "waiting": "Waiting for {{name}}…",
+      "accept": "Accept",
+      "decline": "Decline",
+      "cancel": "Cancel",
+      "you": "You",
+      "ends": "Ends {{date}}",
+      "win": "{{name}} wins",
+      "draw": "Draw",
+      "errActive": "A duel is already running with this player.",
+      "errCreate": "Couldn't create the duel."
     }
   },
   "staff": {
