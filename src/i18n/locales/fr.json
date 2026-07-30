@@ -51,7 +51,9 @@
     "video": "Analyse vidéo",
     "veille": "Veille",
     "compare": "Comparaison A/B",
-    "abonnements": "Abonnements notifications"
+    "abonnements": "Abonnements notifications",
+    "team": "Équipe",
+    "moi": "Moi"
   },
   "recurrence": {
     "once": "Ponctuel",
@@ -320,7 +322,9 @@
     "invites": "Invitations",
     "adhesions": "Demandes d'adhésion",
     "heatmaps": "Heatmaps",
-    "myAthlete": "Mon athlète"
+    "myAthlete": "Mon athlète",
+    "team": "Équipe",
+    "moi": "Moi"
   },
   "roles": {
     "preparateur": "Préparateur physique",

@@ -51,7 +51,9 @@
     "video": "Video analysis",
     "veille": "Watch",
     "compare": "A/B comparison",
-    "abonnements": "Push subscriptions"
+    "abonnements": "Push subscriptions",
+    "team": "Team",
+    "moi": "Me"
   },
   "recurrence": {
     "once": "One-off",
@@ -320,7 +322,9 @@
     "invites": "Invitations",
     "adhesions": "Membership requests",
     "heatmaps": "Heatmaps",
-    "myAthlete": "My athlete"
+    "myAthlete": "My athlete",
+    "team": "Team",
+    "moi": "Me"
   },
   "roles": {
     "preparateur": "S&C coach",

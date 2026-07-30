@@ -17,6 +17,8 @@ import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
 import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles, Grid, Send } from "../../lib/icons.jsx";
 import Bilan from "./Bilan.jsx";
+import TeamTab from "./TeamTab.jsx";
+import Profile from "./Profile.jsx";
 import Taches from "./Taches.jsx";
 import Questionnaires from "./Questionnaires.jsx";
 import Seances from "./Seances.jsx";
@@ -87,6 +89,8 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["bilan", t("nav.bilan"), Sun, bBilan],
     ...(me?.isStaffAthlete ? [["routine", t("nav.routine"), Sun]] : []),
     ["seances", t("nav.seances"), Dumbbell, bSeances],
+    ["team", t("nav.team"), Users],
+    ["moi", t("nav.moi"), Shield],
     ["protocoles", t("nav.protocols"), FileText],
     ["taches", t("nav.taches"), ClipboardList, bTaches],
     ["defis", t("nav.defis"), Flame, bDefis],
@@ -114,6 +118,8 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} badges={{ defis: bDefis, taches: bTaches, convocations: bConv }} onData={refresh} onNavigate={setTab} />}
           {tab === "routine" && me?.isStaffAthlete && <MorningRoutine me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} onNavigate={setTab} />}
+          {tab === "team" && <TeamTab me={me} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} bilans={bilans} crews={crews} testCampaigns={testCampaigns} testResults={testResults} accent={ACCENT} />}
+          {tab === "moi" && <Profile me={me} />}
           {tab === "protocoles" && <PlayerProtocols teamId={profile.team_id} me={me} accent={ACCENT} />}
           {tab === "taches" && <Taches me={me} players={players} accent={ACCENT} />}
           {tab === "defis" && <Defis me={me} players={players} accent={ACCENT} />}
@@ -144,7 +150,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           </button>
         )}
         {mobile
-          ? <MobileNav items={nav} primary={["bilan", "seances", "classement", "messages"]} active={tab} onSelect={setTab} accent={ACCENT} />
+          ? <MobileNav items={nav} primary={["bilan", "seances", "team", "moi"]} active={tab} onSelect={setTab} accent={ACCENT} />
           : <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />}
       </div>
     </PreviewContext.Provider>

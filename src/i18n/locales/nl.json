@@ -51,7 +51,9 @@
     "video": "Video-analyse",
     "veille": "Nieuws",
     "compare": "A/B vergelijking",
-    "abonnements": "Push-abonnementen"
+    "abonnements": "Push-abonnementen",
+    "team": "Team",
+    "moi": "Ik"
   },
   "recurrence": {
     "once": "Eenmalig",
@@ -320,7 +322,9 @@
     "invites": "Uitnodigingen",
     "adhesions": "Lidmaatschapsaanvragen",
     "heatmaps": "Heatmaps",
-    "myAthlete": "Mijn atleet"
+    "myAthlete": "Mijn atleet",
+    "team": "Team",
+    "moi": "Ik"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
