@@ -5,12 +5,13 @@ import { C } from "../../lib/tokens.js";
 import { todayISO } from "../../lib/metrics.js";
 import { readinessReady } from "../../lib/reliability.js";
 import { useReadOnly } from "../../lib/readonly.js";
-import { ChevronRight, Megaphone, Clock, Users, Bell, MessageSquare, Trophy, Dumbbell, Send, ClipboardList, Flame, FileText, AlertOctagon } from "../../lib/icons.jsx";
+import { ChevronRight, Megaphone, Clock, Users, Bell, MessageSquare, Trophy, TrendingUp, Send, ClipboardList, Flame, FileText, AlertOctagon } from "../../lib/icons.jsx";
 import { useTeamTrainings, useTeamAttendance } from "../../data/trainings.js";
 import { useClubNews, markClubNewsSeen } from "../../data/clubNews.js";
 import { useClubSettings, setClubHero } from "../../data/clubSettings.js";
 import { Upload } from "../../lib/icons.jsx";
 import ClubNewsComposer from "./ClubNewsComposer.jsx";
+import TeamWall from "../player/TeamWall.jsx";
 
 /* Écran « Accueil » staff (page d'atterrissage). Même ossature que le joueur mais
    priorité = AGENDA DU JOUR (horaire, terrain, taux de présence confirmée par
@@ -63,12 +64,15 @@ export default function StaffAccueil({ profile, players = [], badges = {}, autho
     { key: "adhesions", label: t("nav.adhesions"), n: badges.adhesions, Icon: Users },
   ].filter((x) => (x.n || 0) > 0);
 
+  // Raccourcis « ops du jour ». Présence rétroactive = Convocations (pointage
+  // staff sur une date passée, déjà en place) ; décrochage + relances = Adhérence
+  // (réutilisation, aucun système parallèle).
   const shortcuts = [
     { key: "effectif", label: t("nav.effectif"), Icon: Users },
     { key: "alertes", label: t("nav.alertes"), Icon: Bell, badge: badges.alertes },
-    { key: "messages", label: t("nav.messages"), Icon: MessageSquare, badge: badges.messages },
     { key: "convocations", label: t("nav.convocations"), Icon: Send },
-    { key: "programmes", label: t("nav.programmes"), Icon: Dumbbell },
+    { key: "adherence", label: t("nav.adherence"), Icon: TrendingUp },
+    { key: "messages", label: t("nav.messages"), Icon: MessageSquare, badge: badges.messages },
     { key: "classement", label: t("nav.classement"), Icon: Trophy },
   ];
 
@@ -176,6 +180,10 @@ export default function StaffAccueil({ profile, players = [], badges = {}, autho
           </button>
         )}
       </div>
+
+      {/* Fil d'activité en direct — réutilise team_activity_feed (0119),
+          pseudonymisé, aucune donnée de santé. */}
+      <TeamWall teamId={teamId} players={players} accent={C.coral} />
 
       {/* Raccourcis */}
       <div style={{ background: "linear-gradient(155deg, #2A2450 0%, #221E42 100%)", border: `1px solid ${C.border}`, borderRadius: 18, padding: 18 }}>
