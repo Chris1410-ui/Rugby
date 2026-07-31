@@ -18,6 +18,7 @@ import AccueilStreak from "./accueil/AccueilStreak.jsx";
 import AccueilTeam from "./accueil/AccueilTeam.jsx";
 import AccueilCoach from "./accueil/AccueilCoach.jsx";
 import AccueilQuickAccess from "./accueil/AccueilQuickAccess.jsx";
+import ReminderPrefs from "./accueil/ReminderPrefs.jsx";
 import QuickCheckin from "./bilan/QuickCheckin.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
@@ -227,6 +228,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
         {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
+        <ActionCard emoji="🔔" title={t("player.reminders.title")} sub={t("player.reminders.actionSub")} state={null} accent={accent} onClick={() => setSheet("rappels")} t={t} />
       </div>
 
       {/* Accès rapide (grille) — refonte Open Design. */}
@@ -280,6 +282,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
       {sheet === "defis" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Defis me={me} players={players} accent={accent} /></div></Overlay>}
       {sheet === "taches" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Taches me={me} players={players} accent={accent} /></div></Overlay>}
       {sheet === "convocations" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Convocations me={me} players={players} accent={accent} /></div></Overlay>}
+      {sheet === "rappels" && <Overlay onClose={closeSheet} sheet z={320}><SheetHead title={t("player.reminders.title")} t={t} /><div style={{ padding: "0 18px 24px" }}><ReminderPrefs me={me} teamId={teamId} /></div></Overlay>}
 
       {/* ── Détail d'un jour ── */}
       {daySel && (

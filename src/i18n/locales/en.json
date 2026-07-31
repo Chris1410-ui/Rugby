@@ -1335,6 +1335,26 @@
         "bad_night": "Freeze not allowed for this date.",
         "generic": "Freeze failed. Try again."
       }
+    },
+    "reminders": {
+      "title": "Reminders",
+      "actionSub": "Set your check-in reminders",
+      "intro": "Choose when and how you're reminded about your morning check-in.",
+      "enabled": "Reminders on",
+      "enabledSub": "Get a notification when your check-in is due",
+      "morningTime": "Morning reminder time",
+      "streakGuard": "Streak guard (evening)",
+      "streakGuardSub": "A last reminder if your day isn't validated",
+      "eveningTime": "Evening cut-off time",
+      "tone": "Insistence",
+      "toneSub": "The tone of reminders",
+      "tones": { "leger": "Gentle", "normal": "Normal", "costaud": "Firm" },
+      "quiet": "Quiet hours",
+      "quietSub": "No reminders during this window (school, night)",
+      "quietStart": "Start",
+      "quietEnd": "End",
+      "saving": "Saving…",
+      "savedHint": "Saved automatically"
     }
   },
   "staff": {

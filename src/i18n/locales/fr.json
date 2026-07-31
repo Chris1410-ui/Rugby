@@ -1335,6 +1335,26 @@
         "bad_night": "Gel impossible pour cette date.",
         "generic": "Le gel a échoué. Réessaie."
       }
+    },
+    "reminders": {
+      "title": "Rappels",
+      "actionSub": "Règle tes rappels de bilan",
+      "intro": "Choisis quand et comment on te rappelle ton bilan du matin.",
+      "enabled": "Rappels activés",
+      "enabledSub": "Reçois une notification quand ton bilan t'attend",
+      "morningTime": "Heure du rappel du matin",
+      "streakGuard": "Garde de série (soir)",
+      "streakGuardSub": "Un dernier rappel si ta journée n'est pas validée",
+      "eveningTime": "Heure limite du soir",
+      "tone": "Insistance",
+      "toneSub": "Le ton des rappels",
+      "tones": { "leger": "Léger", "normal": "Normal", "costaud": "Costaud" },
+      "quiet": "Heures calmes",
+      "quietSub": "Aucun rappel pendant cette plage (école, nuit)",
+      "quietStart": "Début",
+      "quietEnd": "Fin",
+      "saving": "Enregistrement…",
+      "savedHint": "Enregistré automatiquement"
     }
   },
   "staff": {

@@ -1335,6 +1335,26 @@
         "bad_night": "Bevriezen niet toegestaan voor deze datum.",
         "generic": "Bevriezen mislukt. Probeer opnieuw."
       }
+    },
+    "reminders": {
+      "title": "Herinneringen",
+      "actionSub": "Stel je check-inherinneringen in",
+      "intro": "Kies wanneer en hoe je aan je ochtendcheck-in wordt herinnerd.",
+      "enabled": "Herinneringen aan",
+      "enabledSub": "Ontvang een melding wanneer je check-in klaarstaat",
+      "morningTime": "Tijd ochtendherinnering",
+      "streakGuard": "Reeksbescherming (avond)",
+      "streakGuardSub": "Een laatste herinnering als je dag niet gevalideerd is",
+      "eveningTime": "Avonddeadline",
+      "tone": "Aandringen",
+      "toneSub": "De toon van de herinneringen",
+      "tones": { "leger": "Zacht", "normal": "Normaal", "costaud": "Ferm" },
+      "quiet": "Stille uren",
+      "quietSub": "Geen herinneringen tijdens deze periode (school, nacht)",
+      "quietStart": "Begin",
+      "quietEnd": "Einde",
+      "saving": "Opslaan…",
+      "savedHint": "Automatisch opgeslagen"
     }
   },
   "staff": {
