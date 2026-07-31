@@ -22,7 +22,8 @@ import { BottomNav, MobileNav, Tag, Pill, KPI, CloseX, useModalClose, EstimatedB
 import { readinessReady, acwrEstimated } from "../../lib/reliability.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send, Sparkles, Search } from "../../lib/icons.jsx";
+import { Users, Sun, Dumbbell, Plus, AlertOctagon, Bell, BookOpen, Download, Upload, Trophy, Calendar, Activity, Video, Film, MessageSquare, TrendingUp, Eye, Flag, Flame, ClipboardList, FileText, Grid, Shield, Check, Send, Sparkles, Search, Home } from "../../lib/icons.jsx";
+import StaffAccueil from "./StaffAccueil.jsx";
 import PlayerPreview from "../shared/PlayerPreview.jsx";
 import Camps from "./Camps.jsx";
 import Taches from "./Taches.jsx";
@@ -108,6 +109,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
   }
 
   const nav = [
+    ["accueil", t("nav.accueil"), Home],
     ["effectif", t("nav.effectif"), Users, resetReqs.length],
     ["aujourdhui", t("nav.aujourdhui"), Sun],
     // Bascule vers son propre profil athlète (si activé) — accès depuis le hub Plus.
@@ -154,6 +156,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
       )}
       <main style={{ flex: 1, padding: 18 }}>
        <PullToRefresh onRefresh={refresh}>
+        {tab === "accueil" && <StaffAccueil profile={profile} players={players} badges={{ taches: bTaches, defis: bDefis, quest: bQuest, adhesions: bAdhesions, alertes: bAlertes, messages: unread }} authorLabel={[profile.full_name, t(`roles.${profile.role}`)].filter(Boolean).join(" · ")} onNavigate={go} />}
         {tab === "effectif" && <Effectif teamId={profile.team_id} players={players} sessions={sessions} logs={logs} activities={activities} loading={loading} onPreview={setPreview} resetRequests={resetReqs} />}
         {tab === "aujourdhui" && <>
           {!readOnly && <DataQuality teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
@@ -191,7 +194,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
       </main>
       {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}
       {mobile
-        ? <MobileNav items={nav} primary={["aujourdhui", "effectif", "alertes", "messages"]} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />
+        ? <MobileNav items={nav} primary={["accueil", "aujourdhui", "effectif", "alertes"]} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />
         : <BottomNav items={nav} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />}
     </div>
    </ReadOnlyContext.Provider>

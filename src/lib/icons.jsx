@@ -40,6 +40,8 @@ export const Dumbbell = (p) => (<I {...p}><path d="M6 7v10" /><path d="M18 7v10"
 export const Flame = (p) => (<I {...p}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.5-4.3 1-6-.5 2.5 1 4.3 2.5 5.5C17 9.5 18 11 18 13a6 6 0 0 1-12 0c0-1.3.5-2.5 1-3.5.2 1.6 1 2.7 1.5 5z" /></I>);
 export const Droplet = (p) => (<I {...p}><path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z" /></I>);
 export const Snowflake = (p) => (<I {...p}><line x1="12" y1="2" x2="12" y2="22" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="4.5" y1="4.5" x2="19.5" y2="19.5" /><line x1="19.5" y1="4.5" x2="4.5" y2="19.5" /></I>);
+export const Home = (p) => (<I {...p}><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /></I>);
+export const Megaphone = (p) => (<I {...p}><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z" /><path d="M17 9a3.5 3.5 0 0 1 0 6" /></I>);
 export const AlertOctagon = (p) => (<I {...p}><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></I>);
 export const Bell = (p) => (<I {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></I>);
 export const MessageSquare = (p) => (<I {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></I>);
