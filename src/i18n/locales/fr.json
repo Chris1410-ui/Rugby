@@ -1380,7 +1380,10 @@
       "points": "Points",
       "newsTitle": "Actualité du club",
       "newsEmpty": "Pas d'actualité pour l'instant.",
-      "motStaff": "Mot du staff"
+      "motStaff": "Mot du staff",
+      "overtake": "{{name}} vient de te repasser",
+      "overtakeGap": "+{{n}} pts d'écart",
+      "overtakeCta": "Voir"
     }
   },
   "staff": {
@@ -2431,7 +2434,17 @@
       "athleteRoutineDone": "Routine du matin ✓",
       "athleteRoutineNone": "Routine du matin —",
       "athleteBadges": "BADGES",
-      "athleteScopeNote": "Membre du staff qui s'entraîne aussi comme athlète. Tu vois de lui son classement, ses séances réalisées et sa routine du matin — jamais ses charges, tests, poids ni bilans."
+      "athleteScopeNote": "Membre du staff qui s'entraîne aussi comme athlète. Tu vois de lui son classement, ses séances réalisées et sa routine du matin — jamais ses charges, tests, poids ni bilans.",
+      "top14Reached": "{{n}}/{{total}} tests au niveau Top 14",
+      "duelTitle": "Duel du jour",
+      "duelOngoing": "Duel en cours",
+      "duelLeader": "Tu es en tête — aucun rival au-dessus.",
+      "duelGap": "+{{n}} pts au-dessus de toi",
+      "duelChallenge": "Défier",
+      "duelSent": "Défi envoyé à {{name}}",
+      "duelFail": "Le défi a échoué.",
+      "kudosSend": "Encourager {{name}}",
+      "kudosSent": "Encouragé aujourd'hui ✓"
     },
     "report": {
       "wb": {
@@ -3081,7 +3094,8 @@
     "bilanEvening": "Bilan du soir complété",
     "morningRoutine": "Routine du matin complétée",
     "gps": "Séance GPS déposée",
-    "streakTier": "Palier série {{n}} j 🔥"
+    "streakTier": "Palier série {{n}} j 🔥",
+    "weeklyMission": "Mission hebdo (3 jours) 🎯"
   },
   "badges": {
     "assidu": "Assidu",

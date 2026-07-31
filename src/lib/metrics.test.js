@@ -303,6 +303,12 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 25);
     expect(r.badges.some((b) => b.key === "feuSacre")).toBe(false);
   });
+  it("mission hebdo atteinte : +15, event daté (additif, une monnaie)", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const r = computePoints(p, [], {}, [], [], [], [], [], [], [], [], [], [], [{ date: todayISO() }]);
+    expect(r.pts).toBe(108 + 15);
+    expect(r.ev.some((e) => e.key === "weeklyMission")).toBe(true);
+  });
 });
 
 describe("buildAlerts — clés stables (file de traitement)", () => {

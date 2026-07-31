@@ -289,6 +289,10 @@ export const STREAK_TIERS = [
 ];
 export const STREAK_TIER_PTS = Object.fromEntries(STREAK_TIERS.map((x) => [x.tier, x.pts]));
 
+// Mission hebdo (objectif « 3 jours » existant) — points ADDITIFS, 1×/semaine ISO
+// (source = weekly_mission_events, créés côté base). Aucune formule modifiée.
+export const WEEKLY_MISSION_PTS = 15;
+
 // Activités déclarables sur l'écran Aujourd'hui (#6) — +10 pts par thématique.
 export const ACTIVITIES = [
   { key: "salle", label: "Salle", emoji: "🏋️" },
@@ -329,7 +333,7 @@ export const badgeLabel = (t, b) => t(`badges.${b.key}`);
 // `top14Events` : tests validés Top 14 → [{ key, date }] (calculés en amont via
 //   lib/top14.js, `key` = clé du test). +30 pts par test, DATÉS de la 1re validation
 //   → un seul crédit par test (pas de double comptage aux re-saisies).
-export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = [], gpsEvents = [], streakTierEvents = []) {
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = [], gpsEvents = [], streakTierEvents = [], weeklyMissionEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -451,6 +455,12 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
     const inWk = e.date >= wkAgo && e.date <= today;
     add(STREAK_TIER_PTS[e.tier] || 0, "streakTier", e.date, inWk, { n: e.tier });
     if (e.tier > maxTier) maxTier = e.tier;
+  });
+  // Mission hebdo « 3 jours » atteinte (source = weekly_mission_events) : +15,
+  // DATÉ, 1×/semaine ISO. Additif — barème existant inchangé.
+  (weeklyMissionEvents || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(WEEKLY_MISSION_PTS, "weeklyMission", e.date, inWk);
   });
   if (streak >= 5) add(15, "streak5", today, true);
   else if (streak >= 3) add(5, "streak3", today, true);

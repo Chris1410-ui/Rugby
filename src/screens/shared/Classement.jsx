@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
@@ -14,6 +14,9 @@ import { useTeamReactivity } from "../../data/notifications.js";
 import { useTeamTrainingEvents } from "../../data/trainings.js";
 import { useTeamSessionLogs, useTeamCheckinEvents, useTeamGpsEvents } from "../../data/leaderboard.js";
 import { useTeamStreakTiers } from "../../data/streak.js";
+import { useTeamWeeklyMission } from "../../data/weeklyMission.js";
+import { useMyDuels, createDuel, fetchDuelStanding } from "../../data/duels.js";
+import { useMyKudosToday } from "../../data/reactions.js";
 import { useTeamRoutinePoints } from "../../data/morningRoutine.js";
 import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import { natureLabel, natureColor } from "../../lib/nature.js";
@@ -29,6 +32,43 @@ const Move = ({ m }) =>
   ) : (
     <span style={{ fontSize: 11, fontWeight: 800, color: C.coral }}>▼{-m}</span>
   );
+
+// Référentiel Top 14 : 9 tests (cf. data.top14test) → l'indicateur « X/9 ».
+const TOP14_TOTAL = 9;
+// Couleur d'avatar stable dérivée du totem (pseudonymisé, jamais le nom civil).
+const AV = ["#27E8D6", "#8AB4F8", "#F2C84B", "#C8D2E0", "#C07A45", "#6C5CE0", "#5BE39A", "#FF8A78"];
+const avColor = (s) => AV[[...String(s || "?")].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+
+/* Podium des 3 premiers (rang partagé compris) — refonte Open Design. Ordre
+   visuel 2·1·3, socles décroissants. Réutilise le rang déjà calculé (scopeRank)
+   et le barème existant (aucune valeur de la maquette). */
+function Podium({ ranked, onOpen, t }) {
+  const top3 = ranked.filter((d) => d.scopeRank <= 3).slice(0, 3);
+  if (top3.length < 3) return null;
+  const byRank = (r) => top3.find((d) => d.scopeRank === r) || top3[r - 1];
+  const order = [byRank(2), byRank(1), byRank(3)]; // gauche · centre · droite
+  const H = { 1: 74, 2: 54, 3: 40 };
+  const medal = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.15fr 1fr", alignItems: "end", gap: 8, marginBottom: 14 }}>
+      {order.map((d) => {
+        if (!d) return <div key="x" />;
+        const first = d.scopeRank === 1;
+        const init = (d.p.initials || (d.p.name || "?").slice(0, 2)).toUpperCase();
+        return (
+          <button key={d.p.id} onClick={() => onOpen(d)} style={{ textAlign: "center", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <div style={{ fontSize: first ? 26 : 21 }}>{medal[d.scopeRank] || `${d.scopeRank}ᵉ`}</div>
+            <div style={{ width: first ? 46 : 40, height: first ? 46 : 40, borderRadius: 23, margin: "4px auto 5px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: first ? 15 : 13, fontWeight: 900, color: "#0B0A1C", background: avColor(d.p.name || d.p.id) }}>{init}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(d.p)}</div>
+            <div style={{ fontSize: first ? 22 : 18, fontWeight: 900, fontStyle: "italic", color: NEON.yellow, lineHeight: 1.1 }}>{d.pts}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{d.div.e} {divLabel(t, d.div)}</div>
+            <div style={{ marginTop: 8, height: H[d.scopeRank] || 40, borderRadius: "8px 8px 0 0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, fontStyle: "italic", color: first ? "rgba(39,232,214,0.85)" : "rgba(255,255,255,0.34)", background: first ? "linear-gradient(180deg,rgba(39,232,214,0.34),rgba(39,232,214,0.05))" : "linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.02))", border: `1px solid ${first ? "rgba(39,232,214,0.45)" : C.border}`, borderBottom: "none" }}>{d.scopeRank}ᵉ</div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
@@ -63,6 +103,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const routineByPlayer = useTeamRoutinePoints(teamId); // routine du matin complétée (staff-athlète)
   const { byPlayer: gpsByPlayer } = useTeamGpsEvents(teamId); // séance GPS déposée (charge externe, +10/dépôt)
   const { byPlayer: tierByPlayer } = useTeamStreakTiers(teamId); // paliers de série atteints (7/14/30 → +25/50/100)
+  const { byPlayer: missionByPlayer } = useTeamWeeklyMission(teamId); // mission hebdo « 3 jours » (+15/sem.)
   const athletePublic = useTeamAthletePublic(teamId); // projection publique des staff-athlètes (séances/nature + routine ✓/✗)
   // Entrées de points À L'ÉCHELLE DU CLUB (RPC SECURITY DEFINER) → classement
   // IDENTIQUE pour owner/staff/joueur. Sans ça, un joueur (RLS = ses données
@@ -70,6 +111,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   // props logs/activities/bilans (limités par la RLS) pour le calcul des points.
   const clubLogs = useTeamSessionLogs(teamId);
   const { activities: clubActivities, bilans: clubBilans } = useTeamCheckinEvents(teamId);
+  // Encouragements (social, aucun point) — actifs seulement en vue joueur.
+  const kudos = useMyKudosToday(isJoueur ? me?.id : null);
 
   const data = useMemo(() => {
     const all = rankPlayers.map((p) => {
@@ -83,7 +126,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       const routineEvents = routineByPlayer[p.id] || [];
       const gpsEvents = gpsByPlayer[p.id] || [];
       const streakTierEvents = tierByPlayer[p.id] || [];
-      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents, gpsEvents, streakTierEvents) };
+      const missionEvents = missionByPlayer[p.id] || [];
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents, gpsEvents, streakTierEvents, missionEvents) };
     });
     // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
     const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
@@ -94,7 +138,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, tierByPlayer, athletePublic]);
+  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, tierByPlayer, missionByPlayer, athletePublic]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
@@ -161,6 +205,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
         </div>
       )}
 
+      {mode === "indiv" && ranked.length >= 3 && <Podium ranked={ranked} onOpen={openRow} t={t} />}
+
       {mode === "indiv" && (
       <div style={{ borderRadius: 14, overflow: "hidden", background: NEON.panel, border: "1px solid rgba(160,120,255,0.25)", padding: 8 }}>
         {ranked.map((d) => {
@@ -172,6 +218,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + displayName(d.p) : displayName(d.p)}</span>
                   {d.top14 > 0 && <span title={t("shared.leaderboard.top14Title", { count: d.top14 })} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
+                  {d.top14 > 0 && <span title={t("shared.leaderboard.top14Reached", { n: d.top14, total: TOP14_TOTAL })} style={{ flexShrink: 0, fontSize: 8, fontWeight: 800, fontFamily: "ui-monospace, monospace", color: top ? "#0c2b2b" : "rgba(255,255,255,0.7)", background: top ? "rgba(12,43,43,0.14)" : "rgba(255,255,255,0.1)", border: `1px solid ${top ? "rgba(12,43,43,0.25)" : "rgba(255,255,255,0.16)"}`, borderRadius: 5, padding: "1px 5px" }}>{d.top14}/{TOP14_TOTAL}</span>}
                   {d.chalBadge && <span title={t("shared.leaderboard.chalTitle", { count: d.chalCount, badge: challengeBadgeLabel(t, d.chalBadge) })} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
                   {d.p.isStaffAthlete && <span title={t("shared.leaderboard.staffAthleteTitle")} style={{ flexShrink: 0, fontSize: 8, fontWeight: 900, letterSpacing: 0.4, color: top ? "#0c2b2b" : "rgba(255,255,255,0.75)", background: top ? "rgba(12,43,43,0.18)" : "rgba(255,255,255,0.12)", border: `1px solid ${top ? "rgba(12,43,43,0.3)" : "rgba(255,255,255,0.22)"}`, borderRadius: 5, padding: "1px 5px" }}>{t("shared.leaderboard.staffAthleteBadge")}</span>}
                 </div>
@@ -242,16 +289,89 @@ export default function Classement({ players, sessions, crews = [], me, accent =
         );
       })()}
 
-      {sel && <PlayerPointsDetail sel={sel} accent={accent} onClose={() => setSel(null)} />}
+      {mode === "indiv" && isJoueur && mine && scope === "all" && (
+        <DuelOfDay me={me} myPts={mine.pts} rival={data[data.findIndex((d) => d.p.id === me.id) - 1]} accent={accent} t={t} />
+      )}
+
+      {sel && <PlayerPointsDetail sel={sel} accent={accent} meId={isJoueur ? me?.id : null} kudos={kudos} onClose={() => setSel(null)} />}
       {athlete && <AthleteProfile player={athlete.p} athlete={athlete.athlete} stats={{ div: athlete.div, pts: athlete.pts, rank: athlete.rank, badges: athlete.badges, top14: athlete.top14, chalCount: athlete.chalCount }} accent={accent} onClose={() => setAthlete(null)} />}
     </div>
   );
 }
 
+/* « Duel du jour » — réutilise les DUELS du lot 2 (RPC duel_create / duel_standing,
+   migration 0120). Aucune nouvelle table, aucun barème : le rival proposé est le
+   joueur juste devant moi au classement (rang -1). Si un duel est déjà en cours,
+   on affiche son score en direct ; sinon, un bouton « Défier » crée le duel via
+   la RPC existante. */
+function DuelOfDay({ me, myPts = 0, rival, accent, t }) {
+  const { duels, refresh } = useMyDuels(me?.id);
+  const [standing, setStanding] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+
+  // Duel actif (proposé/accepté) où je suis impliqué.
+  const active = useMemo(
+    () => (duels || []).find((d) => d.status === "pending" || d.status === "accepted") || null,
+    [duels],
+  );
+  useEffect(() => {
+    let alive = true;
+    if (!active) { setStanding(null); return; }
+    fetchDuelStanding(active.id).then((s) => { if (alive) setStanding(s); }).catch(() => {});
+    return () => { alive = false; };
+  }, [active]);
+
+  const challenge = async () => {
+    if (!rival?.p?.id || busy) return;
+    setBusy(true); setNote("");
+    try { await createDuel(rival.p.id, 7); await refresh(); setNote(t("shared.leaderboard.duelSent", { name: displayName(rival.p) })); }
+    catch (e) { setNote(e?.message || t("shared.leaderboard.duelFail")); }
+    finally { setBusy(false); }
+  };
+
+  const wrap = { marginTop: 12, background: NEON.panel, border: `1px solid rgba(160,120,255,0.25)`, borderRadius: 14, padding: 14 };
+  const head = <div style={{ fontSize: 9.5, letterSpacing: 1, textTransform: "uppercase", color: "rgba(255,255,255,0.5)", fontWeight: 800, marginBottom: 10 }}>{t("shared.leaderboard.duelTitle")}</div>;
+
+  if (active) {
+    const mineN = active.challenger_id === me?.id ? standing?.challengerN : standing?.opponentN;
+    const theirsN = active.challenger_id === me?.id ? standing?.opponentN : standing?.challengerN;
+    return (
+      <div style={wrap}>
+        {head}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: accent }}>⚔️ {t("shared.leaderboard.duelOngoing")}</div>
+          {standing && <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 16, fontWeight: 900 }}>{mineN ?? 0}<span style={{ color: "rgba(255,255,255,0.4)" }}> · </span>{theirsN ?? 0}</div>}
+        </div>
+      </div>
+    );
+  }
+  if (!rival) {
+    return <div style={wrap}>{head}<div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{t("shared.leaderboard.duelLeader")}</div></div>;
+  }
+  return (
+    <div style={wrap}>
+      {head}
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <span style={{ width: 34, height: 34, borderRadius: 17, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#0B0A1C", background: avColor(rival.p.name || rival.p.id) }}>{(rival.p.initials || (rival.p.name || "?").slice(0, 2)).toUpperCase()}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(rival.p)}</div>
+          <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)" }}>{t("shared.leaderboard.duelGap", { n: Math.max(0, rival.pts - myPts) })}</div>
+        </div>
+        <button onClick={challenge} disabled={busy} style={{ flexShrink: 0, minHeight: 40, padding: "0 14px", borderRadius: 10, background: accent, border: "none", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>{t("shared.leaderboard.duelChallenge")}</button>
+      </div>
+      {note && <div style={{ fontSize: 11, color: accent, marginTop: 8 }}>{note}</div>}
+    </div>
+  );
+}
+
 /* Détail des points d'un joueur (delta, série, journal) — modal. */
-function PlayerPointsDetail({ sel, accent, onClose }) {
+function PlayerPointsDetail({ sel, accent, meId = null, kudos = null, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
+  // Encouragement (social, aucun point) : visible en vue joueur, sur un coéquipier.
+  const canKudos = meId && sel.p.id !== meId;
+  const kudosed = canKudos && kudos?.set?.has(sel.p.id);
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
@@ -264,6 +384,12 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
           <KPI label={t("shared.leaderboard.kpiStreak")} value={sel.streak} sub={t("shared.leaderboard.kpiStreakSub")} color={accent} />
           <KPI label={t("shared.leaderboard.kpiSessions")} value={sel.doneCount} sub={t("shared.leaderboard.kpiSessionsSub", { count: sel.missedCount })} />
         </div>
+        {canKudos && (
+          <button onClick={() => !kudosed && kudos?.send(sel.p.id)} disabled={kudosed}
+            style={{ width: "100%", minHeight: 46, marginBottom: 14, borderRadius: 12, border: `1px solid ${kudosed ? C.green + "66" : accent}`, background: kudosed ? `${C.green}18` : `${accent}18`, color: kudosed ? C.green : "#fff", fontSize: 13.5, fontWeight: 800, cursor: kudosed ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            💪 {kudosed ? t("shared.leaderboard.kudosSent") : t("shared.leaderboard.kudosSend", { name: displayName(sel.p) })}
+          </button>
+        )}
         {sel.top14Tests?.length > 0 && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.amb, letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.top14Section", { count: sel.top14Tests.length })}</div>

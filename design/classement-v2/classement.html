@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Classement · saison interne</title>
+<!--
+  Classement — artefact vivant, web responsive (joueurs + staff).
+  · Barème repris à l'identique de l'export d'origine : DIVS, rankLeaderboard
+    (rang partagé + départage stable par totem), paliers de défis.
+  · Données figées, pseudonymisées (totem + initiales). Aucune métrique inventée.
+  · Le badge STAFF marque un membre du staff qui s'entraîne aussi comme athlète :
+    joueurs et staff partagent le même classement.
+-->
+<style>
+/* ============================================================
+   1 · TOKENS
+   ============================================================ */
+:root{
+  /* fond & surfaces */
+  --navy-900:#0C0B1C;
+  --navy-800:#13112A;
+  --panel:#191536;
+  --panel-2:#221D48;
+  --row:rgba(255,255,255,.035);
+  --row-hi:rgba(108,92,224,.16);
+
+  /* filets */
+  --line:rgba(150,140,225,.18);
+  --line-soft:rgba(255,255,255,.075);
+
+  /* texte */
+  --fg:#F3F2FB;
+  --fg-2:rgba(243,242,251,.60);
+  --fg-3:rgba(243,242,251,.36);
+
+  /* accent primaire — unique */
+  --cyan:#27E8D6;
+  --cyan-dim:rgba(39,232,214,.14);
+
+  /* usages réservés */
+  --gold:#F2C84B;          /* points, uniquement */
+  --up:#5BE39A;            /* delta positif */
+  --down:#FF8A78;          /* delta négatif */
+
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable",system-ui,sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --gut:clamp(14px,3.2vw,28px);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100%;
+  background:
+    radial-gradient(900px 460px at 50% -8%, #241E4E 0%, transparent 68%),
+    var(--navy-900);
+  background-attachment:fixed;
+  color:var(--fg);
+  font:500 15px/1.5 var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-wrap:pretty;
+}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:4px}
+
+/* ============================================================
+   2 · CHARPENTE RESPONSIVE
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:color-mix(in oklab, var(--navy-900) 88%, transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-in{
+  max-width:1280px;margin:0 auto;padding:12px var(--gut);
+  display:flex;align-items:center;gap:14px;
+}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1}
+.brand h1{
+  font-family:var(--font-display);
+  font-size:clamp(19px,2.6vw,26px);font-weight:900;font-style:italic;
+  letter-spacing:-.02em;text-transform:uppercase;line-height:1;white-space:nowrap;
+}
+.brand .season{
+  font-size:11px;color:var(--fg-3);letter-spacing:.06em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:520px){ .brand .season{display:none} }
+
+.me-pill{
+  display:flex;align-items:center;gap:9px;flex-shrink:0;
+  padding:6px 12px 6px 10px;border-radius:999px;
+  background:var(--cyan-dim);border:1px solid rgba(39,232,214,.32);
+}
+.me-pill .lbl{font-size:9.5px;letter-spacing:.14em;color:var(--fg-2);text-transform:uppercase}
+.me-pill .rk{font-family:var(--font-display);font-size:17px;font-weight:900;font-style:italic;color:var(--cyan);line-height:1}
+.me-pill .pts{font-size:14px;font-weight:800;color:var(--gold);line-height:1}
+
+.shell{
+  max-width:1280px;margin:0 auto;
+  padding:var(--gut) var(--gut) 120px;
+  display:grid;gap:clamp(16px,2.4vw,28px);
+  grid-template-columns:minmax(0,1fr);
+}
+@media (min-width:1024px){
+  .shell{grid-template-columns:minmax(0,1fr) 330px;align-items:start}
+  .rail{position:sticky;top:78px}
+}
+.rail{display:grid;gap:14px;align-content:start}
+
+/* ============================================================
+   3 · COMMANDES PRODUIT
+   ============================================================ */
+.controls{display:grid;gap:10px;margin-bottom:16px}
+.seg{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:4px;border-radius:var(--r-md);
+  background:rgba(255,255,255,.05);border:1px solid var(--line-soft);
+}
+.seg button{
+  padding:9px 4px;border-radius:9px;font-size:13px;font-weight:700;
+  color:var(--fg-2);transition:background .16s,color .16s;
+}
+.seg button[aria-pressed="true"]{background:var(--cyan);color:#062A28;font-weight:800}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;flex:1 1 240px;min-width:0;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{
+  flex:0 0 auto;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);color:var(--fg-2);
+  transition:border-color .16s,color .16s,background .16s;
+}
+.chips button[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+
+.search{
+  flex:0 1 190px;display:flex;align-items:center;gap:7px;
+  padding:7px 11px;border-radius:999px;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);
+}
+.search svg{flex:0 0 auto;opacity:.45}
+.search input{border:0;background:none;outline:none;width:100%;font-size:13px}
+.search input::placeholder{color:var(--fg-3)}
+.sortsel{
+  flex:0 0 auto;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);color:var(--fg-2);
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+}
+.sortsel option{background:var(--panel);color:var(--fg)}
+
+/* ============================================================
+   4 · PODIUM — le geste unique
+   ============================================================ */
+.podium{
+  display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:clamp(6px,1.4vw,14px);
+  align-items:end;margin-bottom:16px;
+}
+.pod{
+  position:relative;text-align:center;padding:12px 6px 0;
+  border-radius:var(--r-md) var(--r-md) 0 0;
+}
+.pod .medal{font-size:clamp(20px,3.4vw,28px);line-height:1}
+.pod .av{
+  width:clamp(38px,7vw,52px);aspect-ratio:1;border-radius:50%;
+  margin:7px auto 6px;display:grid;place-items:center;
+  font-size:clamp(12px,1.7vw,16px);font-weight:900;color:#0B0A1C;
+}
+.pod .tot{
+  font-size:clamp(11px,1.5vw,14px);font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.pod .pts{
+  font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:clamp(19px,3.4vw,32px);color:var(--gold);line-height:1.1;letter-spacing:-.02em;
+}
+.pod .dv{font-size:clamp(9.5px,1.2vw,11.5px);color:var(--fg-2);margin-top:2px}
+.plinth{
+  margin-top:9px;border-radius:var(--r-sm) var(--r-sm) 0 0;
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.02));
+  border:1px solid var(--line-soft);border-bottom:0;
+  display:grid;place-items:center;
+  font-family:var(--font-display);font-style:italic;font-weight:900;
+  color:var(--fg-3);font-size:13px;
+  height:var(--h);transition:height .55s cubic-bezier(.2,.9,.25,1);
+}
+.pod.p1 .plinth{
+  background:linear-gradient(180deg,rgba(39,232,214,.34),rgba(39,232,214,.05));
+  border-color:rgba(39,232,214,.45);color:rgba(39,232,214,.85);
+  box-shadow:0 -18px 44px -18px rgba(39,232,214,.55);
+}
+.podium.pre .plinth{height:0}
+
+/* ============================================================
+   5 · TABLEAU
+   ============================================================ */
+.panel{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-lg);overflow:hidden;
+}
+.panel-head{
+  display:none;padding:9px 16px;border-bottom:1px solid var(--line-soft);
+  font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fg-3);font-weight:800;
+}
+@media (min-width:720px){
+  .panel-head{display:grid;gap:10px;align-items:center;
+    grid-template-columns:52px minmax(0,1fr) 132px 62px 72px 92px 40px}
+  .panel-head span:nth-child(n+4){text-align:right}
+}
+.rows{padding:6px}
+
+.row{
+  width:100%;text-align:left;display:grid;gap:4px 10px;align-items:center;
+  padding:9px 10px;border-radius:10px;border:1px solid transparent;
+  background:var(--row);margin-bottom:5px;cursor:pointer;
+  grid-template-columns:38px minmax(0,1fr) auto 34px;
+  grid-template-areas:
+    "rank who  pts   kudo"
+    "rank meta delta kudo";
+  transition:background .16s,border-color .16s,transform .12s;
+}
+.row:last-child{margin-bottom:0}
+.row:hover{background:rgba(255,255,255,.065)}
+.row:active{transform:scale(.994)}
+.row.me{background:var(--row-hi);border-color:rgba(39,232,214,.42)}
+.row.lead{background:linear-gradient(96deg,rgba(39,232,214,.92),rgba(39,232,214,.42));color:#062A28}
+.row.lead .r-sub,.row.lead .r-dv{color:rgba(6,42,40,.72)}
+.row.lead .r-pts{color:#062A28}
+.row.lead .r-rank{color:#062A28}
+.row.open{border-color:var(--cyan)}
+
+.r-rank{grid-area:rank;font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:14px;text-align:center;color:var(--fg-2);letter-spacing:-.03em}
+.r-rank.podium3{font-size:16px}
+.r-who{grid-area:who;display:flex;align-items:center;gap:7px;min-width:0}
+.av-s{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  font-size:9px;font-weight:900;color:#0B0A1C}
+.r-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.r-tags{display:flex;gap:4px;flex-shrink:0;align-items:center}
+.r-meta{grid-area:meta;display:flex;align-items:center;gap:8px;min-width:0;padding-left:31px}
+.r-dv{font-size:11px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-streak{font-size:11px;font-weight:700;color:var(--fg-2);white-space:nowrap}
+.r-delta{grid-area:delta;font-size:12px;font-weight:800;text-align:right;white-space:nowrap}
+.r-delta.pos{color:var(--up)} .r-delta.neg{color:var(--down)} .r-delta.flat{color:var(--fg-3)}
+.row.lead .r-delta.pos{color:#064A31} .row.lead .r-delta.neg{color:#7A1F12} .row.lead .r-delta.flat{color:rgba(6,42,40,.5)}
+.r-pts{grid-area:pts;font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:19px;color:var(--gold);text-align:right;letter-spacing:-.02em;white-space:nowrap}
+.r-pts u{text-decoration:none;font-size:9px;font-weight:700;font-style:normal;opacity:.62;
+  font-family:var(--font-body);margin-left:2px}
+
+/* Encourager — bouton réel imbriqué dans la ligne (la ligne est un role="button"). */
+.kudo{
+  grid-area:kudo;justify-self:end;align-self:center;
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  font-size:14px;line-height:1;background:rgba(255,255,255,.05);
+  border:1px solid var(--line-soft);color:var(--fg-2);
+  transition:transform .14s,background .16s,border-color .16s;
+}
+.kudo:hover{background:rgba(39,232,214,.14);border-color:rgba(39,232,214,.42)}
+.kudo:active{transform:scale(.88)}
+.kudo.done{background:var(--cyan-dim);border-color:rgba(39,232,214,.5);color:var(--cyan);cursor:default}
+.kudo[disabled]{opacity:.34;cursor:default}
+.kudo.done[disabled]{opacity:1}
+.kudo.ghost{background:none;border-color:transparent;pointer-events:none}
+.row.lead .kudo{background:rgba(6,42,40,.14);border-color:rgba(6,42,40,.26);color:#062A28}
+
+@media (min-width:720px){
+  .row{
+    grid-template-columns:52px minmax(0,1fr) 132px 62px 72px 92px 40px;
+    grid-template-areas:"rank who div streak delta pts kudo";
+    padding:10px 12px;gap:10px;
+  }
+  .r-meta{display:contents}
+  .r-dv{grid-area:div;font-size:12px;padding:0}
+  .r-streak{grid-area:streak;text-align:right}
+  .r-name{font-size:14.5px}
+  .r-pts{font-size:21px}
+}
+/* Les lignes « par ligne » gardent 2 rangées : le libellé d'agrégat est trop
+   long pour la colonne Division. Delta et points s'étendent sur les 2 rangées. */
+.row.team{
+  grid-template-columns:44px minmax(0,1fr) auto auto;
+  grid-template-areas:
+    "rank who  delta pts"
+    "rank meta delta pts";
+  padding:12px;
+}
+.row.team .r-meta{display:flex;padding-left:0}
+.row.team .r-delta,.row.team .r-pts{align-self:center}
+
+/* pastilles */
+.tag{flex:0 0 auto;font-size:8.5px;font-weight:900;letter-spacing:.04em;border-radius:5px;padding:2px 5px;line-height:1.35}
+.tag.t14{color:#2A1B00;background:linear-gradient(92deg,#C9851F,#FFD873)}
+.tag.tests{color:var(--fg-2);background:rgba(255,255,255,.1);border:1px solid var(--line-soft);font-family:var(--font-mono)}
+.tag.staff{color:var(--fg-2);background:rgba(255,255,255,.09);border:1px solid var(--line-soft)}
+.tag.chal{background:none;padding:0;font-size:12px}
+.row.lead .tag.tests,.row.lead .tag.staff{color:#062A28;background:rgba(6,42,40,.14);border-color:rgba(6,42,40,.26)}
+
+.empty{padding:34px 18px;text-align:center;color:var(--fg-3);font-size:13px}
+
+/* ============================================================
+   6 · RAIL — ma division, échelle
+   ============================================================ */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
+.card h2{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:12px}
+.mydiv{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.mydiv .em{font-size:30px;line-height:1}
+.mydiv .name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.mydiv .to-next{font-size:11.5px;color:var(--fg-2);margin-top:2px}
+.mydiv .wk{margin-left:auto;text-align:right;flex-shrink:0}
+.mydiv .wk b{display:block;font-size:14px;font-weight:800}
+.mydiv .wk span{font-size:9.5px;color:var(--fg-3);letter-spacing:.05em}
+.track{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.track i{display:block;height:100%;border-radius:4px;width:0;transition:width .8s cubic-bezier(.2,.9,.25,1)}
+.track-legend{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--fg-3)}
+.badgewrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
+  background:rgba(255,255,255,.06);border:1px solid var(--line-soft)}
+
+.ladder-row{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--line-soft)}
+.ladder-row:last-child{border-bottom:0}
+.ladder-row.here{font-weight:800}
+.ladder-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ladder-row .nm{font-weight:700}
+.ladder-row .rg{margin-left:auto;font-size:11px;color:var(--fg-3)}
+.ladder-row .you{font-size:9px;letter-spacing:.1em;color:var(--cyan);border:1px solid rgba(39,232,214,.4);
+  border-radius:4px;padding:1px 5px}
+
+.foot{margin-top:18px;font-size:10.5px;line-height:1.6;color:var(--fg-3);text-align:center}
+
+/* ============================================================
+   7 · BARRE « MA LIGNE » COLLANTE
+   ============================================================ */
+.mebar{
+  position:fixed;left:50%;bottom:16px;transform:translate(-50%,140%);
+  z-index:50;width:min(560px,calc(100vw - 2*var(--gut)));
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:11px;align-items:center;
+  padding:10px 14px;border-radius:999px;
+  background:color-mix(in oklab, var(--panel-2) 92%, transparent);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(39,232,214,.36);
+  box-shadow:0 18px 44px -18px rgba(0,0,0,.85);
+  transition:transform .34s cubic-bezier(.2,.9,.25,1),opacity .24s;
+  opacity:0;pointer-events:none;text-align:left;
+}
+.mebar.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.mebar .rk{font-family:var(--font-display);font-style:italic;font-weight:900;font-size:17px;color:var(--cyan)}
+.mebar .nm{display:block;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mebar .sub{display:block;font-size:10px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mebar .dl{font-size:12px;font-weight:800}
+.mebar .pt{font-family:var(--font-display);font-style:italic;font-weight:900;font-size:18px;color:var(--gold)}
+
+/* ============================================================
+   8 · PANNEAU DÉTAIL
+   ============================================================ */
+.scrim{position:fixed;inset:0;background:rgba(6,5,18,.62);backdrop-filter:blur(2px);
+  z-index:60;opacity:0;pointer-events:none;transition:opacity .24s}
+.scrim.show{opacity:1;pointer-events:auto}
+.sheet[hidden]{display:none}
+.sheet{
+  position:fixed;z-index:61;background:var(--panel);border:1px solid var(--line);
+  display:flex;flex-direction:column;
+  transition:transform .34s cubic-bezier(.2,.9,.25,1);
+  left:0;right:0;bottom:0;max-height:88vh;border-radius:20px 20px 0 0;
+  transform:translateY(101%);
+  box-shadow:0 -22px 60px -20px rgba(0,0,0,.9);
+}
+.sheet.show{transform:translateY(0)}
+@media (min-width:860px){
+  .sheet{left:auto;top:0;bottom:0;width:400px;max-height:none;
+    border-radius:20px 0 0 20px;transform:translateX(101%)}
+  .sheet.show{transform:translateX(0)}
+}
+.sheet-head{display:flex;align-items:center;gap:12px;padding:18px 20px 14px;border-bottom:1px solid var(--line-soft)}
+.sheet-head .av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  font-size:15px;font-weight:900;color:#0B0A1C;flex-shrink:0}
+.sheet-head h3{font-family:var(--font-display);font-size:21px;font-weight:900;font-style:italic;
+  letter-spacing:-.02em;line-height:1.1}
+.sheet-head .pos{font-size:11.5px;color:var(--fg-2);margin-top:2px}
+.sheet-close{margin-left:auto;width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,.07);display:grid;place-items:center;font-size:16px;color:var(--fg-2)}
+.sheet-body{padding:16px 20px 26px;overflow-y:auto;display:grid;gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:rgba(255,255,255,.045);border:1px solid var(--line-soft);border-radius:var(--r-md);padding:11px 10px}
+.kpi b{display:block;font-family:var(--font-display);font-style:italic;font-weight:900;font-size:20px;letter-spacing:-.02em}
+.kpi span{display:block;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);margin-top:3px}
+.stub{border:1px dashed var(--line);border-radius:var(--r-md);padding:16px;text-align:center;
+  color:var(--fg-3);font-size:11.5px;line-height:1.6}
+
+/* ============================================================
+   9 · BOUCLE QUOTIDIENNE — check-in, série, duel, mission
+   ============================================================ */
+/* pastille « il te reste une action » dans l'en-tête */
+.me-pill.pending::after{
+  content:"";flex:0 0 auto;width:7px;height:7px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 0 4px rgba(39,232,214,.16);
+  animation:blip 2s ease-in-out infinite;
+}
+@keyframes blip{0%,100%{opacity:1}50%{opacity:.3}}
+
+.recap{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 13px;
+  border-radius:var(--r-md);background:rgba(39,232,214,.08);
+  border:1px solid rgba(39,232,214,.24);font-size:12.5px;color:var(--fg-2);line-height:1.5;
+}
+.recap[hidden]{display:none}
+.recap b{color:var(--fg);font-weight:800}
+.recap .x{margin-left:auto;flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;color:var(--fg-3);font-size:13px}
+.recap .x:hover{background:rgba(255,255,255,.08);color:var(--fg)}
+
+.today{
+  background:linear-gradient(166deg,var(--panel-2),var(--panel) 64%);
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:clamp(14px,2.2vw,19px);margin-bottom:14px;display:grid;gap:14px;
+}
+.today h2{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--fg-3);font-weight:800;margin-bottom:11px}
+.tgrid{display:grid;gap:16px}
+.vrule{display:none;background:var(--line-soft)}
+@media (min-width:760px){
+  .tgrid{grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);gap:20px}
+  .vrule{display:block}
+}
+
+/* série + check-in */
+.streakline{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.flame{font-size:25px;line-height:1;filter:grayscale(1);opacity:.35;transition:filter .3s,opacity .3s}
+.flame.on{filter:none;opacity:1}
+.streakline .txt{min-width:0}
+.streakline .n{display:block;font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:25px;letter-spacing:-.03em;line-height:1}
+.streakline .lb{display:block;font-size:11.5px;color:var(--fg-2);margin-top:3px}
+.streakline .cd{margin-left:auto;text-align:right;flex-shrink:0;
+  font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--fg-3)}
+.streakline .cd b{display:block;font-family:var(--font-mono);font-size:13.5px;
+  color:var(--fg);font-weight:700;letter-spacing:0;margin-top:2px}
+
+.cta{
+  width:100%;min-height:52px;border-radius:var(--r-md);padding:0 16px;
+  background:var(--cyan);color:#062A28;font-size:15px;font-weight:900;letter-spacing:-.01em;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:0 12px 30px -16px rgba(39,232,214,.95);
+  transition:transform .14s,filter .16s,background .2s,color .2s,box-shadow .2s;
+}
+.cta:hover{filter:brightness(1.07)}
+.cta:active{transform:scale(.985)}
+.cta.done{background:rgba(39,232,214,.12);color:var(--cyan);
+  border:1px solid rgba(39,232,214,.42);box-shadow:none;cursor:default}
+@keyframes pulseCta{0%,100%{box-shadow:0 12px 30px -16px rgba(39,232,214,.95)}
+  50%{box-shadow:0 14px 40px -12px rgba(39,232,214,1)}}
+.cta.pending{animation:pulseCta 2.8s ease-in-out infinite}
+.cta-sub{font-size:11.5px;color:var(--fg-3);margin-top:9px;line-height:1.6}
+.cta-sub b{color:var(--fg-2);font-weight:800}
+.freeze{margin-top:9px;font-size:12px;font-weight:800;color:var(--cyan);
+  border-bottom:1px solid rgba(39,232,214,.4);padding-bottom:1px}
+
+/* duel */
+.duel-top{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.duel-top .av-s{width:32px;height:32px;font-size:11px}
+.duel-nm{font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.duel-sub{font-size:11px;color:var(--fg-3);margin-top:2px}
+.duel-gap{margin-left:auto;text-align:right;flex-shrink:0}
+.duel-gap b{display:block;font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:23px;color:var(--cyan);letter-spacing:-.03em;line-height:1}
+.duel-gap span{font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--fg-3)}
+.duel-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.duel-bar i{display:block;height:100%;width:0;border-radius:4px;
+  background:linear-gradient(90deg,rgba(39,232,214,.45),var(--cyan));
+  transition:width .8s cubic-bezier(.2,.9,.25,1)}
+.duel-foot{display:flex;justify-content:space-between;gap:10px;margin-top:7px;
+  font-size:10.5px;color:var(--fg-3)}
+.duel-cta{margin-top:11px;font-size:12px;color:var(--fg-2);line-height:1.5}
+.duel-cta b{color:var(--fg)}
+
+/* mission de la semaine */
+.mission{border-top:1px solid var(--line-soft);padding-top:14px;display:grid;gap:10px}
+.mission-head{display:flex;align-items:center;gap:10px}
+.mission-head h2{margin:0}
+.mission-head .cd{margin-left:auto;font-size:10px;color:var(--fg-3);letter-spacing:.04em;text-align:right}
+.mission-head .cd b{font-family:var(--font-mono);color:var(--fg-2);font-weight:700}
+.objs{display:grid;gap:7px}
+@media (min-width:600px){ .objs{grid-template-columns:repeat(3,1fr)} }
+.obj{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;
+  background:rgba(255,255,255,.04);border:1px solid var(--line-soft);font-size:11.5px}
+.obj > span:nth-child(2){min-width:0;overflow-wrap:anywhere;line-height:1.35}
+.obj .tick{flex:0 0 auto;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);
+  display:grid;place-items:center;font-size:9px;font-weight:900;color:transparent}
+.obj.ok{border-color:rgba(91,227,154,.42);background:rgba(91,227,154,.09)}
+.obj.ok .tick{background:var(--up);border-color:var(--up);color:#052A17}
+.obj .pg{margin-left:auto;font-family:var(--font-mono);font-size:10.5px;color:var(--fg-3)}
+.claim{width:100%;min-height:44px;border-radius:var(--r-md);
+  background:var(--gold);color:#2A1B00;font-weight:900;font-size:13.5px;letter-spacing:-.01em}
+.claim:active{transform:scale(.99)}
+.claim[disabled]{background:rgba(255,255,255,.045);color:var(--fg-3);
+  border:1px solid var(--line-soft);cursor:default}
+
+/* barre d'action collante (séance non validée) */
+.dailycta{
+  position:fixed;left:50%;bottom:16px;transform:translate(-50%,150%);z-index:52;
+  width:min(560px,calc(100vw - 2*var(--gut)));min-height:50px;border-radius:999px;
+  background:var(--cyan);color:#062A28;font-size:14.5px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:0 18px 44px -16px rgba(39,232,214,.8);
+  transition:transform .34s cubic-bezier(.2,.9,.25,1),opacity .24s;
+  opacity:0;pointer-events:none;
+}
+.dailycta.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+body.cta-on .mebar{transform:translate(-50%,150%);opacity:0;pointer-events:none}
+
+/* notifications de duel — composant « push » de l'application.
+   Distinct des toasts : il vient du haut, porte une icône d'app, une heure
+   et des actions. C'est l'alerte qui fait rouvrir l'app, pas un accusé
+   de réception. */
+.pushes{
+  position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;
+  transform:translateX(-50%);z-index:90;
+  width:min(420px,calc(100vw - 2*var(--gut)));
+  display:grid;gap:9px;pointer-events:none;
+}
+.push{
+  pointer-events:auto;
+  background:color-mix(in oklab, var(--panel-2) 90%, transparent);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.15);border-radius:17px;padding:12px 13px;
+  box-shadow:0 26px 62px -22px rgba(0,0,0,.95);
+  display:grid;grid-template-columns:34px minmax(0,1fr) 26px;gap:11px;align-items:start;
+  animation:pIn .42s cubic-bezier(.2,.9,.25,1);
+}
+.push.out{animation:pOut .28s forwards}
+.push .ico{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:16px;
+  background:var(--cyan-dim);border:1px solid rgba(39,232,214,.34);
+}
+.push.alert .ico{background:rgba(255,138,120,.14);border-color:rgba(255,138,120,.42)}
+.push.win .ico{background:rgba(242,200,75,.14);border-color:rgba(242,200,75,.42)}
+.push .hd{display:flex;align-items:baseline;gap:8px;font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--fg-3);font-weight:800}
+.push .hd .t{margin-left:auto;letter-spacing:.05em;font-family:var(--font-mono);font-weight:700}
+.push .ti{display:block;font-size:13.5px;font-weight:800;line-height:1.35;margin-top:3px}
+.push .ti b{color:var(--cyan)}
+.push.alert .ti b{color:var(--down)}
+.push.win .ti b{color:var(--gold)}
+.push .bd{display:block;font-size:11.5px;color:var(--fg-2);line-height:1.5;margin-top:3px}
+.push .acts{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.push .acts button{min-height:32px;padding:0 13px;border-radius:999px;font-size:11.5px;
+  font-weight:800;background:rgba(255,255,255,.07);border:1px solid var(--line-soft);color:var(--fg)}
+.push .acts button:hover{background:rgba(255,255,255,.13)}
+.push .acts button.pri{background:var(--cyan);color:#062A28;border-color:transparent}
+.push .acts button.pri:hover{filter:brightness(1.07)}
+.push .x{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  color:var(--fg-3);font-size:12px}
+.push .x:hover{background:rgba(255,255,255,.09);color:var(--fg)}
+@keyframes pIn{from{opacity:0;transform:translateY(-18px) scale(.97)}}
+@keyframes pOut{to{opacity:0;transform:translateY(-12px) scale(.98)}}
+@media (pointer:coarse){ .push .acts button{min-height:40px} .push .x{width:32px;height:32px} }
+
+/* cible du « Voir le duel » */
+#duel.flash{border-radius:var(--r-md);animation:duelFlash 1.5s ease-out}
+@keyframes duelFlash{
+  0%{box-shadow:0 0 0 0 rgba(39,232,214,.5)}
+  100%{box-shadow:0 0 0 15px rgba(39,232,214,0)}
+}
+
+/* réglages d'alertes */
+.nrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft)}
+.nrow .lb2{min-width:0;font-size:12px;font-weight:700}
+.nrow .sb{display:block;font-size:10px;color:var(--fg-3);font-weight:500;margin-top:2px;line-height:1.4}
+.nrow .prev{margin-left:auto;flex:0 0 auto;min-height:30px;padding:0 12px;border-radius:999px;
+  font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--cyan);
+  background:var(--cyan-dim);border:1px solid rgba(39,232,214,.32)}
+.nrow .prev:hover{background:rgba(39,232,214,.22)}
+.nsec{margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft)}
+@media (pointer:coarse){ .nrow .prev{min-height:40px} }
+
+/* messages éphémères */
+.toasts{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);z-index:70;
+  width:min(400px,calc(100vw - 2*var(--gut)));display:grid;gap:8px;pointer-events:none}
+.toast{background:var(--panel-2);border:1px solid rgba(39,232,214,.36);border-radius:13px;
+  padding:11px 14px;box-shadow:0 18px 44px -18px rgba(0,0,0,.92);
+  animation:tIn .32s cubic-bezier(.2,.9,.25,1)}
+.toast b{display:block;font-size:13px;font-weight:800}
+.toast span{display:block;font-size:11px;color:var(--fg-3);margin-top:2px}
+.toast.out{animation:tOut .3s forwards}
+@keyframes tIn{from{opacity:0;transform:translateY(14px)}}
+@keyframes tOut{to{opacity:0;transform:translateY(10px)}}
+
+/* éclat — uniquement au dépassement d'un joueur ou d'un palier */
+.burst{position:fixed;inset:0;z-index:80;pointer-events:none;overflow:hidden}
+.burst i{position:absolute;top:42%;left:50%;width:7px;height:7px;border-radius:2px;
+  animation:fly .95s cubic-bezier(.15,.7,.35,1) forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+
+/* rappel quotidien */
+.switch{display:flex;align-items:center;gap:11px;cursor:pointer;min-height:38px}
+.switch input{position:absolute;width:1px;height:1px;opacity:0}
+.switch .tr{flex:0 0 auto;width:42px;height:24px;border-radius:999px;position:relative;
+  background:rgba(255,255,255,.12);border:1px solid var(--line-soft);
+  transition:background .2s,border-color .2s}
+.switch .tr::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
+  border-radius:50%;background:var(--fg-2);transition:transform .22s,background .2s}
+.switch input:checked + .tr{background:var(--cyan-dim);border-color:rgba(39,232,214,.5)}
+.switch input:checked + .tr::after{transform:translateX(18px);background:var(--cyan)}
+.switch input:focus-visible + .tr{outline:2px solid var(--cyan);outline-offset:3px}
+.switch .lb{font-size:13px;font-weight:700}
+.timerow{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:11.5px;color:var(--fg-2)}
+.timerow input{background:rgba(255,255,255,.06);border:1px solid var(--line-soft);border-radius:8px;
+  padding:7px 9px;font-family:var(--font-mono);font-size:13px;color-scheme:dark}
+.note{font-size:10.5px;color:var(--fg-3);line-height:1.6;margin-top:11px}
+
+/* Cibles tactiles : 44 px minimum sur pointeur grossier. */
+@media (pointer:coarse){
+  .seg button,.chips button,.sortsel,.search{min-height:44px}
+  .row{min-height:56px}
+  .sheet-close{width:40px;height:40px}
+  .kudo{width:44px;height:44px}
+}
+@media (pointer:coarse) and (max-width:719px){
+  .row{grid-template-columns:38px minmax(0,1fr) auto 44px}
+}
+@media (pointer:coarse) and (min-width:720px){
+  .row{grid-template-columns:52px minmax(0,1fr) 132px 62px 72px 92px 46px}
+  .panel-head{grid-template-columns:52px minmax(0,1fr) 132px 62px 72px 92px 46px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+
+/* ============================================================
+   14 · FIL D'ÉQUIPE — activité reçue du journal partagé
+   ============================================================ */
+.tolink{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:6px;
+  padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;text-decoration:none;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);color:var(--fg-2);
+  transition:border-color .16s,color .16s;
+}
+.tolink:hover{border-color:var(--cyan);color:var(--cyan)}
+@media (max-width:760px){ .tolink span{display:none} .tolink{padding:7px 10px} }
+
+.tfeed{list-style:none;display:grid;gap:0}
+.tfeed li{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line-soft)}
+.tfeed li:first-child{border-top:0;padding-top:0}
+.tfeed .av{
+  flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  font-size:9.5px;font-weight:900;color:#0B0A1C;
+}
+.tfeed .av.sys{background:rgba(255,255,255,.09);color:var(--fg-2);font-size:12px}
+.tfeed .bd{flex:1;min-width:0}
+.tfeed .tx{font-size:12.5px;line-height:1.4}
+.tfeed .tx b{font-weight:800}
+.tfeed .tm{font-size:10.5px;color:var(--fg-3);font-weight:600;font-family:var(--font-mono);flex:0 0 auto;padding-top:2px}
+.tfeed .gain{color:var(--gold);font-weight:800;font-family:var(--font-mono);font-size:11px}
+.tfeed-empty{font-size:12.5px;color:var(--fg-2);line-height:1.5}
+.tfeed-live{
+  display:inline-flex;align-items:center;gap:6px;float:right;
+  font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--cyan);text-transform:uppercase;
+}
+.tfeed-live i{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:lvp 2.4s ease-in-out infinite}
+@keyframes lvp{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1>Classement</h1>
+      <span class="season" id="season">Saison interne</span>
+    </div>
+    <div class="me-pill" id="mePill">
+      <span>
+        <span class="lbl">Ma place</span><br>
+        <span class="rk num" id="meRank">—</span>
+      </span>
+      <span>
+        <span class="lbl">Points</span><br>
+        <span class="pts num" id="mePts">0</span>
+      </span>
+    </div>
+    <a class="tolink" href="staff.html" title="Console staff">📋<span>Staff</span></a>
+  </div>
+</header>
+
+<main class="shell">
+  <div>
+    <div class="recap" id="recap" hidden></div>
+
+    <section class="today" id="today" aria-label="Ma journée">
+      <div class="tgrid">
+        <div>
+          <h2>Aujourd'hui</h2>
+          <div class="streakline">
+            <span class="flame" id="flame" aria-hidden="true">🔥</span>
+            <span class="txt">
+              <span class="n num" id="strN">0</span>
+              <span class="lb" id="strL">—</span>
+            </span>
+            <span class="cd">Minuit dans<b class="num" id="cdMid">--:--:--</b></span>
+          </div>
+          <button class="cta" id="btnCheck" type="button">Valider ma séance du jour</button>
+          <p class="cta-sub" id="checkSub"></p>
+        </div>
+        <span class="vrule" aria-hidden="true"></span>
+        <div id="duel"></div>
+      </div>
+      <div class="mission" id="mission"></div>
+    </section>
+
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Type de classement">
+        <button data-mode="indiv" aria-pressed="true">Individuel</button>
+        <button data-mode="team" aria-pressed="false">Par ligne</button>
+      </div>
+
+      <div class="filters" id="filters">
+        <div class="chips" role="group" aria-label="Périmètre">
+          <button data-scope="all" aria-pressed="true">Toute l'équipe</button>
+          <button data-scope="avants" aria-pressed="false">Avants</button>
+          <button data-scope="arrieres" aria-pressed="false">Arrières</button>
+        </div>
+        <label class="search">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M10.6 10.6 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span class="vh">Rechercher un totem</span>
+          <input id="q" type="search" placeholder="Totem…" autocomplete="off">
+        </label>
+        <select class="sortsel" id="sort" aria-label="Trier l'affichage">
+          <option value="pts">Tri · Points</option>
+          <option value="wd">Tri · Progression 7 j</option>
+          <option value="streak">Tri · Série</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="podium pre" id="podium"></div>
+
+    <section class="panel" aria-label="Classement">
+      <div class="panel-head" id="panelHead">
+        <span>Rang</span><span>Joueur</span><span>Division</span>
+        <span>Série</span><span>7 jours</span><span>Points</span>
+      </div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <p class="foot">
+      Données d'atelier pseudonymisées (totem + initiales).<br>
+      Barème, seuils de division et rang partagé identiques à l'application.<br>
+      Séances, séries, encouragements et réglages d'alertes de cette maquette sont enregistrés sur cet appareil.
+    </p>
+  </div>
+
+  <aside class="rail" id="rail">
+    <div class="card" id="myCard"></div>
+    <div class="card" id="feedCard"></div>
+    <div class="card" id="remindCard"></div>
+    <div class="card">
+      <h2>Échelle des divisions</h2>
+      <div id="ladder"></div>
+    </div>
+  </aside>
+</main>
+
+<button class="dailycta" id="dailycta" type="button">⚡ Valider ma séance du jour</button>
+<div class="pushes" id="pushes" role="region" aria-label="Alertes" aria-live="polite"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="burst" id="burst" aria-hidden="true"></div>
+
+<button class="mebar" id="mebar" type="button">
+  <span class="rk num" id="mbRank">—</span>
+  <span>
+    <span class="nm" id="mbName">—</span>
+    <span class="sub" id="mbSub">—</span>
+  </span>
+  <span class="dl num" id="mbDelta">—</span>
+  <span class="pt num" id="mbPts">—</span>
+</button>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shName" hidden>
+  <div class="sheet-head">
+    <span class="av" id="shAv"></span>
+    <span>
+      <h3 id="shName"></h3>
+      <span class="pos" id="shPos"></span>
+    </span>
+    <button class="sheet-close" id="shClose" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body" id="shBody"></div>
+</aside>
+
+<script>
+/* ============================================================
+   BARÈME — repris à l'identique de l'export d'origine
+   ============================================================ */
+const DIVS = [
+  { min:220, key:"elite",   e:"💎", c:"#27E8D6", label:"Élite"   },
+  { min:170, key:"diamant", e:"🔷", c:"#8AB4F8", label:"Diamant" },
+  { min:120, key:"or",      e:"🥇", c:"#F2C84B", label:"Or"      },
+  { min:70,  key:"argent",  e:"🥈", c:"#C8D2E0", label:"Argent"  },
+  { min:0,   key:"bronze",  e:"🥉", c:"#C07A45", label:"Bronze"  },
+];
+const divOf   = p => DIVS.find(d => p >= d.min) || DIVS[DIVS.length - 1];
+const nextDiv = p => { const i = DIVS.findIndex(d => p >= d.min); return i > 0 ? DIVS[i - 1] : null; };
+
+// Tri points ↓ puis départage stable par totem ; points égaux → MÊME rang.
+function rankLeaderboard(items){
+  const sorted = [...items].sort((a, b) => (b.pts - a.pts) ||
+    String(a.totem).localeCompare(String(b.totem), "fr", { sensitivity:"base" }));
+  let prevPts = null, prevRank = 0;
+  return sorted.map((it, i) => {
+    const rank = (prevPts !== null && it.pts === prevPts) ? prevRank : i + 1;
+    prevPts = it.pts; prevRank = rank;
+    return { ...it, rank };
+  });
+}
+
+const CHAL_TIERS = [{n:1,e:"🎯"},{n:5,e:"🥉"},{n:10,e:"🥈"},{n:25,e:"🏅"}];
+const topChal = n => { const w = CHAL_TIERS.filter(t => n >= t.n); return w.length ? w[w.length - 1] : null; };
+
+const AV = ["#27E8D6","#8AB4F8","#F2C84B","#C8D2E0","#C07A45","#6C5CE0","#5BE39A","#FF8A78"];
+const avColor = s => AV[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+
+/* ============================================================
+   DONNÉES FIGÉES (pseudonymisées)
+   ============================================================ */
+const P = [
+  { totem:"Panthère",  init:"PB", grp:"avants",   pts:251, wd:+18, mv:0,  streak:6, t14:3, t9:6, chal:12, staff:false, me:false },
+  { totem:"Faucon",    init:"FR", grp:"arrieres", pts:238, wd:+12, mv:0,  streak:4, t14:1, t9:4, chal:8,  staff:false, me:false },
+  { totem:"Bison",     init:"BL", grp:"avants",   pts:221, wd:-6,  mv:-1, streak:0, t14:2, t9:5, chal:3,  staff:true,  me:false },
+  { totem:"Cobra",     init:"CM", grp:"arrieres", pts:205, wd:+22, mv:+1, streak:5, t14:2, t9:5, chal:6,  staff:false, me:false },
+  { totem:"Renard",    init:"RD", grp:"avants",   pts:189, wd:+4,  mv:0,  streak:3, t14:0, t9:2, chal:1,  staff:false, me:false },
+  { totem:"Aigle",     init:"AG", grp:"arrieres", pts:174, wd:+9,  mv:+1, streak:7, t14:1, t9:3, chal:5,  staff:false, me:false },
+  { totem:"Lynx",      init:"LM", grp:"avants",   pts:158, wd:+14, mv:+1, streak:5, t14:1, t9:4, chal:3,  staff:false, me:true  },
+  { totem:"Loup",      init:"LV", grp:"arrieres", pts:143, wd:-3,  mv:-1, streak:0, t14:0, t9:1, chal:2,  staff:false, me:false },
+  { totem:"Ours",      init:"OT", grp:"avants",   pts:132, wd:+7,  mv:0,  streak:3, t14:0, t9:2, chal:0,  staff:false, me:false },
+  { totem:"Tigre",     init:"TS", grp:"arrieres", pts:132, wd:+2,  mv:0,  streak:4, t14:1, t9:3, chal:1,  staff:false, me:false },
+  { totem:"Buffle",    init:"BF", grp:"avants",   pts:118, wd:-8,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:true,  me:false },
+  { totem:"Héron",     init:"HN", grp:"arrieres", pts:104, wd:+5,  mv:+1, streak:3, t14:0, t9:1, chal:4,  staff:false, me:false },
+  { totem:"Belette",   init:"BC", grp:"avants",   pts:96,  wd:0,   mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Corbeau",   init:"CV", grp:"arrieres", pts:88,  wd:+6,  mv:+1, streak:5, t14:0, t9:2, chal:1,  staff:false, me:false },
+  { totem:"Sanglier",  init:"SG", grp:"avants",   pts:82,  wd:-4,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Chouette",  init:"CE", grp:"arrieres", pts:74,  wd:+3,  mv:0,  streak:3, t14:0, t9:1, chal:2,  staff:false, me:false },
+  { totem:"Blaireau",  init:"BX", grp:"avants",   pts:68,  wd:+1,  mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Taupe",     init:"TP", grp:"arrieres", pts:55,  wd:-2,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Fouine",    init:"FN", grp:"avants",   pts:47,  wd:+4,  mv:+1, streak:3, t14:0, t9:0, chal:1,  staff:false, me:false },
+  { totem:"Musaraigne",init:"MG", grp:"arrieres", pts:39,  wd:0,   mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+];
+const ME  = P.find(p => p.me);
+const GRP = { avants:"Avants", arrieres:"Arrières" };
+
+/* ============================================================
+   ÉTAT + PERSISTANCE
+   ============================================================ */
+const KEY = "classement:v1";
+const state = Object.assign({ mode:"indiv", scope:"all", sort:"pts", q:"" }, (() => {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (_) { return {}; }
+})());
+state.q = ""; // la recherche ne se restaure pas
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} };
+
+const $  = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const sign = n => (n > 0 ? "+" : "") + n;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============================================================
+   FRAGMENTS
+   ============================================================ */
+function tags(p){
+  let h = "";
+  if (p.t14 > 0){
+    h += `<span class="tag t14" title="${p.t14} test(s) au niveau Top 14">🏆 TOP 14${p.t14 > 1 ? " ×" + p.t14 : ""}</span>`;
+    h += `<span class="tag tests" title="Tests Top 14 atteints">${p.t9}/9</span>`;
+  }
+  const cb = topChal(p.chal);
+  if (cb) h += `<span class="tag chal" title="${p.chal} défi(s) confirmé(s)">${cb.e}</span>`;
+  if (p.staff) h += `<span class="tag staff" title="Membre du staff qui s'entraîne aussi comme athlète">STAFF</span>`;
+  return h;
+}
+const deltaCls = n => n > 0 ? "pos" : n < 0 ? "neg" : "flat";
+const arrow = mv => mv > 0 ? "▲" : mv < 0 ? "▼" : "";
+
+/* ============================================================
+   SÉLECTION / TRI
+   ============================================================ */
+function ranked(){
+  const pool = state.scope === "all" ? P : P.filter(p => p.grp === state.scope);
+  return rankLeaderboard(pool);        // le rang officiel reste toujours calculé sur les points
+}
+function displayed(list){
+  const q = state.q.trim().toLowerCase();
+  let out = q
+    ? list.filter(p => p.totem.toLowerCase().includes(q) || p.init.toLowerCase().includes(q))
+    : [...list];
+  if (state.sort === "wd")     out.sort((a, b) => b.wd - a.wd || a.rank - b.rank);
+  if (state.sort === "streak") out.sort((a, b) => b.streak - a.streak || a.rank - b.rank);
+  return out;
+}
+
+/* ============================================================
+   RENDU · PODIUM
+   ============================================================ */
+function renderPodium(list){
+  const host = $("podium");
+  const top3 = list.filter(r => r.rank <= 3).slice(0, 3);
+  if (state.mode !== "indiv" || top3.length < 3 || state.q.trim()){
+    host.style.display = "none"; return;
+  }
+  host.style.display = "";
+  host.classList.add("pre");   // les socles repartent de 0 à chaque changement de périmètre
+  const H = { 1:"clamp(58px,9vw,94px)", 2:"clamp(40px,6.4vw,68px)", 3:"clamp(30px,5vw,54px)" };
+  const order = [top3[1], top3[0], top3[2]];   // 2 · 1 · 3
+  host.innerHTML = order.map(p => {
+    const d = divOf(p.pts);
+    const medal = p.rank === 1 ? "🥇" : p.rank === 2 ? "🥈" : "🥉";
+    return `<div class="pod ${p.rank === 1 ? "p1" : ""}">
+      <div class="medal">${medal}</div>
+      <div class="av" style="background:${avColor(p.init)}">${esc(p.init)}</div>
+      <div class="tot">${p.me ? "⭐ " : ""}${esc(p.totem)}</div>
+      <div class="pts num" data-count="${p.pts}">0</div>
+      <div class="dv">${d.e} ${d.label}</div>
+      <div class="plinth" style="--h:${H[p.rank]}">${p.rank}<span style="font-size:9px">ᵉ</span></div>
+    </div>`;
+  }).join("");
+  requestAnimationFrame(() => host.classList.remove("pre"));
+  host.querySelectorAll("[data-count]").forEach(countUp);
+}
+
+function countUp(node){
+  const target = +node.dataset.count;
+  if (reduced){ node.textContent = target; return; }
+  const dur = 700, t0 = performance.now();
+  (function step(t){
+    const k = Math.min(1, (t - t0) / dur);
+    node.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+/* ============================================================
+   RENDU · LIGNES
+   ============================================================ */
+function renderRows(){
+  const host = $("rows");
+  const base = ranked();
+  renderPodium(base);
+  const list = displayed(base);
+
+  if (!list.length){
+    host.innerHTML = `<p class="empty">Aucun totem ne correspond à « ${esc(state.q)} ».</p>`;
+    return;
+  }
+  host.innerHTML = list.map(p => {
+    const d = divOf(p.pts);
+    const lead = p.rank === 1 && state.sort === "pts" && !state.q.trim();
+    return `<div class="row ${lead ? "lead" : ""} ${p.me ? "me" : ""}" data-totem="${esc(p.totem)}"
+      role="button" tabindex="0" aria-label="${esc(p.totem)}, ${p.rank}e, ${p.pts} points">
+      <span class="r-rank num ${p.rank <= 3 ? "podium3" : ""}">${p.rank}<span style="font-size:.7em">ᵉ</span></span>
+      <span class="r-who">
+        <span class="av-s" style="background:${avColor(p.init)}">${esc(p.init)}</span>
+        <span class="r-name">${p.me ? "⭐ " : ""}${esc(p.totem)}</span>
+        <span class="r-tags">${tags(p)}</span>
+      </span>
+      <span class="r-meta">
+        <span class="r-dv">${d.e} ${d.label}</span>
+        <span class="r-streak">${p.streak >= 3 ? "🔥 " + p.streak : "<span style='opacity:.35'>—</span>"}</span>
+      </span>
+      <span class="r-delta num ${deltaCls(p.wd)}">${arrow(p.mv)} ${sign(p.wd)}</span>
+      <span class="r-pts num">${p.pts}<u>PTS</u></span>
+      ${kudoBtn(p)}
+    </div>`;
+  }).join("");
+  watchMyRow();
+}
+
+/* ============================================================
+   RENDU · PAR LIGNE (agrégat)
+   ============================================================ */
+function renderTeams(){
+  const by = {};
+  P.forEach(p => {
+    by[p.grp] = by[p.grp] || { key:p.grp, label:GRP[p.grp], pts:0, count:0, wd:0 };
+    by[p.grp].pts += p.pts; by[p.grp].count++; by[p.grp].wd += p.wd;
+  });
+  const teams = Object.values(by).sort((a, b) => b.pts - a.pts).map((t, i) => ({ ...t, rank:i + 1 }));
+  $("rows").innerHTML = teams.map(t => {
+    const mine = t.key === ME.grp, lead = t.rank === 1;
+    return `<div class="row team ${lead ? "lead" : ""} ${mine && !lead ? "me" : ""}" style="cursor:default">
+      <span class="r-rank num podium3">${t.rank}<span style="font-size:.7em">ᵉ</span></span>
+      <span class="r-who"><span class="r-name">${mine ? "⭐ " : ""}${esc(t.label)}</span></span>
+      <span class="r-meta">
+        <span class="r-dv">${t.count} joueurs · moyenne ${Math.round(t.pts / t.count)} pts</span>
+        <span class="r-streak"></span>
+      </span>
+      <span class="r-delta num ${deltaCls(t.wd)}">${sign(t.wd)}</span>
+      <span class="r-pts num">${t.pts}<u>PTS</u></span>
+    </div>`;
+  }).join("") + `<p class="empty" style="padding:12px 8px 2px;font-size:11px">
+    Agrégat par ligne : somme des points des membres actifs.</p>`;
+}
+
+/* ============================================================
+   RENDU · CARTE DIVISION + ÉCHELLE
+   ============================================================ */
+function renderMyCard(){
+  const cur = divOf(ME.pts), nx = nextDiv(ME.pts);
+  const lo = cur.min, hi = nx ? nx.min : ME.pts + 1;
+  const prog = Math.min(100, Math.max(5, ((ME.pts - lo) / (hi - lo)) * 100));
+  const chips = [];
+  if (ME.streak >= 3) chips.push(`🔥 Série de ${ME.streak}`);
+  if (ME.t14 > 0)     chips.push(`🏆 Top 14 ×${ME.t14}`);
+  if (ME.t9 > 0)      chips.push(`📊 ${ME.t9}/9 tests`);
+  if (ME.chal > 0)    chips.push(`${topChal(ME.chal).e} ${ME.chal} défis`);
+
+  $("myCard").innerHTML = `
+    <h2>Ma division</h2>
+    <div class="mydiv">
+      <span class="em">${cur.e}</span>
+      <span>
+        <span class="name" style="color:${cur.c}">${cur.label}</span>
+        <span class="to-next">${nx ? `Encore <b class="num">${hi - ME.pts}</b> pts → ${nx.label}` : "Division maximale atteinte"}</span>
+      </span>
+      <span class="wk">
+        <b class="num" style="color:${ME.wd >= 0 ? "var(--up)" : "var(--down)"}">${sign(ME.wd)}</b>
+        <span>7 JOURS</span>
+      </span>
+    </div>
+    <div class="track"><i id="myTrack" style="background:${cur.c}"></i></div>
+    <div class="track-legend"><span class="num">${lo}</span><span class="num">${nx ? hi : "∞"}</span></div>
+    <div class="badgewrap">${chips.map(c => `<span class="badge">${c}</span>`).join("")}</div>`;
+  requestAnimationFrame(() => { const t = $("myTrack"); if (t) t.style.width = prog + "%"; });
+}
+
+function renderLadder(){
+  const mine = divOf(ME.pts).key;
+  $("ladder").innerHTML = DIVS.map((d, i) => {
+    const nx = DIVS[i - 1];
+    const range = nx ? `${d.min}–${nx.min - 1}` : `${d.min}+`;
+    return `<div class="ladder-row ${d.key === mine ? "here" : ""}">
+      <span class="dot" style="background:${d.c}"></span><span>${d.e}</span>
+      <span class="nm" style="color:${d.c}">${d.label}</span>
+      ${d.key === mine ? '<span class="you">MOI</span>' : ""}
+      <span class="rg num">${range} pts</span>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   EN-TÊTE + BARRE COLLANTE
+   ============================================================ */
+function syncHeader(){
+  $("season").textContent = `Saison interne · ${P.length} inscrits`;
+  const r = rankLeaderboard(P).find(x => x.me);
+  $("meRank").textContent = "#" + r.rank;
+  $("mePts").dataset.count = ME.pts;
+  countUp($("mePts"));
+
+  const d = divOf(ME.pts);
+  $("mbRank").textContent = "#" + r.rank;
+  $("mbName").textContent = "⭐ " + ME.totem;
+  $("mbSub").textContent  = `${d.e} ${d.label} · ${GRP[ME.grp]}`;
+  const dl = $("mbDelta");
+  dl.textContent = sign(ME.wd);
+  dl.style.color = ME.wd >= 0 ? "var(--up)" : "var(--down)";
+  $("mbPts").textContent = ME.pts;
+}
+
+let obs = null;
+function watchMyRow(){
+  if (obs) obs.disconnect();
+  const bar = $("mebar");
+  const row = document.querySelector(".row.me");
+  if (!row || state.mode !== "indiv"){ bar.classList.remove("show"); return; }
+  obs = new IntersectionObserver(([e]) => {
+    bar.classList.toggle("show", !e.isIntersecting);
+  }, { rootMargin:"-70px 0px -90px 0px" });
+  obs.observe(row);
+}
+// Clic sur la barre → remonter jusqu'à ma ligne (sans scrollIntoView)
+$("mebar").addEventListener("click", () => {
+  const row = document.querySelector(".row.me");
+  if (!row) return;
+  const y = row.getBoundingClientRect().top + window.scrollY - (window.innerHeight / 2) + 40;
+  window.scrollTo({ top:Math.max(0, y), behavior:reduced ? "auto" : "smooth" });
+});
+
+/* ============================================================
+   PANNEAU DÉTAIL
+   ============================================================ */
+let lastFocus = null;
+function openSheet(totem){
+  const list = ranked();
+  const p = list.find(x => x.totem === totem);
+  if (!p) return;
+  lastFocus = document.activeElement;
+  const d = divOf(p.pts), nx = nextDiv(p.pts);
+  const cb = topChal(p.chal);
+
+  $("shAv").textContent = p.init;
+  $("shAv").style.background = avColor(p.init);
+  $("shName").textContent = (p.me ? "⭐ " : "") + p.totem;
+  $("shPos").textContent = `${p.rank}ᵉ · ${GRP[p.grp]}${p.staff ? " · staff-athlète" : ""}`;
+
+  const lo = d.min, hi = nx ? nx.min : p.pts + 1;
+  const prog = Math.min(100, Math.max(5, ((p.pts - lo) / (hi - lo)) * 100));
+
+  $("shBody").innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><b style="color:var(--gold)" class="num">${p.pts}</b><span>Points</span></div>
+      <div class="kpi"><b class="num" style="color:${p.wd >= 0 ? "var(--up)" : "var(--down)"}">${sign(p.wd)}</b><span>7 jours</span></div>
+      <div class="kpi"><b class="num">${p.streak || "—"}</b><span>Série</span></div>
+    </div>
+
+    <div>
+      <h2 style="font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:9px">
+        Division ${d.label} ${d.e}</h2>
+      <div class="track"><i style="background:${d.c};width:${prog}%"></i></div>
+      <div class="track-legend">
+        <span>${nx ? `Encore ${hi - p.pts} pts → ${nx.label}` : "Division maximale"}</span>
+        <span class="num">${lo}–${nx ? hi - 1 : "∞"}</span>
+      </div>
+    </div>
+
+    <div>
+      <h2 style="font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:9px">
+        Distinctions</h2>
+      <div class="badgewrap" style="margin-top:0">
+        ${p.t14 > 0 ? `<span class="badge">🏆 Top 14 ×${p.t14}</span>` : ""}
+        ${p.t9  > 0 ? `<span class="badge">📊 ${p.t9}/9 tests atteints</span>` : ""}
+        ${cb        ? `<span class="badge">${cb.e} ${p.chal} défi${p.chal > 1 ? "s" : ""} confirmé${p.chal > 1 ? "s" : ""}</span>` : ""}
+        ${p.staff   ? `<span class="badge">Staff-athlète</span>` : ""}
+        ${(!p.t14 && !cb && !p.staff) ? `<span class="badge" style="color:var(--fg-3)">Aucune distinction pour l'instant</span>` : ""}
+      </div>
+    </div>
+
+    <div class="stub">Historique détaillé des séances<br>non disponible dans cette maquette</div>`;
+
+  $("sheet").hidden = false;
+  requestAnimationFrame(() => { $("sheet").classList.add("show"); $("scrim").classList.add("show"); });
+  $("shClose").focus();
+  document.querySelectorAll(".row.open").forEach(r => r.classList.remove("open"));
+  const row = document.querySelector(`.row[data-totem="${CSS.escape(totem)}"]`);
+  if (row) row.classList.add("open");
+}
+function closeSheet(){
+  $("sheet").classList.remove("show");
+  $("scrim").classList.remove("show");
+  document.querySelectorAll(".row.open").forEach(r => r.classList.remove("open"));
+  setTimeout(() => { $("sheet").hidden = true; }, 340);
+  if (lastFocus) lastFocus.focus();
+}
+
+/* ============================================================
+   BOUCLE QUOTIDIENNE
+   Barème de la maquette, affiché à l'écran : séance validée +8 pts,
+   bonus série jusqu'à +5, mission hebdo +15. Les points gagnés ici
+   sont stockés sur l'appareil et s'ajoutent au total de départ.
+   ============================================================ */
+const EKEY = "classement:engage:v1";
+const RULE = { session:8, bonusMax:5, mission:15, kudos:3 };
+const BASE = { pts:ME.pts, wd:ME.wd, streak:ME.streak };
+
+const pad2  = n => String(n).padStart(2, "0");
+const dkey  = d => { const x = d || new Date(); return x.getFullYear() + "-" + pad2(x.getMonth() + 1) + "-" + pad2(x.getDate()); };
+const wkey  = () => { const t = new Date(); t.setHours(0,0,0,0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return dkey(t); };
+const TODAY = dkey();
+const YEST  = dkey(new Date(Date.now() - 864e5));
+
+const eng = Object.assign({
+  last:null, streak:BASE.streak, earned:0, freeze:1,
+  kudosDay:null, kudos:{}, kudosLeft:RULE.kudos,
+  week:null, wCheck:0, wKudos:0, wPass:0, wClaimed:false,
+  remind:false, remindAt:"18:30", seenDay:null, seenRank:null,
+  duelAlerts:true, pushed:{}
+}, (() => { try { return JSON.parse(localStorage.getItem(EKEY)) || {}; } catch (_) { return {}; } })());
+const saveE = () => { try { localStorage.setItem(EKEY, JSON.stringify(eng)); } catch (_) {} };
+
+const done  = () => eng.last === TODAY;
+let broken  = !!(eng.last && eng.last !== TODAY && eng.last !== YEST);   // série interrompue
+const liveStreak = () => (broken && eng.freeze <= 0) ? 0 : eng.streak;
+
+function applyEarned(){
+  ME.pts    = BASE.pts + eng.earned;    // ME est une référence dans P : tout le classement suit
+  ME.wd     = BASE.wd  + eng.earned;
+  ME.streak = liveStreak();
+}
+function myRank(){ return rankLeaderboard(P).find(x => x.me).rank; }
+
+// bascules de jour / de semaine
+if (eng.kudosDay !== TODAY){ eng.kudosDay = TODAY; eng.kudos = {}; eng.kudosLeft = RULE.kudos; eng.pushed = {}; }
+if (eng.week !== wkey()){ eng.week = wkey(); eng.wCheck = 0; eng.wKudos = 0; eng.wPass = 0; eng.wClaimed = false; }
+
+/* ============================================================
+   JOURNAL D'ÉVÉNEMENTS PARTAGÉ  (console staff ↔ vue joueur)
+   C'est la donnée qui manquait pour que les alertes de duel partent
+   d'un fait réel : qui a validé, quand, et qui cela fait passer devant.
+   · Journal append-only, commun aux deux surfaces (même appareil).
+   · Diffusé en direct : une séance saisie par le staff arrive ici sans
+     rechargement (BroadcastChannel, avec repli sur l'évènement storage).
+   · Les points des coéquipiers sont rejoués depuis le journal ; les miens
+     restent pilotés par eng.earned pour ne jamais être comptés deux fois.
+   ============================================================ */
+const FEED_KEY = "classement:feed:v1";
+const CH = (() => { try { return new BroadcastChannel("classement:feed"); } catch (_) { return null; } })();
+const FEED = {
+  read(){ try { const l = JSON.parse(localStorage.getItem(FEED_KEY)); return Array.isArray(l) ? l : []; } catch (_) { return []; } },
+  addAll(evs){
+    const l = FEED.read();
+    let id = l.length ? l[l.length - 1].id : 0;
+    const ts = Date.now();
+    evs.forEach((e, i) => l.push(Object.assign({ id: ++id, ts: ts + i }, e)));
+    try { localStorage.setItem(FEED_KEY, JSON.stringify(l.slice(-400))); } catch (_) {}
+    if (CH) try { CH.postMessage(id); } catch (_) {}
+    return id;
+  },
+  on(fn){
+    if (CH) CH.onmessage = () => fn();
+    addEventListener("storage", e => { if (e.key === FEED_KEY) fn(); });
+  }
+};
+
+const BASEP = {}; P.forEach(p => BASEP[p.totem] = { pts:p.pts, wd:p.wd, streak:p.streak });
+const hm = ts => { const d = new Date(ts); return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); };
+
+let FEV = [], feedSeen = 0;
+
+const prevDay = d => { const x = new Date(d + "T00:00:00"); x.setDate(x.getDate() - 1); return dkey(x); };
+
+/* Série d'un coéquipier — même règle que la console staff : jours
+   consécutifs validés dans le journal ; la série d'origine ne s'ajoute
+   que si aucun jour n'a été sauté depuis le début du journal. */
+function streakFromDays(t, s){
+  if (!s || !s.size) return BASEP[t].streak;
+  const last = [...s].sort().pop();
+  if (last !== TODAY && last !== YEST) return 0;
+  let n = 0, d = last;
+  while (s.has(d)){ n++; d = prevDay(d); }
+  return n + (n === s.size ? BASEP[t].streak : 0);
+}
+
+function applyFeed(){
+  FEV = FEED.read().slice().sort((a, b) => (a.ts - b.ts) || (a.id - b.id));
+  const gain = {}, days = {};
+  P.forEach(p => days[p.totem] = new Set());
+  FEV.forEach(e => {
+    if (e.type !== "checkin" || !(e.actor in BASEP)) return;
+    gain[e.actor] = (gain[e.actor] || 0) + (e.gain || 0);
+    days[e.actor].add(e.day);
+  });
+  P.forEach(p => {
+    if (p.me) return;                              // mes points : eng.earned
+    const g = gain[p.totem] || 0;
+    p.pts    = BASEP[p.totem].pts + g;
+    p.wd     = BASEP[p.totem].wd  + g;
+    p.streak = streakFromDays(p.totem, days[p.totem]);
+  });
+}
+
+// Le staff a coché ma présence : ma séance est validée et ma série sauvée.
+function absorbStaff(){
+  const mine = FEV.filter(e => e.type === "checkin" && e.actor === ME.totem && e.src === "staff" && e.day === TODAY);
+  const ev = mine[mine.length - 1];
+  if (!ev || done() || (eng.absorbed || 0) >= ev.id) return null;
+  eng.absorbed = ev.id;
+  eng.streak = ev.streak != null ? ev.streak : liveStreak() + 1;
+  broken = false;
+  eng.earned += ev.gain || 0;
+  eng.last = TODAY;
+  eng.wCheck++;
+  saveE();
+  return ev;
+}
+
+applyFeed(); absorbStaff();
+applyEarned(); saveE();
+feedSeen = FEV.length ? FEV[FEV.length - 1].id : 0;
+
+/* ---- retours visuels ---- */
+function toast(t, s){
+  const el = document.createElement("div");
+  el.className = "toast"; el.setAttribute("role", "status");
+  el.innerHTML = `<b>${esc(t)}</b>${s ? `<span>${esc(s)}</span>` : ""}`;
+  $("toasts").appendChild(el);
+  setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 320); }, 3400);
+}
+function burst(){
+  if (reduced) return;
+  const host = $("burst"), cols = ["#27E8D6", "#F2C84B", "#5BE39A", "#8AB4F8"];
+  for (let i = 0; i < 16; i++){
+    const s = document.createElement("i");
+    const a = (Math.PI * 2 * i) / 16 + Math.random() * .3, d = 120 + Math.random() * 130;
+    s.style.background = cols[i % cols.length];
+    s.style.setProperty("--x", Math.round(Math.cos(a) * d) + "px");
+    s.style.setProperty("--y", Math.round(Math.sin(a) * d) + "px");
+    s.style.setProperty("--r", Math.round(Math.random() * 540 - 270) + "deg");
+    host.appendChild(s);
+    setTimeout(() => s.remove(), 1000);
+  }
+}
+
+/* ---- check-in du jour ---- */
+function bonusFor(st){ return Math.min(RULE.bonusMax, Math.floor(st / 2)); }
+
+function checkIn(){
+  if (done()) return;
+  muteScan = Date.now() + 3000;
+  const before = myRank(), beforeDiv = divOf(ME.pts).key, rival = rivalOf();
+  eng.streak = (eng.last === null || eng.last === YEST) ? liveStreak() + 1 : 1;
+  broken = false;
+  const bonus = bonusFor(eng.streak), gain = RULE.session + bonus;
+  eng.earned += gain; eng.last = TODAY; eng.wCheck++;
+  // le staff voit la validation arriver dans son fil, en direct
+  feedSeen = FEED.addAll([{ type:"checkin", actor:ME.totem, day:TODAY, gain, streak:eng.streak, src:"self" }]);
+  applyFeed();
+  applyEarned(); saveE(); refresh();
+
+  toast("✓ Séance validée · +" + gain + " pts",
+    bonus ? "dont +" + bonus + " de bonus série (🔥 " + eng.streak + " jours)"
+          : "Reviens demain : la série commence à payer dès 2 jours");
+
+  const after = myRank();
+  if (after < before){
+    eng.wPass += before - after; saveE(); renderMission();
+    const passed = rival && ME.pts > rival.pts;
+    setTimeout(() => {
+      burst();
+      if (passed && eng.duelAlerts !== false){
+        const nx = rivalOf();
+        push({
+          tag:"Duel remporté", icon:"🏆", tone:"win",
+          title:`Tu viens de passer <b>${esc(rival.totem)}</b>`,
+          body:`Tu es ${after}ᵉ.` + (nx ? ` Prochaine cible : ${esc(nx.totem)}, à ${nx.pts - ME.pts} pts.` : " Personne devant toi."),
+          actions:[{ label:"Voir le duel", run:goToDuel }]
+        });
+      } else {
+        toast("Tu passes " + after + "ᵉ", passed ? "Tu dépasses " + rival.totem : null);
+      }
+    }, 520);
+  }
+  const nd = divOf(ME.pts);
+  if (nd.key !== beforeDiv) setTimeout(() => { toast("Division " + nd.label + " " + nd.e, "Nouveau palier atteint"); burst(); }, 900);
+}
+
+function useFreeze(){
+  if (!broken || eng.freeze <= 0) return;
+  eng.freeze--; eng.last = YEST; broken = false;
+  applyEarned(); saveE(); refresh();
+  toast("🧊 Gel utilisé", "Ta série de " + eng.streak + " jours est conservée");
+}
+
+function renderCheckin(){
+  const st = liveStreak(), ok = done();
+  $("strN").textContent = st;
+  $("flame").classList.toggle("on", st > 0);
+  $("strL").textContent = st === 0
+    ? "Série perdue — on repart de zéro"
+    : "jour" + (st > 1 ? "s" : "") + " de suite" + (ok ? " · validé aujourd'hui" : " · à sauver avant minuit");
+
+  const btn = $("btnCheck");
+  btn.classList.toggle("done", ok);
+  btn.classList.toggle("pending", !ok);
+  btn.disabled = ok;
+  btn.textContent = ok ? "✓ Séance du jour validée" : "Valider ma séance du jour";
+
+  const nb = bonusFor(eng.streak + 1);
+  $("checkSub").innerHTML = ok
+    ? `Prochaine validation demain : <b>+${RULE.session} pts</b> + bonus série <b>+${nb}</b>.`
+    : `Séance validée : <b>+${RULE.session} pts</b> · bonus série <b>+${bonusFor(liveStreak() + 1)}</b> (plafond +${RULE.bonusMax}).`
+      + (broken && eng.freeze > 0
+          ? `<br><button class="freeze" id="btnFreeze" type="button">🧊 Utiliser mon gel de série (${eng.freeze} restant)</button>`
+          : "");
+  const f = $("btnFreeze"); if (f) f.addEventListener("click", useFreeze);
+  $("mePill").classList.toggle("pending", !ok);
+}
+
+/* ---- duel : le joueur juste devant moi ---- */
+function rivalOf(){
+  const l = rankLeaderboard(P), me = l.find(x => x.me);
+  const ahead = l.filter(x => x.rank < me.rank);
+  return ahead.length ? ahead[ahead.length - 1] : null;
+}
+function renderDuel(){
+  const l = rankLeaderboard(P), me = l.find(x => x.me), r = rivalOf(), host = $("duel");
+  if (!r){
+    host.innerHTML = `<h2>Duel du jour</h2>
+      <div class="duel-top"><span style="font-size:26px">🥇</span>
+        <span><span class="duel-nm">Tu es en tête</span>
+        <span class="duel-sub">Personne devant toi — reste devant.</span></span></div>`;
+    return;
+  }
+  const behind = l.find(x => x.rank > me.rank);
+  const lo = behind ? behind.pts : Math.max(0, me.pts - 25);
+  const span = Math.max(1, r.pts - lo);
+  const prog = Math.max(6, Math.min(97, ((me.pts - lo) / span) * 100));
+  const gap = r.pts - me.pts;
+  const sessions = Math.ceil((gap + 1) / (RULE.session + bonusFor(eng.streak + 1)));
+
+  host.innerHTML = `<h2>Duel du jour</h2>
+    <div class="duel-top">
+      <span class="av-s" style="background:${avColor(r.init)}">${esc(r.init)}</span>
+      <span style="min-width:0">
+        <span class="duel-nm">${esc(r.totem)}</span>
+        <span class="duel-sub">${r.rank}ᵉ · ${GRP[r.grp]} · ${divOf(r.pts).label}</span>
+      </span>
+      <span class="duel-gap"><b class="num">${gap}</b><span>pts d'écart</span></span>
+    </div>
+    <div class="duel-bar"><i id="duelBar"></i></div>
+    <div class="duel-foot"><span>Moi · ${me.pts} pts</span><span>${esc(r.totem)} · ${r.pts} pts</span></div>
+    <p class="duel-cta">Environ <b>${sessions} séance${sessions > 1 ? "s" : ""}</b> validée${sessions > 1 ? "s" : ""} pour le doubler.</p>`;
+  requestAnimationFrame(() => { const b = $("duelBar"); if (b) b.style.width = prog + "%"; });
+}
+
+/* ---- encouragements ---- */
+function kudoBtn(p){
+  if (p.me) return `<span class="kudo ghost" aria-hidden="true"></span>`;
+  const sent = !!eng.kudos[p.totem];
+  const off  = sent || eng.kudosLeft <= 0;
+  const why  = sent ? "Déjà encouragé aujourd'hui"
+             : eng.kudosLeft <= 0 ? "Plus d'encouragements aujourd'hui" : "Encourager " + p.totem;
+  return `<button class="kudo ${sent ? "done" : ""}" type="button" data-kudo="${esc(p.totem)}"
+    ${off ? "disabled" : ""} title="${esc(why)}" aria-label="${esc(why)}">${sent ? "✓" : "👊"}</button>`;
+}
+function kudo(totem){
+  if (eng.kudos[totem]) return;
+  if (eng.kudosLeft <= 0){ toast("Plus d'encouragements aujourd'hui", "Tu en récupères 3 demain"); return; }
+  eng.kudos[totem] = 1; eng.kudosLeft--; eng.wKudos++;
+  feedSeen = FEED.addAll([{ type:"kudos", actor:ME.totem, target:totem, day:TODAY }]);
+  applyFeed();
+  saveE(); renderRows(); renderMission(); renderTeamFeed();
+  toast("👊 Encouragement envoyé à " + totem,
+    eng.kudosLeft > 0 ? eng.kudosLeft + " restant" + (eng.kudosLeft > 1 ? "s" : "") + " aujourd'hui" : "C'était le dernier du jour");
+}
+
+/* ---- mission de la semaine ---- */
+function weekEnd(){
+  const now = new Date(), t = new Date(now);
+  t.setHours(20, 0, 0, 0);
+  t.setDate(t.getDate() + ((7 - t.getDay()) % 7));
+  if (t <= now) t.setDate(t.getDate() + 7);
+  return t;
+}
+const OBJS = () => ([
+  { l:"3 séances validées",       c:eng.wCheck, g:3 },
+  { l:"Encourager 3 coéquipiers", c:eng.wKudos, g:3 },
+  { l:"Gagner 1 place",           c:eng.wPass,  g:1 },
+]);
+function renderMission(){
+  const o = OBJS(), all = o.every(x => x.c >= x.g);
+  $("mission").innerHTML = `
+    <div class="mission-head">
+      <h2>Mission de la semaine</h2>
+      <span class="cd">Clôture dimanche 20 h<br><b id="wkCd">—</b></span>
+    </div>
+    <div class="objs">
+      ${o.map(x => `<div class="obj ${x.c >= x.g ? "ok" : ""}">
+        <span class="tick">✓</span><span>${x.l}</span>
+        <span class="pg">${Math.min(x.c, x.g)}/${x.g}</span></div>`).join("")}
+    </div>
+    <button class="claim" id="claim" type="button" ${all && !eng.wClaimed ? "" : "disabled"}>
+      ${eng.wClaimed ? "✓ Bonus de +" + RULE.mission + " pts récupéré"
+        : all ? "Récupérer le bonus · +" + RULE.mission + " pts"
+              : "Bonus de +" + RULE.mission + " pts à débloquer"}
+    </button>`;
+  const c = $("claim");
+  if (c && !c.disabled) c.addEventListener("click", () => {
+    eng.wClaimed = true; eng.earned += RULE.mission;
+    const before = myRank();
+    applyEarned(); saveE(); refresh();
+    toast("🎁 Mission accomplie · +" + RULE.mission + " pts", "Nouvelle mission lundi");
+    burst();
+    const after = myRank();
+    if (after < before) setTimeout(() => toast("Tu passes " + after + "ᵉ"), 520);
+  });
+  tick();
+}
+
+/* ---- compte à rebours ---- */
+function tick(){
+  const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0);
+  const s = Math.max(0, Math.round((mid - now) / 1000));
+  const el = $("cdMid");
+  if (el) el.textContent = pad2(Math.floor(s / 3600)) + ":" + pad2(Math.floor(s % 3600 / 60)) + ":" + pad2(s % 60);
+  const w = $("wkCd");
+  if (w){
+    const ms = weekEnd() - now;
+    w.textContent = ms > 864e5
+      ? Math.floor(ms / 864e5) + " j " + Math.floor(ms % 864e5 / 36e5) + " h"
+      : Math.floor(ms / 36e5) + " h " + pad2(Math.floor(ms % 36e5 / 6e4)) + " min";
+  }
+}
+
+/* ---- retour de visite ---- */
+function renderRecap(){
+  const r = myRank(), el = $("recap");
+  if (eng.seenDay && eng.seenDay !== TODAY && eng.seenRank != null){
+    const d = eng.seenRank - r;
+    const txt = d > 0 ? `tu as gagné <b>${d} place${d > 1 ? "s" : ""}</b>, tu es <b>${r}ᵉ</b>`
+              : d < 0 ? `tu as perdu <b>${-d} place${-d > 1 ? "s" : ""}</b>, tu es <b>${r}ᵉ</b>`
+                      : `tu es toujours <b>${r}ᵉ</b>`;
+    el.hidden = false;
+    el.innerHTML = `<span>👋 Depuis ta dernière visite : ${txt}${done() ? "" : " · séance du jour <b>à valider</b>"}</span>
+      <button class="x" id="recapX" type="button" aria-label="Fermer">✕</button>`;
+    $("recapX").addEventListener("click", () => { el.hidden = true; });
+
+    // places perdues depuis la dernière visite : quelqu'un est passé devant.
+    if (d < 0){
+      const riv = rivalOf();
+      push({ key:"lost:" + TODAY, tag:"Duel perdu", icon:"⚡", tone:"alert",
+        title:`Tu as perdu <b>${-d} place${-d > 1 ? "s" : ""}</b> depuis ta dernière visite`,
+        body:riv ? `${esc(riv.totem)} est devant toi, à ${riv.pts - ME.pts} pts.` : "Tu es toujours dans le haut du tableau.",
+        actions:[done() ? A_DUEL : A_CHECK] });
+    }
+  }
+  eng.seenDay = TODAY; eng.seenRank = r; saveE();
+}
+
+/* ============================================================
+   NOTIFICATIONS DE DUEL
+   Composant « push » de l'application. Les déclencheurs ci-dessous sont
+   calculés sur les données réelles du classement (écart au rival, série
+   en cours, mission terminée, places perdues depuis la dernière visite).
+   Le cas « ton rival vient de te repasser » dépend de l'activité live des
+   coéquipiers : la maquette ne l'invente pas, elle le propose en aperçu
+   explicite depuis la carte Notifications.
+   ============================================================ */
+const hhmm = () => { const d = new Date(); return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); };
+
+function dismissPush(el){
+  if (!el || el.dataset.gone) return;
+  el.dataset.gone = "1";
+  el.classList.add("out");
+  setTimeout(() => el.remove(), 300);
+}
+
+function push(o){
+  if (!o.preview && eng.duelAlerts === false) return;          // réglage utilisateur
+  if (o.key){                                                   // une fois par jour maximum
+    if (eng.pushed[o.key] === TODAY) return;
+    eng.pushed[o.key] = TODAY; saveE();
+  }
+  const host = $("pushes");
+  [...host.children].slice(0, Math.max(0, host.children.length - 1)).forEach(dismissPush);
+
+  const acts = o.actions || [];
+  const el = document.createElement("div");
+  el.className = "push" + (o.tone ? " " + o.tone : "");   // annoncé par la région live parente
+  el.innerHTML = `
+    <span class="ico" aria-hidden="true">${o.icon || "🏉"}</span>
+    <span style="min-width:0">
+      <span class="hd">${esc(o.tag || "Duel")}<span class="t">${o.preview ? "Aperçu" : hhmm()}</span></span>
+      <b class="ti">${o.title}</b>
+      ${o.body ? `<span class="bd">${o.body}</span>` : ""}
+      ${acts.length ? `<span class="acts">${acts.map((a, i) =>
+        `<button type="button" data-a="${i}"${a.pri ? ' class="pri"' : ""}>${esc(a.label)}</button>`).join("")}</span>` : ""}
+    </span>
+    <button class="x" type="button" aria-label="Fermer la notification">✕</button>`;
+  host.appendChild(el);
+
+  el.querySelector(".x").addEventListener("click", () => dismissPush(el));
+  el.querySelectorAll("[data-a]").forEach(b => b.addEventListener("click", () => {
+    const a = acts[+b.dataset.a];
+    dismissPush(el);
+    if (a && a.run) a.run();
+  }));
+
+  // auto-fermeture, suspendue tant que la notification est survolée ou focalisée
+  let t = setTimeout(() => dismissPush(el), 10000);
+  const hold = () => clearTimeout(t);
+  const release = () => { t = setTimeout(() => dismissPush(el), 4000); };
+  el.addEventListener("mouseenter", hold);
+  el.addEventListener("mouseleave", release);
+  el.addEventListener("focusin", hold);
+  el.addEventListener("focusout", release);
+}
+
+function goToDuel(){
+  const y = $("today").getBoundingClientRect().top + window.scrollY - 76;
+  window.scrollTo({ top:Math.max(0, y), behavior:reduced ? "auto" : "smooth" });
+  const d = $("duel");
+  if (d){ d.classList.remove("flash"); void d.offsetWidth; d.classList.add("flash"); }
+}
+const A_DUEL  = { label:"Voir le duel", run:goToDuel };
+const A_CHECK = { label:"Valider ma séance", pri:true, run:checkIn };
+
+/* déclencheurs réels — relancés à chaque changement d'état.
+   muteScan évite qu'une alerte automatique se superpose à la célébration
+   d'un dépassement, qui annonce déjà la cible suivante. */
+let muteScan = 0;
+function scanAlerts(){
+  if (eng.duelAlerts === false || Date.now() < muteScan) return;
+  const me = rankLeaderboard(P).find(x => x.me), r = rivalOf();
+
+  // écart resserré : une seule séance suffit
+  if (r){
+    const gap = r.pts - me.pts;
+    if (gap > 0 && gap <= RULE.session + bonusFor(liveStreak() + 1)){
+      push({ key:"tight:" + r.totem, tag:"Duel serré", icon:"⚔️",
+        title:`${esc(r.totem)} n'est plus qu'à <b>${gap} pts</b>`,
+        body:"Une séance validée suffit à le doubler.",
+        actions:[done() ? A_DUEL : A_CHECK] });
+    }
+  }
+
+  // série en jeu, à partir de l'heure de rappel choisie
+  const st = liveStreak();
+  if (!done() && st > 0 && new Date().getHours() >= parseInt((eng.remindAt || "18:30").slice(0, 2), 10)){
+    push({ key:"streak", tag:"Série", icon:"🔥", tone:"alert",
+      title:`Ta série de <b>${st} jour${st > 1 ? "s" : ""}</b> tombe à minuit`,
+      body:"Valide ta séance pour la garder.",
+      actions:[A_CHECK] });
+  }
+
+  // bonus hebdo débloqué mais pas récupéré
+  if (OBJS().every(x => x.c >= x.g) && !eng.wClaimed){
+    push({ key:"mission", tag:"Mission", icon:"🎁", tone:"win",
+      title:`Ton bonus de <b>+${RULE.mission} pts</b> t'attend`,
+      body:"Les trois objectifs de la semaine sont remplis.",
+      actions:[{ label:"Récupérer", pri:true, run:() => { const c = $("claim"); if (c && !c.disabled) c.click(); } }] });
+  }
+}
+
+/* aperçus — déclenchés explicitement par l'utilisateur */
+function previewPush(kind){
+  const me = rankLeaderboard(P).find(x => x.me), r = rivalOf();
+  const st = Math.max(1, liveStreak());
+  if (kind === "over"){
+    const who = r ? r.totem : "Ton rival", gap = r ? Math.max(1, r.pts - me.pts) : 6;
+    push({ preview:true, tag:"Duel perdu", icon:"⚡", tone:"alert",
+      title:`${esc(who)} vient de te repasser`,
+      body:`${esc(who)} a validé sa séance et repasse devant toi de ${gap} pts.`,
+      actions:done() ? [A_DUEL] : [A_CHECK, A_DUEL] });
+  } else if (kind === "tight"){
+    push({ preview:true, tag:"Duel serré", icon:"⚔️",
+      title:`${esc(r ? r.totem : "Ton rival")} n'est plus qu'à <b>${r ? Math.max(1, r.pts - me.pts) : 6} pts</b>`,
+      body:"Une séance validée suffit à le doubler.",
+      actions:[A_DUEL] });
+  } else {
+    push({ preview:true, tag:"Série", icon:"🔥", tone:"alert",
+      title:`Ta série de <b>${st} jour${st > 1 ? "s" : ""}</b> tombe à minuit`,
+      body:done() ? "Séance déjà validée aujourd'hui — la série est sauvée." : "Valide ta séance pour la garder.",
+      actions:done() ? [] : [A_CHECK] });
+  }
+}
+
+/* ---- carte Notifications (alertes de duel + rappel quotidien) ---- */
+const PREVIEWS = [
+  { k:"over",   l:"On t'a repassé",   s:"Un coéquipier passe devant toi" },
+  { k:"tight",  l:"Duel serré",       s:"L'écart passe sous une séance" },
+  { k:"streak", l:"Série en danger",  s:"Rien de validé en fin de journée" },
+];
+function renderNotifs(){
+  const on = eng.duelAlerts !== false;
+  $("remindCard").innerHTML = `
+    <h2>Notifications</h2>
+    <label class="switch">
+      <input type="checkbox" id="dOn" ${on ? "checked" : ""}>
+      <span class="tr"></span>
+      <span class="lb">Alertes de duel · ${on ? "activées" : "désactivées"}</span>
+    </label>
+    <p class="note" style="margin-top:9px">Envoyées quand un coéquipier te dépasse, quand l'écart avec ton rival passe sous une séance, ou quand ta série est en jeu. Une alerte par motif et par jour.</p>
+    ${PREVIEWS.map(p => `<div class="nrow">
+        <span class="lb2">${p.l}<span class="sb">${p.s}</span></span>
+        <button class="prev" type="button" data-prev="${p.k}">Aperçu</button>
+      </div>`).join("")}
+    <p class="note">Ces alertes partent maintenant en direct : dès qu'une séance est validée depuis la <a href="staff.html" style="color:var(--cyan)">console staff</a>, le classement se recalcule ici et l'alerte est envoyée. Les aperçus ci-dessus rejouent l'alerte exacte à la demande.</p>
+
+    <div class="nsec">
+      <h2>Rappel quotidien</h2>
+      <label class="switch">
+        <input type="checkbox" id="rOn" ${eng.remind ? "checked" : ""}>
+        <span class="tr"></span>
+        <span class="lb">${eng.remind ? "Activé" : "Désactivé"}</span>
+      </label>
+      <div class="timerow"><span>À</span><input type="time" id="rAt" value="${eng.remindAt}"><span>si rien n'est validé</span></div>
+      <p class="note">Réglages enregistrés sur cet appareil.</p>
+    </div>`;
+
+  $("dOn").addEventListener("change", e => {
+    eng.duelAlerts = e.target.checked; saveE(); renderNotifs();
+    toast(eng.duelAlerts ? "Alertes de duel activées" : "Alertes de duel désactivées",
+      eng.duelAlerts ? "Tu seras prévenu dès qu'on te dépasse" : null);
+    if (eng.duelAlerts) scanAlerts();
+  });
+  $("remindCard").querySelectorAll("[data-prev]").forEach(b =>
+    b.addEventListener("click", () => previewPush(b.dataset.prev)));
+  $("rOn").addEventListener("change", e => {
+    eng.remind = e.target.checked; saveE(); renderNotifs();
+    toast(eng.remind ? "Rappel activé · " + eng.remindAt : "Rappel désactivé");
+  });
+  $("rAt").addEventListener("change", e => {
+    eng.remindAt = e.target.value || "18:30"; saveE();
+    if (eng.remind) toast("Rappel réglé à " + eng.remindAt);
+  });
+}
+
+/* ============================================================
+   FIL D'ÉQUIPE — ce que je reçois du journal partagé
+   ============================================================ */
+function teamItems(){
+  return FEV.filter(e =>
+      (e.type === "checkin") ||
+      (e.type === "kudos" && e.target === ME.totem) ||
+      (e.type === "nudge" && e.target === ME.totem))
+    .slice(-30).reverse().slice(0, 5);
+}
+
+function renderTeamFeed(){
+  const items = teamItems();
+  const head = `<h2>Activité de l'équipe<span class="tfeed-live"><i></i>direct</span></h2>`;
+
+  if (!items.length){
+    $("feedCard").innerHTML = head + `<p class="tfeed-empty">
+      Rien de neuf. Le fil se remplit dès qu'un coéquipier valide sa séance
+      ou que le staff coche la présence — et tu reçois l'alerte au moment où
+      quelqu'un te repasse.</p>`;
+    return;
+  }
+
+  $("feedCard").innerHTML = head + `<ul class="tfeed">` + items.map(e => {
+    const p = P.find(x => x.totem === e.actor);
+    let av, tx, gain = "";
+    if (e.type === "nudge"){
+      av = `<span class="av sys">📣</span>`;
+      tx = `Le staff t'a relancé`;
+    } else if (e.type === "kudos"){
+      av = `<span class="av" style="background:${avColor(e.actor)}">${esc(p ? p.init : "?")}</span>`;
+      tx = `<b>${esc(e.actor)}</b> t'a encouragé`;
+    } else if (e.actor === ME.totem){
+      av = e.src === "staff" ? `<span class="av sys">📋</span>`
+                             : `<span class="av" style="background:${avColor(e.actor)}">${esc(ME.init)}</span>`;
+      tx = e.src === "staff" ? `Le staff a validé <b>ta séance</b>` : `Tu as validé <b>ta séance</b>`;
+      gain = `<span class="gain">+${e.gain} pts</span>`;
+    } else {
+      av = `<span class="av" style="background:${avColor(e.actor)}">${esc(p ? p.init : "?")}</span>`;
+      tx = `<b>${esc(e.actor)}</b> a validé sa séance`;
+      gain = `<span class="gain">+${e.gain} pts</span>`;
+    }
+    return `<li>${av}<span class="bd"><span class="tx">${tx}</span>${gain ? "<br>" + gain : ""}</span>
+      <span class="tm">${hm(e.ts)}</span></li>`;
+  }).join("") + `</ul>`;
+}
+
+/* ---- arrivée d'événements en direct ----------------------------------
+   Un coéquipier valide sa séance depuis la console staff : le classement
+   se recalcule et, s'il me passe devant, l'alerte de duel part pour de
+   vrai — c'est le déclencheur qui manquait.                            */
+function onFeed(){
+  const beforeOrder = rankLeaderboard(P).map(x => x.totem);
+  const bi = beforeOrder.indexOf(ME.totem);
+
+  applyFeed();
+  const staffCheck = absorbStaff();
+  applyEarned();
+
+  const fresh = FEV.filter(e => typeof e.id === "number" && e.id > feedSeen);
+  feedSeen = FEV.length ? FEV[FEV.length - 1].id : feedSeen;
+  if (fresh.length) muteScan = Date.now() + 2500;
+
+  refresh();
+
+  if (!fresh.length) return;
+
+  if (staffCheck){
+    burst();
+    push({ tag:"Séance validée", icon:"📋", tone:"win",
+      title:"Le staff a validé <b>ta séance</b>",
+      body:`+${staffCheck.gain} pts · ta série de ${eng.streak} jour${eng.streak > 1 ? "s" : ""} est conservée.`,
+      actions:[A_DUEL] });
+  }
+
+  if (fresh.some(e => e.type === "nudge" && e.target === ME.totem) && !done()){
+    push({ tag:"Message du staff", icon:"📣", tone:"alert",
+      title:"Le staff t'a relancé",
+      body:"Ta série est repartie de zéro. Une séance validée aujourd'hui la relance.",
+      actions:[A_CHECK] });
+  }
+
+  const gotKudos = fresh.filter(e => e.type === "kudos" && e.target === ME.totem);
+  if (gotKudos.length){
+    toast("👊 " + gotKudos[gotKudos.length - 1].actor + " t'a encouragé",
+      gotKudos.length > 1 ? gotKudos.length + " encouragements reçus" : null);
+  }
+
+  if (eng.duelAlerts === false) return;
+  const afterOrder = rankLeaderboard(P).map(x => x.totem);
+  const ai = afterOrder.indexOf(ME.totem);
+  if (ai <= bi) return;
+
+  const passers = afterOrder.slice(bi, ai).filter(t => t !== ME.totem && beforeOrder.indexOf(t) > bi);
+  if (!passers.length) return;
+
+  const who = passers[0], w = P.find(p => p.totem === who), gap = w.pts - ME.pts;
+  push({ tag:"Duel perdu", icon:"⚡", tone:"alert",
+    title:`${esc(who)} vient de te repasser`,
+    body:`${esc(who)} a validé sa séance et passe devant toi de ${gap} pt${gap > 1 ? "s" : ""}.`
+       + (passers.length > 1 ? ` ${passers.length - 1} autre${passers.length > 2 ? "s" : ""} aussi.` : "")
+       + ` Tu es ${myRank()}ᵉ.`,
+    actions: done() ? [A_DUEL] : [A_CHECK, A_DUEL] });
+}
+
+/* ---- surveillance de la barre d'action ---- */
+let obsT = null;
+function watchToday(){
+  if (obsT) obsT.disconnect();
+  obsT = new IntersectionObserver(([e]) => {
+    const show = !done() && !e.isIntersecting;
+    $("dailycta").classList.toggle("show", show);
+    document.body.classList.toggle("cta-on", show);
+  }, { rootMargin:"-64px 0px 0px 0px" });
+  obsT.observe($("today"));
+}
+
+function refresh(){
+  syncHeader(); renderMyCard(); renderTeamFeed(); renderCheckin(); renderDuel(); renderMission(); apply();
+  const show = !done() && $("dailycta").classList.contains("show");
+  $("dailycta").classList.toggle("show", show);
+  document.body.classList.toggle("cta-on", show);
+  scanAlerts();
+}
+
+$("btnCheck").addEventListener("click", checkIn);
+$("dailycta").addEventListener("click", () => {
+  checkIn();
+  const y = $("today").getBoundingClientRect().top + window.scrollY - 80;
+  window.scrollTo({ top:Math.max(0, y), behavior:reduced ? "auto" : "smooth" });
+});
+
+/* ============================================================
+   ÉVÉNEMENTS
+   ============================================================ */
+function apply(){
+  const indiv = state.mode === "indiv";
+  $("filters").style.display = indiv ? "" : "none";
+  $("panelHead").style.display = indiv ? "" : "none";
+  if (indiv){ renderRows(); } else { $("podium").style.display = "none"; renderTeams(); $("mebar").classList.remove("show"); }
+  save();
+}
+
+document.querySelector(".seg").addEventListener("click", e => {
+  const b = e.target.closest("button[data-mode]"); if (!b) return;
+  state.mode = b.dataset.mode;
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  apply();
+});
+document.querySelector(".chips").addEventListener("click", e => {
+  const b = e.target.closest("button[data-scope]"); if (!b) return;
+  state.scope = b.dataset.scope;
+  document.querySelectorAll(".chips button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  apply();
+});
+$("sort").addEventListener("change", e => { state.sort = e.target.value; apply(); });
+$("q").addEventListener("input", e => { state.q = e.target.value; renderRows(); });
+
+$("rows").addEventListener("click", e => {
+  const k = e.target.closest("[data-kudo]");
+  if (k){ e.stopPropagation(); kudo(k.dataset.kudo); return; }
+  const r = e.target.closest(".row[data-totem]"); if (!r) return;
+  openSheet(r.dataset.totem);
+});
+// La ligne est un role="button" : on rétablit Entrée / Espace au clavier.
+$("rows").addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  if (e.target.closest("[data-kudo]")) return;
+  const r = e.target.closest(".row[data-totem]"); if (!r) return;
+  e.preventDefault(); openSheet(r.dataset.totem);
+});
+$("shClose").addEventListener("click", closeSheet);
+$("scrim").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("sheet").hidden) closeSheet();
+  if (e.key === "/" && document.activeElement !== $("q")){ e.preventDefault(); $("q").focus(); }
+});
+
+/* ============================================================
+   AMORÇAGE
+   ============================================================ */
+document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+document.querySelectorAll(".chips button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.scope === state.scope)));
+$("sort").value = state.sort;
+
+renderRecap();          // « depuis ta dernière visite » : figé avant toute action
+syncHeader();
+renderMyCard();
+renderTeamFeed();
+renderLadder();
+renderCheckin();
+renderDuel();
+renderMission();
+renderNotifs();
+apply();
+watchToday();
+tick();
+setInterval(tick, 1000);
+
+// Les alertes de duel arrivent juste après le premier rendu, pas pendant.
+setTimeout(scanAlerts, 900);
+// Passage de l'heure de rappel pendant la session : la série est réévaluée.
+setInterval(scanAlerts, 60000);
+
+// Boucle fermée : les événements saisis côté staff arrivent ici en direct.
+FEED.on(onFeed);
+</script>
+</body>
+</html>

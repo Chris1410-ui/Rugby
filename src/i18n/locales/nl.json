@@ -1380,7 +1380,10 @@
       "points": "Punten",
       "newsTitle": "Clubnieuws",
       "newsEmpty": "Nog geen nieuws.",
-      "motStaff": "Woord van de staf"
+      "motStaff": "Woord van de staf",
+      "overtake": "{{name}} is je net voorbijgestoken",
+      "overtakeGap": "+{{n}} ptn verschil",
+      "overtakeCta": "Bekijk"
     }
   },
   "staff": {
@@ -2431,7 +2434,17 @@
       "athleteRoutineDone": "Ochtendroutine ✓",
       "athleteRoutineNone": "Ochtendroutine —",
       "athleteBadges": "BADGES",
-      "athleteScopeNote": "Een staflid dat ook als atleet traint. Je ziet zijn klassement, voltooide sessies en ochtendroutine — nooit zijn belastingen, tests, gewicht of check-ins."
+      "athleteScopeNote": "Een staflid dat ook als atleet traint. Je ziet zijn klassement, voltooide sessies en ochtendroutine — nooit zijn belastingen, tests, gewicht of check-ins.",
+      "top14Reached": "{{n}}/{{total}} tests op Top 14-niveau",
+      "duelTitle": "Duel van de dag",
+      "duelOngoing": "Duel bezig",
+      "duelLeader": "Je staat bovenaan — geen rival erboven.",
+      "duelGap": "+{{n}} ptn boven jou",
+      "duelChallenge": "Uitdagen",
+      "duelSent": "Uitdaging verzonden naar {{name}}",
+      "duelFail": "Uitdaging mislukt.",
+      "kudosSend": "{{name}} aanmoedigen",
+      "kudosSent": "Vandaag aangemoedigd ✓"
     },
     "report": {
       "wb": {
@@ -3081,7 +3094,8 @@
     "bilanEvening": "Avondcheck voltooid",
     "morningRoutine": "Ochtendroutine voltooid",
     "gps": "GPS-sessie geregistreerd",
-    "streakTier": "Reeksmijlpaal {{n}} d 🔥"
+    "streakTier": "Reeksmijlpaal {{n}} d 🔥",
+    "weeklyMission": "Weekmissie (3 dagen) 🎯"
   },
   "badges": {
     "assidu": "Volhardend",

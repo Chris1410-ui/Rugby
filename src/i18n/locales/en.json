@@ -1380,7 +1380,10 @@
       "points": "Points",
       "newsTitle": "Club news",
       "newsEmpty": "No news yet.",
-      "motStaff": "Staff note"
+      "motStaff": "Staff note",
+      "overtake": "{{name}} just overtook you",
+      "overtakeGap": "+{{n}} pts gap",
+      "overtakeCta": "View"
     }
   },
   "staff": {
@@ -2431,7 +2434,17 @@
       "athleteRoutineDone": "Morning routine ✓",
       "athleteRoutineNone": "Morning routine —",
       "athleteBadges": "BADGES",
-      "athleteScopeNote": "A staff member who also trains as an athlete. You see his ranking, completed sessions and morning routine — never his loads, tests, weight or check-ins."
+      "athleteScopeNote": "A staff member who also trains as an athlete. You see his ranking, completed sessions and morning routine — never his loads, tests, weight or check-ins.",
+      "top14Reached": "{{n}}/{{total}} tests at Top 14 level",
+      "duelTitle": "Duel of the day",
+      "duelOngoing": "Duel in progress",
+      "duelLeader": "You're on top — no rival above.",
+      "duelGap": "+{{n}} pts above you",
+      "duelChallenge": "Challenge",
+      "duelSent": "Challenge sent to {{name}}",
+      "duelFail": "Challenge failed.",
+      "kudosSend": "Encourage {{name}}",
+      "kudosSent": "Encouraged today ✓"
     },
     "report": {
       "wb": {
@@ -3081,7 +3094,8 @@
     "bilanEvening": "Evening check-in completed",
     "morningRoutine": "Morning routine completed",
     "gps": "GPS session logged",
-    "streakTier": "{{n}}-day streak tier 🔥"
+    "streakTier": "{{n}}-day streak tier 🔥",
+    "weeklyMission": "Weekly mission (3 days) 🎯"
   },
   "badges": {
     "assidu": "Regular",
