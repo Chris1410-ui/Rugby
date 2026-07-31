@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { C, NEON, sc } from "../../lib/tokens.js";
 import { displayName } from "../../lib/identity.js";
@@ -14,6 +14,7 @@ import { useTeamReactivity } from "../../data/notifications.js";
 import { useTeamTrainingEvents } from "../../data/trainings.js";
 import { useTeamSessionLogs, useTeamCheckinEvents, useTeamGpsEvents } from "../../data/leaderboard.js";
 import { useTeamStreakTiers } from "../../data/streak.js";
+import { useMyDuels, createDuel, fetchDuelStanding } from "../../data/duels.js";
 import { useTeamRoutinePoints } from "../../data/morningRoutine.js";
 import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import { natureLabel, natureColor } from "../../lib/nature.js";
@@ -282,8 +283,78 @@ export default function Classement({ players, sessions, crews = [], me, accent =
         );
       })()}
 
+      {mode === "indiv" && isJoueur && mine && scope === "all" && (
+        <DuelOfDay me={me} myPts={mine.pts} rival={data[data.findIndex((d) => d.p.id === me.id) - 1]} accent={accent} t={t} />
+      )}
+
       {sel && <PlayerPointsDetail sel={sel} accent={accent} onClose={() => setSel(null)} />}
       {athlete && <AthleteProfile player={athlete.p} athlete={athlete.athlete} stats={{ div: athlete.div, pts: athlete.pts, rank: athlete.rank, badges: athlete.badges, top14: athlete.top14, chalCount: athlete.chalCount }} accent={accent} onClose={() => setAthlete(null)} />}
+    </div>
+  );
+}
+
+/* « Duel du jour » — réutilise les DUELS du lot 2 (RPC duel_create / duel_standing,
+   migration 0120). Aucune nouvelle table, aucun barème : le rival proposé est le
+   joueur juste devant moi au classement (rang -1). Si un duel est déjà en cours,
+   on affiche son score en direct ; sinon, un bouton « Défier » crée le duel via
+   la RPC existante. */
+function DuelOfDay({ me, myPts = 0, rival, accent, t }) {
+  const { duels, refresh } = useMyDuels(me?.id);
+  const [standing, setStanding] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+
+  // Duel actif (proposé/accepté) où je suis impliqué.
+  const active = useMemo(
+    () => (duels || []).find((d) => d.status === "pending" || d.status === "accepted") || null,
+    [duels],
+  );
+  useEffect(() => {
+    let alive = true;
+    if (!active) { setStanding(null); return; }
+    fetchDuelStanding(active.id).then((s) => { if (alive) setStanding(s); }).catch(() => {});
+    return () => { alive = false; };
+  }, [active]);
+
+  const challenge = async () => {
+    if (!rival?.p?.id || busy) return;
+    setBusy(true); setNote("");
+    try { await createDuel(rival.p.id, 7); await refresh(); setNote(t("shared.leaderboard.duelSent", { name: displayName(rival.p) })); }
+    catch (e) { setNote(e?.message || t("shared.leaderboard.duelFail")); }
+    finally { setBusy(false); }
+  };
+
+  const wrap = { marginTop: 12, background: NEON.panel, border: `1px solid rgba(160,120,255,0.25)`, borderRadius: 14, padding: 14 };
+  const head = <div style={{ fontSize: 9.5, letterSpacing: 1, textTransform: "uppercase", color: "rgba(255,255,255,0.5)", fontWeight: 800, marginBottom: 10 }}>{t("shared.leaderboard.duelTitle")}</div>;
+
+  if (active) {
+    const mineN = active.challenger_id === me?.id ? standing?.challengerN : standing?.opponentN;
+    const theirsN = active.challenger_id === me?.id ? standing?.opponentN : standing?.challengerN;
+    return (
+      <div style={wrap}>
+        {head}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: accent }}>⚔️ {t("shared.leaderboard.duelOngoing")}</div>
+          {standing && <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 16, fontWeight: 900 }}>{mineN ?? 0}<span style={{ color: "rgba(255,255,255,0.4)" }}> · </span>{theirsN ?? 0}</div>}
+        </div>
+      </div>
+    );
+  }
+  if (!rival) {
+    return <div style={wrap}>{head}<div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{t("shared.leaderboard.duelLeader")}</div></div>;
+  }
+  return (
+    <div style={wrap}>
+      {head}
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <span style={{ width: 34, height: 34, borderRadius: 17, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#0B0A1C", background: avColor(rival.p.name || rival.p.id) }}>{(rival.p.initials || (rival.p.name || "?").slice(0, 2)).toUpperCase()}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(rival.p)}</div>
+          <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)" }}>{t("shared.leaderboard.duelGap", { n: Math.max(0, rival.pts - myPts) })}</div>
+        </div>
+        <button onClick={challenge} disabled={busy} style={{ flexShrink: 0, minHeight: 40, padding: "0 14px", borderRadius: 10, background: accent, border: "none", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>{t("shared.leaderboard.duelChallenge")}</button>
+      </div>
+      {note && <div style={{ fontSize: 11, color: accent, marginTop: 8 }}>{note}</div>}
     </div>
   );
 }

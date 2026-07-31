@@ -2435,7 +2435,14 @@
       "athleteRoutineNone": "Ochtendroutine —",
       "athleteBadges": "BADGES",
       "athleteScopeNote": "Een staflid dat ook als atleet traint. Je ziet zijn klassement, voltooide sessies en ochtendroutine — nooit zijn belastingen, tests, gewicht of check-ins.",
-      "top14Reached": "{{n}}/{{total}} tests op Top 14-niveau"
+      "top14Reached": "{{n}}/{{total}} tests op Top 14-niveau",
+      "duelTitle": "Duel van de dag",
+      "duelOngoing": "Duel bezig",
+      "duelLeader": "Je staat bovenaan — geen rival erboven.",
+      "duelGap": "+{{n}} ptn boven jou",
+      "duelChallenge": "Uitdagen",
+      "duelSent": "Uitdaging verzonden naar {{name}}",
+      "duelFail": "Uitdaging mislukt."
     },
     "report": {
       "wb": {

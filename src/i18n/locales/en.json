@@ -2435,7 +2435,14 @@
       "athleteRoutineNone": "Morning routine —",
       "athleteBadges": "BADGES",
       "athleteScopeNote": "A staff member who also trains as an athlete. You see his ranking, completed sessions and morning routine — never his loads, tests, weight or check-ins.",
-      "top14Reached": "{{n}}/{{total}} tests at Top 14 level"
+      "top14Reached": "{{n}}/{{total}} tests at Top 14 level",
+      "duelTitle": "Duel of the day",
+      "duelOngoing": "Duel in progress",
+      "duelLeader": "You're on top — no rival above.",
+      "duelGap": "+{{n}} pts above you",
+      "duelChallenge": "Challenge",
+      "duelSent": "Challenge sent to {{name}}",
+      "duelFail": "Challenge failed."
     },
     "report": {
       "wb": {
