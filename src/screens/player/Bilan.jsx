@@ -14,6 +14,7 @@ import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
 import AccueilHero from "./accueil/AccueilHero.jsx";
 import AccueilMission from "./accueil/AccueilMission.jsx";
+import AccueilStreak from "./accueil/AccueilStreak.jsx";
 import AccueilTeam from "./accueil/AccueilTeam.jsx";
 import AccueilCoach from "./accueil/AccueilCoach.jsx";
 import AccueilQuickAccess from "./accueil/AccueilQuickAccess.jsx";
@@ -161,6 +162,9 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
       {/* Check-in du matin par glissement (lot 1) — le geste rapide qui débloque
           la saisie ; alimente le bilan matin + affiche readiness quand fait. */}
       <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
+
+      {/* Série + gel de série (refonte Open Design) — jour validé = bilan matin. */}
+      <AccueilStreak me={me} checkins={checkins} today={today} preview={preview} />
 
       {/* « Le groupe aujourd'hui » + mot du préparateur (refonte Open Design). */}
       <AccueilTeam me={me} teamId={teamId} players={players} sessions={sessions} today={today} onNavigate={onNavigate} />

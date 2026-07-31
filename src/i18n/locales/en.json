@@ -1313,7 +1313,27 @@
       "rankLeader": "You lead the ranking 🏆",
       "rankUnknown": "Ranking being computed…",
       "coachTitle": "Coach's word",
-      "quickAccess": "Quick access"
+      "quickAccess": "Quick access",
+      "streakKicker": "Your streak",
+      "streakDays_one": "day",
+      "streakDays_other": "days",
+      "streakBest": "best",
+      "streakNextTier": "{{n}}-day tier",
+      "streakToGo": "to go",
+      "streakSecured": "Day secured",
+      "streakFrozenTonight": "Night frozen — streak protected",
+      "streakDeadline": "{{h}} h left to check in today",
+      "streakStart": "Complete your morning check-in to start your streak",
+      "streakFreeze": "Freeze",
+      "streakNoFreeze": "No freeze available",
+      "dow": { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" },
+      "streakErr": {
+        "already_validated": "Day already validated — no freeze needed.",
+        "already_frozen": "This night is already frozen.",
+        "no_freeze": "No freeze available.",
+        "bad_night": "Freeze not allowed for this date.",
+        "generic": "Freeze failed. Try again."
+      }
     }
   },
   "staff": {

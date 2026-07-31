@@ -1313,7 +1313,27 @@
       "rankLeader": "Je staat bovenaan 🏆",
       "rankUnknown": "Klassement wordt berekend…",
       "coachTitle": "Woord van de trainer",
-      "quickAccess": "Snelle toegang"
+      "quickAccess": "Snelle toegang",
+      "streakKicker": "Jouw reeks",
+      "streakDays_one": "dag",
+      "streakDays_other": "dagen",
+      "streakBest": "record",
+      "streakNextTier": "Mijlpaal {{n}} d",
+      "streakToGo": "te gaan",
+      "streakSecured": "Dag veiliggesteld",
+      "streakFrozenTonight": "Nacht bevroren — reeks beschermd",
+      "streakDeadline": "Nog {{h}} u om vandaag in te checken",
+      "streakStart": "Vul je ochtendcheck-in in om je reeks te starten",
+      "streakFreeze": "Bevriezen",
+      "streakNoFreeze": "Geen bevriezing beschikbaar",
+      "dow": { "0": "zo", "1": "ma", "2": "di", "3": "wo", "4": "do", "5": "vr", "6": "za" },
+      "streakErr": {
+        "already_validated": "Dag al gevalideerd — geen bevriezing nodig.",
+        "already_frozen": "Deze nacht is al bevroren.",
+        "no_freeze": "Geen bevriezing beschikbaar.",
+        "bad_night": "Bevriezen niet toegestaan voor deze datum.",
+        "generic": "Bevriezen mislukt. Probeer opnieuw."
+      }
     }
   },
   "staff": {
