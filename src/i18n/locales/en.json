@@ -1270,7 +1270,8 @@
       "factChallengePlain": "took on a challenge",
       "factConvocation": "attended “{{subject}}”",
       "factConvocationPlain": "attended training",
-      "factGps": "uploaded GPS data"
+      "factGps": "uploaded GPS data",
+      "factStreak": "reached a {{n}}-day streak 🔥"
     },
     "profile": {
       "rewards": "Rewards",
@@ -1297,6 +1298,63 @@
       "draw": "Draw",
       "errActive": "A duel is already running with this player.",
       "errCreate": "Couldn't create the duel."
+    },
+    "accueil": {
+      "missionKicker": "Today",
+      "missionTitle": "What's left",
+      "pts": "+{{n}} pts",
+      "continueTo": "Continue: {{name}}",
+      "dayDone": "Day complete",
+      "teamKicker": "My club",
+      "teamTitle": "The squad today",
+      "validated": "logged in",
+      "rankYouAre": "You're {{rank}}th.",
+      "gapPts": "{{n}} pts",
+      "gapFrom": "separate you from the player ahead.",
+      "rankLeader": "You lead the ranking 🏆",
+      "rankUnknown": "Ranking being computed…",
+      "coachTitle": "Coach's word",
+      "quickAccess": "Quick access",
+      "streakKicker": "Your streak",
+      "streakDays_one": "day",
+      "streakDays_other": "days",
+      "streakBest": "best",
+      "streakNextTier": "{{n}}-day tier",
+      "streakToGo": "to go",
+      "streakSecured": "Day secured",
+      "streakFrozenTonight": "Night frozen — streak protected",
+      "streakDeadline": "{{h}} h left to check in today",
+      "streakStart": "Complete your morning check-in to start your streak",
+      "streakFreeze": "Freeze",
+      "streakNoFreeze": "No freeze available",
+      "dow": { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" },
+      "streakErr": {
+        "already_validated": "Day already validated — no freeze needed.",
+        "already_frozen": "This night is already frozen.",
+        "no_freeze": "No freeze available.",
+        "bad_night": "Freeze not allowed for this date.",
+        "generic": "Freeze failed. Try again."
+      }
+    },
+    "reminders": {
+      "title": "Reminders",
+      "actionSub": "Set your check-in reminders",
+      "intro": "Choose when and how you're reminded about your morning check-in.",
+      "enabled": "Reminders on",
+      "enabledSub": "Get a notification when your check-in is due",
+      "morningTime": "Morning reminder time",
+      "streakGuard": "Streak guard (evening)",
+      "streakGuardSub": "A last reminder if your day isn't validated",
+      "eveningTime": "Evening cut-off time",
+      "tone": "Insistence",
+      "toneSub": "The tone of reminders",
+      "tones": { "leger": "Gentle", "normal": "Normal", "costaud": "Firm" },
+      "quiet": "Quiet hours",
+      "quietSub": "No reminders during this window (school, night)",
+      "quietStart": "Start",
+      "quietEnd": "End",
+      "saving": "Saving…",
+      "savedHint": "Saved automatically"
     }
   },
   "staff": {
@@ -2968,13 +3026,15 @@
     "bilanMorning": "Morning check-in completed",
     "bilanEvening": "Evening check-in completed",
     "morningRoutine": "Morning routine completed",
-    "gps": "GPS session logged"
+    "gps": "GPS session logged",
+    "streakTier": "{{n}}-day streak tier 🔥"
   },
   "badges": {
     "assidu": "Regular",
     "sansFaute": "Flawless",
     "enForme": "In shape",
     "rigoureux": "Thorough",
+    "feuSacre": "Sacred fire",
     "wellness7": "Wellness 7 days",
     "monthComplete": "Full month",
     "firstRecord": "First record",

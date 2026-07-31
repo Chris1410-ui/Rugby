@@ -2,11 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
-import { displayName } from "../../lib/identity.js";
-import { posDisplay } from "../../lib/positions.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
 import { WEEKLY_GOAL_DAYS } from "../../lib/badges.js";
-import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
+import { Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
 import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
 import { useRoutineLog } from "../../data/morningRoutine.js";
@@ -14,8 +12,14 @@ import { useProgramDocs, getProgramDoc } from "../../data/programDocs.js";
 import { useTeamProgramAssignments } from "../../data/programAssignments.js";
 import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
+import AccueilHero from "./accueil/AccueilHero.jsx";
+import AccueilMission from "./accueil/AccueilMission.jsx";
+import AccueilStreak from "./accueil/AccueilStreak.jsx";
+import AccueilTeam from "./accueil/AccueilTeam.jsx";
+import AccueilCoach from "./accueil/AccueilCoach.jsx";
+import AccueilQuickAccess from "./accueil/AccueilQuickAccess.jsx";
+import ReminderPrefs from "./accueil/ReminderPrefs.jsx";
 import QuickCheckin from "./bilan/QuickCheckin.jsx";
-import SessionTodayCard from "./bilan/SessionTodayCard.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
@@ -149,17 +153,23 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
 
   return (
     <div>
-      {/* En-tête : readiness + identité + date */}
-      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 14 }}>
-        <Ring val={hasMorning ? readiness : "—"} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", letterSpacing: 1, fontWeight: 700 }}>
-            {t("player.bilan.today")} · {dstr(today, { weekday: "long", day: "numeric", month: "long" })}
-          </div>
-          <div style={{ fontSize: 17, fontWeight: 800, marginTop: 2 }}>{displayName(me)}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{posDisplay(t, me.pos)}</div>
-        </div>
-      </div>
+      {/* Hero « Accueil » (refonte Open Design) : totem + date + poste/ligne/club. */}
+      <AccueilHero me={me} today={today} />
+
+      {/* Bloc dominant « Ce qu'il te reste » (mission du jour) — refonte Open Design. */}
+      <AccueilMission me={me} day={day} todaySessions={todaySessions} logs={logs} accent={C.coral}
+        onMorning={() => setSheet("morning")} onSession={(s) => setLiveSession(s)} onEvening={() => setSheet("evening")} />
+
+      {/* Check-in du matin par glissement (lot 1) — le geste rapide qui débloque
+          la saisie ; alimente le bilan matin + affiche readiness quand fait. */}
+      <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
+
+      {/* Série + gel de série (refonte Open Design) — jour validé = bilan matin. */}
+      <AccueilStreak me={me} checkins={checkins} today={today} preview={preview} />
+
+      {/* « Le groupe aujourd'hui » + mot du préparateur (refonte Open Design). */}
+      <AccueilTeam me={me} teamId={teamId} players={players} sessions={sessions} today={today} onNavigate={onNavigate} />
+      <AccueilCoach me={me} onNavigate={onNavigate} />
 
       {/* Bandeau semaine */}
       <div style={sc({ padding: "12px 8px", marginBottom: 14 })}>
@@ -195,21 +205,9 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         </div>
       </div>
 
-      {/* Check-in du matin par glissement — débloque la saisie en un geste
-          (remplace la carte « Matin » ; le formulaire 6 marqueurs reste
-          accessible via « détailler » → même feuille MorningForm). */}
-      <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
-
-      {/* Cartes d'action du jour */}
+      {/* Cartes d'action du jour (le matin/soir/séance sont désormais dans le
+          bloc « Ce qu'il te reste » ; ici les actions secondaires). */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <ActionCard emoji="🌙" title={t("player.bilan.evening")} sub={t("player.today.eveningSub")} state={day.soir ? "done" : "todo"} accent={accent} onClick={() => setSheet("evening")} t={t} />
-
-        {/* Carte « Séance du jour » : une par séance assignée aujourd'hui —
-            titre + contexte + méta durée·X/Y séries + barre + bouton Démarrer.
-            « Démarrer » ouvre le lecteur set-par-set existant (setOpenSession). */}
-        {todaySessions.map((s) => (
-          <SessionTodayCard key={s.id} s={s} log={logs?.[s.id]?.[me.id]} accent={C.coral} onStart={() => setLiveSession(s)} />
-        ))}
 
         {/* Protocoles assignés (consultation) */}
         {myProtocols.map((d) => (
@@ -230,6 +228,12 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
         {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
+        <ActionCard emoji="🔔" title={t("player.reminders.title")} sub={t("player.reminders.actionSub")} state={null} accent={accent} onClick={() => setSheet("rappels")} t={t} />
+      </div>
+
+      {/* Accès rapide (grille) — refonte Open Design. */}
+      <div style={{ marginTop: 14 }}>
+        <AccueilQuickAccess onNavigate={onNavigate} badges={{ defis: badges.defis, messages: badges.messages }} />
       </div>
 
       {/* Suivi rapide (sparklines) */}
@@ -278,6 +282,7 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
       {sheet === "defis" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Defis me={me} players={players} accent={accent} /></div></Overlay>}
       {sheet === "taches" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Taches me={me} players={players} accent={accent} /></div></Overlay>}
       {sheet === "convocations" && <Overlay onClose={closeSheet} sheet z={320}><div style={{ padding: "0 18px 24px" }}><Convocations me={me} players={players} accent={accent} /></div></Overlay>}
+      {sheet === "rappels" && <Overlay onClose={closeSheet} sheet z={320}><SheetHead title={t("player.reminders.title")} t={t} /><div style={{ padding: "0 18px 24px" }}><ReminderPrefs me={me} teamId={teamId} /></div></Overlay>}
 
       {/* ── Détail d'un jour ── */}
       {daySel && (

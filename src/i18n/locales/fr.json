@@ -1270,7 +1270,8 @@
       "factChallengePlain": "a relevé un défi",
       "factConvocation": "était présent·e à « {{subject}} »",
       "factConvocationPlain": "était présent·e à l'entraînement",
-      "factGps": "a déposé ses données GPS"
+      "factGps": "a déposé ses données GPS",
+      "factStreak": "a atteint une série de {{n}} jours 🔥"
     },
     "profile": {
       "rewards": "Récompenses",
@@ -1297,6 +1298,63 @@
       "draw": "Égalité",
       "errActive": "Un duel est déjà en cours avec ce joueur.",
       "errCreate": "Impossible de créer le duel."
+    },
+    "accueil": {
+      "missionKicker": "Aujourd'hui",
+      "missionTitle": "Ce qu'il te reste",
+      "pts": "+{{n}} pts",
+      "continueTo": "Continuer : {{name}}",
+      "dayDone": "Journée bouclée",
+      "teamKicker": "Mon club",
+      "teamTitle": "Le groupe aujourd'hui",
+      "validated": "ont validé",
+      "rankYouAre": "Tu es {{rank}}ᵉ.",
+      "gapPts": "{{n}} pts",
+      "gapFrom": "te séparent du joueur devant.",
+      "rankLeader": "Tu es en tête du classement 🏆",
+      "rankUnknown": "Classement en cours de calcul…",
+      "coachTitle": "Mot du préparateur",
+      "quickAccess": "Accès rapide",
+      "streakKicker": "Ta série",
+      "streakDays_one": "jour",
+      "streakDays_other": "jours",
+      "streakBest": "record",
+      "streakNextTier": "Palier {{n}} j",
+      "streakToGo": "à tenir",
+      "streakSecured": "Journée sécurisée",
+      "streakFrozenTonight": "Nuit gelée — série protégée",
+      "streakDeadline": "Il te reste {{h}} h pour valider aujourd'hui",
+      "streakStart": "Valide ton bilan du matin pour lancer ta série",
+      "streakFreeze": "Geler",
+      "streakNoFreeze": "Aucun gel disponible",
+      "dow": { "0": "dim", "1": "lun", "2": "mar", "3": "mer", "4": "jeu", "5": "ven", "6": "sam" },
+      "streakErr": {
+        "already_validated": "Journée déjà validée — pas besoin de gel.",
+        "already_frozen": "Cette nuit est déjà gelée.",
+        "no_freeze": "Aucun gel disponible.",
+        "bad_night": "Gel impossible pour cette date.",
+        "generic": "Le gel a échoué. Réessaie."
+      }
+    },
+    "reminders": {
+      "title": "Rappels",
+      "actionSub": "Règle tes rappels de bilan",
+      "intro": "Choisis quand et comment on te rappelle ton bilan du matin.",
+      "enabled": "Rappels activés",
+      "enabledSub": "Reçois une notification quand ton bilan t'attend",
+      "morningTime": "Heure du rappel du matin",
+      "streakGuard": "Garde de série (soir)",
+      "streakGuardSub": "Un dernier rappel si ta journée n'est pas validée",
+      "eveningTime": "Heure limite du soir",
+      "tone": "Insistance",
+      "toneSub": "Le ton des rappels",
+      "tones": { "leger": "Léger", "normal": "Normal", "costaud": "Costaud" },
+      "quiet": "Heures calmes",
+      "quietSub": "Aucun rappel pendant cette plage (école, nuit)",
+      "quietStart": "Début",
+      "quietEnd": "Fin",
+      "saving": "Enregistrement…",
+      "savedHint": "Enregistré automatiquement"
     }
   },
   "staff": {
@@ -2968,13 +3026,15 @@
     "bilanMorning": "Bilan du matin complété",
     "bilanEvening": "Bilan du soir complété",
     "morningRoutine": "Routine du matin complétée",
-    "gps": "Séance GPS déposée"
+    "gps": "Séance GPS déposée",
+    "streakTier": "Palier série {{n}} j 🔥"
   },
   "badges": {
     "assidu": "Assidu",
     "sansFaute": "Sans faute",
     "enForme": "En forme",
     "rigoureux": "Rigoureux",
+    "feuSacre": "Feu sacré",
     "wellness7": "Bien-être 7 j",
     "monthComplete": "Mois complet",
     "firstRecord": "Premier record",

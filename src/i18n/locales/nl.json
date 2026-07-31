@@ -1270,7 +1270,8 @@
       "factChallengePlain": "nam een uitdaging aan",
       "factConvocation": "was aanwezig bij “{{subject}}”",
       "factConvocationPlain": "was aanwezig op training",
-      "factGps": "uploadde GPS-gegevens"
+      "factGps": "uploadde GPS-gegevens",
+      "factStreak": "bereikte een reeks van {{n}} dagen 🔥"
     },
     "profile": {
       "rewards": "Beloningen",
@@ -1297,6 +1298,63 @@
       "draw": "Gelijkspel",
       "errActive": "Er loopt al een duel met deze speler.",
       "errCreate": "Kon het duel niet aanmaken."
+    },
+    "accueil": {
+      "missionKicker": "Vandaag",
+      "missionTitle": "Wat je nog moet doen",
+      "pts": "+{{n}} ptn",
+      "continueTo": "Verder: {{name}}",
+      "dayDone": "Dag voltooid",
+      "teamKicker": "Mijn club",
+      "teamTitle": "De groep vandaag",
+      "validated": "gevalideerd",
+      "rankYouAre": "Je bent {{rank}}e.",
+      "gapPts": "{{n}} ptn",
+      "gapFrom": "scheiden je van de speler voor je.",
+      "rankLeader": "Je staat bovenaan 🏆",
+      "rankUnknown": "Klassement wordt berekend…",
+      "coachTitle": "Woord van de trainer",
+      "quickAccess": "Snelle toegang",
+      "streakKicker": "Jouw reeks",
+      "streakDays_one": "dag",
+      "streakDays_other": "dagen",
+      "streakBest": "record",
+      "streakNextTier": "Mijlpaal {{n}} d",
+      "streakToGo": "te gaan",
+      "streakSecured": "Dag veiliggesteld",
+      "streakFrozenTonight": "Nacht bevroren — reeks beschermd",
+      "streakDeadline": "Nog {{h}} u om vandaag in te checken",
+      "streakStart": "Vul je ochtendcheck-in in om je reeks te starten",
+      "streakFreeze": "Bevriezen",
+      "streakNoFreeze": "Geen bevriezing beschikbaar",
+      "dow": { "0": "zo", "1": "ma", "2": "di", "3": "wo", "4": "do", "5": "vr", "6": "za" },
+      "streakErr": {
+        "already_validated": "Dag al gevalideerd — geen bevriezing nodig.",
+        "already_frozen": "Deze nacht is al bevroren.",
+        "no_freeze": "Geen bevriezing beschikbaar.",
+        "bad_night": "Bevriezen niet toegestaan voor deze datum.",
+        "generic": "Bevriezen mislukt. Probeer opnieuw."
+      }
+    },
+    "reminders": {
+      "title": "Herinneringen",
+      "actionSub": "Stel je check-inherinneringen in",
+      "intro": "Kies wanneer en hoe je aan je ochtendcheck-in wordt herinnerd.",
+      "enabled": "Herinneringen aan",
+      "enabledSub": "Ontvang een melding wanneer je check-in klaarstaat",
+      "morningTime": "Tijd ochtendherinnering",
+      "streakGuard": "Reeksbescherming (avond)",
+      "streakGuardSub": "Een laatste herinnering als je dag niet gevalideerd is",
+      "eveningTime": "Avonddeadline",
+      "tone": "Aandringen",
+      "toneSub": "De toon van de herinneringen",
+      "tones": { "leger": "Zacht", "normal": "Normaal", "costaud": "Ferm" },
+      "quiet": "Stille uren",
+      "quietSub": "Geen herinneringen tijdens deze periode (school, nacht)",
+      "quietStart": "Begin",
+      "quietEnd": "Einde",
+      "saving": "Opslaan…",
+      "savedHint": "Automatisch opgeslagen"
     }
   },
   "staff": {
@@ -2968,13 +3026,15 @@
     "bilanMorning": "Ochtendcheck voltooid",
     "bilanEvening": "Avondcheck voltooid",
     "morningRoutine": "Ochtendroutine voltooid",
-    "gps": "GPS-sessie geregistreerd"
+    "gps": "GPS-sessie geregistreerd",
+    "streakTier": "Reeksmijlpaal {{n}} d 🔥"
   },
   "badges": {
     "assidu": "Volhardend",
     "sansFaute": "Foutloos",
     "enForme": "In vorm",
     "rigoureux": "Nauwgezet",
+    "feuSacre": "Heilig vuur",
     "wellness7": "Welzijn 7 d",
     "monthComplete": "Volledige maand",
     "firstRecord": "Eerste record",

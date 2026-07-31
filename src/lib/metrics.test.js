@@ -289,6 +289,20 @@ describe("computePoints — gamification", () => {
     expect(r.pts).toBe(108 + 20);
     expect(r.ev.filter((e) => e.key === "gps").length).toBe(2);
   });
+  it("paliers de série : +25 / +50 / +100, events datés + badge « Feu sacré » dès 14 j", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const tiers = [{ tier: 7, date: todayISO() }, { tier: 14, date: todayISO() }];
+    const r = computePoints(p, [], {}, [], [], [], [], [], [], [], [], [], tiers);
+    expect(r.pts).toBe(108 + 25 + 50);
+    expect(r.ev.some((e) => e.key === "streakTier" && e.params?.n === 14)).toBe(true);
+    expect(r.badges.some((b) => b.key === "feuSacre")).toBe(true);
+  });
+  it("palier 7 seul : +25, pas encore de badge « Feu sacré »", () => {
+    const p = basePlayer({ acwr: 1.0 });
+    const r = computePoints(p, [], {}, [], [], [], [], [], [], [], [], [], [{ tier: 7, date: todayISO() }]);
+    expect(r.pts).toBe(108 + 25);
+    expect(r.badges.some((b) => b.key === "feuSacre")).toBe(false);
+  });
 });
 
 describe("buildAlerts — clés stables (file de traitement)", () => {

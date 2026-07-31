@@ -36,6 +36,7 @@ export default function TeamWall({ teamId, players = [], accent = C.green }) {
       case "challenge": return it.subject ? t("player.wall.factChallenge", { subject: it.subject }) : t("player.wall.factChallengePlain");
       case "convocation": return it.subject ? t("player.wall.factConvocation", { subject: it.subject }) : t("player.wall.factConvocationPlain");
       case "gps": return t("player.wall.factGps");
+      case "streak": return t("player.wall.factStreak", { n: it.subject });
       default: return "";
     }
   };
