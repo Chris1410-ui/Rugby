@@ -1270,7 +1270,8 @@
       "factChallengePlain": "a relevé un défi",
       "factConvocation": "était présent·e à « {{subject}} »",
       "factConvocationPlain": "était présent·e à l'entraînement",
-      "factGps": "a déposé ses données GPS"
+      "factGps": "a déposé ses données GPS",
+      "factStreak": "a atteint une série de {{n}} jours 🔥"
     },
     "profile": {
       "rewards": "Récompenses",
@@ -3005,13 +3006,15 @@
     "bilanMorning": "Bilan du matin complété",
     "bilanEvening": "Bilan du soir complété",
     "morningRoutine": "Routine du matin complétée",
-    "gps": "Séance GPS déposée"
+    "gps": "Séance GPS déposée",
+    "streakTier": "Palier série {{n}} j 🔥"
   },
   "badges": {
     "assidu": "Assidu",
     "sansFaute": "Sans faute",
     "enForme": "En forme",
     "rigoureux": "Rigoureux",
+    "feuSacre": "Feu sacré",
     "wellness7": "Bien-être 7 j",
     "monthComplete": "Mois complet",
     "firstRecord": "Premier record",

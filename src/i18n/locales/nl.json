@@ -1270,7 +1270,8 @@
       "factChallengePlain": "nam een uitdaging aan",
       "factConvocation": "was aanwezig bij “{{subject}}”",
       "factConvocationPlain": "was aanwezig op training",
-      "factGps": "uploadde GPS-gegevens"
+      "factGps": "uploadde GPS-gegevens",
+      "factStreak": "bereikte een reeks van {{n}} dagen 🔥"
     },
     "profile": {
       "rewards": "Beloningen",
@@ -3005,13 +3006,15 @@
     "bilanMorning": "Ochtendcheck voltooid",
     "bilanEvening": "Avondcheck voltooid",
     "morningRoutine": "Ochtendroutine voltooid",
-    "gps": "GPS-sessie geregistreerd"
+    "gps": "GPS-sessie geregistreerd",
+    "streakTier": "Reeksmijlpaal {{n}} d 🔥"
   },
   "badges": {
     "assidu": "Volhardend",
     "sansFaute": "Foutloos",
     "enForme": "In vorm",
     "rigoureux": "Nauwgezet",
+    "feuSacre": "Heilig vuur",
     "wellness7": "Welzijn 7 d",
     "monthComplete": "Volledige maand",
     "firstRecord": "Eerste record",

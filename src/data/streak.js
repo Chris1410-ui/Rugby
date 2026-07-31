@@ -52,3 +52,27 @@ export async function freezeNight(night) {
   const { error } = await supabase.rpc("streak_freeze_use", night ? { p_night: night } : {});
   if (error) throw error;
 }
+
+/* Events « palier de série atteint » de TOUT le club (points additifs 7/14/30,
+   cf. computePoints). RPC SECURITY DEFINER team_streak_tier_events (0122) :
+   n'expose que (player_id, tier, reached_on), jamais la longueur courante ni de
+   donnée de santé. → { [playerId]: [{ tier, date }] }. Même modèle que les
+   autres RPC de faits d'équipe (0036/0114). */
+export function useTeamStreakTiers(teamId) {
+  const [byPlayer, setByPlayer] = useState({});
+  const fetch = useCallback(async () => {
+    if (!teamId) { setByPlayer({}); return; }
+    const { data, error } = await supabase.rpc("team_streak_tier_events", { p_team: teamId });
+    if (error) { console.error("[team_streak_tier_events]", error.message); return; }
+    const m = {};
+    (data ?? []).forEach((r) => { (m[r.player_id] = m[r.player_id] || []).push({ tier: r.tier, date: r.reached_on }); });
+    setByPlayer(m);
+  }, [teamId]);
+  useEffect(() => {
+    fetch(); if (!teamId) return;
+    const ch = supabase.channel(uniqueTopic(`lb-tiers:${teamId}`))
+      .on("postgres_changes", { event: "*", schema: "public", table: "streak_tier_events" }, () => fetch()).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [teamId, fetch]);
+  return { byPlayer, refresh: fetch };
+}

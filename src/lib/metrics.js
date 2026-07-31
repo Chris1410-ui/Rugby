@@ -279,6 +279,16 @@ export const nextDiv = (p) => {
   return i > 0 ? DIVS[i - 1] : null;
 };
 
+// Paliers de série (bilans du matin d'affilée) — refonte Accueil (lot 3, PR-5).
+// Points ADDITIFS (barème existant inchangé) : un event daté par palier atteint,
+// une seule fois par run de série (source = streak_tier_events, créés côté base).
+export const STREAK_TIERS = [
+  { tier: 7, pts: 25 },
+  { tier: 14, pts: 50 },
+  { tier: 30, pts: 100 },
+];
+export const STREAK_TIER_PTS = Object.fromEntries(STREAK_TIERS.map((x) => [x.tier, x.pts]));
+
 // Activités déclarables sur l'écran Aujourd'hui (#6) — +10 pts par thématique.
 export const ACTIVITIES = [
   { key: "salle", label: "Salle", emoji: "🏋️" },
@@ -319,7 +329,7 @@ export const badgeLabel = (t, b) => t(`badges.${b.key}`);
 // `top14Events` : tests validés Top 14 → [{ key, date }] (calculés en amont via
 //   lib/top14.js, `key` = clé du test). +30 pts par test, DATÉS de la 1re validation
 //   → un seul crédit par test (pas de double comptage aux re-saisies).
-export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = [], gpsEvents = []) {
+export function computePoints(player, sessions, logs, dailyActivities = [], top14Events = [], taskEvents = [], reactivityEvents = [], bilanEvents = [], challengeEvents = [], convocationEvents = [], routineEvents = [], gpsEvents = [], streakTierEvents = []) {
   let pts = 100; // base fixe : 100 pts par joueur (#6)
   const ev = [];
   let weekDelta = 0,
@@ -432,6 +442,16 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
     const inWk = e.date >= wkAgo && e.date <= today;
     add(10, "gps", e.date, inWk);
   });
+  // Paliers de série (7/14/30 bilans du matin d'affilée) : +25 / +50 / +100,
+  // DATÉS du jour où le palier a été atteint, une seule fois par run de série
+  // (source = streak_tier_events, idempotents côté base). Barème existant
+  // inchangé : ce sont des events additionnels, pas une modification de formule.
+  let maxTier = 0;
+  (streakTierEvents || []).forEach((e) => {
+    const inWk = e.date >= wkAgo && e.date <= today;
+    add(STREAK_TIER_PTS[e.tier] || 0, "streakTier", e.date, inWk, { n: e.tier });
+    if (e.tier > maxTier) maxTier = e.tier;
+  });
   if (streak >= 5) add(15, "streak5", today, true);
   else if (streak >= 3) add(5, "streak3", today, true);
   if (player.acwr >= 0.8 && player.acwr <= 1.3) add(8, "acwrTarget", today, true);
@@ -443,6 +463,8 @@ export function computePoints(player, sessions, logs, dailyActivities = [], top1
   if (missedCount === 0 && doneCount > 0) badges.push({ key: "sansFaute", e: "✅" });
   if (player.acwr >= 0.8 && player.acwr <= 1.3) badges.push({ key: "enForme", e: "💪" });
   if (filledAll && doneCount > 0) badges.push({ key: "rigoureux", e: "📊" });
+  // « Feu sacré » : un palier de série ≥ 14 jours atteint (assiduité au long cours).
+  if (maxTier >= 14) badges.push({ key: "feuSacre", e: "🌋" });
   return {
     pts,
     weekDelta: Math.round(weekDelta),

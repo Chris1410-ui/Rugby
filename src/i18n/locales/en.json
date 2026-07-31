@@ -1270,7 +1270,8 @@
       "factChallengePlain": "took on a challenge",
       "factConvocation": "attended “{{subject}}”",
       "factConvocationPlain": "attended training",
-      "factGps": "uploaded GPS data"
+      "factGps": "uploaded GPS data",
+      "factStreak": "reached a {{n}}-day streak 🔥"
     },
     "profile": {
       "rewards": "Rewards",
@@ -3005,13 +3006,15 @@
     "bilanMorning": "Morning check-in completed",
     "bilanEvening": "Evening check-in completed",
     "morningRoutine": "Morning routine completed",
-    "gps": "GPS session logged"
+    "gps": "GPS session logged",
+    "streakTier": "{{n}}-day streak tier 🔥"
   },
   "badges": {
     "assidu": "Regular",
     "sansFaute": "Flawless",
     "enForme": "In shape",
     "rigoureux": "Thorough",
+    "feuSacre": "Sacred fire",
     "wellness7": "Wellness 7 days",
     "monthComplete": "Full month",
     "firstRecord": "First record",

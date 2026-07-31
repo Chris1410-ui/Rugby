@@ -13,6 +13,7 @@ import { challengeBadges, topChallengeBadge, challengeBadgeLabel } from "../../l
 import { useTeamReactivity } from "../../data/notifications.js";
 import { useTeamTrainingEvents } from "../../data/trainings.js";
 import { useTeamSessionLogs, useTeamCheckinEvents, useTeamGpsEvents } from "../../data/leaderboard.js";
+import { useTeamStreakTiers } from "../../data/streak.js";
 import { useTeamRoutinePoints } from "../../data/morningRoutine.js";
 import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import { natureLabel, natureColor } from "../../lib/nature.js";
@@ -61,6 +62,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const { byPlayer: convByPlayer } = useTeamTrainingEvents(teamId); // présence aux convocations (pointage staff)
   const routineByPlayer = useTeamRoutinePoints(teamId); // routine du matin complétée (staff-athlète)
   const { byPlayer: gpsByPlayer } = useTeamGpsEvents(teamId); // séance GPS déposée (charge externe, +10/dépôt)
+  const { byPlayer: tierByPlayer } = useTeamStreakTiers(teamId); // paliers de série atteints (7/14/30 → +25/50/100)
   const athletePublic = useTeamAthletePublic(teamId); // projection publique des staff-athlètes (séances/nature + routine ✓/✗)
   // Entrées de points À L'ÉCHELLE DU CLUB (RPC SECURITY DEFINER) → classement
   // IDENTIQUE pour owner/staff/joueur. Sans ça, un joueur (RLS = ses données
@@ -80,7 +82,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       const convocationEvents = convByPlayer[p.id] || [];
       const routineEvents = routineByPlayer[p.id] || [];
       const gpsEvents = gpsByPlayer[p.id] || [];
-      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents, gpsEvents) };
+      const streakTierEvents = tierByPlayer[p.id] || [];
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents, gpsEvents, streakTierEvents) };
     });
     // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
     const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
@@ -91,7 +94,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, athletePublic]);
+  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, tierByPlayer, athletePublic]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
