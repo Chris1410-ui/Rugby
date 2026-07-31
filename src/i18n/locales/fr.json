@@ -2431,7 +2431,8 @@
       "athleteRoutineDone": "Routine du matin ✓",
       "athleteRoutineNone": "Routine du matin —",
       "athleteBadges": "BADGES",
-      "athleteScopeNote": "Membre du staff qui s'entraîne aussi comme athlète. Tu vois de lui son classement, ses séances réalisées et sa routine du matin — jamais ses charges, tests, poids ni bilans."
+      "athleteScopeNote": "Membre du staff qui s'entraîne aussi comme athlète. Tu vois de lui son classement, ses séances réalisées et sa routine du matin — jamais ses charges, tests, poids ni bilans.",
+      "top14Reached": "{{n}}/{{total}} tests au niveau Top 14"
     },
     "report": {
       "wb": {

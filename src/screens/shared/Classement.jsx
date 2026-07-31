@@ -30,6 +30,43 @@ const Move = ({ m }) =>
     <span style={{ fontSize: 11, fontWeight: 800, color: C.coral }}>▼{-m}</span>
   );
 
+// Référentiel Top 14 : 9 tests (cf. data.top14test) → l'indicateur « X/9 ».
+const TOP14_TOTAL = 9;
+// Couleur d'avatar stable dérivée du totem (pseudonymisé, jamais le nom civil).
+const AV = ["#27E8D6", "#8AB4F8", "#F2C84B", "#C8D2E0", "#C07A45", "#6C5CE0", "#5BE39A", "#FF8A78"];
+const avColor = (s) => AV[[...String(s || "?")].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+
+/* Podium des 3 premiers (rang partagé compris) — refonte Open Design. Ordre
+   visuel 2·1·3, socles décroissants. Réutilise le rang déjà calculé (scopeRank)
+   et le barème existant (aucune valeur de la maquette). */
+function Podium({ ranked, onOpen, t }) {
+  const top3 = ranked.filter((d) => d.scopeRank <= 3).slice(0, 3);
+  if (top3.length < 3) return null;
+  const byRank = (r) => top3.find((d) => d.scopeRank === r) || top3[r - 1];
+  const order = [byRank(2), byRank(1), byRank(3)]; // gauche · centre · droite
+  const H = { 1: 74, 2: 54, 3: 40 };
+  const medal = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.15fr 1fr", alignItems: "end", gap: 8, marginBottom: 14 }}>
+      {order.map((d) => {
+        if (!d) return <div key="x" />;
+        const first = d.scopeRank === 1;
+        const init = (d.p.initials || (d.p.name || "?").slice(0, 2)).toUpperCase();
+        return (
+          <button key={d.p.id} onClick={() => onOpen(d)} style={{ textAlign: "center", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <div style={{ fontSize: first ? 26 : 21 }}>{medal[d.scopeRank] || `${d.scopeRank}ᵉ`}</div>
+            <div style={{ width: first ? 46 : 40, height: first ? 46 : 40, borderRadius: 23, margin: "4px auto 5px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: first ? 15 : 13, fontWeight: 900, color: "#0B0A1C", background: avColor(d.p.name || d.p.id) }}>{init}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(d.p)}</div>
+            <div style={{ fontSize: first ? 22 : 18, fontWeight: 900, fontStyle: "italic", color: NEON.yellow, lineHeight: 1.1 }}>{d.pts}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{d.div.e} {divLabel(t, d.div)}</div>
+            <div style={{ marginTop: 8, height: H[d.scopeRank] || 40, borderRadius: "8px 8px 0 0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, fontStyle: "italic", color: first ? "rgba(39,232,214,0.85)" : "rgba(255,255,255,0.34)", background: first ? "linear-gradient(180deg,rgba(39,232,214,0.34),rgba(39,232,214,0.05))" : "linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.02))", border: `1px solid ${first ? "rgba(39,232,214,0.45)" : C.border}`, borderBottom: "none" }}>{d.scopeRank}ᵉ</div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /* Classement / gamification. Points dérivés de l'effectif enrichi via
    computePoints (source unique). `me` (enrichi) = vue joueur ; sinon vue staff. */
 export default function Classement({ players, sessions, crews = [], me, accent = C.coral }) {
@@ -161,6 +198,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
         </div>
       )}
 
+      {mode === "indiv" && ranked.length >= 3 && <Podium ranked={ranked} onOpen={openRow} t={t} />}
+
       {mode === "indiv" && (
       <div style={{ borderRadius: 14, overflow: "hidden", background: NEON.panel, border: "1px solid rgba(160,120,255,0.25)", padding: 8 }}>
         {ranked.map((d) => {
@@ -172,6 +211,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: top ? "#0c2b2b" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meRow ? "⭐ " + displayName(d.p) : displayName(d.p)}</span>
                   {d.top14 > 0 && <span title={t("shared.leaderboard.top14Title", { count: d.top14 })} style={{ flexShrink: 0, fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, color: "#0c2b2b", background: `linear-gradient(90deg, ${C.amb}, #ffd873)`, borderRadius: 5, padding: "2px 6px", boxShadow: "0 0 8px rgba(240,180,60,0.5)" }}>🏆 TOP 14{d.top14 > 1 ? ` ×${d.top14}` : ""}</span>}{/* i18n-ok: nom de ligue */}
+                  {d.top14 > 0 && <span title={t("shared.leaderboard.top14Reached", { n: d.top14, total: TOP14_TOTAL })} style={{ flexShrink: 0, fontSize: 8, fontWeight: 800, fontFamily: "ui-monospace, monospace", color: top ? "#0c2b2b" : "rgba(255,255,255,0.7)", background: top ? "rgba(12,43,43,0.14)" : "rgba(255,255,255,0.1)", border: `1px solid ${top ? "rgba(12,43,43,0.25)" : "rgba(255,255,255,0.16)"}`, borderRadius: 5, padding: "1px 5px" }}>{d.top14}/{TOP14_TOTAL}</span>}
                   {d.chalBadge && <span title={t("shared.leaderboard.chalTitle", { count: d.chalCount, badge: challengeBadgeLabel(t, d.chalBadge) })} style={{ flexShrink: 0, fontSize: 11 }}>{d.chalBadge.emoji}{d.chalCount > 1 ? <span style={{ fontSize: 8.5, fontWeight: 800, color: top ? "#0c2b2b" : "rgba(255,255,255,0.6)" }}>×{d.chalCount}</span> : null}</span>}
                   {d.p.isStaffAthlete && <span title={t("shared.leaderboard.staffAthleteTitle")} style={{ flexShrink: 0, fontSize: 8, fontWeight: 900, letterSpacing: 0.4, color: top ? "#0c2b2b" : "rgba(255,255,255,0.75)", background: top ? "rgba(12,43,43,0.18)" : "rgba(255,255,255,0.12)", border: `1px solid ${top ? "rgba(12,43,43,0.3)" : "rgba(255,255,255,0.22)"}`, borderRadius: 5, padding: "1px 5px" }}>{t("shared.leaderboard.staffAthleteBadge")}</span>}
                 </div>

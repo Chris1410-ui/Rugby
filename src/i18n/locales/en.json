@@ -2431,7 +2431,8 @@
       "athleteRoutineDone": "Morning routine ✓",
       "athleteRoutineNone": "Morning routine —",
       "athleteBadges": "BADGES",
-      "athleteScopeNote": "A staff member who also trains as an athlete. You see his ranking, completed sessions and morning routine — never his loads, tests, weight or check-ins."
+      "athleteScopeNote": "A staff member who also trains as an athlete. You see his ranking, completed sessions and morning routine — never his loads, tests, weight or check-ins.",
+      "top14Reached": "{{n}}/{{total}} tests at Top 14 level"
     },
     "report": {
       "wb": {
