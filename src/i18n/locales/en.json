@@ -2444,7 +2444,14 @@
       "duelSent": "Challenge sent to {{name}}",
       "duelFail": "Challenge failed.",
       "kudosSend": "Encourage {{name}}",
-      "kudosSent": "Encouraged today ✓"
+      "kudosSent": "Encouraged today ✓",
+      "lineDuelTitle": "Line duel",
+      "lineDuelUnit": "avg pts/player",
+      "lineDuelCount": "{{n}} players",
+      "lineDuelWeek": "this week",
+      "lineDuelGap": "gap {{n}}",
+      "lineDuelTie": "tie",
+      "lineDuelVs": "VS"
     },
     "report": {
       "wb": {

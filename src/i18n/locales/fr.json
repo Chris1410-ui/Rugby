@@ -2444,7 +2444,14 @@
       "duelSent": "Défi envoyé à {{name}}",
       "duelFail": "Le défi a échoué.",
       "kudosSend": "Encourager {{name}}",
-      "kudosSent": "Encouragé aujourd'hui ✓"
+      "kudosSent": "Encouragé aujourd'hui ✓",
+      "lineDuelTitle": "Duel des lignes",
+      "lineDuelUnit": "moy. pts/joueur",
+      "lineDuelCount": "{{n}} joueurs",
+      "lineDuelWeek": "cette sem.",
+      "lineDuelGap": "écart {{n}}",
+      "lineDuelTie": "égalité",
+      "lineDuelVs": "VS"
     },
     "report": {
       "wb": {
