@@ -1380,7 +1380,10 @@
       "points": "Points",
       "newsTitle": "Actualité du club",
       "newsEmpty": "Pas d'actualité pour l'instant.",
-      "motStaff": "Mot du staff"
+      "motStaff": "Mot du staff",
+      "overtake": "{{name}} vient de te repasser",
+      "overtakeGap": "+{{n}} pts d'écart",
+      "overtakeCta": "Voir"
     }
   },
   "staff": {

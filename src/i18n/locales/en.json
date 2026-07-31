@@ -1380,7 +1380,10 @@
       "points": "Points",
       "newsTitle": "Club news",
       "newsEmpty": "No news yet.",
-      "motStaff": "Staff note"
+      "motStaff": "Staff note",
+      "overtake": "{{name}} just overtook you",
+      "overtakeGap": "+{{n}} pts gap",
+      "overtakeCta": "View"
     }
   },
   "staff": {

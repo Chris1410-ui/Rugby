@@ -1380,7 +1380,10 @@
       "points": "Punten",
       "newsTitle": "Clubnieuws",
       "newsEmpty": "Nog geen nieuws.",
-      "motStaff": "Woord van de staf"
+      "motStaff": "Woord van de staf",
+      "overtake": "{{name}} is je net voorbijgestoken",
+      "overtakeGap": "+{{n}} ptn verschil",
+      "overtakeCta": "Bekijk"
     }
   },
   "staff": {
