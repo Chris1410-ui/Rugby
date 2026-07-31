@@ -1329,7 +1329,15 @@
       "streakStart": "Complete your morning check-in to start your streak",
       "streakFreeze": "Freeze",
       "streakNoFreeze": "No freeze available",
-      "dow": { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" },
+      "dow": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      },
       "streakErr": {
         "already_validated": "Day already validated — no freeze needed.",
         "already_frozen": "This night is already frozen.",
@@ -1350,7 +1358,11 @@
       "eveningTime": "Evening cut-off time",
       "tone": "Insistence",
       "toneSub": "The tone of reminders",
-      "tones": { "leger": "Gentle", "normal": "Normal", "costaud": "Firm" },
+      "tones": {
+        "leger": "Gentle",
+        "normal": "Normal",
+        "costaud": "Firm"
+      },
       "quiet": "Quiet hours",
       "quietSub": "No reminders during this window (school, night)",
       "quietStart": "Start",
@@ -1372,6 +1384,34 @@
     }
   },
   "staff": {
+    "home": {
+      "agendaTitle": "Today's agenda",
+      "noAgenda": "No session or call-up today.",
+      "noPlace": "No venue set",
+      "confirmed": "confirmed",
+      "pending": "Awaiting your validation",
+      "nothingPending": "Nothing to validate right now 👌",
+      "publish": "Post news",
+      "heroUpload": "Change club photo"
+    },
+    "news": {
+      "title": "Post news",
+      "kindActu": "News",
+      "kindMot": "Staff note",
+      "titlePh": "Title (optional)",
+      "bodyPh": "Your message to the club…",
+      "pinned": "Pin to top",
+      "notify": "Notify the club (badge + push)",
+      "publish": "Publish",
+      "publishing": "Publishing…",
+      "manage": "History",
+      "empty": "No news published.",
+      "delete": "Delete",
+      "confirmDelete": "Delete this news item?",
+      "errBody": "The message cannot be empty.",
+      "errNotAllowed": "You don't have publishing rights.",
+      "errPublish": "Publishing failed."
+    },
     "messages": {
       "title": "Messages",
       "search": "Search for a player…",

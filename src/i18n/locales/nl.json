@@ -1329,7 +1329,15 @@
       "streakStart": "Vul je ochtendcheck-in in om je reeks te starten",
       "streakFreeze": "Bevriezen",
       "streakNoFreeze": "Geen bevriezing beschikbaar",
-      "dow": { "0": "zo", "1": "ma", "2": "di", "3": "wo", "4": "do", "5": "vr", "6": "za" },
+      "dow": {
+        "0": "zo",
+        "1": "ma",
+        "2": "di",
+        "3": "wo",
+        "4": "do",
+        "5": "vr",
+        "6": "za"
+      },
       "streakErr": {
         "already_validated": "Dag al gevalideerd — geen bevriezing nodig.",
         "already_frozen": "Deze nacht is al bevroren.",
@@ -1350,7 +1358,11 @@
       "eveningTime": "Avonddeadline",
       "tone": "Aandringen",
       "toneSub": "De toon van de herinneringen",
-      "tones": { "leger": "Zacht", "normal": "Normaal", "costaud": "Ferm" },
+      "tones": {
+        "leger": "Zacht",
+        "normal": "Normaal",
+        "costaud": "Ferm"
+      },
       "quiet": "Stille uren",
       "quietSub": "Geen herinneringen tijdens deze periode (school, nacht)",
       "quietStart": "Begin",
@@ -1372,6 +1384,34 @@
     }
   },
   "staff": {
+    "home": {
+      "agendaTitle": "Agenda van vandaag",
+      "noAgenda": "Geen sessie of oproeping vandaag.",
+      "noPlace": "Geen locatie opgegeven",
+      "confirmed": "bevestigd",
+      "pending": "Wacht op jouw validatie",
+      "nothingPending": "Niets te valideren op dit moment 👌",
+      "publish": "Nieuws plaatsen",
+      "heroUpload": "Clubfoto wijzigen"
+    },
+    "news": {
+      "title": "Nieuws plaatsen",
+      "kindActu": "Nieuws",
+      "kindMot": "Woord van de staf",
+      "titlePh": "Titel (optioneel)",
+      "bodyPh": "Je bericht aan de club…",
+      "pinned": "Bovenaan vastzetten",
+      "notify": "De club melden (badge + push)",
+      "publish": "Publiceren",
+      "publishing": "Publiceren…",
+      "manage": "Geschiedenis",
+      "empty": "Geen nieuws gepubliceerd.",
+      "delete": "Verwijderen",
+      "confirmDelete": "Dit nieuwsbericht verwijderen?",
+      "errBody": "Het bericht mag niet leeg zijn.",
+      "errNotAllowed": "Je hebt geen publicatierechten.",
+      "errPublish": "Publiceren mislukt."
+    },
     "messages": {
       "title": "Berichten",
       "search": "Zoek een speler…",

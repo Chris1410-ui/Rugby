@@ -1329,7 +1329,15 @@
       "streakStart": "Valide ton bilan du matin pour lancer ta série",
       "streakFreeze": "Geler",
       "streakNoFreeze": "Aucun gel disponible",
-      "dow": { "0": "dim", "1": "lun", "2": "mar", "3": "mer", "4": "jeu", "5": "ven", "6": "sam" },
+      "dow": {
+        "0": "dim",
+        "1": "lun",
+        "2": "mar",
+        "3": "mer",
+        "4": "jeu",
+        "5": "ven",
+        "6": "sam"
+      },
       "streakErr": {
         "already_validated": "Journée déjà validée — pas besoin de gel.",
         "already_frozen": "Cette nuit est déjà gelée.",
@@ -1350,7 +1358,11 @@
       "eveningTime": "Heure limite du soir",
       "tone": "Insistance",
       "toneSub": "Le ton des rappels",
-      "tones": { "leger": "Léger", "normal": "Normal", "costaud": "Costaud" },
+      "tones": {
+        "leger": "Léger",
+        "normal": "Normal",
+        "costaud": "Costaud"
+      },
       "quiet": "Heures calmes",
       "quietSub": "Aucun rappel pendant cette plage (école, nuit)",
       "quietStart": "Début",
@@ -1372,6 +1384,34 @@
     }
   },
   "staff": {
+    "home": {
+      "agendaTitle": "Agenda du jour",
+      "noAgenda": "Aucune séance ni convocation aujourd'hui.",
+      "noPlace": "Lieu non précisé",
+      "confirmed": "confirmés",
+      "pending": "En attente de ta validation",
+      "nothingPending": "Rien à valider pour l'instant 👌",
+      "publish": "Publier une actualité",
+      "heroUpload": "Changer la photo du club"
+    },
+    "news": {
+      "title": "Publier une actualité",
+      "kindActu": "Actualité",
+      "kindMot": "Mot du staff",
+      "titlePh": "Titre (optionnel)",
+      "bodyPh": "Ton message au club…",
+      "pinned": "Épingler à la une",
+      "notify": "Notifier le club (pastille + push)",
+      "publish": "Publier",
+      "publishing": "Publication…",
+      "manage": "Historique",
+      "empty": "Aucune actualité publiée.",
+      "delete": "Supprimer",
+      "confirmDelete": "Supprimer cette actualité ?",
+      "errBody": "Le message ne peut pas être vide.",
+      "errNotAllowed": "Tu n'as pas les droits de publication.",
+      "errPublish": "La publication a échoué."
+    },
     "messages": {
       "title": "Messagerie",
       "search": "Rechercher un joueur…",
