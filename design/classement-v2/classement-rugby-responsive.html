@@ -1,0 +1,905 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Classement · saison interne</title>
+<!--
+  Classement — artefact vivant, web responsive (joueurs + staff).
+  · Barème repris à l'identique de l'export d'origine : DIVS, rankLeaderboard
+    (rang partagé + départage stable par totem), paliers de défis.
+  · Données figées, pseudonymisées (totem + initiales). Aucune métrique inventée.
+  · Le badge STAFF marque un membre du staff qui s'entraîne aussi comme athlète :
+    joueurs et staff partagent le même classement.
+-->
+<style>
+/* ============================================================
+   1 · TOKENS
+   ============================================================ */
+:root{
+  /* fond & surfaces */
+  --navy-900:#0C0B1C;
+  --navy-800:#13112A;
+  --panel:#191536;
+  --panel-2:#221D48;
+  --row:rgba(255,255,255,.035);
+  --row-hi:rgba(108,92,224,.16);
+
+  /* filets */
+  --line:rgba(150,140,225,.18);
+  --line-soft:rgba(255,255,255,.075);
+
+  /* texte */
+  --fg:#F3F2FB;
+  --fg-2:rgba(243,242,251,.60);
+  --fg-3:rgba(243,242,251,.36);
+
+  /* accent primaire — unique */
+  --cyan:#27E8D6;
+  --cyan-dim:rgba(39,232,214,.14);
+
+  /* usages réservés */
+  --gold:#F2C84B;          /* points, uniquement */
+  --up:#5BE39A;            /* delta positif */
+  --down:#FF8A78;          /* delta négatif */
+
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable",system-ui,sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --gut:clamp(14px,3.2vw,28px);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100%;
+  background:
+    radial-gradient(900px 460px at 50% -8%, #241E4E 0%, transparent 68%),
+    var(--navy-900);
+  background-attachment:fixed;
+  color:var(--fg);
+  font:500 15px/1.5 var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-wrap:pretty;
+}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:4px}
+
+/* ============================================================
+   2 · CHARPENTE RESPONSIVE
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:color-mix(in oklab, var(--navy-900) 88%, transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-in{
+  max-width:1280px;margin:0 auto;padding:12px var(--gut);
+  display:flex;align-items:center;gap:14px;
+}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1}
+.brand h1{
+  font-family:var(--font-display);
+  font-size:clamp(19px,2.6vw,26px);font-weight:900;font-style:italic;
+  letter-spacing:-.02em;text-transform:uppercase;line-height:1;white-space:nowrap;
+}
+.brand .season{
+  font-size:11px;color:var(--fg-3);letter-spacing:.06em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:520px){ .brand .season{display:none} }
+
+.me-pill{
+  display:flex;align-items:center;gap:9px;flex-shrink:0;
+  padding:6px 12px 6px 10px;border-radius:999px;
+  background:var(--cyan-dim);border:1px solid rgba(39,232,214,.32);
+}
+.me-pill .lbl{font-size:9.5px;letter-spacing:.14em;color:var(--fg-2);text-transform:uppercase}
+.me-pill .rk{font-family:var(--font-display);font-size:17px;font-weight:900;font-style:italic;color:var(--cyan);line-height:1}
+.me-pill .pts{font-size:14px;font-weight:800;color:var(--gold);line-height:1}
+
+.shell{
+  max-width:1280px;margin:0 auto;
+  padding:var(--gut) var(--gut) 120px;
+  display:grid;gap:clamp(16px,2.4vw,28px);
+  grid-template-columns:minmax(0,1fr);
+}
+@media (min-width:1024px){
+  .shell{grid-template-columns:minmax(0,1fr) 330px;align-items:start}
+  .rail{position:sticky;top:78px}
+}
+.rail{display:grid;gap:14px;align-content:start}
+
+/* ============================================================
+   3 · COMMANDES PRODUIT
+   ============================================================ */
+.controls{display:grid;gap:10px;margin-bottom:16px}
+.seg{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:4px;border-radius:var(--r-md);
+  background:rgba(255,255,255,.05);border:1px solid var(--line-soft);
+}
+.seg button{
+  padding:9px 4px;border-radius:9px;font-size:13px;font-weight:700;
+  color:var(--fg-2);transition:background .16s,color .16s;
+}
+.seg button[aria-pressed="true"]{background:var(--cyan);color:#062A28;font-weight:800}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;flex:1 1 240px;min-width:0;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{
+  flex:0 0 auto;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);color:var(--fg-2);
+  transition:border-color .16s,color .16s,background .16s;
+}
+.chips button[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+
+.search{
+  flex:0 1 190px;display:flex;align-items:center;gap:7px;
+  padding:7px 11px;border-radius:999px;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);
+}
+.search svg{flex:0 0 auto;opacity:.45}
+.search input{border:0;background:none;outline:none;width:100%;font-size:13px}
+.search input::placeholder{color:var(--fg-3)}
+.sortsel{
+  flex:0 0 auto;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.055);border:1px solid var(--line-soft);color:var(--fg-2);
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+}
+.sortsel option{background:var(--panel);color:var(--fg)}
+
+/* ============================================================
+   4 · PODIUM — le geste unique
+   ============================================================ */
+.podium{
+  display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:clamp(6px,1.4vw,14px);
+  align-items:end;margin-bottom:16px;
+}
+.pod{
+  position:relative;text-align:center;padding:12px 6px 0;
+  border-radius:var(--r-md) var(--r-md) 0 0;
+}
+.pod .medal{font-size:clamp(20px,3.4vw,28px);line-height:1}
+.pod .av{
+  width:clamp(38px,7vw,52px);aspect-ratio:1;border-radius:50%;
+  margin:7px auto 6px;display:grid;place-items:center;
+  font-size:clamp(12px,1.7vw,16px);font-weight:900;color:#0B0A1C;
+}
+.pod .tot{
+  font-size:clamp(11px,1.5vw,14px);font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.pod .pts{
+  font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:clamp(19px,3.4vw,32px);color:var(--gold);line-height:1.1;letter-spacing:-.02em;
+}
+.pod .dv{font-size:clamp(9.5px,1.2vw,11.5px);color:var(--fg-2);margin-top:2px}
+.plinth{
+  margin-top:9px;border-radius:var(--r-sm) var(--r-sm) 0 0;
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.02));
+  border:1px solid var(--line-soft);border-bottom:0;
+  display:grid;place-items:center;
+  font-family:var(--font-display);font-style:italic;font-weight:900;
+  color:var(--fg-3);font-size:13px;
+  height:var(--h);transition:height .55s cubic-bezier(.2,.9,.25,1);
+}
+.pod.p1 .plinth{
+  background:linear-gradient(180deg,rgba(39,232,214,.34),rgba(39,232,214,.05));
+  border-color:rgba(39,232,214,.45);color:rgba(39,232,214,.85);
+  box-shadow:0 -18px 44px -18px rgba(39,232,214,.55);
+}
+.podium.pre .plinth{height:0}
+
+/* ============================================================
+   5 · TABLEAU
+   ============================================================ */
+.panel{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-lg);overflow:hidden;
+}
+.panel-head{
+  display:none;padding:9px 16px;border-bottom:1px solid var(--line-soft);
+  font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fg-3);font-weight:800;
+}
+@media (min-width:720px){
+  .panel-head{display:grid;gap:10px;align-items:center;
+    grid-template-columns:52px minmax(0,1fr) 132px 62px 72px 92px}
+  .panel-head span:nth-child(n+4){text-align:right}
+}
+.rows{padding:6px}
+
+.row{
+  width:100%;text-align:left;display:grid;gap:4px 10px;align-items:center;
+  padding:9px 10px;border-radius:10px;border:1px solid transparent;
+  background:var(--row);margin-bottom:5px;
+  grid-template-columns:38px minmax(0,1fr) auto;
+  grid-template-areas:
+    "rank who  pts"
+    "rank meta delta";
+  transition:background .16s,border-color .16s,transform .12s;
+}
+.row:last-child{margin-bottom:0}
+.row:hover{background:rgba(255,255,255,.065)}
+.row:active{transform:scale(.994)}
+.row.me{background:var(--row-hi);border-color:rgba(39,232,214,.42)}
+.row.lead{background:linear-gradient(96deg,rgba(39,232,214,.92),rgba(39,232,214,.42));color:#062A28}
+.row.lead .r-sub,.row.lead .r-dv{color:rgba(6,42,40,.72)}
+.row.lead .r-pts{color:#062A28}
+.row.lead .r-rank{color:#062A28}
+.row.open{border-color:var(--cyan)}
+
+.r-rank{grid-area:rank;font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:14px;text-align:center;color:var(--fg-2);letter-spacing:-.03em}
+.r-rank.podium3{font-size:16px}
+.r-who{grid-area:who;display:flex;align-items:center;gap:7px;min-width:0}
+.av-s{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  font-size:9px;font-weight:900;color:#0B0A1C}
+.r-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.r-tags{display:flex;gap:4px;flex-shrink:0;align-items:center}
+.r-meta{grid-area:meta;display:flex;align-items:center;gap:8px;min-width:0;padding-left:31px}
+.r-dv{font-size:11px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-streak{font-size:11px;font-weight:700;color:var(--fg-2);white-space:nowrap}
+.r-delta{grid-area:delta;font-size:12px;font-weight:800;text-align:right;white-space:nowrap}
+.r-delta.pos{color:var(--up)} .r-delta.neg{color:var(--down)} .r-delta.flat{color:var(--fg-3)}
+.row.lead .r-delta.pos{color:#064A31} .row.lead .r-delta.neg{color:#7A1F12} .row.lead .r-delta.flat{color:rgba(6,42,40,.5)}
+.r-pts{grid-area:pts;font-family:var(--font-display);font-style:italic;font-weight:900;
+  font-size:19px;color:var(--gold);text-align:right;letter-spacing:-.02em;white-space:nowrap}
+.r-pts u{text-decoration:none;font-size:9px;font-weight:700;font-style:normal;opacity:.62;
+  font-family:var(--font-body);margin-left:2px}
+
+@media (min-width:720px){
+  .row{
+    grid-template-columns:52px minmax(0,1fr) 132px 62px 72px 92px;
+    grid-template-areas:"rank who div streak delta pts";
+    padding:10px 12px;gap:10px;
+  }
+  .r-meta{display:contents}
+  .r-dv{grid-area:div;font-size:12px;padding:0}
+  .r-streak{grid-area:streak;text-align:right}
+  .r-name{font-size:14.5px}
+  .r-pts{font-size:21px}
+}
+/* Les lignes « par ligne » gardent 2 rangées : le libellé d'agrégat est trop
+   long pour la colonne Division. Delta et points s'étendent sur les 2 rangées. */
+.row.team{
+  grid-template-columns:44px minmax(0,1fr) auto auto;
+  grid-template-areas:
+    "rank who  delta pts"
+    "rank meta delta pts";
+  padding:12px;
+}
+.row.team .r-meta{display:flex;padding-left:0}
+.row.team .r-delta,.row.team .r-pts{align-self:center}
+
+/* pastilles */
+.tag{flex:0 0 auto;font-size:8.5px;font-weight:900;letter-spacing:.04em;border-radius:5px;padding:2px 5px;line-height:1.35}
+.tag.t14{color:#2A1B00;background:linear-gradient(92deg,#C9851F,#FFD873)}
+.tag.tests{color:var(--fg-2);background:rgba(255,255,255,.1);border:1px solid var(--line-soft);font-family:var(--font-mono)}
+.tag.staff{color:var(--fg-2);background:rgba(255,255,255,.09);border:1px solid var(--line-soft)}
+.tag.chal{background:none;padding:0;font-size:12px}
+.row.lead .tag.tests,.row.lead .tag.staff{color:#062A28;background:rgba(6,42,40,.14);border-color:rgba(6,42,40,.26)}
+
+.empty{padding:34px 18px;text-align:center;color:var(--fg-3);font-size:13px}
+
+/* ============================================================
+   6 · RAIL — ma division, échelle
+   ============================================================ */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
+.card h2{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:12px}
+.mydiv{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.mydiv .em{font-size:30px;line-height:1}
+.mydiv .name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.mydiv .to-next{font-size:11.5px;color:var(--fg-2);margin-top:2px}
+.mydiv .wk{margin-left:auto;text-align:right;flex-shrink:0}
+.mydiv .wk b{display:block;font-size:14px;font-weight:800}
+.mydiv .wk span{font-size:9.5px;color:var(--fg-3);letter-spacing:.05em}
+.track{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.track i{display:block;height:100%;border-radius:4px;width:0;transition:width .8s cubic-bezier(.2,.9,.25,1)}
+.track-legend{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--fg-3)}
+.badgewrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
+  background:rgba(255,255,255,.06);border:1px solid var(--line-soft)}
+
+.ladder-row{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--line-soft)}
+.ladder-row:last-child{border-bottom:0}
+.ladder-row.here{font-weight:800}
+.ladder-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ladder-row .nm{font-weight:700}
+.ladder-row .rg{margin-left:auto;font-size:11px;color:var(--fg-3)}
+.ladder-row .you{font-size:9px;letter-spacing:.1em;color:var(--cyan);border:1px solid rgba(39,232,214,.4);
+  border-radius:4px;padding:1px 5px}
+
+.foot{margin-top:18px;font-size:10.5px;line-height:1.6;color:var(--fg-3);text-align:center}
+
+/* ============================================================
+   7 · BARRE « MA LIGNE » COLLANTE
+   ============================================================ */
+.mebar{
+  position:fixed;left:50%;bottom:16px;transform:translate(-50%,140%);
+  z-index:50;width:min(560px,calc(100vw - 2*var(--gut)));
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:11px;align-items:center;
+  padding:10px 14px;border-radius:999px;
+  background:color-mix(in oklab, var(--panel-2) 92%, transparent);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(39,232,214,.36);
+  box-shadow:0 18px 44px -18px rgba(0,0,0,.85);
+  transition:transform .34s cubic-bezier(.2,.9,.25,1),opacity .24s;
+  opacity:0;pointer-events:none;text-align:left;
+}
+.mebar.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.mebar .rk{font-family:var(--font-display);font-style:italic;font-weight:900;font-size:17px;color:var(--cyan)}
+.mebar .nm{display:block;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mebar .sub{display:block;font-size:10px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mebar .dl{font-size:12px;font-weight:800}
+.mebar .pt{font-family:var(--font-display);font-style:italic;font-weight:900;font-size:18px;color:var(--gold)}
+
+/* ============================================================
+   8 · PANNEAU DÉTAIL
+   ============================================================ */
+.scrim{position:fixed;inset:0;background:rgba(6,5,18,.62);backdrop-filter:blur(2px);
+  z-index:60;opacity:0;pointer-events:none;transition:opacity .24s}
+.scrim.show{opacity:1;pointer-events:auto}
+.sheet[hidden]{display:none}
+.sheet{
+  position:fixed;z-index:61;background:var(--panel);border:1px solid var(--line);
+  display:flex;flex-direction:column;
+  transition:transform .34s cubic-bezier(.2,.9,.25,1);
+  left:0;right:0;bottom:0;max-height:88vh;border-radius:20px 20px 0 0;
+  transform:translateY(101%);
+  box-shadow:0 -22px 60px -20px rgba(0,0,0,.9);
+}
+.sheet.show{transform:translateY(0)}
+@media (min-width:860px){
+  .sheet{left:auto;top:0;bottom:0;width:400px;max-height:none;
+    border-radius:20px 0 0 20px;transform:translateX(101%)}
+  .sheet.show{transform:translateX(0)}
+}
+.sheet-head{display:flex;align-items:center;gap:12px;padding:18px 20px 14px;border-bottom:1px solid var(--line-soft)}
+.sheet-head .av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  font-size:15px;font-weight:900;color:#0B0A1C;flex-shrink:0}
+.sheet-head h3{font-family:var(--font-display);font-size:21px;font-weight:900;font-style:italic;
+  letter-spacing:-.02em;line-height:1.1}
+.sheet-head .pos{font-size:11.5px;color:var(--fg-2);margin-top:2px}
+.sheet-close{margin-left:auto;width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,.07);display:grid;place-items:center;font-size:16px;color:var(--fg-2)}
+.sheet-body{padding:16px 20px 26px;overflow-y:auto;display:grid;gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:rgba(255,255,255,.045);border:1px solid var(--line-soft);border-radius:var(--r-md);padding:11px 10px}
+.kpi b{display:block;font-family:var(--font-display);font-style:italic;font-weight:900;font-size:20px;letter-spacing:-.02em}
+.kpi span{display:block;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);margin-top:3px}
+.stub{border:1px dashed var(--line);border-radius:var(--r-md);padding:16px;text-align:center;
+  color:var(--fg-3);font-size:11.5px;line-height:1.6}
+
+/* Cibles tactiles : 44 px minimum sur pointeur grossier. */
+@media (pointer:coarse){
+  .seg button,.chips button,.sortsel,.search{min-height:44px}
+  .row{min-height:56px}
+  .sheet-close{width:40px;height:40px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1>Classement</h1>
+      <span class="season" id="season">Saison interne</span>
+    </div>
+    <div class="me-pill" id="mePill">
+      <span>
+        <span class="lbl">Ma place</span><br>
+        <span class="rk num" id="meRank">—</span>
+      </span>
+      <span>
+        <span class="lbl">Points</span><br>
+        <span class="pts num" id="mePts">0</span>
+      </span>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Type de classement">
+        <button data-mode="indiv" aria-pressed="true">Individuel</button>
+        <button data-mode="team" aria-pressed="false">Par ligne</button>
+      </div>
+
+      <div class="filters" id="filters">
+        <div class="chips" role="group" aria-label="Périmètre">
+          <button data-scope="all" aria-pressed="true">Toute l'équipe</button>
+          <button data-scope="avants" aria-pressed="false">Avants</button>
+          <button data-scope="arrieres" aria-pressed="false">Arrières</button>
+        </div>
+        <label class="search">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M10.6 10.6 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span class="vh">Rechercher un totem</span>
+          <input id="q" type="search" placeholder="Totem…" autocomplete="off">
+        </label>
+        <select class="sortsel" id="sort" aria-label="Trier l'affichage">
+          <option value="pts">Tri · Points</option>
+          <option value="wd">Tri · Progression 7 j</option>
+          <option value="streak">Tri · Série</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="podium pre" id="podium"></div>
+
+    <section class="panel" aria-label="Classement">
+      <div class="panel-head" id="panelHead">
+        <span>Rang</span><span>Joueur</span><span>Division</span>
+        <span>Série</span><span>7 jours</span><span>Points</span>
+      </div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <p class="foot">
+      Données d'atelier pseudonymisées (totem + initiales).<br>
+      Barème, seuils de division et rang partagé identiques à l'application.
+    </p>
+  </div>
+
+  <aside class="rail" id="rail">
+    <div class="card" id="myCard"></div>
+    <div class="card">
+      <h2>Échelle des divisions</h2>
+      <div id="ladder"></div>
+    </div>
+  </aside>
+</main>
+
+<button class="mebar" id="mebar" type="button">
+  <span class="rk num" id="mbRank">—</span>
+  <span>
+    <span class="nm" id="mbName">—</span>
+    <span class="sub" id="mbSub">—</span>
+  </span>
+  <span class="dl num" id="mbDelta">—</span>
+  <span class="pt num" id="mbPts">—</span>
+</button>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shName" hidden>
+  <div class="sheet-head">
+    <span class="av" id="shAv"></span>
+    <span>
+      <h3 id="shName"></h3>
+      <span class="pos" id="shPos"></span>
+    </span>
+    <button class="sheet-close" id="shClose" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body" id="shBody"></div>
+</aside>
+
+<script>
+/* ============================================================
+   BARÈME — repris à l'identique de l'export d'origine
+   ============================================================ */
+const DIVS = [
+  { min:220, key:"elite",   e:"💎", c:"#27E8D6", label:"Élite"   },
+  { min:170, key:"diamant", e:"🔷", c:"#8AB4F8", label:"Diamant" },
+  { min:120, key:"or",      e:"🥇", c:"#F2C84B", label:"Or"      },
+  { min:70,  key:"argent",  e:"🥈", c:"#C8D2E0", label:"Argent"  },
+  { min:0,   key:"bronze",  e:"🥉", c:"#C07A45", label:"Bronze"  },
+];
+const divOf   = p => DIVS.find(d => p >= d.min) || DIVS[DIVS.length - 1];
+const nextDiv = p => { const i = DIVS.findIndex(d => p >= d.min); return i > 0 ? DIVS[i - 1] : null; };
+
+// Tri points ↓ puis départage stable par totem ; points égaux → MÊME rang.
+function rankLeaderboard(items){
+  const sorted = [...items].sort((a, b) => (b.pts - a.pts) ||
+    String(a.totem).localeCompare(String(b.totem), "fr", { sensitivity:"base" }));
+  let prevPts = null, prevRank = 0;
+  return sorted.map((it, i) => {
+    const rank = (prevPts !== null && it.pts === prevPts) ? prevRank : i + 1;
+    prevPts = it.pts; prevRank = rank;
+    return { ...it, rank };
+  });
+}
+
+const CHAL_TIERS = [{n:1,e:"🎯"},{n:5,e:"🥉"},{n:10,e:"🥈"},{n:25,e:"🏅"}];
+const topChal = n => { const w = CHAL_TIERS.filter(t => n >= t.n); return w.length ? w[w.length - 1] : null; };
+
+const AV = ["#27E8D6","#8AB4F8","#F2C84B","#C8D2E0","#C07A45","#6C5CE0","#5BE39A","#FF8A78"];
+const avColor = s => AV[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+
+/* ============================================================
+   DONNÉES FIGÉES (pseudonymisées)
+   ============================================================ */
+const P = [
+  { totem:"Panthère",  init:"PB", grp:"avants",   pts:251, wd:+18, mv:0,  streak:6, t14:3, t9:6, chal:12, staff:false, me:false },
+  { totem:"Faucon",    init:"FR", grp:"arrieres", pts:238, wd:+12, mv:0,  streak:4, t14:1, t9:4, chal:8,  staff:false, me:false },
+  { totem:"Bison",     init:"BL", grp:"avants",   pts:221, wd:-6,  mv:-1, streak:0, t14:2, t9:5, chal:3,  staff:true,  me:false },
+  { totem:"Cobra",     init:"CM", grp:"arrieres", pts:205, wd:+22, mv:+1, streak:5, t14:2, t9:5, chal:6,  staff:false, me:false },
+  { totem:"Renard",    init:"RD", grp:"avants",   pts:189, wd:+4,  mv:0,  streak:3, t14:0, t9:2, chal:1,  staff:false, me:false },
+  { totem:"Aigle",     init:"AG", grp:"arrieres", pts:174, wd:+9,  mv:+1, streak:7, t14:1, t9:3, chal:5,  staff:false, me:false },
+  { totem:"Lynx",      init:"LM", grp:"avants",   pts:158, wd:+14, mv:+1, streak:5, t14:1, t9:4, chal:3,  staff:false, me:true  },
+  { totem:"Loup",      init:"LV", grp:"arrieres", pts:143, wd:-3,  mv:-1, streak:0, t14:0, t9:1, chal:2,  staff:false, me:false },
+  { totem:"Ours",      init:"OT", grp:"avants",   pts:132, wd:+7,  mv:0,  streak:3, t14:0, t9:2, chal:0,  staff:false, me:false },
+  { totem:"Tigre",     init:"TS", grp:"arrieres", pts:132, wd:+2,  mv:0,  streak:4, t14:1, t9:3, chal:1,  staff:false, me:false },
+  { totem:"Buffle",    init:"BF", grp:"avants",   pts:118, wd:-8,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:true,  me:false },
+  { totem:"Héron",     init:"HN", grp:"arrieres", pts:104, wd:+5,  mv:+1, streak:3, t14:0, t9:1, chal:4,  staff:false, me:false },
+  { totem:"Belette",   init:"BC", grp:"avants",   pts:96,  wd:0,   mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Corbeau",   init:"CV", grp:"arrieres", pts:88,  wd:+6,  mv:+1, streak:5, t14:0, t9:2, chal:1,  staff:false, me:false },
+  { totem:"Sanglier",  init:"SG", grp:"avants",   pts:82,  wd:-4,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Chouette",  init:"CE", grp:"arrieres", pts:74,  wd:+3,  mv:0,  streak:3, t14:0, t9:1, chal:2,  staff:false, me:false },
+  { totem:"Blaireau",  init:"BX", grp:"avants",   pts:68,  wd:+1,  mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Taupe",     init:"TP", grp:"arrieres", pts:55,  wd:-2,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Fouine",    init:"FN", grp:"avants",   pts:47,  wd:+4,  mv:+1, streak:3, t14:0, t9:0, chal:1,  staff:false, me:false },
+  { totem:"Musaraigne",init:"MG", grp:"arrieres", pts:39,  wd:0,   mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+];
+const ME  = P.find(p => p.me);
+const GRP = { avants:"Avants", arrieres:"Arrières" };
+
+/* ============================================================
+   ÉTAT + PERSISTANCE
+   ============================================================ */
+const KEY = "classement:v1";
+const state = Object.assign({ mode:"indiv", scope:"all", sort:"pts", q:"" }, (() => {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (_) { return {}; }
+})());
+state.q = ""; // la recherche ne se restaure pas
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} };
+
+const $  = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const sign = n => (n > 0 ? "+" : "") + n;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============================================================
+   FRAGMENTS
+   ============================================================ */
+function tags(p){
+  let h = "";
+  if (p.t14 > 0){
+    h += `<span class="tag t14" title="${p.t14} test(s) au niveau Top 14">🏆 TOP 14${p.t14 > 1 ? " ×" + p.t14 : ""}</span>`;
+    h += `<span class="tag tests" title="Tests Top 14 atteints">${p.t9}/9</span>`;
+  }
+  const cb = topChal(p.chal);
+  if (cb) h += `<span class="tag chal" title="${p.chal} défi(s) confirmé(s)">${cb.e}</span>`;
+  if (p.staff) h += `<span class="tag staff" title="Membre du staff qui s'entraîne aussi comme athlète">STAFF</span>`;
+  return h;
+}
+const deltaCls = n => n > 0 ? "pos" : n < 0 ? "neg" : "flat";
+const arrow = mv => mv > 0 ? "▲" : mv < 0 ? "▼" : "";
+
+/* ============================================================
+   SÉLECTION / TRI
+   ============================================================ */
+function ranked(){
+  const pool = state.scope === "all" ? P : P.filter(p => p.grp === state.scope);
+  return rankLeaderboard(pool);        // le rang officiel reste toujours calculé sur les points
+}
+function displayed(list){
+  const q = state.q.trim().toLowerCase();
+  let out = q
+    ? list.filter(p => p.totem.toLowerCase().includes(q) || p.init.toLowerCase().includes(q))
+    : [...list];
+  if (state.sort === "wd")     out.sort((a, b) => b.wd - a.wd || a.rank - b.rank);
+  if (state.sort === "streak") out.sort((a, b) => b.streak - a.streak || a.rank - b.rank);
+  return out;
+}
+
+/* ============================================================
+   RENDU · PODIUM
+   ============================================================ */
+function renderPodium(list){
+  const host = $("podium");
+  const top3 = list.filter(r => r.rank <= 3).slice(0, 3);
+  if (state.mode !== "indiv" || top3.length < 3 || state.q.trim()){
+    host.style.display = "none"; return;
+  }
+  host.style.display = "";
+  host.classList.add("pre");   // les socles repartent de 0 à chaque changement de périmètre
+  const H = { 1:"clamp(58px,9vw,94px)", 2:"clamp(40px,6.4vw,68px)", 3:"clamp(30px,5vw,54px)" };
+  const order = [top3[1], top3[0], top3[2]];   // 2 · 1 · 3
+  host.innerHTML = order.map(p => {
+    const d = divOf(p.pts);
+    const medal = p.rank === 1 ? "🥇" : p.rank === 2 ? "🥈" : "🥉";
+    return `<div class="pod ${p.rank === 1 ? "p1" : ""}">
+      <div class="medal">${medal}</div>
+      <div class="av" style="background:${avColor(p.init)}">${esc(p.init)}</div>
+      <div class="tot">${p.me ? "⭐ " : ""}${esc(p.totem)}</div>
+      <div class="pts num" data-count="${p.pts}">0</div>
+      <div class="dv">${d.e} ${d.label}</div>
+      <div class="plinth" style="--h:${H[p.rank]}">${p.rank}<span style="font-size:9px">ᵉ</span></div>
+    </div>`;
+  }).join("");
+  requestAnimationFrame(() => host.classList.remove("pre"));
+  host.querySelectorAll("[data-count]").forEach(countUp);
+}
+
+function countUp(node){
+  const target = +node.dataset.count;
+  if (reduced){ node.textContent = target; return; }
+  const dur = 700, t0 = performance.now();
+  (function step(t){
+    const k = Math.min(1, (t - t0) / dur);
+    node.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+/* ============================================================
+   RENDU · LIGNES
+   ============================================================ */
+function renderRows(){
+  const host = $("rows");
+  const base = ranked();
+  renderPodium(base);
+  const list = displayed(base);
+
+  if (!list.length){
+    host.innerHTML = `<p class="empty">Aucun totem ne correspond à « ${esc(state.q)} ».</p>`;
+    return;
+  }
+  host.innerHTML = list.map(p => {
+    const d = divOf(p.pts);
+    const lead = p.rank === 1 && state.sort === "pts" && !state.q.trim();
+    return `<button class="row ${lead ? "lead" : ""} ${p.me ? "me" : ""}" data-totem="${esc(p.totem)}"
+      aria-label="${esc(p.totem)}, ${p.rank}e, ${p.pts} points">
+      <span class="r-rank num ${p.rank <= 3 ? "podium3" : ""}">${p.rank}<span style="font-size:.7em">ᵉ</span></span>
+      <span class="r-who">
+        <span class="av-s" style="background:${avColor(p.init)}">${esc(p.init)}</span>
+        <span class="r-name">${p.me ? "⭐ " : ""}${esc(p.totem)}</span>
+        <span class="r-tags">${tags(p)}</span>
+      </span>
+      <span class="r-meta">
+        <span class="r-dv">${d.e} ${d.label}</span>
+        <span class="r-streak">${p.streak >= 3 ? "🔥 " + p.streak : "<span style='opacity:.35'>—</span>"}</span>
+      </span>
+      <span class="r-delta num ${deltaCls(p.wd)}">${arrow(p.mv)} ${sign(p.wd)}</span>
+      <span class="r-pts num">${p.pts}<u>PTS</u></span>
+    </button>`;
+  }).join("");
+  watchMyRow();
+}
+
+/* ============================================================
+   RENDU · PAR LIGNE (agrégat)
+   ============================================================ */
+function renderTeams(){
+  const by = {};
+  P.forEach(p => {
+    by[p.grp] = by[p.grp] || { key:p.grp, label:GRP[p.grp], pts:0, count:0, wd:0 };
+    by[p.grp].pts += p.pts; by[p.grp].count++; by[p.grp].wd += p.wd;
+  });
+  const teams = Object.values(by).sort((a, b) => b.pts - a.pts).map((t, i) => ({ ...t, rank:i + 1 }));
+  $("rows").innerHTML = teams.map(t => {
+    const mine = t.key === ME.grp, lead = t.rank === 1;
+    return `<div class="row team ${lead ? "lead" : ""} ${mine && !lead ? "me" : ""}" style="cursor:default">
+      <span class="r-rank num podium3">${t.rank}<span style="font-size:.7em">ᵉ</span></span>
+      <span class="r-who"><span class="r-name">${mine ? "⭐ " : ""}${esc(t.label)}</span></span>
+      <span class="r-meta">
+        <span class="r-dv">${t.count} joueurs · moyenne ${Math.round(t.pts / t.count)} pts</span>
+        <span class="r-streak"></span>
+      </span>
+      <span class="r-delta num ${deltaCls(t.wd)}">${sign(t.wd)}</span>
+      <span class="r-pts num">${t.pts}<u>PTS</u></span>
+    </div>`;
+  }).join("") + `<p class="empty" style="padding:12px 8px 2px;font-size:11px">
+    Agrégat par ligne : somme des points des membres actifs.</p>`;
+}
+
+/* ============================================================
+   RENDU · CARTE DIVISION + ÉCHELLE
+   ============================================================ */
+function renderMyCard(){
+  const cur = divOf(ME.pts), nx = nextDiv(ME.pts);
+  const lo = cur.min, hi = nx ? nx.min : ME.pts + 1;
+  const prog = Math.min(100, Math.max(5, ((ME.pts - lo) / (hi - lo)) * 100));
+  const chips = [];
+  if (ME.streak >= 3) chips.push(`🔥 Série de ${ME.streak}`);
+  if (ME.t14 > 0)     chips.push(`🏆 Top 14 ×${ME.t14}`);
+  if (ME.t9 > 0)      chips.push(`📊 ${ME.t9}/9 tests`);
+  if (ME.chal > 0)    chips.push(`${topChal(ME.chal).e} ${ME.chal} défis`);
+
+  $("myCard").innerHTML = `
+    <h2>Ma division</h2>
+    <div class="mydiv">
+      <span class="em">${cur.e}</span>
+      <span>
+        <span class="name" style="color:${cur.c}">${cur.label}</span>
+        <span class="to-next">${nx ? `Encore <b class="num">${hi - ME.pts}</b> pts → ${nx.label}` : "Division maximale atteinte"}</span>
+      </span>
+      <span class="wk">
+        <b class="num" style="color:${ME.wd >= 0 ? "var(--up)" : "var(--down)"}">${sign(ME.wd)}</b>
+        <span>7 JOURS</span>
+      </span>
+    </div>
+    <div class="track"><i id="myTrack" style="background:${cur.c}"></i></div>
+    <div class="track-legend"><span class="num">${lo}</span><span class="num">${nx ? hi : "∞"}</span></div>
+    <div class="badgewrap">${chips.map(c => `<span class="badge">${c}</span>`).join("")}</div>`;
+  requestAnimationFrame(() => { const t = $("myTrack"); if (t) t.style.width = prog + "%"; });
+}
+
+function renderLadder(){
+  const mine = divOf(ME.pts).key;
+  $("ladder").innerHTML = DIVS.map((d, i) => {
+    const nx = DIVS[i - 1];
+    const range = nx ? `${d.min}–${nx.min - 1}` : `${d.min}+`;
+    return `<div class="ladder-row ${d.key === mine ? "here" : ""}">
+      <span class="dot" style="background:${d.c}"></span><span>${d.e}</span>
+      <span class="nm" style="color:${d.c}">${d.label}</span>
+      ${d.key === mine ? '<span class="you">MOI</span>' : ""}
+      <span class="rg num">${range} pts</span>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   EN-TÊTE + BARRE COLLANTE
+   ============================================================ */
+function syncHeader(){
+  $("season").textContent = `Saison interne · ${P.length} inscrits`;
+  const r = rankLeaderboard(P).find(x => x.me);
+  $("meRank").textContent = "#" + r.rank;
+  $("mePts").dataset.count = ME.pts;
+  countUp($("mePts"));
+
+  const d = divOf(ME.pts);
+  $("mbRank").textContent = "#" + r.rank;
+  $("mbName").textContent = "⭐ " + ME.totem;
+  $("mbSub").textContent  = `${d.e} ${d.label} · ${GRP[ME.grp]}`;
+  const dl = $("mbDelta");
+  dl.textContent = sign(ME.wd);
+  dl.style.color = ME.wd >= 0 ? "var(--up)" : "var(--down)";
+  $("mbPts").textContent = ME.pts;
+}
+
+let obs = null;
+function watchMyRow(){
+  if (obs) obs.disconnect();
+  const bar = $("mebar");
+  const row = document.querySelector(".row.me");
+  if (!row || state.mode !== "indiv"){ bar.classList.remove("show"); return; }
+  obs = new IntersectionObserver(([e]) => {
+    bar.classList.toggle("show", !e.isIntersecting);
+  }, { rootMargin:"-70px 0px -90px 0px" });
+  obs.observe(row);
+}
+// Clic sur la barre → remonter jusqu'à ma ligne (sans scrollIntoView)
+$("mebar").addEventListener("click", () => {
+  const row = document.querySelector(".row.me");
+  if (!row) return;
+  const y = row.getBoundingClientRect().top + window.scrollY - (window.innerHeight / 2) + 40;
+  window.scrollTo({ top:Math.max(0, y), behavior:reduced ? "auto" : "smooth" });
+});
+
+/* ============================================================
+   PANNEAU DÉTAIL
+   ============================================================ */
+let lastFocus = null;
+function openSheet(totem){
+  const list = ranked();
+  const p = list.find(x => x.totem === totem);
+  if (!p) return;
+  lastFocus = document.activeElement;
+  const d = divOf(p.pts), nx = nextDiv(p.pts);
+  const cb = topChal(p.chal);
+
+  $("shAv").textContent = p.init;
+  $("shAv").style.background = avColor(p.init);
+  $("shName").textContent = (p.me ? "⭐ " : "") + p.totem;
+  $("shPos").textContent = `${p.rank}ᵉ · ${GRP[p.grp]}${p.staff ? " · staff-athlète" : ""}`;
+
+  const lo = d.min, hi = nx ? nx.min : p.pts + 1;
+  const prog = Math.min(100, Math.max(5, ((p.pts - lo) / (hi - lo)) * 100));
+
+  $("shBody").innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><b style="color:var(--gold)" class="num">${p.pts}</b><span>Points</span></div>
+      <div class="kpi"><b class="num" style="color:${p.wd >= 0 ? "var(--up)" : "var(--down)"}">${sign(p.wd)}</b><span>7 jours</span></div>
+      <div class="kpi"><b class="num">${p.streak || "—"}</b><span>Série</span></div>
+    </div>
+
+    <div>
+      <h2 style="font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:9px">
+        Division ${d.label} ${d.e}</h2>
+      <div class="track"><i style="background:${d.c};width:${prog}%"></i></div>
+      <div class="track-legend">
+        <span>${nx ? `Encore ${hi - p.pts} pts → ${nx.label}` : "Division maximale"}</span>
+        <span class="num">${lo}–${nx ? hi - 1 : "∞"}</span>
+      </div>
+    </div>
+
+    <div>
+      <h2 style="font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:9px">
+        Distinctions</h2>
+      <div class="badgewrap" style="margin-top:0">
+        ${p.t14 > 0 ? `<span class="badge">🏆 Top 14 ×${p.t14}</span>` : ""}
+        ${p.t9  > 0 ? `<span class="badge">📊 ${p.t9}/9 tests atteints</span>` : ""}
+        ${cb        ? `<span class="badge">${cb.e} ${p.chal} défi${p.chal > 1 ? "s" : ""} confirmé${p.chal > 1 ? "s" : ""}</span>` : ""}
+        ${p.staff   ? `<span class="badge">Staff-athlète</span>` : ""}
+        ${(!p.t14 && !cb && !p.staff) ? `<span class="badge" style="color:var(--fg-3)">Aucune distinction pour l'instant</span>` : ""}
+      </div>
+    </div>
+
+    <div class="stub">Historique détaillé des séances<br>non disponible dans cette maquette</div>`;
+
+  $("sheet").hidden = false;
+  requestAnimationFrame(() => { $("sheet").classList.add("show"); $("scrim").classList.add("show"); });
+  $("shClose").focus();
+  document.querySelectorAll(".row.open").forEach(r => r.classList.remove("open"));
+  const row = document.querySelector(`.row[data-totem="${CSS.escape(totem)}"]`);
+  if (row) row.classList.add("open");
+}
+function closeSheet(){
+  $("sheet").classList.remove("show");
+  $("scrim").classList.remove("show");
+  document.querySelectorAll(".row.open").forEach(r => r.classList.remove("open"));
+  setTimeout(() => { $("sheet").hidden = true; }, 340);
+  if (lastFocus) lastFocus.focus();
+}
+
+/* ============================================================
+   ÉVÉNEMENTS
+   ============================================================ */
+function apply(){
+  const indiv = state.mode === "indiv";
+  $("filters").style.display = indiv ? "" : "none";
+  $("panelHead").style.display = indiv ? "" : "none";
+  if (indiv){ renderRows(); } else { $("podium").style.display = "none"; renderTeams(); $("mebar").classList.remove("show"); }
+  save();
+}
+
+document.querySelector(".seg").addEventListener("click", e => {
+  const b = e.target.closest("button[data-mode]"); if (!b) return;
+  state.mode = b.dataset.mode;
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  apply();
+});
+document.querySelector(".chips").addEventListener("click", e => {
+  const b = e.target.closest("button[data-scope]"); if (!b) return;
+  state.scope = b.dataset.scope;
+  document.querySelectorAll(".chips button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  apply();
+});
+$("sort").addEventListener("change", e => { state.sort = e.target.value; apply(); });
+$("q").addEventListener("input", e => { state.q = e.target.value; renderRows(); });
+
+$("rows").addEventListener("click", e => {
+  const r = e.target.closest(".row[data-totem]"); if (!r) return;
+  openSheet(r.dataset.totem);
+});
+$("shClose").addEventListener("click", closeSheet);
+$("scrim").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("sheet").hidden) closeSheet();
+  if (e.key === "/" && document.activeElement !== $("q")){ e.preventDefault(); $("q").focus(); }
+});
+
+/* ============================================================
+   AMORÇAGE
+   ============================================================ */
+document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+document.querySelectorAll(".chips button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.scope === state.scope)));
+$("sort").value = state.sort;
+
+syncHeader();
+renderMyCard();
+renderLadder();
+apply();
+</script>
+</body>
+</html>
