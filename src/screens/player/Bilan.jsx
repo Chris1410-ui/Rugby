@@ -14,6 +14,9 @@ import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
 import AccueilHero from "./accueil/AccueilHero.jsx";
 import AccueilMission from "./accueil/AccueilMission.jsx";
+import AccueilTeam from "./accueil/AccueilTeam.jsx";
+import AccueilCoach from "./accueil/AccueilCoach.jsx";
+import AccueilQuickAccess from "./accueil/AccueilQuickAccess.jsx";
 import QuickCheckin from "./bilan/QuickCheckin.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
@@ -159,6 +162,10 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
           la saisie ; alimente le bilan matin + affiche readiness quand fait. */}
       <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
 
+      {/* « Le groupe aujourd'hui » + mot du préparateur (refonte Open Design). */}
+      <AccueilTeam me={me} teamId={teamId} players={players} sessions={sessions} today={today} onNavigate={onNavigate} />
+      <AccueilCoach me={me} onNavigate={onNavigate} />
+
       {/* Bandeau semaine */}
       <div style={sc({ padding: "12px 8px", marginBottom: 14 })}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.6, color: "rgba(255,255,255,0.55)", padding: "0 6px 8px", textTransform: "uppercase" }}>{t("player.today.week")}</div>
@@ -216,6 +223,11 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         <ActionCard emoji="🔥" title={t("player.today.defis")} sub={t("player.today.defisSub")} badge={badges.defis} accent={accent} onClick={() => setSheet("defis")} t={t} />
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
         {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
+      </div>
+
+      {/* Accès rapide (grille) — refonte Open Design. */}
+      <div style={{ marginTop: 14 }}>
+        <AccueilQuickAccess onNavigate={onNavigate} badges={{ defis: badges.defis, messages: badges.messages }} />
       </div>
 
       {/* Suivi rapide (sparklines) */}

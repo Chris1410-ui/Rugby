@@ -1303,7 +1303,17 @@
       "missionTitle": "Ce qu'il te reste",
       "pts": "+{{n}} pts",
       "continueTo": "Continuer : {{name}}",
-      "dayDone": "Journée bouclée"
+      "dayDone": "Journée bouclée",
+      "teamKicker": "Mon club",
+      "teamTitle": "Le groupe aujourd'hui",
+      "validated": "ont validé",
+      "rankYouAre": "Tu es {{rank}}ᵉ.",
+      "gapPts": "{{n}} pts",
+      "gapFrom": "te séparent du joueur devant.",
+      "rankLeader": "Tu es en tête du classement 🏆",
+      "rankUnknown": "Classement en cours de calcul…",
+      "coachTitle": "Mot du préparateur",
+      "quickAccess": "Accès rapide"
     }
   },
   "staff": {

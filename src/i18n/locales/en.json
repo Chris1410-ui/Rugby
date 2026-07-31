@@ -1303,7 +1303,17 @@
       "missionTitle": "What's left",
       "pts": "+{{n}} pts",
       "continueTo": "Continue: {{name}}",
-      "dayDone": "Day complete"
+      "dayDone": "Day complete",
+      "teamKicker": "My club",
+      "teamTitle": "The squad today",
+      "validated": "logged in",
+      "rankYouAre": "You're {{rank}}th.",
+      "gapPts": "{{n}} pts",
+      "gapFrom": "separate you from the player ahead.",
+      "rankLeader": "You lead the ranking 🏆",
+      "rankUnknown": "Ranking being computed…",
+      "coachTitle": "Coach's word",
+      "quickAccess": "Quick access"
     }
   },
   "staff": {

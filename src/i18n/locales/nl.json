@@ -1303,7 +1303,17 @@
       "missionTitle": "Wat je nog moet doen",
       "pts": "+{{n}} ptn",
       "continueTo": "Verder: {{name}}",
-      "dayDone": "Dag voltooid"
+      "dayDone": "Dag voltooid",
+      "teamKicker": "Mijn club",
+      "teamTitle": "De groep vandaag",
+      "validated": "gevalideerd",
+      "rankYouAre": "Je bent {{rank}}e.",
+      "gapPts": "{{n}} ptn",
+      "gapFrom": "scheiden je van de speler voor je.",
+      "rankLeader": "Je staat bovenaan 🏆",
+      "rankUnknown": "Klassement wordt berekend…",
+      "coachTitle": "Woord van de trainer",
+      "quickAccess": "Snelle toegang"
     }
   },
   "staff": {
