@@ -25,6 +25,7 @@
     "brand": "PERFORMANCE"
   },
   "title": {
+    "accueil": "Home",
     "bilan": "Today",
     "seances": "My sessions",
     "taches": "Tasks",
@@ -284,6 +285,7 @@
     "type_conditioning": "Structured conditioning"
   },
   "nav": {
+    "accueil": "Home",
     "bilan": "Today",
     "routine": "My routine",
     "seances": "My sessions",
@@ -1355,6 +1357,18 @@
       "quietEnd": "End",
       "saving": "Saving…",
       "savedHint": "Saved automatically"
+    },
+    "home": {
+      "greetMorning": "Hello",
+      "greetEvening": "Good evening",
+      "mustDo": "What you need to do today",
+      "rest": "Rest today",
+      "start": "Start my day",
+      "reviewDay": "Review my day",
+      "points": "Points",
+      "newsTitle": "Club news",
+      "newsEmpty": "No news yet.",
+      "motStaff": "Staff note"
     }
   },
   "staff": {

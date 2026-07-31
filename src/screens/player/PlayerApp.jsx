@@ -15,7 +15,8 @@ import { PreviewContext } from "../../lib/preview.js";
 import { BottomNav, MobileNav } from "../../lib/ui.jsx";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import PullToRefresh from "../../lib/pullToRefresh.jsx";
-import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles, Grid, Send } from "../../lib/icons.jsx";
+import { Sun, Dumbbell, MessageSquare, Trophy, Calendar, Shield, Activity, Lock, Users, ClipboardList, FileText, Film, Flame, Plus, Sparkles, Grid, Send, Home } from "../../lib/icons.jsx";
+import AccueilPage from "./accueil/AccueilPage.jsx";
 import Bilan from "./Bilan.jsx";
 import TeamTab from "./TeamTab.jsx";
 import Profile from "./Profile.jsx";
@@ -86,6 +87,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   }
 
   const nav = [
+    ["accueil", t("nav.accueil"), Home],
     ["bilan", t("nav.bilan"), Sun, bBilan],
     ...(me?.isStaffAthlete ? [["routine", t("nav.routine"), Sun]] : []),
     ["seances", t("nav.seances"), Dumbbell, bSeances],
@@ -115,6 +117,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <main style={{ flex: 1, padding: 18 }}>
          <PullToRefresh onRefresh={refresh}>
+          {tab === "accueil" && <AccueilPage me={me} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} badges={{ defis: bDefis, taches: bTaches, convocations: bConv, messages: unread }} onNavigate={setTab} />}
           {tab === "bilan" && <Bilan key={today} me={me} accent={ACCENT} teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} badges={{ defis: bDefis, taches: bTaches, convocations: bConv, messages: unread }} onData={refresh} onNavigate={setTab} />}
           {tab === "routine" && me?.isStaffAthlete && <MorningRoutine me={me} accent={ACCENT} />}
           {tab === "seances" && <Seances me={me} sessions={sessions} logs={logs} teamId={profile.team_id} accent={ACCENT} onNavigate={setTab} />}
@@ -150,7 +153,7 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           </button>
         )}
         {mobile
-          ? <MobileNav items={nav} primary={["bilan", "seances", "team", "moi"]} active={tab} onSelect={setTab} accent={ACCENT} />
+          ? <MobileNav items={nav} primary={["accueil", "bilan", "seances", "moi"]} active={tab} onSelect={setTab} accent={ACCENT} />
           : <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />}
       </div>
     </PreviewContext.Provider>

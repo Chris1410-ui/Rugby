@@ -25,6 +25,7 @@
     "brand": "PERFORMANCE"
   },
   "title": {
+    "accueil": "Start",
     "bilan": "Vandaag",
     "seances": "Mijn sessies",
     "taches": "Taken",
@@ -284,6 +285,7 @@
     "type_conditioning": "Gestructureerde conditioning"
   },
   "nav": {
+    "accueil": "Start",
     "bilan": "Vandaag",
     "routine": "Mijn routine",
     "seances": "Mijn sessies",
@@ -1355,6 +1357,18 @@
       "quietEnd": "Einde",
       "saving": "Opslaan…",
       "savedHint": "Automatisch opgeslagen"
+    },
+    "home": {
+      "greetMorning": "Hallo",
+      "greetEvening": "Goedenavond",
+      "mustDo": "Wat je vandaag moet doen",
+      "rest": "Rust vandaag",
+      "start": "Mijn dag beginnen",
+      "reviewDay": "Mijn dag bekijken",
+      "points": "Punten",
+      "newsTitle": "Clubnieuws",
+      "newsEmpty": "Nog geen nieuws.",
+      "motStaff": "Woord van de staf"
     }
   },
   "staff": {

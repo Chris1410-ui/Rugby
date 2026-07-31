@@ -135,7 +135,7 @@ export default function AppShell() {
   const hasAthlete = staffRole && !!profile.player_id;
   const asAthlete = hasAthlete && viewAs === "athlete";
   const staff = staffRole && !asAthlete;
-  const homeTab = staff ? "effectif" : "bilan"; // page d'accueil neutre par vue
+  const homeTab = staff ? "effectif" : "accueil"; // page d'atterrissage par vue (joueur → Accueil)
   const tab = navTab ?? homeTab;
   const goTab = (tk) => { setNavTab(tk); notifs.markRouteRead(tk); setAvatarOpen(false); };
   const switchView = (v) => { setViewAs(v); setNavTab(null); setAvatarOpen(false); };
