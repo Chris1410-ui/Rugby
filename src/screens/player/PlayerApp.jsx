@@ -51,7 +51,7 @@ const ACCENT = C.green;
    au joueur lui-même. */
 export default function PlayerApp({ profile, preview = false, tab: tabProp, onTab }) {
   const { t } = useTranslation();
-  const [tabState, setTabState] = useState("bilan");
+  const [tabState, setTabState] = useState("accueil"); // atterrissage = Accueil (owner/aperçu montent PlayerApp sans prop tab)
   const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
   const setTab = onTab || setTabState;
   const today = useLocalToday(); // reset du bilan du jour à minuit local

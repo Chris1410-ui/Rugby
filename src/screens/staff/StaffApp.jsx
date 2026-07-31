@@ -71,7 +71,7 @@ const ACCENT = C.coral;
    onglets lisent l'effectif enrichi. */
 export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete = null, readOnly: forceReadOnly = false }) {
   const { t } = useTranslation();
-  const [tabState, setTabState] = useState("effectif");
+  const [tabState, setTabState] = useState("accueil"); // atterrissage = Accueil (owner monte StaffApp sans prop tab)
   const tab = tabProp ?? tabState;               // piloté par AppShell (mobile) ou interne
   const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
   // « Mon athlète » (hub Plus) : bascule vers la vue athlète du staff (pas un onglet).
