@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Classement — maquette (vue joueur)</title>
+<!--
+  Maquette AUTONOME du Classement (vue joueur) — artefact d'atelier design.
+  · Aucune dépendance, aucune donnée réelle : 20 totems + initiales figés,
+    pseudonymisés (dont « c'est moi » ⭐ et 2 ex æquo au même total).
+  · Barème EXISTANT reproduit fidèlement, aucune règle inventée :
+      – Divisions (seuils / emojis / couleurs) = metrics.js DIVS.
+      – Rang PARTAGÉ + départage stable par totem = rankLeaderboard().
+      – Badges Top 14, défis (paliers), séries 🔥, delta 7 j, badge STAFF discret.
+  · Palette néon de l'écran réel (tokens NEON/C), polices système.
+  Ne touche pas à src/. Sert à retravailler visuellement le classement.
+-->
+<style>
+  :root{
+    --navy:#16142E; --panel:#1E1B3A; --neon-panel:#181433;
+    --cyan:#27E8D6; --yellow:#F2C84B; --green:#2C8C5A; --coral:#E8553B;
+    --amb:#C9851F; --viol:#6C5CE0; --border:rgba(255,255,255,.1);
+    --row:rgba(255,255,255,.035); --rowB:rgba(108,92,224,.14);
+    --accent:#2C8C5A; /* accent joueur */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #241f47 0%, var(--navy) 60%) fixed;
+    color:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:16px 12px 40px;
+  }
+  .wrap{max-width:440px; margin:0 auto}
+  .italic{font-style:italic}
+  button{font-family:inherit}
+
+  /* En-tête néon */
+  .hero{border-radius:16px; overflow:hidden; background:var(--neon-panel);
+    border:1px solid rgba(160,120,255,.3); padding:16px 18px; margin-bottom:12px;
+    display:flex; align-items:center; gap:10px; position:relative}
+  .hero .glow{position:absolute; inset:0; background:radial-gradient(300px 120px at 15% 0%, rgba(39,232,214,.16), transparent); pointer-events:none}
+  .hero .t{flex:1}
+  .hero h1{margin:0; font-size:24px; font-weight:900; font-style:italic; letter-spacing:.5px; line-height:1}
+  .hero .sub{font-size:10px; color:rgba(255,255,255,.55); margin-top:3px}
+  .hero .mine{text-align:right}
+  .hero .mine .p{font-size:30px; font-weight:900; font-style:italic; color:var(--yellow); line-height:1}
+  .hero .mine .r{font-size:9px; color:rgba(255,255,255,.55)}
+  .trophy{font-size:24px; filter:drop-shadow(0 0 8px rgba(39,232,214,.5))}
+
+  /* Bascules */
+  .seg{display:flex; gap:6px; margin-bottom:12px}
+  .seg button{flex:1; padding:9px 0; border-radius:9px; border:none; font-size:12px; font-weight:800;
+    cursor:pointer; background:rgba(255,255,255,.07); color:#fff; transition:background .15s}
+  .seg button.on{background:var(--accent)}
+  .scopes{display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  .scopes button{flex:0 0 auto; white-space:nowrap; padding:7px 13px; border-radius:8px; border:none;
+    font-weight:700; font-size:11px; cursor:pointer; background:rgba(255,255,255,.07); color:#fff}
+  .scopes button.on{background:var(--accent)}
+
+  /* Podium */
+  .podium{display:grid; grid-template-columns:1fr 1.15fr 1fr; align-items:end; gap:8px; margin-bottom:14px}
+  .pod{position:relative; border-radius:14px 14px 10px 10px; padding:10px 6px 12px; text-align:center;
+    border:1px solid var(--border); background:var(--row)}
+  .pod .av{width:40px;height:40px;border-radius:20px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:900;color:#0c1030}
+  .pod .tot{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pod .pts{font-size:17px;font-weight:900;font-style:italic;color:var(--yellow);margin-top:2px}
+  .pod .medal{font-size:20px}
+  .pod.p1{padding-top:16px}
+  .pod.p1 .medal{font-size:26px}
+  .pod.p1{background:linear-gradient(180deg, rgba(39,232,214,.28), rgba(39,232,214,.06)); border-color:rgba(39,232,214,.5)}
+  .pod .rk{position:absolute; top:6px; left:8px; font-size:11px; font-weight:900; font-style:italic; opacity:.7}
+
+  /* Liste */
+  .list{border-radius:14px; overflow:hidden; background:var(--neon-panel);
+    border:1px solid rgba(160,120,255,.25); padding:8px}
+  .rowr{display:grid; grid-template-columns:40px 1fr auto auto; align-items:center; gap:8px;
+    padding:9px 10px; margin-bottom:6px; border-radius:9px; cursor:default; background:var(--row);
+    border:1px solid transparent}
+  .rowr.me{background:var(--rowB); border-color:var(--accent)}
+  .rowr.top{background:linear-gradient(90deg,rgba(39,232,214,.9),rgba(39,232,214,.5)); color:#0c2b2b}
+  .rk{font-weight:900; font-style:italic; text-align:center; font-size:13px; color:rgba(255,255,255,.65)}
+  .rowr.top .rk{color:#0c2b2b}
+  .rk.big{font-size:15px}
+  .who{min-width:0}
+  .nameline{display:flex; align-items:center; gap:5px; min-width:0}
+  .av-s{flex-shrink:0; width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-size:8.5px;font-weight:900;color:#0c1030}
+  .nm{font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .rowr.top .nm{color:#0c2b2b}
+  .subline{font-size:9.5px; color:rgba(255,255,255,.5); display:flex; align-items:center; gap:6px; margin-top:1px}
+  .rowr.top .subline{color:rgba(12,43,43,.7)}
+  .badge-t14{flex-shrink:0; font-size:8.5px; font-weight:900; letter-spacing:.3px; color:#0c2b2b;
+    background:linear-gradient(90deg,#C9851F,#ffd873); border-radius:5px; padding:2px 6px; box-shadow:0 0 8px rgba(240,180,60,.5)}
+  .t9{flex-shrink:0; font-size:8px; font-weight:800; color:rgba(255,255,255,.7); background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.16); border-radius:5px; padding:1px 5px}
+  .rowr.top .t9{color:#0c2b2b; background:rgba(12,43,43,.14); border-color:rgba(12,43,43,.25)}
+  .badge-staff{flex-shrink:0; font-size:8px; font-weight:900; letter-spacing:.4px; color:rgba(255,255,255,.75);
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); border-radius:5px; padding:1px 5px}
+  .rowr.top .badge-staff{color:#0c2b2b; background:rgba(12,43,43,.18); border-color:rgba(12,43,43,.3)}
+  .chal{flex-shrink:0; font-size:11px}
+  .move{display:flex; align-items:center; gap:8px}
+  .arrow.up{color:var(--green); font-weight:800; font-size:11px}
+  .arrow.dn{color:var(--coral); font-weight:800; font-size:11px}
+  .arrow.eq{color:rgba(255,255,255,.56); font-size:10px}
+  .rowr.top .arrow.up{color:#0c5c3a}
+  .delta{font-size:10px; font-weight:800}
+  .delta.pos{color:#5BE39A} .delta.neg{color:#FF8A78}
+  .rowr.top .delta.pos{color:#0c5c3a} .rowr.top .delta.neg{color:#9c2b1b}
+  .pts{min-width:60px; text-align:right; font-size:19px; font-weight:900; font-style:italic; color:var(--yellow)}
+  .rowr.top .pts{color:#0c2b2b}
+  .pts small{font-size:9px; font-weight:700}
+
+  /* Carte division (moi) */
+  .mycard{margin-top:12px; background:rgba(255,255,255,.055); border:1px solid var(--border);
+    border-radius:14px; padding:14px; border-left-width:4px; border-left-style:solid}
+  .mycard .top{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+  .mycard .dv{font-size:15px; font-weight:800}
+  .mycard .nx{font-size:10px; color:rgba(255,255,255,.6)}
+  .mycard .wk{text-align:right}
+  .mycard .wk .d{font-size:13px; font-weight:800}
+  .mycard .wk .l{font-size:9px; color:rgba(255,255,255,.6)}
+  .bar{height:7px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden}
+  .bar > i{display:block; height:7px; border-radius:4px}
+  .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+  .chip{font-size:10px; font-weight:700; background:rgba(255,255,255,.07); border:1px solid var(--border);
+    border-radius:20px; padding:3px 9px}
+  .gains{margin-top:10px; width:100%; background:rgba(255,255,255,.06); border:1px solid var(--border);
+    border-radius:8px; padding:8px; color:rgba(255,255,255,.7); font-size:11px; font-weight:700; cursor:default}
+
+  /* Légende divisions */
+  .ladder{margin-top:12px; background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:14px; padding:12px 14px}
+  .ladder h3{margin:0 0 8px; font-size:10px; letter-spacing:1px; color:rgba(255,255,255,.55); font-weight:800; text-transform:uppercase}
+  .ladder .rowd{display:flex; align-items:center; gap:9px; padding:4px 0; font-size:12px}
+  .ladder .rowd .dot{width:9px;height:9px;border-radius:5px;flex-shrink:0}
+  .ladder .rowd .nm{font-weight:800}
+  .ladder .rowd .th{margin-left:auto; font-size:10.5px; color:rgba(255,255,255,.5); font-weight:700}
+
+  .foot{font-size:9.5px; color:rgba(255,255,255,.4); text-align:center; margin-top:14px; line-height:1.5}
+  .hidden{display:none}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="glow"></div>
+    <span class="trophy">🏆</span>
+    <div class="t">
+      <h1>CLASSEMENT</h1>
+      <div class="sub" id="subtitle">Saison interne · 20 joueurs</div>
+    </div>
+    <div class="mine">
+      <div class="p" id="myPts">158</div>
+      <div class="r" id="myRank">PTS · #7</div>
+    </div>
+  </div>
+
+  <div class="seg" id="modeSeg">
+    <button data-mode="indiv" class="on">Individuel</button>
+    <button data-mode="team">Par équipe</button>
+  </div>
+
+  <div class="scopes" id="scopes">
+    <button data-scope="all" class="on">Toute l'équipe</button>
+    <button data-scope="avants">Ma ligne · Avants</button>
+  </div>
+
+  <!-- Podium (top 3 du périmètre) -->
+  <div class="podium" id="podium"></div>
+
+  <!-- Liste individuelle -->
+  <div class="list" id="list"></div>
+
+  <!-- Carte division (moi) -->
+  <div id="myCardHost"></div>
+
+  <!-- Par équipe -->
+  <div class="list hidden" id="teamList"></div>
+
+  <!-- Légende divisions -->
+  <div class="ladder">
+    <h3>Divisions</h3>
+    <div id="ladder"></div>
+  </div>
+
+  <div class="foot">
+    Maquette d'atelier · données fictives pseudonymisées (totem + initiales).<br/>
+    Barème, divisions et rang partagé identiques à l'application.
+  </div>
+</div>
+
+<script>
+/* ── Barème EXISTANT (copie fidèle, aucune règle inventée) ────────────────── */
+// metrics.js · DIVS (seuils décroissants, emoji, couleur, libellé FR data.div.*)
+const DIVS = [
+  { min:220, key:"elite",   e:"💎", c:"#27E8D6", label:"Élite"   },
+  { min:170, key:"diamant", e:"🔷", c:"#8AB4F8", label:"Diamant" },
+  { min:120, key:"or",      e:"🥇", c:"#F2C84B", label:"Or"      },
+  { min:70,  key:"argent",  e:"🥈", c:"#C8D2E0", label:"Argent"  },
+  { min:0,   key:"bronze",  e:"🥉", c:"#C07A45", label:"Bronze"  },
+];
+const divOf  = p => DIVS.find(d => p >= d.min) || DIVS[DIVS.length-1];
+const nextDiv = p => { const i = DIVS.findIndex(d => p >= d.min); return i>0 ? DIVS[i-1] : null; };
+
+// metrics.js · rankLeaderboard : tri points ↓ puis départage stable par totem ;
+// points égaux → MÊME rang (rang partagé).
+function rankLeaderboard(items){
+  const sorted = [...items].sort((a,b) => (b.pts - a.pts) ||
+    String(a.totem).localeCompare(String(b.totem), "fr", { sensitivity:"base" }));
+  let prevPts=null, prevRank=0;
+  return sorted.map((it,i) => {
+    const rank = (prevPts!==null && it.pts===prevPts) ? prevRank : i+1;
+    prevPts = it.pts; prevRank = rank;
+    return { ...it, rank };
+  });
+}
+// challenges.js · paliers de badges défis (confirmés) → plus haut palier atteint.
+const CHAL_TIERS = [{n:1,e:"🎯"},{n:5,e:"🥉"},{n:10,e:"🥈"},{n:25,e:"🏅"}];
+const topChal = n => { const w = CHAL_TIERS.filter(t=>n>=t.n); return w.length ? w[w.length-1] : null; };
+
+// Avatars pseudonymisés : couleur stable dérivée des initiales.
+const AV = ["#27E8D6","#8AB4F8","#F2C84B","#C8D2E0","#C07A45","#6C5CE0","#5BE39A","#FF8A78"];
+const avColor = s => AV[[...s].reduce((a,c)=>a+c.charCodeAt(0),0) % AV.length];
+
+/* ── Données FIGÉES (20 joueurs, pseudonymisés) ───────────────────────────── */
+// totem, init, grp, pts, wd (delta 7j), mv (-1/0/1), streak, t14 (nb tests niveau
+// Top 14), t9 (tests Top 14 atteints / 9), chal (défis confirmés), staff, me.
+const P = [
+  { totem:"Panthère",  init:"PB", grp:"avants",   pts:251, wd:+18, mv:0,  streak:6, t14:3, t9:6, chal:12, staff:false, me:false },
+  { totem:"Faucon",    init:"FR", grp:"arrieres", pts:238, wd:+12, mv:0,  streak:4, t14:1, t9:4, chal:8,  staff:false, me:false },
+  { totem:"Bison",     init:"BL", grp:"avants",   pts:221, wd:-6,  mv:-1, streak:0, t14:2, t9:5, chal:3,  staff:true,  me:false },
+  { totem:"Cobra",     init:"CM", grp:"arrieres", pts:205, wd:+22, mv:+1, streak:5, t14:2, t9:5, chal:6,  staff:false, me:false },
+  { totem:"Renard",    init:"RD", grp:"avants",   pts:189, wd:+4,  mv:0,  streak:3, t14:0, t9:2, chal:1,  staff:false, me:false },
+  { totem:"Aigle",     init:"AG", grp:"arrieres", pts:174, wd:+9,  mv:+1, streak:7, t14:1, t9:3, chal:5,  staff:false, me:false },
+  { totem:"Lynx",      init:"LM", grp:"avants",   pts:158, wd:+14, mv:+1, streak:5, t14:1, t9:4, chal:3,  staff:false, me:true  },
+  { totem:"Loup",      init:"LV", grp:"arrieres", pts:143, wd:-3,  mv:-1, streak:0, t14:0, t9:1, chal:2,  staff:false, me:false },
+  { totem:"Ours",      init:"OT", grp:"avants",   pts:132, wd:+7,  mv:0,  streak:3, t14:0, t9:2, chal:0,  staff:false, me:false },
+  { totem:"Tigre",     init:"TS", grp:"arrieres", pts:132, wd:+2,  mv:0,  streak:4, t14:1, t9:3, chal:1,  staff:false, me:false },
+  { totem:"Buffle",    init:"BF", grp:"avants",   pts:118, wd:-8,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:true,  me:false },
+  { totem:"Héron",     init:"HN", grp:"arrieres", pts:104, wd:+5,  mv:+1, streak:3, t14:0, t9:1, chal:4,  staff:false, me:false },
+  { totem:"Belette",   init:"BC", grp:"avants",   pts:96,  wd:0,   mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Corbeau",   init:"CV", grp:"arrieres", pts:88,  wd:+6,  mv:+1, streak:5, t14:0, t9:2, chal:1,  staff:false, me:false },
+  { totem:"Sanglier",  init:"SG", grp:"avants",   pts:82,  wd:-4,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Chouette",  init:"CE", grp:"arrieres", pts:74,  wd:+3,  mv:0,  streak:3, t14:0, t9:1, chal:2,  staff:false, me:false },
+  { totem:"Blaireau",  init:"BX", grp:"avants",   pts:68,  wd:+1,  mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Taupe",     init:"TP", grp:"arrieres", pts:55,  wd:-2,  mv:-1, streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+  { totem:"Fouine",    init:"FN", grp:"avants",   pts:47,  wd:+4,  mv:+1, streak:3, t14:0, t9:0, chal:1,  staff:false, me:false },
+  { totem:"Musaraigne",init:"MG", grp:"arrieres", pts:39,  wd:0,   mv:0,  streak:0, t14:0, t9:0, chal:0,  staff:false, me:false },
+];
+const ME = P.find(p => p.me);
+const GRP = { avants:"Avants", arrieres:"Arrières" };
+
+/* ── Rendu ────────────────────────────────────────────────────────────────── */
+let mode = "indiv", scope = "all";
+
+const el = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c]));
+
+function avatar(p, cls){
+  return `<span class="${cls}" style="background:${avColor(p.init)}">${esc(p.init)}</span>`;
+}
+function badges(p, top){
+  let h = "";
+  if (p.t14 > 0){
+    h += `<span class="badge-t14" title="${p.t14} test(s) au niveau Top 14">🏆 TOP 14${p.t14>1?" ×"+p.t14:""}</span>`;
+    h += `<span class="t9" title="Tests Top 14 atteints">${p.t9}/9</span>`;
+  }
+  const cb = topChal(p.chal);
+  if (cb) h += `<span class="chal" title="${p.chal} défi(s) confirmé(s)">${cb.e}${p.chal>1?'<span style="font-size:8.5px;font-weight:800;color:'+(top?'#0c2b2b':'rgba(255,255,255,.6)')+'">×'+p.chal+'</span>':''}</span>`;
+  if (p.staff) h += `<span class="badge-staff" title="Membre du staff qui s'entraîne aussi comme athlète">STAFF</span>`;
+  return h;
+}
+function moveArrow(mv){
+  if (mv > 0) return `<span class="arrow up">▲${mv}</span>`;
+  if (mv < 0) return `<span class="arrow dn">▼${-mv}</span>`;
+  return `<span class="arrow eq">—</span>`;
+}
+
+function pool(){
+  return scope === "all" ? P : P.filter(p => p.grp === scope);
+}
+
+function renderPodium(ranked){
+  const host = el("podium");
+  const top3 = ranked.filter(r => r.rank <= 3).slice(0,3);
+  if (top3.length < 3){ host.classList.add("hidden"); return; }
+  host.classList.remove("hidden");
+  // Ordre visuel : 2e (gauche), 1er (centre), 3e (droite).
+  const order = [top3[1], top3[0], top3[2]];
+  host.innerHTML = order.map(p => {
+    const d = divOf(p.pts);
+    const first = p.rank === 1;
+    const medal = p.rank === 1 ? "🥇" : p.rank === 2 ? "🥈" : "🥉";
+    return `<div class="pod ${first?"p1":""}">
+      <span class="rk">${p.rank}ᵉ</span>
+      <div class="medal">${medal}</div>
+      ${avatar(p, "av")}
+      <div class="tot">${p.me?"⭐ ":""}${esc(p.totem)}</div>
+      <div class="pts">${p.pts}</div>
+      <div style="font-size:11px;margin-top:2px">${d.e} ${d.label}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderList(){
+  const ranked = rankLeaderboard(pool());
+  renderPodium(ranked);
+  el("list").innerHTML = ranked.map(p => {
+    const top = p.rank === 1;
+    const d = divOf(p.pts);
+    const rankTxt = top ? "#1" : p.rank + "ᵉ";
+    const rankColor = top ? "" : p.rank===2 ? "color:#C8D2E0" : p.rank===3 ? "color:#F2C84B" : "";
+    return `<div class="rowr ${top?"top":""} ${p.me?"me":""}">
+      <div class="rk ${p.rank<=3?"big":""}" style="${rankColor}">${rankTxt}</div>
+      <div class="who">
+        <div class="nameline">
+          ${avatar(p, "av-s")}
+          <span class="nm">${p.me?"⭐ ":""}${esc(p.totem)}</span>
+          ${badges(p, top)}
+        </div>
+        <div class="subline"><span>${d.e} ${d.label}</span>${p.streak>=3?`<span>🔥${p.streak}</span>`:""}</div>
+      </div>
+      <div class="move">${moveArrow(p.mv)}<span class="delta ${p.wd>=0?"pos":"neg"}">${p.wd>=0?"+":""}${p.wd}</span></div>
+      <div class="pts">${p.pts}<small> PTS</small></div>
+    </div>`;
+  }).join("");
+}
+
+function renderMyCard(){
+  const host = el("myCardHost");
+  // La carte « moi » n'apparaît que si je suis dans le périmètre affiché.
+  const inScope = scope === "all" || ME.grp === scope;
+  if (!inScope){ host.innerHTML = ""; return; }
+  const cur = divOf(ME.pts), nx = nextDiv(ME.pts);
+  const lo = cur.min, hi = nx ? nx.min : ME.pts + 1;
+  const prog = Math.min(100, Math.max(6, ((ME.pts - lo) / (hi - lo)) * 100));
+  // Badges vitrine (barème existant) : Assidu (série≥3), En forme, Rigoureux, Feu sacré (palier série).
+  const chips = [["🔥","Assidu"],["💪","En forme"],["📊","Rigoureux"],["🌋","Feu sacré"]];
+  host.innerHTML = `<div class="mycard" style="border-left-color:${cur.c}">
+    <div class="top">
+      <span style="font-size:26px">${cur.e}</span>
+      <div style="flex:1">
+        <div class="dv" style="color:${cur.c}">Division ${cur.label}</div>
+        <div class="nx">${nx ? `Encore ${hi-ME.pts} pts → ${nx.label}` : "Division maximale atteinte"}</div>
+      </div>
+      <div class="wk">
+        <div class="d" style="color:${ME.wd>=0?"var(--green)":"var(--coral)"}">${ME.wd>=0?"+":""}${ME.wd} pts</div>
+        <div class="l">cette semaine</div>
+      </div>
+    </div>
+    <div class="bar"><i style="width:${prog}%;background:${cur.c}"></i></div>
+    <div class="chips">${chips.map(([e,l])=>`<span class="chip">${e} ${l}</span>`).join("")}</div>
+    <div class="gains">Voir mes gains / pertes →</div>
+  </div>`;
+}
+
+function renderTeams(){
+  // Agrégat par ligne (repli sans crews) : somme des points des membres, moyenne.
+  const by = {};
+  P.forEach(p => { (by[p.grp] = by[p.grp] || { key:p.grp, label:GRP[p.grp], pts:0, count:0 }); by[p.grp].pts += p.pts; by[p.grp].count++; });
+  const teams = Object.values(by).sort((a,b)=>b.pts-a.pts).map((tm,i)=>({ ...tm, rank:i+1 }));
+  const myKey = ME.grp;
+  el("teamList").innerHTML = teams.map(tm => {
+    const top = tm.rank === 1, meT = tm.key === myKey;
+    return `<div class="rowr ${top?"top":""} ${meT&&!top?"me":""}" style="grid-template-columns:40px 1fr auto">
+      <div class="rk ${tm.rank<=3?"big":""}">${top?"#1":tm.rank+"ᵉ"}</div>
+      <div class="who">
+        <div class="nm">${meT?"⭐ ":""}${esc(tm.label)}</div>
+        <div class="subline">${tm.count} joueurs · moy. ${Math.round(tm.pts/tm.count)}</div>
+      </div>
+      <div class="pts">${tm.pts}<small> PTS</small></div>
+    </div>`;
+  }).join("") + `<div style="font-size:9.5px;color:rgba(255,255,255,.5);text-align:center;padding:6px 8px 2px;line-height:1.5">Agrégat par ligne (somme des points des membres actifs).</div>`;
+}
+
+function renderLadder(){
+  el("ladder").innerHTML = DIVS.map((d,i) => {
+    const next = DIVS[i-1];
+    const range = next ? `${d.min}–${next.min-1} pts` : `${d.min}+ pts`;
+    return `<div class="rowd"><span class="dot" style="background:${d.c}"></span><span>${d.e}</span>
+      <span class="nm" style="color:${d.c}">${d.label}</span><span class="th">${range}</span></div>`;
+  }).join("");
+}
+
+function syncHeader(){
+  el("subtitle").textContent = `Saison interne · ${P.length} joueurs`;
+  const myRank = rankLeaderboard(P).find(r => r.me).rank; // rang « Toute l'équipe »
+  el("myPts").textContent = ME.pts;
+  el("myRank").textContent = `PTS · #${myRank}`;
+}
+
+function apply(){
+  const indiv = mode === "indiv";
+  el("scopes").classList.toggle("hidden", !indiv);
+  el("podium").classList.toggle("hidden", !indiv);
+  el("list").classList.toggle("hidden", !indiv);
+  el("myCardHost").classList.toggle("hidden", !indiv);
+  el("teamList").classList.toggle("hidden", indiv);
+  if (indiv){ renderList(); renderMyCard(); } else { renderTeams(); }
+}
+
+el("modeSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  mode = b.dataset.mode;
+  [...el("modeSeg").children].forEach(x => x.classList.toggle("on", x===b));
+  apply();
+});
+el("scopes").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  scope = b.dataset.scope;
+  [...el("scopes").children].forEach(x => x.classList.toggle("on", x===b));
+  renderList(); renderMyCard();
+});
+
+syncHeader();
+renderLadder();
+apply();
+</script>
+</body>
+</html>
