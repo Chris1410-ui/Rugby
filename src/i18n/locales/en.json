@@ -1297,6 +1297,13 @@
       "draw": "Draw",
       "errActive": "A duel is already running with this player.",
       "errCreate": "Couldn't create the duel."
+    },
+    "accueil": {
+      "missionKicker": "Today",
+      "missionTitle": "What's left",
+      "pts": "+{{n}} pts",
+      "continueTo": "Continue: {{name}}",
+      "dayDone": "Day complete"
     }
   },
   "staff": {

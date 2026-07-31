@@ -1297,6 +1297,13 @@
       "draw": "Égalité",
       "errActive": "Un duel est déjà en cours avec ce joueur.",
       "errCreate": "Impossible de créer le duel."
+    },
+    "accueil": {
+      "missionKicker": "Aujourd'hui",
+      "missionTitle": "Ce qu'il te reste",
+      "pts": "+{{n}} pts",
+      "continueTo": "Continuer : {{name}}",
+      "dayDone": "Journée bouclée"
     }
   },
   "staff": {

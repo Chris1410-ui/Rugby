@@ -4,7 +4,7 @@ import { localeTag } from "../../i18n/locale.js";
 import { C, sc } from "../../lib/tokens.js";
 import { wbToWellness, computeReadiness, statusOfLog, todayISO, isoDate, parseISO } from "../../lib/metrics.js";
 import { WEEKLY_GOAL_DAYS } from "../../lib/badges.js";
-import { Ring, Overlay, LineChart } from "../../lib/ui.jsx";
+import { Overlay, LineChart } from "../../lib/ui.jsx";
 import { ChevronRight, Check } from "../../lib/icons.jsx";
 import { useMyDay, usePlayerCheckins } from "../../data/checkins.js";
 import { useRoutineLog } from "../../data/morningRoutine.js";
@@ -13,8 +13,8 @@ import { useTeamProgramAssignments } from "../../data/programAssignments.js";
 import { isVisibleToPlayer, mergeTargets } from "../../lib/program/assign.js";
 import { usePreview } from "../../lib/preview.js";
 import AccueilHero from "./accueil/AccueilHero.jsx";
+import AccueilMission from "./accueil/AccueilMission.jsx";
 import QuickCheckin from "./bilan/QuickCheckin.jsx";
-import SessionTodayCard from "./bilan/SessionTodayCard.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
 import EveningForm from "./bilan/EveningForm.jsx";
 import ActivitiesForm from "./bilan/ActivitiesForm.jsx";
@@ -151,16 +151,13 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
       {/* Hero « Accueil » (refonte Open Design) : totem + date + poste/ligne/club. */}
       <AccueilHero me={me} today={today} />
 
-      {/* En-tête readiness (l'identité/date sont désormais portées par le hero). */}
-      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, display: "flex", alignItems: "center", gap: 14, padding: 16, marginBottom: 14 }}>
-        <Ring val={hasMorning ? readiness : "—"} max={100} color={readiness > 70 ? C.green : readiness > 50 ? C.amb : C.coral} label={t("player.bilan.readiness")} size={78} sw={6} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.6, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" }}>{t("player.bilan.readiness")}</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.85)", marginTop: 3 }}>
-            {hasMorning ? t(readiness > 70 ? "player.checkin.verdict.high" : readiness > 50 ? "player.checkin.verdict.mid" : "player.checkin.verdict.low") : t("shared.fiche.notEncoded")}
-          </div>
-        </div>
-      </div>
+      {/* Bloc dominant « Ce qu'il te reste » (mission du jour) — refonte Open Design. */}
+      <AccueilMission me={me} day={day} todaySessions={todaySessions} logs={logs} accent={C.coral}
+        onMorning={() => setSheet("morning")} onSession={(s) => setLiveSession(s)} onEvening={() => setSheet("evening")} />
+
+      {/* Check-in du matin par glissement (lot 1) — le geste rapide qui débloque
+          la saisie ; alimente le bilan matin + affiche readiness quand fait. */}
+      <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
 
       {/* Bandeau semaine */}
       <div style={sc({ padding: "12px 8px", marginBottom: 14 })}>
@@ -196,21 +193,9 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         </div>
       </div>
 
-      {/* Check-in du matin par glissement — débloque la saisie en un geste
-          (remplace la carte « Matin » ; le formulaire 6 marqueurs reste
-          accessible via « détailler » → même feuille MorningForm). */}
-      <QuickCheckin me={me} accent={accent} day={day} checkins={checkins} today={today} preview={preview} onSaved={onSaved} onDetail={() => setSheet("morning")} />
-
-      {/* Cartes d'action du jour */}
+      {/* Cartes d'action du jour (le matin/soir/séance sont désormais dans le
+          bloc « Ce qu'il te reste » ; ici les actions secondaires). */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <ActionCard emoji="🌙" title={t("player.bilan.evening")} sub={t("player.today.eveningSub")} state={day.soir ? "done" : "todo"} accent={accent} onClick={() => setSheet("evening")} t={t} />
-
-        {/* Carte « Séance du jour » : une par séance assignée aujourd'hui —
-            titre + contexte + méta durée·X/Y séries + barre + bouton Démarrer.
-            « Démarrer » ouvre le lecteur set-par-set existant (setOpenSession). */}
-        {todaySessions.map((s) => (
-          <SessionTodayCard key={s.id} s={s} log={logs?.[s.id]?.[me.id]} accent={C.coral} onStart={() => setLiveSession(s)} />
-        ))}
 
         {/* Protocoles assignés (consultation) */}
         {myProtocols.map((d) => (

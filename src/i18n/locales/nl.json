@@ -1297,6 +1297,13 @@
       "draw": "Gelijkspel",
       "errActive": "Er loopt al een duel met deze speler.",
       "errCreate": "Kon het duel niet aanmaken."
+    },
+    "accueil": {
+      "missionKicker": "Vandaag",
+      "missionTitle": "Wat je nog moet doen",
+      "pts": "+{{n}} ptn",
+      "continueTo": "Verder: {{name}}",
+      "dayDone": "Dag voltooid"
     }
   },
   "staff": {
