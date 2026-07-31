@@ -2444,7 +2444,14 @@
       "duelSent": "Uitdaging verzonden naar {{name}}",
       "duelFail": "Uitdaging mislukt.",
       "kudosSend": "{{name}} aanmoedigen",
-      "kudosSent": "Vandaag aangemoedigd ✓"
+      "kudosSent": "Vandaag aangemoedigd ✓",
+      "lineDuelTitle": "Liniёnduel",
+      "lineDuelUnit": "gem. ptn/speler",
+      "lineDuelCount": "{{n}} spelers",
+      "lineDuelWeek": "deze week",
+      "lineDuelGap": "verschil {{n}}",
+      "lineDuelTie": "gelijk",
+      "lineDuelVs": "VS"
     },
     "report": {
       "wb": {

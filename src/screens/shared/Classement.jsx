@@ -39,6 +39,56 @@ const TOP14_TOTAL = 9;
 const AV = ["#27E8D6", "#8AB4F8", "#F2C84B", "#C8D2E0", "#C07A45", "#6C5CE0", "#5BE39A", "#FF8A78"];
 const avColor = (s) => AV[[...String(s || "?")].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
 
+/* Classement collectif « Duel des lignes » (Avants vs Arrières) — bandeau en
+   tête du classement individuel. Score = MOYENNE des points par joueur de la
+   ligne (les effectifs sont inégaux → jamais la somme brute). Réutilise
+   computePoints (via `data`, déjà calculé) ; aucun nouveau compteur. Exclut les
+   joueurs de démo et les staff-athlètes. Agrégat de ligne = aucune donnée
+   individuelle exposée. */
+function LineDuel({ data, accent, t }) {
+  const L = useMemo(() => {
+    const by = { avants: { pts: 0, wd: 0, n: 0 }, arrieres: { pts: 0, wd: 0, n: 0 } };
+    (data || []).forEach((d) => {
+      if (d.p?.isDemo || d.p?.isStaffAthlete) return;
+      const g = d.p?.grp;
+      if (g !== "avants" && g !== "arrieres") return;
+      by[g].pts += d.pts; by[g].wd += d.weekDelta; by[g].n += 1;
+    });
+    return by;
+  }, [data]);
+
+  if (!L.avants.n && !L.arrieres.n) return null;
+  const avg = (x) => (x.n ? Math.round(x.pts / x.n) : 0);
+  const avgD = (x) => (x.n ? Math.round(x.wd / x.n) : 0);
+  const aA = avg(L.avants), aB = avg(L.arrieres);
+  const gap = Math.abs(aA - aB);
+  const lead = aA === aB ? null : aA > aB ? "avants" : "arrieres";
+
+  const Side = ({ k, x, on }) => (
+    <div style={{ flex: 1, minWidth: 0, textAlign: "center", padding: "4px 6px", borderRadius: 12, background: on ? `${accent}1f` : "transparent", border: `1.5px solid ${on ? accent : "transparent"}` }}>
+      <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.4, color: on ? "#fff" : "rgba(255,255,255,0.7)" }}>{grpLabel(k)}</div>
+      <div style={{ fontSize: 28, fontWeight: 900, fontStyle: "italic", color: NEON.yellow, lineHeight: 1.1 }}>{avg(x)}</div>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>{t("shared.leaderboard.lineDuelUnit")}</div>
+      <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 3 }}>{t("shared.leaderboard.lineDuelCount", { n: x.n })}</div>
+      <div style={{ fontSize: 10.5, fontWeight: 800, marginTop: 1, color: avgD(x) >= 0 ? "#5BE39A" : "#FF8A78" }}>{avgD(x) >= 0 ? "+" : ""}{avgD(x)} <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{t("shared.leaderboard.lineDuelWeek")}</span></div>
+    </div>
+  );
+
+  return (
+    <div style={{ borderRadius: 16, background: NEON.panel, border: "1px solid rgba(160,120,255,0.3)", padding: "14px 12px", marginBottom: 14 }}>
+      <div style={{ fontSize: 9.5, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.5)", fontWeight: 800, textAlign: "center", marginBottom: 8 }}>{t("shared.leaderboard.lineDuelTitle")}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <Side k="avants" x={L.avants} on={lead === "avants"} />
+        <div style={{ flexShrink: 0, textAlign: "center", minWidth: 54 }}>
+          <div style={{ fontSize: 13, fontWeight: 900, fontStyle: "italic", color: "rgba(255,255,255,0.5)" }}>{t("shared.leaderboard.lineDuelVs")}</div>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: accent, marginTop: 2 }}>{lead ? t("shared.leaderboard.lineDuelGap", { n: gap }) : t("shared.leaderboard.lineDuelTie")}</div>
+        </div>
+        <Side k="arrieres" x={L.arrieres} on={lead === "arrieres"} />
+      </div>
+    </div>
+  );
+}
+
 /* Podium des 3 premiers (rang partagé compris) — refonte Open Design. Ordre
    visuel 2·1·3, socles décroissants. Réutilise le rang déjà calculé (scopeRank)
    et le barème existant (aucune valeur de la maquette). */
@@ -204,6 +254,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
           {scopeBtns.map(([v, l]) => <button key={v} onClick={() => setScope(v)} style={{ flex: "0 0 auto", whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 8, border: "none", fontWeight: 700, fontSize: 11, cursor: "pointer", background: scope === v ? accent : "rgba(255,255,255,0.07)", color: "#fff" }}>{l}</button>)}
         </div>
       )}
+
+      {mode === "indiv" && <LineDuel data={data} accent={accent} t={t} />}
 
       {mode === "indiv" && ranked.length >= 3 && <Podium ranked={ranked} onOpen={openRow} t={t} />}
 
