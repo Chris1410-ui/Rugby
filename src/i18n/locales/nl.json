@@ -2442,7 +2442,9 @@
       "duelGap": "+{{n}} ptn boven jou",
       "duelChallenge": "Uitdagen",
       "duelSent": "Uitdaging verzonden naar {{name}}",
-      "duelFail": "Uitdaging mislukt."
+      "duelFail": "Uitdaging mislukt.",
+      "kudosSend": "{{name}} aanmoedigen",
+      "kudosSent": "Vandaag aangemoedigd ✓"
     },
     "report": {
       "wb": {
@@ -3092,7 +3094,8 @@
     "bilanEvening": "Avondcheck voltooid",
     "morningRoutine": "Ochtendroutine voltooid",
     "gps": "GPS-sessie geregistreerd",
-    "streakTier": "Reeksmijlpaal {{n}} d 🔥"
+    "streakTier": "Reeksmijlpaal {{n}} d 🔥",
+    "weeklyMission": "Weekmissie (3 dagen) 🎯"
   },
   "badges": {
     "assidu": "Volhardend",

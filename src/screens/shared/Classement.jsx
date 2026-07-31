@@ -14,7 +14,9 @@ import { useTeamReactivity } from "../../data/notifications.js";
 import { useTeamTrainingEvents } from "../../data/trainings.js";
 import { useTeamSessionLogs, useTeamCheckinEvents, useTeamGpsEvents } from "../../data/leaderboard.js";
 import { useTeamStreakTiers } from "../../data/streak.js";
+import { useTeamWeeklyMission } from "../../data/weeklyMission.js";
 import { useMyDuels, createDuel, fetchDuelStanding } from "../../data/duels.js";
+import { useMyKudosToday } from "../../data/reactions.js";
 import { useTeamRoutinePoints } from "../../data/morningRoutine.js";
 import { useTeamAthletePublic } from "../../data/staffAthlete.js";
 import { natureLabel, natureColor } from "../../lib/nature.js";
@@ -101,6 +103,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   const routineByPlayer = useTeamRoutinePoints(teamId); // routine du matin complétée (staff-athlète)
   const { byPlayer: gpsByPlayer } = useTeamGpsEvents(teamId); // séance GPS déposée (charge externe, +10/dépôt)
   const { byPlayer: tierByPlayer } = useTeamStreakTiers(teamId); // paliers de série atteints (7/14/30 → +25/50/100)
+  const { byPlayer: missionByPlayer } = useTeamWeeklyMission(teamId); // mission hebdo « 3 jours » (+15/sem.)
   const athletePublic = useTeamAthletePublic(teamId); // projection publique des staff-athlètes (séances/nature + routine ✓/✗)
   // Entrées de points À L'ÉCHELLE DU CLUB (RPC SECURITY DEFINER) → classement
   // IDENTIQUE pour owner/staff/joueur. Sans ça, un joueur (RLS = ses données
@@ -108,6 +111,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
   // props logs/activities/bilans (limités par la RLS) pour le calcul des points.
   const clubLogs = useTeamSessionLogs(teamId);
   const { activities: clubActivities, bilans: clubBilans } = useTeamCheckinEvents(teamId);
+  // Encouragements (social, aucun point) — actifs seulement en vue joueur.
+  const kudos = useMyKudosToday(isJoueur ? me?.id : null);
 
   const data = useMemo(() => {
     const all = rankPlayers.map((p) => {
@@ -121,7 +126,8 @@ export default function Classement({ players, sessions, crews = [], me, accent =
       const routineEvents = routineByPlayer[p.id] || [];
       const gpsEvents = gpsByPlayer[p.id] || [];
       const streakTierEvents = tierByPlayer[p.id] || [];
-      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents, gpsEvents, streakTierEvents) };
+      const missionEvents = missionByPlayer[p.id] || [];
+      return { p, top14: events.length, top14Tests: events, chalCount: chalPts.length, chalBadge: topChallengeBadge(chalPts.length), athlete: p.isStaffAthlete ? (athletePublic[p.id] || null) : null, ...computePoints(p, sessions, clubLogs, clubActivities[p.id], events, taskEvents, reactEvents, bilanEvents, challengeEvents, convocationEvents, routineEvents, gpsEvents, streakTierEvents, missionEvents) };
     });
     // Rang PARTAGÉ + départage stable par nom (les ex æquo ne « sautent » plus).
     const cur = rankLeaderboard(all, { pointsOf: (d) => d.pts, labelOf: (d) => d.p.name, rankKey: "rank" });
@@ -132,7 +138,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
     prev.forEach((d, i) => (pr[d.p.id] = i));
     cur.forEach((d, i) => { d.move = pr[d.p.id] - i; });
     return cur;
-  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, tierByPlayer, athletePublic]);
+  }, [rankPlayers, sessions, clubLogs, clubActivities, clubBilans, top14ByPlayer, taskPtsByPlayer, chalPtsByPlayer, reactByPlayer, convByPlayer, routineByPlayer, gpsByPlayer, tierByPlayer, missionByPlayer, athletePublic]);
 
   // Classement par équipe. Agrégat = somme des points des membres actifs.
   // Priorité aux CREWS (équipes formées par les joueurs, avec bannière) ; en
@@ -287,7 +293,7 @@ export default function Classement({ players, sessions, crews = [], me, accent =
         <DuelOfDay me={me} myPts={mine.pts} rival={data[data.findIndex((d) => d.p.id === me.id) - 1]} accent={accent} t={t} />
       )}
 
-      {sel && <PlayerPointsDetail sel={sel} accent={accent} onClose={() => setSel(null)} />}
+      {sel && <PlayerPointsDetail sel={sel} accent={accent} meId={isJoueur ? me?.id : null} kudos={kudos} onClose={() => setSel(null)} />}
       {athlete && <AthleteProfile player={athlete.p} athlete={athlete.athlete} stats={{ div: athlete.div, pts: athlete.pts, rank: athlete.rank, badges: athlete.badges, top14: athlete.top14, chalCount: athlete.chalCount }} accent={accent} onClose={() => setAthlete(null)} />}
     </div>
   );
@@ -360,9 +366,12 @@ function DuelOfDay({ me, myPts = 0, rival, accent, t }) {
 }
 
 /* Détail des points d'un joueur (delta, série, journal) — modal. */
-function PlayerPointsDetail({ sel, accent, onClose }) {
+function PlayerPointsDetail({ sel, accent, meId = null, kudos = null, onClose }) {
   const { t } = useTranslation();
   useModalClose(onClose);
+  // Encouragement (social, aucun point) : visible en vue joueur, sur un coéquipier.
+  const canKudos = meId && sel.p.id !== meId;
+  const kudosed = canKudos && kudos?.set?.has(sel.p.id);
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "center", padding: "16px 12px" }} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, margin: "0 auto", background: C.panel, borderRadius: 18, padding: 20, maxHeight: "85vh", overflowY: "auto" }}>
@@ -375,6 +384,12 @@ function PlayerPointsDetail({ sel, accent, onClose }) {
           <KPI label={t("shared.leaderboard.kpiStreak")} value={sel.streak} sub={t("shared.leaderboard.kpiStreakSub")} color={accent} />
           <KPI label={t("shared.leaderboard.kpiSessions")} value={sel.doneCount} sub={t("shared.leaderboard.kpiSessionsSub", { count: sel.missedCount })} />
         </div>
+        {canKudos && (
+          <button onClick={() => !kudosed && kudos?.send(sel.p.id)} disabled={kudosed}
+            style={{ width: "100%", minHeight: 46, marginBottom: 14, borderRadius: 12, border: `1px solid ${kudosed ? C.green + "66" : accent}`, background: kudosed ? `${C.green}18` : `${accent}18`, color: kudosed ? C.green : "#fff", fontSize: 13.5, fontWeight: 800, cursor: kudosed ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            💪 {kudosed ? t("shared.leaderboard.kudosSent") : t("shared.leaderboard.kudosSend", { name: displayName(sel.p) })}
+          </button>
+        )}
         {sel.top14Tests?.length > 0 && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.amb, letterSpacing: 1, marginBottom: 8 }}>{t("shared.leaderboard.top14Section", { count: sel.top14Tests.length })}</div>

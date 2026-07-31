@@ -11,6 +11,7 @@ import { useTeamTrainings, useTeamAttendance } from "../../data/trainings.js";
 import { useMyDay } from "../../data/checkins.js";
 import { useClubLeaderboard } from "../../data/clubPoints.js";
 import { useOvertakeWatch } from "../../data/overtake.js";
+import { syncWeeklyMission } from "../../data/weeklyMission.js";
 import { displayName } from "../../lib/identity.js";
 import { playerSessionTodo, playerTaskTodo, questionnaireTodo, bilanTodo, playerChallengeTodo } from "../../lib/badges.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
@@ -80,6 +81,9 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   // table, aucun point). Silencieux en aperçu.
   const { list: clubList } = useClubLeaderboard(profile.team_id, players, sessions);
   const { event: overtake, dismiss: dismissOvertake } = useOvertakeWatch(me?.id, clubList);
+  // Mission hebdo (objectif « 3 jours ») : crédit paresseux au chargement / au
+  // changement de jour (points additifs, cf. computePoints). Pas en aperçu.
+  useEffect(() => { if (me?.id && !preview) syncWeeklyMission(); }, [me?.id, today, preview]);
 
   if (loading && !me) {
     return <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{t("common.loading")}</div>;

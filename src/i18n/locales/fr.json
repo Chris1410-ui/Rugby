@@ -2442,7 +2442,9 @@
       "duelGap": "+{{n}} pts au-dessus de toi",
       "duelChallenge": "Défier",
       "duelSent": "Défi envoyé à {{name}}",
-      "duelFail": "Le défi a échoué."
+      "duelFail": "Le défi a échoué.",
+      "kudosSend": "Encourager {{name}}",
+      "kudosSent": "Encouragé aujourd'hui ✓"
     },
     "report": {
       "wb": {
@@ -3092,7 +3094,8 @@
     "bilanEvening": "Bilan du soir complété",
     "morningRoutine": "Routine du matin complétée",
     "gps": "Séance GPS déposée",
-    "streakTier": "Palier série {{n}} j 🔥"
+    "streakTier": "Palier série {{n}} j 🔥",
+    "weeklyMission": "Mission hebdo (3 jours) 🎯"
   },
   "badges": {
     "assidu": "Assidu",
