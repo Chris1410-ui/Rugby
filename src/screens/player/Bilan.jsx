@@ -17,7 +17,6 @@ import AccueilMission from "./accueil/AccueilMission.jsx";
 import AccueilStreak from "./accueil/AccueilStreak.jsx";
 import AccueilTeam from "./accueil/AccueilTeam.jsx";
 import AccueilCoach from "./accueil/AccueilCoach.jsx";
-import AccueilQuickAccess from "./accueil/AccueilQuickAccess.jsx";
 import ReminderPrefs from "./accueil/ReminderPrefs.jsx";
 import QuickCheckin from "./bilan/QuickCheckin.jsx";
 import MorningForm from "./bilan/MorningForm.jsx";
@@ -229,11 +228,6 @@ export default function Bilan({ me, accent = C.green, teamId, players = [], sess
         <ActionCard emoji="📋" title={t("player.today.taches")} sub={t("player.today.tachesSub")} badge={badges.taches} accent={accent} onClick={() => setSheet("taches")} t={t} />
         {badges.convocations > 0 && <ActionCard emoji="📣" title={t("player.today.convocations")} sub={t("player.today.convocationsSub")} badge={badges.convocations} accent={accent} onClick={() => setSheet("convocations")} t={t} />}
         <ActionCard emoji="🔔" title={t("player.reminders.title")} sub={t("player.reminders.actionSub")} state={null} accent={accent} onClick={() => setSheet("rappels")} t={t} />
-      </div>
-
-      {/* Accès rapide (grille) — refonte Open Design. */}
-      <div style={{ marginTop: 14 }}>
-        <AccueilQuickAccess onNavigate={onNavigate} badges={{ defis: badges.defis, messages: badges.messages }} />
       </div>
 
       {/* Suivi rapide (sparklines) */}

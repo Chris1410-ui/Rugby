@@ -52,7 +52,13 @@ const ACCENT = C.green;
 export default function PlayerApp({ profile, preview = false, tab: tabProp, onTab }) {
   const { t } = useTranslation();
   const [tabState, setTabState] = useState("accueil"); // atterrissage = Accueil (owner/aperçu montent PlayerApp sans prop tab)
-  const tab = tabProp ?? tabState;         // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
+  // App simplifiée : côté joueur, seuls Accueil + Bilan sont navigables. Tous les
+  // autres écrans restent dans le code (routes ci-dessous) mais sont masqués de la
+  // navigation. Le clamp garantit qu'aucune entrée (barre, raccourci interne,
+  // lien de notification) ne peut atteindre un écran masqué → repli sur Accueil.
+  const PLAYER_TABS = ["accueil", "bilan"];
+  const rawTab = tabProp ?? tabState;      // onglet piloté par AppShell (cloche/nav) ou interne (aperçu)
+  const tab = PLAYER_TABS.includes(rawTab) ? rawTab : "accueil";
   const setTab = onTab || setTabState;
   const today = useLocalToday(); // reset du bilan du jour à minuit local
   const { players, sessions, logs, activities, bilans, crews, testCampaigns, testResults, loading, refresh } = useTeamData(profile.team_id);
@@ -123,6 +129,9 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
     ["distributions", t("nav.distributions"), Activity],
     ["donnees", t("nav.donnees"), Lock],
   ];
+  // Navigation affichée = Accueil + Bilan uniquement (le reste reste défini
+  // ci-dessus pour conserver badges/icônes, mais n'apparaît pas dans la barre).
+  const visibleNav = nav.filter(([k]) => PLAYER_TABS.includes(k));
 
   return (
     <PreviewContext.Provider value={preview}>
@@ -168,8 +177,8 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           <OvertakeToast key={overtake.key} player={players.find((p) => p.id === overtake.id)} gap={overtake.gap} onOpen={() => { setTab("classement"); dismissOvertake(); }} onClose={dismissOvertake} t={t} />
         )}
         {mobile
-          ? <MobileNav items={nav} primary={["accueil", "bilan", "seances", "moi"]} active={tab} onSelect={setTab} accent={ACCENT} />
-          : <BottomNav items={nav} active={tab} onSelect={setTab} accent={ACCENT} />}
+          ? <MobileNav items={visibleNav} primary={PLAYER_TABS} active={tab} onSelect={setTab} accent={ACCENT} />
+          : <BottomNav items={visibleNav} active={tab} onSelect={setTab} accent={ACCENT} />}
       </div>
     </PreviewContext.Provider>
   );
