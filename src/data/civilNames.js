@@ -26,16 +26,17 @@ export function useCivilNames(teamId) {
   return { names, loading, refresh: fetch };
 }
 
-// Import par totem. rows = [{ totem, name }]. Renvoie { matched:[], unmatched:[] }.
-export async function importCivilNames(rows) {
-  const { data, error } = await supabase.rpc("import_civil_names", { p_rows: rows });
+// Import par totem. rows = [{ totem, name }]. teamId = club affiché (utilisé
+// pour l'owner, dont profiles.team_id peut être null). Renvoie { matched, unmatched }.
+export async function importCivilNames(rows, teamId) {
+  const { data, error } = await supabase.rpc("import_civil_names", { p_rows: rows, p_team_id: teamId || null });
   if (error) throw error;
   return { matched: data?.matched ?? [], unmatched: data?.unmatched ?? [] };
 }
 
 // Droit à l'effacement (owner) : supprime TOUS les noms civils du club.
-export async function clearCivilNames() {
-  const { data, error } = await supabase.rpc("clear_civil_names");
+export async function clearCivilNames(teamId) {
+  const { data, error } = await supabase.rpc("clear_civil_names", { p_team_id: teamId || null });
   if (error) throw error;
   return data; // nombre supprimé
 }
