@@ -2271,6 +2271,30 @@
       "colDate": "Date",
       "noRemarks": "Aucune remarque sur la période.",
       "remarksPrivacy": "Les remarques médicales ou sensibles ne doivent être consultées que par les membres autorisés du staff."
+    },
+    "names": {
+      "manage": "Gérer les noms",
+      "title": "Noms civils (import)",
+      "intro": "Importe un fichier (.csv/.xlsx) qui associe chaque totem à un nom. Les noms ne sont visibles que sur cet écran, par le staff.",
+      "pick": "Choisir un fichier",
+      "colTotem": "Colonne totem",
+      "colName": "Colonne nom",
+      "colName2": "Colonne prénom (opt.)",
+      "matched": "correspondances",
+      "unmatched": "sans correspondance",
+      "unmatchedHint": "Totems introuvables :",
+      "importBtn": "Importer {{count}} nom(s)",
+      "imported": "{{count}} importé(s), {{skipped}} ignoré(s)",
+      "clearBtn": "Supprimer tous les noms civils",
+      "clearConfirm": "Supprimer définitivement TOUS les noms civils de ce club ?",
+      "cleared": "{{count}} nom(s) supprimé(s)",
+      "privacy": "Les noms civils ne quittent jamais cet écran : jamais montrés aux joueurs, ni au classement, mur d'équipe ou duels.",
+      "errEmpty": "Fichier vide ou illisible.",
+      "errParse": "Impossible de lire le fichier.",
+      "errImport": "Échec de l'import.",
+      "errAuth": "Action non autorisée.",
+      "errOwner": "Réservé à l'owner.",
+      "errClear": "Échec de la suppression."
     }
   },
   "shared": {
