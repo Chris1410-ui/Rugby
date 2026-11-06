@@ -12,7 +12,6 @@ import { useStreak } from "../../../data/streak.js";
 import { useClubLeaderboard } from "../../../data/clubPoints.js";
 import { useClubNews, markClubNewsSeen } from "../../../data/clubNews.js";
 import { useClubSettings } from "../../../data/clubSettings.js";
-import AccueilQuickAccess from "./AccueilQuickAccess.jsx";
 import ClubNewsSheet from "./ClubNewsSheet.jsx";
 
 /* Écran « Accueil » (page d'atterrissage joueur), en amont d'« Aujourd'hui ».
@@ -20,7 +19,7 @@ import ClubNewsSheet from "./ClubNewsSheet.jsx";
    faire aujourd'hui » (X/3 + « Commencer ma journée » → Aujourd'hui), gros
    chiffres (readiness / points+rang / série), actualité du club, raccourcis à
    pastilles. Aucune formule modifiée : lit les dérivations existantes. */
-export default function AccueilPage({ me, teamId, players = [], sessions = [], logs = {}, badges = {}, onNavigate }) {
+export default function AccueilPage({ me, teamId, players = [], sessions = [], logs = {}, onNavigate }) {
   const { t } = useTranslation();
   const today = todayISO();
   const { day } = useMyDay(me.id, today);
@@ -108,7 +107,7 @@ export default function AccueilPage({ me, teamId, players = [], sessions = [], l
           value={ready != null ? Math.round(ready) : "—"} color={ready == null ? C.gray : ready > 70 ? C.green : ready > 50 ? C.amb : C.coral}
           sub={ready == null ? t("reliability.noBilan") : null} onClick={() => onNavigate?.("bilan")} />
         <BigStat icon={<Trophy size={15} color={C.amb} />} label={t("player.home.points")}
-          value={myPts != null ? myPts : "—"} color="#fff" sub={myRank ? `#${myRank}` : null} onClick={() => onNavigate?.("classement")} />
+          value={myPts != null ? myPts : "—"} color="#fff" sub={myRank ? `#${myRank}` : null} onClick={() => onNavigate?.("bilan")} />
         <BigStat icon={<Flame size={15} color={C.coral} />} label={t("player.accueil.streakKicker")}
           value={streak} color={streak > 0 ? C.coral : C.gray} sub={t("player.accueil.streakDays", { count: streak })} onClick={() => onNavigate?.("bilan")} />
       </div>
@@ -132,9 +131,6 @@ export default function AccueilPage({ me, teamId, players = [], sessions = [], l
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{t("player.home.newsEmpty")}</div>
         )}
       </button>
-
-      {/* ── Raccourcis (grille à pastilles) ── */}
-      <AccueilQuickAccess onNavigate={onNavigate} badges={{ defis: badges.defis, messages: badges.messages }} />
 
       {newsOpen && <ClubNewsSheet items={news} onClose={() => setNewsOpen(false)} />}
     </div>
