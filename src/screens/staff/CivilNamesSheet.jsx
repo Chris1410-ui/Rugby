@@ -10,7 +10,7 @@ import { Upload, CheckCircle, AlertTriangle, Trash2 } from "../../lib/icons.jsx"
    des colonnes (totem + nom) → aperçu des correspondances → import. L'owner
    peut tout effacer (droit à l'effacement). Rien n'est stocké tant que « Importer »
    n'est pas cliqué ; le serveur re-vérifie l'autorisation et les totems. */
-export default function CivilNamesSheet({ players = [], isOwner = false, onClose, onImported }) {
+export default function CivilNamesSheet({ players = [], teamId = null, isOwner = false, onClose, onImported }) {
   const { t } = useTranslation();
   const [headers, setHeaders] = useState([]);
   const [rows, setRows] = useState([]);
@@ -40,18 +40,27 @@ export default function CivilNamesSheet({ players = [], isOwner = false, onClose
     } catch (e) { setErr(e.message || t("staff.names.errParse")); }
   };
 
-  // Lignes { totem, name } construites depuis le mappage.
+  // Lignes { totem, name } construites depuis le mappage. On saute une éventuelle
+  // ligne d'en-tête qui aurait fuité (valeur == libellé de colonne) et on
+  // DÉDUPLIQUE par totem (les exports de réponses répètent chaque joueur).
   const mapped = useMemo(() => {
     if (!colTotem || !colName) return [];
-    return rows
-      .map((r) => {
-        const totem = String(r[colTotem] ?? "").trim();
-        const n1 = String(r[colName] ?? "").trim();
-        const n2 = colName2 ? String(r[colName2] ?? "").trim() : "";
-        const name = [n1, n2].filter(Boolean).join(" ");
-        return { totem, name };
-      })
-      .filter((x) => x.totem && x.name);
+    const seen = new Set();
+    const out = [];
+    for (const r of rows) {
+      const totem = String(r[colTotem] ?? "").trim();
+      const n1 = String(r[colName] ?? "").trim();
+      const n2 = colName2 ? String(r[colName2] ?? "").trim() : "";
+      const name = [n1, n2].filter(Boolean).join(" ");
+      if (!totem || !name) continue;
+      // Ligne d'en-tête fuitée : la valeur reprend le libellé de la colonne.
+      if (totem.toLowerCase() === colTotem.toLowerCase() || totem.toLowerCase() === "totem" || totem.toLowerCase() === "pseudo") continue;
+      const key = totem.toLowerCase();
+      if (seen.has(key)) continue; // déduplique par totem (garde la 1re occurrence)
+      seen.add(key);
+      out.push({ totem, name });
+    }
+    return out;
   }, [rows, colTotem, colName, colName2]);
 
   const preview = useMemo(() => {
@@ -64,7 +73,7 @@ export default function CivilNamesSheet({ players = [], isOwner = false, onClose
     if (!mapped.length) return;
     setBusy(true); setErr(""); setResult(null);
     try {
-      const res = await importCivilNames(mapped);
+      const res = await importCivilNames(mapped, teamId);
       setResult(res);
       onImported?.();
     } catch (e) {
@@ -77,7 +86,7 @@ export default function CivilNamesSheet({ players = [], isOwner = false, onClose
     if (!window.confirm(t("staff.names.clearConfirm"))) return;
     setBusy(true); setErr("");
     try {
-      const n = await clearCivilNames();
+      const n = await clearCivilNames(teamId);
       setResult({ cleared: n, matched: [], unmatched: [] });
       onImported?.();
     } catch (e) {

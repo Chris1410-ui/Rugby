@@ -334,7 +334,7 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
       </Section>
 
       {namesOpen && (
-        <CivilNamesSheet players={roster} isOwner={isOwner} onClose={() => setNamesOpen(false)} onImported={refreshNames} />
+        <CivilNamesSheet players={roster} teamId={teamId} isOwner={isOwner} onClose={() => setNamesOpen(false)} onImported={refreshNames} />
       )}
     </div>
   );
