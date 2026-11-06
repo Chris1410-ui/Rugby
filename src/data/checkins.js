@@ -87,6 +87,43 @@ export function usePlayerCheckins(playerId, days = 21) {
   return { checkins, loading };
 }
 
+/* Bilans du MATIN de l'équipe (vue staff « Wellness ») sur une fenêtre de jours.
+   Renvoie des lignes { playerId, date, wb, createdAt } — `createdAt` = l'heure de
+   remplissage (1er envoi), captée par daily_checkins.created_at. Realtime :
+   rafraîchit à chaque nouveau bilan. Lecture seule (RLS équipe). */
+export function useTeamMorningCheckins(playerIds, days = 14) {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const key = (playerIds || []).join(",");
+
+  const fetch = useCallback(async () => {
+    if (!playerIds || playerIds.length === 0) { setRows([]); setLoading(false); return; }
+    const since = isoDate(new Date(Date.now() - days * 86400000));
+    const { data, error } = await supabase
+      .from("daily_checkins")
+      .select("player_id, date, moment, wb, created_at")
+      .in("player_id", playerIds)
+      .gte("date", since)
+      .eq("moment", "matin")
+      .order("created_at", { ascending: true });
+    if (error) { console.error("[team morning checkins]", error.message); setLoading(false); return; }
+    setRows((data ?? []).map((r) => ({ playerId: r.player_id, date: r.date, wb: r.wb || {}, createdAt: r.created_at })));
+    setLoading(false);
+  }, [key, days]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    fetch();
+    if (!playerIds || playerIds.length === 0) return;
+    const ch = supabase
+      .channel(uniqueTopic("wellness-morning"))
+      .on("postgres_changes", { event: "*", schema: "public", table: "daily_checkins" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [key, days, fetch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { rows, loading, refresh: fetch };
+}
+
 export async function saveCheckin(playerId, payload, date = todayISO(), moment = "matin") {
   const { wb, sleepH, hydra, fc, hrv, poids, activities } = payload;
   const row = moment === "soir"

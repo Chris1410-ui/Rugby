@@ -5,7 +5,7 @@ import { wbToWellness, computeReadiness, acwrZ, sleepLabel } from "../../../lib/
 import { Ring, Section } from "../../../lib/ui.jsx";
 import { CheckCircle, Send } from "../../../lib/icons.jsx";
 import { saveCheckin } from "../../../data/checkins.js";
-import { WELL_KEYS, DAILY_KEYS, seedMorning, numInp, saveBtnProps } from "./parts.js";
+import { WELL_KEYS, DAILY_KEYS, seedMorning, numInp, txtInp, saveBtnProps } from "./parts.js";
 import { Slider, SleepPicker } from "./parts.jsx";
 
 /* Formulaire BILAN DU MATIN (bien-être, sommeil/hydratation, récupération) —
@@ -78,6 +78,17 @@ export default function MorningForm({ me, accent = C.green, day, preview, onSave
             </div>
           ))}
         </div>
+      </Section>
+
+      <Section title={t("player.bilan.secRemark")}>
+        <textarea
+          value={d.wb.remark || ""}
+          onChange={(e) => setWb("remark", e.target.value)}
+          placeholder={t("player.bilan.remarkPlaceholder")}
+          rows={2}
+          maxLength={280}
+          style={txtInp}
+        />
       </Section>
 
       {err && <div style={{ fontSize: 11, color: C.coral, marginBottom: 8, textAlign: "center" }}>{err}</div>}

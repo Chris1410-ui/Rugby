@@ -54,7 +54,8 @@
     "compare": "Comparaison A/B",
     "abonnements": "Abonnements notifications",
     "team": "Équipe",
-    "moi": "Moi"
+    "moi": "Moi",
+    "wellness": "Wellness"
   },
   "recurrence": {
     "once": "Ponctuel",
@@ -326,7 +327,8 @@
     "heatmaps": "Heatmaps",
     "myAthlete": "Mon athlète",
     "team": "Équipe",
-    "moi": "Moi"
+    "moi": "Moi",
+    "wellness": "Wellness"
   },
   "roles": {
     "preparateur": "Préparateur physique",
@@ -983,7 +985,9 @@
       "blockTodo": "à remplir",
       "activityOn": "✓ +10 pts",
       "activityDeclare": "déclarer",
-      "secDaily": "ÉVALUATION DU JOUR"
+      "secDaily": "ÉVALUATION DU JOUR",
+      "secRemark": "REMARQUE (OPTIONNEL)",
+      "remarkPlaceholder": "Une gêne, une douleur, un contexte… (optionnel)"
     },
     "checkin": {
       "question": "Comment tu te sens ?",
@@ -2215,6 +2219,58 @@
       "expiresOn": "Expire le {{date}}",
       "errCreate": "Échec de la création : {{err}}",
       "errCopy": "Copie impossible — copie le lien manuellement."
+    },
+    "wellness": {
+      "date": "Date",
+      "athlete": "Athlète",
+      "allTeam": "Toute l'équipe",
+      "nResponses": "{{count}} réponses",
+      "kResponses": "Réponses",
+      "kResponsesSub": "pour la date sélectionnée",
+      "kWellness": "Wellness général",
+      "kWellnessSub": "moyenne d'équipe / 10",
+      "kRecovery": "Indice récupération",
+      "kRecoverySub": "sommeil, fatigue, stress, humeur / 10",
+      "kWatch": "À surveiller",
+      "kWatchSub": "récupération faible ou remarque",
+      "profileTitle": "Profil collectif",
+      "profileSub": "Moyennes des réponses — 1 faible, 10 favorable",
+      "mWellness": "Wellness général",
+      "mSleep": "Sommeil",
+      "mFatigue": "Fatigue",
+      "mStress": "Stress",
+      "mMood": "Humeur",
+      "mWill": "Envie de s'entraîner",
+      "mRpe": "RPE J-1",
+      "rpeNote": "Le RPE est l'effort perçu de la veille (1 = faible, 10 = maximal). Un RPE élevé appelle à la vigilance, surtout si la récupération est basse.",
+      "respondedTitle": "Qui a répondu",
+      "respondedSub": "{{count}} réponse(s) · heure de remplissage",
+      "noResponses": "Aucune réponse pour cette date.",
+      "notRespondedTitle": "N'a pas répondu",
+      "notRespondedSub": "{{count}} joueur(s) en attente",
+      "allResponded": "Tout le monde a répondu 🎉",
+      "dayTitle": "Suivi du jour",
+      "dayLegend": "Codes : vert ≥ 7 · orange 5–6,9 · rouge < 5 (/10)",
+      "colAthlete": "Athlète",
+      "colWellness": "Wellness",
+      "colDelta": "Écart perso.",
+      "colRecovery": "Récupération",
+      "colRpe": "RPE J-1",
+      "colStatus": "Statut",
+      "colRemark": "Remarque",
+      "statusOk": "OK",
+      "statusVigilance": "Vigilance",
+      "statusAlerte": "Alerte",
+      "alertsTitle": "Alertes & remarques",
+      "noAlerts": "Aucune alerte aujourd'hui.",
+      "alertScores": "Wellness {{wellness}} · récupération {{recovery}}",
+      "trendTitle": "Tendance de l'équipe",
+      "trendSub": "Moyennes quotidiennes — jusqu'aux 14 derniers jours.",
+      "remarksTitle": "Remarques des athlètes",
+      "remarksSub": "Toutes les remarques renseignées, sur la période.",
+      "colDate": "Date",
+      "noRemarks": "Aucune remarque sur la période.",
+      "remarksPrivacy": "Les remarques médicales ou sensibles ne doivent être consultées que par les membres autorisés du staff."
     }
   },
   "shared": {
