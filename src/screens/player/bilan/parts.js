@@ -20,7 +20,7 @@ export const DAILY_KEYS = [
 export const morningDefaults = (me) => ({
   wb: {
     sleep: 7, energy: 6, fatigue: 4, soreness: 4, mood: 7, stress: 4,
-    genWell: 6, willTrain: 6, rpePrev: 5,
+    genWell: 6, willTrain: 6, rpePrev: 5, remark: "",
   },
   sleepH: me?.sleep ? Number(me.sleep) : 7.5,
   hydra: 2.0, fc: null, hrv: null, poids: null, activities: [],

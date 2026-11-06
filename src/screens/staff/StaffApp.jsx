@@ -35,6 +35,7 @@ import Programmes from "./Programmes.jsx";
 import Protocoles from "./programs/Protocoles.jsx";
 import Bibliotheque from "./Bibliotheque.jsx";
 import ExerciseLibrary from "../shared/ExerciseLibrary.jsx";
+import Wellness from "./Wellness.jsx";
 import StaffInvites from "../shared/StaffInvites.jsx";
 import MembershipRequests from "../shared/MembershipRequests.jsx";
 import { useMembershipRequests } from "../../data/membership.js";
@@ -112,6 +113,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
     ["accueil", t("nav.accueil"), Home],
     ["effectif", t("nav.effectif"), Users, resetReqs.length],
     ["aujourdhui", t("nav.aujourdhui"), Sun],
+    ["wellness", t("nav.wellness"), Activity],
     // Bascule vers son propre profil athlète (si activé) — accès depuis le hub Plus.
     ...(onViewAthlete ? [["myathlete", t("nav.myAthlete"), Sun]] : []),
     ["alertes", t("nav.alertes"), Bell, bAlertes],
@@ -162,6 +164,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
           {!readOnly && <DataQuality teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
           <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />
         </>}
+        {tab === "wellness" && <Wellness teamId={profile.team_id} players={players} />}
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}

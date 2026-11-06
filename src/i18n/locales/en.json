@@ -54,7 +54,8 @@
     "compare": "A/B comparison",
     "abonnements": "Push subscriptions",
     "team": "Team",
-    "moi": "Me"
+    "moi": "Me",
+    "wellness": "Wellness"
   },
   "recurrence": {
     "once": "One-off",
@@ -326,7 +327,8 @@
     "heatmaps": "Heatmaps",
     "myAthlete": "My athlete",
     "team": "Team",
-    "moi": "Me"
+    "moi": "Me",
+    "wellness": "Wellness"
   },
   "roles": {
     "preparateur": "S&C coach",
@@ -983,7 +985,9 @@
       "blockTodo": "to fill in",
       "activityOn": "✓ +10 pts",
       "activityDeclare": "declare",
-      "secDaily": "DAILY RATING"
+      "secDaily": "DAILY RATING",
+      "secRemark": "REMARK (OPTIONAL)",
+      "remarkPlaceholder": "Any discomfort, pain, context… (optional)"
     },
     "checkin": {
       "question": "How are you feeling?",
@@ -2215,6 +2219,58 @@
       "expiresOn": "Expires on {{date}}",
       "errCreate": "Creation failed: {{err}}",
       "errCopy": "Copy failed — copy the link manually."
+    },
+    "wellness": {
+      "date": "Date",
+      "athlete": "Athlete",
+      "allTeam": "Whole team",
+      "nResponses": "{{count}} responses",
+      "kResponses": "Responses",
+      "kResponsesSub": "for the selected date",
+      "kWellness": "General wellness",
+      "kWellnessSub": "team average / 10",
+      "kRecovery": "Recovery index",
+      "kRecoverySub": "sleep, fatigue, stress, mood / 10",
+      "kWatch": "To watch",
+      "kWatchSub": "low recovery or remark",
+      "profileTitle": "Collective profile",
+      "profileSub": "Averages of responses — 1 low, 10 favorable",
+      "mWellness": "General wellness",
+      "mSleep": "Sleep",
+      "mFatigue": "Fatigue",
+      "mStress": "Stress",
+      "mMood": "Mood",
+      "mWill": "Will to train",
+      "mRpe": "RPE D-1",
+      "rpeNote": "RPE is the previous day's perceived effort (1 = low, 10 = maximal). A high RPE calls for vigilance, especially when recovery is low.",
+      "respondedTitle": "Who responded",
+      "respondedSub": "{{count}} response(s) · fill-in time",
+      "noResponses": "No response for this date.",
+      "notRespondedTitle": "Did not respond",
+      "notRespondedSub": "{{count}} player(s) pending",
+      "allResponded": "Everyone responded 🎉",
+      "dayTitle": "Day tracking",
+      "dayLegend": "Codes: green ≥ 7 · orange 5–6.9 · red < 5 (/10)",
+      "colAthlete": "Athlete",
+      "colWellness": "Wellness",
+      "colDelta": "Personal gap",
+      "colRecovery": "Recovery",
+      "colRpe": "RPE D-1",
+      "colStatus": "Status",
+      "colRemark": "Remark",
+      "statusOk": "OK",
+      "statusVigilance": "Watch",
+      "statusAlerte": "Alert",
+      "alertsTitle": "Alerts & remarks",
+      "noAlerts": "No alert today.",
+      "alertScores": "Wellness {{wellness}} · recovery {{recovery}}",
+      "trendTitle": "Team trend",
+      "trendSub": "Daily averages — up to the last 14 days.",
+      "remarksTitle": "Athlete remarks",
+      "remarksSub": "All remarks entered, over the period.",
+      "colDate": "Date",
+      "noRemarks": "No remark over the period.",
+      "remarksPrivacy": "Medical or sensitive remarks should only be viewed by authorized staff."
     }
   },
   "shared": {

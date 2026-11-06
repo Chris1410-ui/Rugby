@@ -54,7 +54,8 @@
     "compare": "A/B vergelijking",
     "abonnements": "Push-abonnementen",
     "team": "Team",
-    "moi": "Ik"
+    "moi": "Ik",
+    "wellness": "Wellness"
   },
   "recurrence": {
     "once": "Eenmalig",
@@ -326,7 +327,8 @@
     "heatmaps": "Heatmaps",
     "myAthlete": "Mijn atleet",
     "team": "Team",
-    "moi": "Ik"
+    "moi": "Ik",
+    "wellness": "Wellness"
   },
   "roles": {
     "preparateur": "Fysiektrainer",
@@ -983,7 +985,9 @@
       "blockTodo": "in te vullen",
       "activityOn": "✓ +10 pts",
       "activityDeclare": "aangeven",
-      "secDaily": "DAGELIJKSE BEOORDELING"
+      "secDaily": "DAGELIJKSE BEOORDELING",
+      "secRemark": "OPMERKING (OPTIONEEL)",
+      "remarkPlaceholder": "Ongemak, pijn, context… (optioneel)"
     },
     "checkin": {
       "question": "Hoe voel je je?",
@@ -2215,6 +2219,58 @@
       "expiresOn": "Verloopt op {{date}}",
       "errCreate": "Aanmaken mislukt: {{err}}",
       "errCopy": "Kopiëren mislukt — kopieer de link handmatig."
+    },
+    "wellness": {
+      "date": "Datum",
+      "athlete": "Atleet",
+      "allTeam": "Hele ploeg",
+      "nResponses": "{{count}} antwoorden",
+      "kResponses": "Antwoorden",
+      "kResponsesSub": "voor de gekozen datum",
+      "kWellness": "Algemeen welzijn",
+      "kWellnessSub": "ploeggemiddelde / 10",
+      "kRecovery": "Herstelindex",
+      "kRecoverySub": "slaap, vermoeidheid, stress, stemming / 10",
+      "kWatch": "Op te volgen",
+      "kWatchSub": "laag herstel of opmerking",
+      "profileTitle": "Collectief profiel",
+      "profileSub": "Gemiddelden — 1 laag, 10 gunstig",
+      "mWellness": "Algemeen welzijn",
+      "mSleep": "Slaap",
+      "mFatigue": "Vermoeidheid",
+      "mStress": "Stress",
+      "mMood": "Stemming",
+      "mWill": "Trainingszin",
+      "mRpe": "RPE D-1",
+      "rpeNote": "RPE is de ervaren inspanning van de vorige dag (1 = laag, 10 = maximaal). Een hoge RPE vraagt waakzaamheid, zeker bij laag herstel.",
+      "respondedTitle": "Wie antwoordde",
+      "respondedSub": "{{count}} antwoord(en) · invultijd",
+      "noResponses": "Geen antwoord voor deze datum.",
+      "notRespondedTitle": "Niet geantwoord",
+      "notRespondedSub": "{{count}} speler(s) in afwachting",
+      "allResponded": "Iedereen heeft geantwoord 🎉",
+      "dayTitle": "Dagopvolging",
+      "dayLegend": "Codes: groen ≥ 7 · oranje 5–6,9 · rood < 5 (/10)",
+      "colAthlete": "Atleet",
+      "colWellness": "Wellness",
+      "colDelta": "Persoonlijk verschil",
+      "colRecovery": "Herstel",
+      "colRpe": "RPE D-1",
+      "colStatus": "Status",
+      "colRemark": "Opmerking",
+      "statusOk": "OK",
+      "statusVigilance": "Waakzaam",
+      "statusAlerte": "Alarm",
+      "alertsTitle": "Waarschuwingen & opmerkingen",
+      "noAlerts": "Geen waarschuwing vandaag.",
+      "alertScores": "Wellness {{wellness}} · herstel {{recovery}}",
+      "trendTitle": "Ploegtendens",
+      "trendSub": "Dagelijkse gemiddelden — tot de laatste 14 dagen.",
+      "remarksTitle": "Opmerkingen van atleten",
+      "remarksSub": "Alle ingevoerde opmerkingen, over de periode.",
+      "colDate": "Datum",
+      "noRemarks": "Geen opmerking in de periode.",
+      "remarksPrivacy": "Medische of gevoelige opmerkingen mogen enkel door bevoegde staf worden ingekeken."
     }
   },
   "shared": {
