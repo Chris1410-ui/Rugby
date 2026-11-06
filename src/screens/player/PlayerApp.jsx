@@ -9,10 +9,7 @@ import { useTeamTasks, useMyTaskCompletions } from "../../data/tasks.js";
 import { useTeamChallenges, useMyChallengeCompletions } from "../../data/challenges.js";
 import { useTeamTrainings, useTeamAttendance } from "../../data/trainings.js";
 import { useMyDay } from "../../data/checkins.js";
-import { useClubLeaderboard } from "../../data/clubPoints.js";
-import { useOvertakeWatch } from "../../data/overtake.js";
 import { syncWeeklyMission } from "../../data/weeklyMission.js";
-import { displayName } from "../../lib/identity.js";
 import { playerSessionTodo, playerTaskTodo, questionnaireTodo, bilanTodo, playerChallengeTodo } from "../../lib/badges.js";
 import { useLocalToday } from "../../lib/useLocalToday.js";
 import { PreviewContext } from "../../lib/preview.js";
@@ -82,11 +79,6 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
   const { byTraining: convAtt } = useTeamAttendance(profile.team_id);
   const bConv = trainings.filter((tr) => tr.date >= today && !convAtt?.[tr.id]?.[me?.id]?.playerResponse).length;
   const mobile = useIsMobile();
-  // « On t'a repassé » en direct : le classement du club (barème existant) est
-  // rafraîchi par Realtime ; on détecte les dépassements côté client (aucune
-  // table, aucun point). Silencieux en aperçu.
-  const { list: clubList } = useClubLeaderboard(profile.team_id, players, sessions);
-  const { event: overtake, dismiss: dismissOvertake } = useOvertakeWatch(me?.id, clubList);
   // Mission hebdo (objectif « 3 jours ») : crédit paresseux au chargement / au
   // changement de jour (points additifs, cf. computePoints). Pas en aperçu.
   useEffect(() => { if (me?.id && !preview) syncWeeklyMission(); }, [me?.id, today, preview]);
@@ -163,36 +155,10 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "donnees" && <Confidentialite player={me} self />}
          </PullToRefresh>
         </main>
-        {!preview && overtake && (
-          <OvertakeToast key={overtake.key} player={players.find((p) => p.id === overtake.id)} gap={overtake.gap} onOpen={() => { setTab("classement"); dismissOvertake(); }} onClose={dismissOvertake} t={t} />
-        )}
         {mobile
           ? <MobileNav items={visibleNav} primary={PLAYER_TABS} active={tab} onSelect={setTab} accent={ACCENT} />
           : <BottomNav items={visibleNav} active={tab} onSelect={setTab} accent={ACCENT} />}
       </div>
     </PreviewContext.Provider>
-  );
-}
-
-/* Toast « on t'a repassé » — apparition en direct, auto-masquage. Pseudonymisé
-   (totem). Tap → onglet Classement. */
-function OvertakeToast({ player, gap, onOpen, onClose, t }) {
-  useEffect(() => {
-    const id = setTimeout(onClose, 6000);
-    return () => clearTimeout(id);
-  }, [onClose]);
-  if (!player) return null;
-  return (
-    <button
-      onClick={onOpen}
-      style={{ position: "fixed", left: "50%", bottom: 82, transform: "translateX(-50%)", zIndex: 40, width: "min(420px, calc(100vw - 32px))", display: "flex", alignItems: "center", gap: 11, textAlign: "left", padding: "11px 14px", borderRadius: 14, background: "rgba(34,29,72,0.96)", backdropFilter: "blur(10px)", border: `1px solid ${C.coral}66`, boxShadow: "0 12px 34px rgba(0,0,0,0.5)", cursor: "pointer" }}
-    >
-      <span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t("player.home.overtake", { name: displayName(player) })}</span>
-        <span style={{ display: "block", fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 1 }}>{t("player.home.overtakeGap", { n: gap })}</span>
-      </span>
-      <span style={{ fontSize: 11, fontWeight: 800, color: C.coral, flexShrink: 0 }}>{t("player.home.overtakeCta")}</span>
-    </button>
   );
 }
