@@ -943,7 +943,10 @@
         "fatigue": "Fatigue",
         "soreness": "Courbatures",
         "mood": "Humeur",
-        "stress": "Stress"
+        "stress": "Stress",
+        "genWell": "Bien-être général",
+        "willTrain": "Envie de s'entraîner",
+        "rpePrev": "RPE de la veille"
       },
       "today": "AUJOURD'HUI",
       "readiness": "readiness",
@@ -979,7 +982,8 @@
       "blockDone": "complété ✓",
       "blockTodo": "à remplir",
       "activityOn": "✓ +10 pts",
-      "activityDeclare": "déclarer"
+      "activityDeclare": "déclarer",
+      "secDaily": "ÉVALUATION DU JOUR"
     },
     "checkin": {
       "question": "Comment tu te sens ?",

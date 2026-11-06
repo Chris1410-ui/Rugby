@@ -943,7 +943,10 @@
         "fatigue": "Vermoeidheid",
         "soreness": "Spierpijn",
         "mood": "Humeur",
-        "stress": "Stress"
+        "stress": "Stress",
+        "genWell": "Algemeen welzijn",
+        "willTrain": "Zin om te trainen",
+        "rpePrev": "RPE van gisteren"
       },
       "today": "VANDAAG",
       "readiness": "readiness",
@@ -979,7 +982,8 @@
       "blockDone": "voltooid ✓",
       "blockTodo": "in te vullen",
       "activityOn": "✓ +10 pts",
-      "activityDeclare": "aangeven"
+      "activityDeclare": "aangeven",
+      "secDaily": "DAGELIJKSE BEOORDELING"
     },
     "checkin": {
       "question": "Hoe voel je je?",

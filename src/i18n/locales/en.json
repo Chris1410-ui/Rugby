@@ -943,7 +943,10 @@
         "fatigue": "Fatigue",
         "soreness": "Soreness",
         "mood": "Mood",
-        "stress": "Stress"
+        "stress": "Stress",
+        "genWell": "General wellness",
+        "willTrain": "Will to train",
+        "rpePrev": "RPE of last day"
       },
       "today": "TODAY",
       "readiness": "readiness",
@@ -979,7 +982,8 @@
       "blockDone": "completed ✓",
       "blockTodo": "to fill in",
       "activityOn": "✓ +10 pts",
-      "activityDeclare": "declare"
+      "activityDeclare": "declare",
+      "secDaily": "DAILY RATING"
     },
     "checkin": {
       "question": "How are you feeling?",

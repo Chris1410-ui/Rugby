@@ -9,8 +9,19 @@ export const WELL_KEYS = [
   ["soreness", C.amb], ["mood", C.blue], ["stress", C.teal],
 ];
 
+// Questions directes du questionnaire (calquées sur le formulaire club) : saisies
+// le matin MAIS volontairement HORS du calcul readiness/bien-être — wbToWellness
+// ne lit que des clés nommées (energy/mood/fatigue/soreness/stress/sleep), donc
+// ces clés supplémentaires sont persistées sans toucher aux formules.
+export const DAILY_KEYS = [
+  ["genWell", C.blue], ["willTrain", C.green], ["rpePrev", C.coral],
+];
+
 export const morningDefaults = (me) => ({
-  wb: { sleep: 7, energy: 6, fatigue: 4, soreness: 4, mood: 7, stress: 4 },
+  wb: {
+    sleep: 7, energy: 6, fatigue: 4, soreness: 4, mood: 7, stress: 4,
+    genWell: 6, willTrain: 6, rpePrev: 5,
+  },
   sleepH: me?.sleep ? Number(me.sleep) : 7.5,
   hydra: 2.0, fc: null, hrv: null, poids: null, activities: [],
 });

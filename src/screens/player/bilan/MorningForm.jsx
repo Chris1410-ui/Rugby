@@ -5,7 +5,7 @@ import { wbToWellness, computeReadiness, acwrZ, sleepLabel } from "../../../lib/
 import { Ring, Section } from "../../../lib/ui.jsx";
 import { CheckCircle, Send } from "../../../lib/icons.jsx";
 import { saveCheckin } from "../../../data/checkins.js";
-import { WELL_KEYS, seedMorning, numInp, saveBtnProps } from "./parts.js";
+import { WELL_KEYS, DAILY_KEYS, seedMorning, numInp, saveBtnProps } from "./parts.js";
 import { Slider, SleepPicker } from "./parts.jsx";
 
 /* Formulaire BILAN DU MATIN (bien-être, sommeil/hydratation, récupération) —
@@ -47,6 +47,11 @@ export default function MorningForm({ me, accent = C.green, day, preview, onSave
 
       <Section title={t("player.bilan.secWellbeing")}>
         {WELL_KEYS.map(([k, c]) => <Slider key={k} label={t(`player.bilan.markers.${k}`)} value={d.wb[k]} color={c} onChange={(v) => setWb(k, v)} />)}
+      </Section>
+
+      {/* Questions directes du questionnaire club (hors calcul : cf. DAILY_KEYS). */}
+      <Section title={t("player.bilan.secDaily")}>
+        {DAILY_KEYS.map(([k, c]) => <Slider key={k} label={t(`player.bilan.markers.${k}`)} value={d.wb[k]} color={c} onChange={(v) => setWb(k, v)} />)}
       </Section>
 
       <Section title={t("player.bilan.secSleepHydration")}>
