@@ -2271,6 +2271,30 @@
       "colDate": "Datum",
       "noRemarks": "Geen opmerking in de periode.",
       "remarksPrivacy": "Medische of gevoelige opmerkingen mogen enkel door bevoegde staf worden ingekeken."
+    },
+    "names": {
+      "manage": "Namen beheren",
+      "title": "Burgerlijke namen (import)",
+      "intro": "Importeer een bestand (.csv/.xlsx) dat elke totem aan een naam koppelt. Namen zijn alleen op dit scherm zichtbaar, voor de staf.",
+      "pick": "Kies een bestand",
+      "colTotem": "Totem-kolom",
+      "colName": "Naam-kolom",
+      "colName2": "Voornaam-kolom (opt.)",
+      "matched": "overeenkomsten",
+      "unmatched": "geen overeenkomst",
+      "unmatchedHint": "Totems niet gevonden:",
+      "importBtn": "{{count}} na(a)m(en) importeren",
+      "imported": "{{count}} geïmporteerd, {{skipped}} overgeslagen",
+      "clearBtn": "Alle burgerlijke namen verwijderen",
+      "clearConfirm": "Alle burgerlijke namen van deze club definitief verwijderen?",
+      "cleared": "{{count}} na(a)m(en) verwijderd",
+      "privacy": "Burgerlijke namen verlaten dit scherm nooit: nooit getoond aan spelers, noch in klassement, teammuur of duels.",
+      "errEmpty": "Leeg of onleesbaar bestand.",
+      "errParse": "Kan het bestand niet lezen.",
+      "errImport": "Import mislukt.",
+      "errAuth": "Actie niet toegestaan.",
+      "errOwner": "Alleen voor de owner.",
+      "errClear": "Verwijderen mislukt."
     }
   },
   "shared": {

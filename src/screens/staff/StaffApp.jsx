@@ -164,7 +164,7 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
           {!readOnly && <DataQuality teamId={profile.team_id} players={players} sessions={sessions} logs={logs} bilans={bilans} />}
           <Aujourdhui players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />
         </>}
-        {tab === "wellness" && <Wellness teamId={profile.team_id} players={players} />}
+        {tab === "wellness" && <Wellness teamId={profile.team_id} players={players} profile={profile} readOnly={readOnly} />}
         {tab === "alertes" && <Alertes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} checkins={checkins} activities={activities} />}
         {tab === "messages" && <StaffMessages players={players} />}
         {tab === "programmes" && <Programmes teamId={profile.team_id} players={players} sessions={sessions} logs={logs} />}

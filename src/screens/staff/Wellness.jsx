@@ -6,24 +6,31 @@ import { localeTag } from "../../i18n/locale.js";
 import { displayName } from "../../lib/identity.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import { useTeamMorningCheckins } from "../../data/checkins.js";
+import { useCivilNames } from "../../data/civilNames.js";
 import {
   favMarkers, recoveryIndex, wellnessScore, rpeOf, remarkOf, needsWatch, statusOf, mean,
 } from "../../lib/wellnessView.js";
-import { Clock, CheckCircle, AlertTriangle } from "../../lib/icons.jsx";
+import { Clock, CheckCircle, AlertTriangle, Upload } from "../../lib/icons.jsx";
+import CivilNamesSheet from "./CivilNamesSheet.jsx";
 
 /* Écran « Wellness » (staff) — tableau de bord des réponses du matin.
    Convention d'affichage « plus haut = mieux » (cf. lib/wellnessView : purement
    cosmétique, aucune formule ni donnée modifiée). Pseudonymisation : totem +
    initiales (les noms civils arriveront par import, écran dédié). */
-export default function Wellness({ teamId, players = [] }) { // eslint-disable-line no-unused-vars
+export default function Wellness({ teamId, players = [], profile = null, readOnly = false }) {
   const { t } = useTranslation();
   const mobile = useIsMobile();
+  const canManage = !readOnly; // prépa/médical/owner (coach exclu)
+  const isOwner = profile?.role === "owner";
+  const [namesOpen, setNamesOpen] = useState(false);
 
   // Effectif attendu = joueurs réels (hors démo).
   const roster = useMemo(() => players.filter((p) => !p.isDemo), [players]);
   const ids = useMemo(() => roster.map((p) => p.id), [roster]);
   const byId = useMemo(() => Object.fromEntries(roster.map((p) => [p.id, p])), [roster]);
   const { rows } = useTeamMorningCheckins(ids, 14);
+  // Noms civils (RLS staff/owner) — affichés UNIQUEMENT ici ; sinon totem.
+  const { names: civilNames, refresh: refreshNames } = useCivilNames(teamId);
 
   const dates = useMemo(() => [...new Set(rows.map((r) => r.date))].sort().reverse(), [rows]);
   const today = todayISO();
@@ -54,7 +61,8 @@ export default function Wellness({ teamId, players = [] }) { // eslint-disable-l
     return out;
   }, [rows, selDate]);
 
-  const nameOf = (pid) => { const p = byId[pid]; return p ? displayName(p) : "—"; };
+  // Nom affiché : nom civil si connu (staff only), sinon totem (pseudonymisé).
+  const nameOf = (pid) => civilNames[pid] || (byId[pid] ? displayName(byId[pid]) : "—");
   const initOf = (pid) => byId[pid]?.initials || null;
   const fmt = (v, d = 1) => (v == null ? "—" : v.toFixed(d));
   const timeStr = (iso) => { try { return new Date(iso).toLocaleTimeString(localeTag(), { hour: "2-digit", minute: "2-digit" }); } catch { return "—"; } };
@@ -139,11 +147,18 @@ export default function Wellness({ teamId, players = [] }) { // eslint-disable-l
         <Field label={t("staff.wellness.athlete")}>
           <select value={athlete} onChange={(e) => setAthlete(e.target.value)} style={selStyle}>
             <option value="all">{t("staff.wellness.allTeam")}</option>
-            {roster.map((p) => <option key={p.id} value={p.id}>{displayName(p)}</option>)}
+            {roster.map((p) => <option key={p.id} value={p.id}>{nameOf(p.id)}</option>)}
           </select>
         </Field>
-        <div style={{ marginLeft: "auto", fontSize: 13, fontWeight: 800, color: C.viol }}>
-          {t("staff.wellness.nResponses", { count: scopeRows.length })}
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          {canManage && (
+            <button onClick={() => setNamesOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: 40 }}>
+              <Upload size={13} color={C.viol} /> {t("staff.names.manage")}
+            </button>
+          )}
+          <div style={{ fontSize: 13, fontWeight: 800, color: C.viol }}>
+            {t("staff.wellness.nResponses", { count: scopeRows.length })}
+          </div>
         </div>
       </div>
 
@@ -204,7 +219,7 @@ export default function Wellness({ teamId, players = [] }) { // eslint-disable-l
               {missing.map((p) => (
                 <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${C.coral}14`, border: `1px solid ${C.coral}44`, borderRadius: 9, padding: "6px 10px", fontSize: 12, fontWeight: 700 }}>
                   <span style={{ width: 7, height: 7, borderRadius: 4, background: C.coral }} />
-                  {displayName(p)}{p.initials ? <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>· {p.initials}</span> : null}
+                  {nameOf(p.id)}{p.initials ? <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>· {p.initials}</span> : null}
                 </span>
               ))}
             </div>
@@ -317,6 +332,10 @@ export default function Wellness({ teamId, players = [] }) { // eslint-disable-l
         )}
         <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", marginTop: 10 }}>{t("staff.wellness.remarksPrivacy")}</div>
       </Section>
+
+      {namesOpen && (
+        <CivilNamesSheet players={roster} isOwner={isOwner} onClose={() => setNamesOpen(false)} onImported={refreshNames} />
+      )}
     </div>
   );
 }

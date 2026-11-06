@@ -2271,6 +2271,30 @@
       "colDate": "Date",
       "noRemarks": "No remark over the period.",
       "remarksPrivacy": "Medical or sensitive remarks should only be viewed by authorized staff."
+    },
+    "names": {
+      "manage": "Manage names",
+      "title": "Civil names (import)",
+      "intro": "Import a file (.csv/.xlsx) mapping each totem to a name. Names are visible only on this screen, to staff.",
+      "pick": "Choose a file",
+      "colTotem": "Totem column",
+      "colName": "Name column",
+      "colName2": "First-name column (opt.)",
+      "matched": "matches",
+      "unmatched": "no match",
+      "unmatchedHint": "Totems not found:",
+      "importBtn": "Import {{count}} name(s)",
+      "imported": "{{count}} imported, {{skipped}} skipped",
+      "clearBtn": "Delete all civil names",
+      "clearConfirm": "Permanently delete ALL civil names for this club?",
+      "cleared": "{{count}} name(s) deleted",
+      "privacy": "Civil names never leave this screen: never shown to players, nor on the leaderboard, team wall or duels.",
+      "errEmpty": "Empty or unreadable file.",
+      "errParse": "Could not read the file.",
+      "errImport": "Import failed.",
+      "errAuth": "Action not authorized.",
+      "errOwner": "Owner only.",
+      "errClear": "Deletion failed."
     }
   },
   "shared": {
