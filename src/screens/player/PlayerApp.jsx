@@ -163,16 +163,6 @@ export default function PlayerApp({ profile, preview = false, tab: tabProp, onTa
           {tab === "donnees" && <Confidentialite player={me} self />}
          </PullToRefresh>
         </main>
-        {/* FAB « Déclarer une activité » sur Aujourd'hui (mobile, hors aperçu) */}
-        {mobile && tab === "bilan" && !preview && (
-          <button
-            onClick={() => document.getElementById("activite-jour")?.scrollIntoView({ behavior: "smooth", block: "center" })}
-            title={t("player.activityFabTitle")}
-            style={{ position: "fixed", right: 16, bottom: 76, zIndex: 25, background: ACCENT, border: "none", borderRadius: 24, padding: "12px 16px", color: "#fff", fontWeight: 800, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(0,0,0,0.4)" }}
-          >
-            <Plus size={16} /> {t("player.activityFab")}
-          </button>
-        )}
         {!preview && overtake && (
           <OvertakeToast key={overtake.key} player={players.find((p) => p.id === overtake.id)} gap={overtake.gap} onOpen={() => { setTab("classement"); dismissOvertake(); }} onClose={dismissOvertake} t={t} />
         )}
