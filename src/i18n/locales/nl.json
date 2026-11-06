@@ -2295,6 +2295,12 @@
       "errAuth": "Actie niet toegestaan.",
       "errOwner": "Alleen voor de owner.",
       "errClear": "Verwijderen mislukt."
+    },
+    "report": {
+      "exportBtn": "Exporteren naar PowerPoint",
+      "title": "Wellness-rapport",
+      "generating": "Genereren…",
+      "errExport": "PowerPoint-export mislukt."
     }
   },
   "shared": {

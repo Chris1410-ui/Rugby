@@ -2295,6 +2295,12 @@
       "errAuth": "Action not authorized.",
       "errOwner": "Owner only.",
       "errClear": "Deletion failed."
+    },
+    "report": {
+      "exportBtn": "Export to PowerPoint",
+      "title": "Wellness report",
+      "generating": "Generating…",
+      "errExport": "PowerPoint export failed."
     }
   },
   "shared": {

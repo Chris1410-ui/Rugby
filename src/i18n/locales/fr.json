@@ -2295,6 +2295,12 @@
       "errAuth": "Action non autorisée.",
       "errOwner": "Réservé à l'owner.",
       "errClear": "Échec de la suppression."
+    },
+    "report": {
+      "exportBtn": "Exporter en PowerPoint",
+      "title": "Rapport Wellness",
+      "generating": "Génération…",
+      "errExport": "Échec de l'export PowerPoint."
     }
   },
   "shared": {

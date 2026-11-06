@@ -3,15 +3,15 @@ import { useTranslation } from "react-i18next";
 import { C, sc } from "../../lib/tokens.js";
 import { todayISO } from "../../lib/metrics.js";
 import { localeTag } from "../../i18n/locale.js";
-import { displayName } from "../../lib/identity.js";
 import { useIsMobile } from "../../lib/useIsMobile.js";
 import { useTeamMorningCheckins } from "../../data/checkins.js";
 import { useCivilNames } from "../../data/civilNames.js";
 import {
   favMarkers, recoveryIndex, wellnessScore, rpeOf, remarkOf, needsWatch, statusOf, mean,
 } from "../../lib/wellnessView.js";
-import { Clock, CheckCircle, AlertTriangle, Upload } from "../../lib/icons.jsx";
+import { Clock, CheckCircle, AlertTriangle, Upload, Download } from "../../lib/icons.jsx";
 import CivilNamesSheet from "./CivilNamesSheet.jsx";
+import { buildReportModel, exportWellnessPptx } from "../../lib/wellnessReport.js";
 
 /* Écran « Wellness » (staff) — tableau de bord des réponses du matin.
    Convention d'affichage « plus haut = mieux » (cf. lib/wellnessView : purement
@@ -23,6 +23,7 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
   const canManage = !readOnly; // prépa/médical/owner (coach exclu)
   const isOwner = profile?.role === "owner";
   const [namesOpen, setNamesOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Effectif attendu = joueurs réels (hors démo).
   const roster = useMemo(() => players.filter((p) => !p.isDemo), [players]);
@@ -61,8 +62,9 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
     return out;
   }, [rows, selDate]);
 
-  // Nom affiché : nom civil si connu (staff only), sinon totem (pseudonymisé).
-  const nameOf = (pid) => civilNames[pid] || (byId[pid] ? displayName(byId[pid]) : "—");
+  // Nom affiché : nom civil si connu (staff only), sinon TOTEM seul (les initiales
+  // restent dans leur champ — displayName les dupliquerait).
+  const nameOf = (pid) => civilNames[pid] || (byId[pid]?.name || "—");
   const initOf = (pid) => byId[pid]?.initials || null;
   const fmt = (v, d = 1) => (v == null ? "—" : v.toFixed(d));
   const timeStr = (iso) => { try { return new Date(iso).toLocaleTimeString(localeTag(), { hour: "2-digit", minute: "2-digit" }); } catch { return "—"; } };
@@ -134,6 +136,17 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
 
   const dLabel = (iso) => { try { return new Date(iso + "T00:00:00").toLocaleDateString(localeTag(), { day: "numeric", month: "short" }); } catch { return iso; } };
 
+  // Export PowerPoint du jour (équipe entière, club/date des filtres).
+  const onExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const model = buildReportModel({ roster, byId, rows, selDate, civilNames, teamId, t });
+      await exportWellnessPptx(model, { t });
+    } catch (e) { console.error("[wellness pptx]", e); window.alert(t("staff.report.errExport")); }
+    setExporting(false);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* ── En-tête : date + athlète + nb de réponses ── */}
@@ -150,7 +163,10 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
             {roster.map((p) => <option key={p.id} value={p.id}>{nameOf(p.id)}</option>)}
           </select>
         </Field>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={onExport} disabled={exporting} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: exporting ? "rgba(255,255,255,0.08)" : `${C.coral}1c`, border: `1px solid ${C.coral}55`, borderRadius: 9, padding: "8px 11px", color: C.coral, fontSize: 12, fontWeight: 800, cursor: exporting ? "default" : "pointer", minHeight: 40 }}>
+            <Download size={13} color={C.coral} /> {exporting ? t("staff.report.generating") : t("staff.report.exportBtn")}
+          </button>
           {canManage && (
             <button onClick={() => setNamesOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: 40 }}>
               <Upload size={13} color={C.viol} /> {t("staff.names.manage")}
