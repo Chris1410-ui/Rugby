@@ -3618,5 +3618,34 @@
       "clubEmpty": "No heatmap uploaded in the club yet.",
       "nPlayers": "{{count}} player(s)"
     }
+  },
+  "share": {
+    "manage": "Share (link)",
+    "title": "Wellness view link",
+    "intro": "Generate a one-off link to send yourself (WhatsApp/SMS). The recipient sees the Wellness screen read-only, without an account. Revocable anytime.",
+    "expiry": "Expiry",
+    "label": "Label (optional)",
+    "labelPlaceholder": "e.g. Head coach U20",
+    "generate": "Generate link",
+    "generating": "Generating…",
+    "ready": "Link ready — expires {{date}}",
+    "copy": "Copy",
+    "copied": "Copied ✓",
+    "send": "Share",
+    "shareText": "Team wellness (read-only):",
+    "activeTitle": "Active links ({{count}})",
+    "none": "No active link.",
+    "untitled": "Untitled link",
+    "expiresAt": "expires {{date}}",
+    "views": "{{count}} view(s)",
+    "revoke": "Revoke",
+    "revokeConfirm": "Revoke this link? It stops working immediately.",
+    "note": "Pseudonymized link (totems + initials), short expiry, revocable; every view is logged.",
+    "errAuth": "Action not authorized.",
+    "errGeneric": "Failed to generate the link.",
+    "readOnly": "Read-only · view link",
+    "invalidTitle": "Invalid or expired link",
+    "invalidBody": "This view link is no longer valid (expired or revoked). Ask the staff for a new link.",
+    "footer": "Pseudonymized view (totems + initials). Confidential data — do not redistribute."
   }
 }

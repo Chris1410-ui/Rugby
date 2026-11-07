@@ -3618,5 +3618,34 @@
       "clubEmpty": "Nog geen heatmap geüpload in de club.",
       "nPlayers": "{{count}} speler(s)"
     }
+  },
+  "share": {
+    "manage": "Delen (link)",
+    "title": "Wellness-kijklink",
+    "intro": "Genereer een eenmalige link om zelf te versturen (WhatsApp/SMS). De ontvanger ziet het Wellness-scherm alleen-lezen, zonder account. Altijd intrekbaar.",
+    "expiry": "Vervaldatum",
+    "label": "Label (optioneel)",
+    "labelPlaceholder": "bv. Head coach U20",
+    "generate": "Link genereren",
+    "generating": "Genereren…",
+    "ready": "Link klaar — vervalt {{date}}",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd ✓",
+    "send": "Delen",
+    "shareText": "Team-wellness (alleen-lezen):",
+    "activeTitle": "Actieve links ({{count}})",
+    "none": "Geen actieve link.",
+    "untitled": "Link zonder label",
+    "expiresAt": "vervalt {{date}}",
+    "views": "{{count}} weergave(n)",
+    "revoke": "Intrekken",
+    "revokeConfirm": "Deze link intrekken? Werkt direct niet meer.",
+    "note": "Gepseudonimiseerde link (totems + initialen), korte vervaltijd, intrekbaar; elke weergave wordt gelogd.",
+    "errAuth": "Actie niet toegestaan.",
+    "errGeneric": "Link genereren mislukt.",
+    "readOnly": "Alleen-lezen · kijklink",
+    "invalidTitle": "Ongeldige of verlopen link",
+    "invalidBody": "Deze kijklink is niet meer geldig (verlopen of ingetrokken). Vraag de staf om een nieuwe link.",
+    "footer": "Gepseudonimiseerde weergave (totems + initialen). Vertrouwelijk — niet verder verspreiden."
   }
 }

@@ -3618,5 +3618,34 @@
       "clubEmpty": "Aucune heatmap déposée dans le club.",
       "nPlayers": "{{count}} joueur(s)"
     }
+  },
+  "share": {
+    "manage": "Partager (lien)",
+    "title": "Lien de consultation Wellness",
+    "intro": "Génère un lien ponctuel à envoyer toi-même (WhatsApp/SMS). Le destinataire voit l'écran Wellness en lecture seule, sans compte. Révocable à tout moment.",
+    "expiry": "Expiration",
+    "label": "Libellé (optionnel)",
+    "labelPlaceholder": "ex. Head coach U20",
+    "generate": "Générer le lien",
+    "generating": "Génération…",
+    "ready": "Lien prêt — expire le {{date}}",
+    "copy": "Copier",
+    "copied": "Copié ✓",
+    "send": "Partager",
+    "shareText": "Consulte le wellness de l'équipe (lecture seule) :",
+    "activeTitle": "Liens actifs ({{count}})",
+    "none": "Aucun lien actif.",
+    "untitled": "Lien sans libellé",
+    "expiresAt": "expire le {{date}}",
+    "views": "{{count}} vue(s)",
+    "revoke": "Révoquer",
+    "revokeConfirm": "Révoquer ce lien ? Il cessera immédiatement de fonctionner.",
+    "note": "Lien pseudonymisé (totems + initiales), expiration courte, révocable ; chaque consultation est journalisée.",
+    "errAuth": "Action non autorisée.",
+    "errGeneric": "Échec de la génération du lien.",
+    "readOnly": "Lecture seule · lien de consultation",
+    "invalidTitle": "Lien invalide ou expiré",
+    "invalidBody": "Ce lien de consultation n'est plus valable (expiré ou révoqué). Demande un nouveau lien au staff.",
+    "footer": "Vue pseudonymisée (totems + initiales). Données confidentielles — ne pas rediffuser."
   }
 }
