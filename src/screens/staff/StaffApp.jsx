@@ -73,7 +73,11 @@ const ACCENT = C.coral;
 export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete = null, readOnly: forceReadOnly = false }) {
   const { t } = useTranslation();
   const [tabState, setTabState] = useState("accueil"); // atterrissage = Accueil (owner monte StaffApp sans prop tab)
-  const tab = tabProp ?? tabState;               // piloté par AppShell (mobile) ou interne
+  // Head coach : nav réduite à Accueil + Wellness ; on borne l'onglet effectif à
+  // ces deux-là (aucun lien/notification ne peut l'emmener ailleurs).
+  const coachOnly = profile.role === "coach";
+  const rawTab = tabProp ?? tabState;            // piloté par AppShell (mobile) ou interne
+  const tab = coachOnly && rawTab !== "accueil" && rawTab !== "wellness" ? "wellness" : rawTab;
   const [newIntent, setNewIntent] = useState(null); // demande d'ouverture directe d'un « Nouveau » (FAB)
   // « Mon athlète » (hub Plus) : bascule vers la vue athlète du staff (pas un onglet).
   const go = (t, intent = null) => {
@@ -148,6 +152,10 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
     // Demandes d'adhésion (auto-inscription joueur) : owner + staff écrivain.
     ...(!readOnly ? [["adhesions", t("nav.adhesions"), Users, bAdhesions]] : []),
   ];
+  // Head coach : on n'affiche que Accueil + Wellness (le reste reste routé mais
+  // masqué de la barre). Les autres rôles gardent la nav complète.
+  const visibleNav = coachOnly ? nav.filter(([k]) => k === "accueil" || k === "wellness") : nav;
+  const primaryNav = coachOnly ? ["accueil", "wellness"] : ["accueil", "aujourdhui", "effectif", "alertes"];
   return (
    <ReadOnlyContext.Provider value={readOnly}>
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -197,8 +205,8 @@ export default function StaffApp({ profile, tab: tabProp, onTab, onViewAthlete =
       </main>
       {mobile && tab === "aujourdhui" && !readOnly && <StaffFab go={go} />}
       {mobile
-        ? <MobileNav items={nav} primary={["accueil", "aujourdhui", "effectif", "alertes"]} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />
-        : <BottomNav items={nav} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />}
+        ? <MobileNav items={visibleNav} primary={primaryNav} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />
+        : <BottomNav items={visibleNav} active={tab} onSelect={(t) => go(t)} accent={ACCENT} />}
     </div>
    </ReadOnlyContext.Provider>
   );

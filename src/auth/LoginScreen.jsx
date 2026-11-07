@@ -6,6 +6,7 @@ import { requestPasswordReset } from "../data/players.js";
 import { acceptClubInvitation, peekClubInvitation, isMinor, storePendingInvite, clearPendingInvite } from "../data/clubInvitations.js";
 import { peekInviteCode, joinClubWithCode, storePendingJoin, clearPendingJoin } from "../data/clubCodes.js";
 import { listClubs, precheckMembership, requestClubMembership } from "../data/membership.js";
+import { sendCoachMagicLink } from "../data/coachInvite.js";
 import { C, FONT } from "../lib/tokens.js";
 import { pwdStrength } from "../lib/password.js";
 import { POLICY_VERSION } from "../lib/policy.js";
@@ -225,6 +226,17 @@ export default function LoginScreen() {
     setBusy(false);
     if (error) return setErr(error.message);
     setInfo(t("auth.login.forgotInfo"));
+  };
+
+  // Head coach : connexion sans mot de passe → lien magique par email. Réponse
+  // volontairement générique (aucune énumération de comptes).
+  const doMagicLink = async () => {
+    reset();
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setErr(t("auth.login.errEmailFirst"));
+    setBusy(true);
+    try { await sendCoachMagicLink(email.trim()); } catch { /* générique */ }
+    setBusy(false);
+    setInfo(t("auth.login.magicSent"));
   };
 
   // Joueur : demander au staff/responsable de réinitialiser le mot de passe.
@@ -509,6 +521,10 @@ export default function LoginScreen() {
             {t("auth.login.askStaff")}
           </button>
         </div>
+        {/* Head coach : connexion sans mot de passe (lien magique). */}
+        <button onClick={doMagicLink} style={{ width: "100%", marginTop: 12, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`, borderRadius: 10, padding: 11, color: "rgba(255,255,255,0.8)", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>
+          {t("auth.login.magicLink")}
+        </button>
         <div style={{ borderTop: `1px solid ${C.border2}`, margin: "16px 0 0", paddingTop: 14 }}>
           <button onClick={() => { reset(); setStep("signup"); }} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.green}55`, borderRadius: 10, padding: 12, color: C.green, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
             {t("auth.signup.cta")}

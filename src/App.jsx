@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./auth/useAuth.jsx";
 import LoginScreen from "./auth/LoginScreen.jsx";
 import ResetPassword from "./auth/ResetPassword.jsx";
 import AppShell from "./screens/AppShell.jsx";
+import WellnessSharePage from "./screens/shared/WellnessSharePage.jsx";
 import { hasSupabaseConfig } from "./lib/supabase.js";
 import { C, FONT } from "./lib/tokens.js";
 import { Shield } from "./lib/icons.jsx";
@@ -79,6 +80,11 @@ export default function App() {
       </div>
     );
   }
+  // Lien de consultation Wellness (sans compte) : page publique read-only, rendue
+  // AVANT tout gate d'auth (aucune session Supabase requise).
+  const shareToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("wellness") : null;
+  if (shareToken) return <WellnessSharePage token={shareToken} />;
+
   return (
     <AuthProvider>
       <Gate />

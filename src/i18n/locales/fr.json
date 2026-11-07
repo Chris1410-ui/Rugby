@@ -2301,6 +2301,22 @@
       "title": "Rapport Wellness",
       "generating": "Génération…",
       "errExport": "Échec de l'export PowerPoint."
+    },
+    "coachInvite": {
+      "manage": "Inviter un head coach",
+      "title": "Inviter un head coach",
+      "intro": "Il recevra un lien de connexion par email (sans mot de passe). Au clic, son accès lecture seule à l'écran Wellness est créé automatiquement.",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "submit": "Envoyer l'invitation",
+      "sending": "Envoi…",
+      "note": "Accès lecture seule (rôle coach). Données de santé protégées par la RLS du club.",
+      "sentTitle": "Invitation envoyée",
+      "sentBody": "Un lien de connexion a été envoyé à {{email}}.",
+      "errEmail": "Email invalide.",
+      "errAuth": "Action non autorisée.",
+      "errGeneric": "Échec de l'envoi de l'invitation."
     }
   },
   "shared": {
@@ -2912,7 +2928,9 @@
       "backToSignin": "Retour à la connexion",
       "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club.",
       "joinInvalid": "Ce lien d’invitation est invalide ou expiré.",
-      "joinAlreadyMember": "Ce compte est déjà rattaché à un club."
+      "joinAlreadyMember": "Ce compte est déjà rattaché à un club.",
+      "magicLink": "Head coach ? Recevoir un lien de connexion",
+      "magicSent": "Lien de connexion envoyé — consulte tes emails."
     },
     "link": {
       "expired": "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.",
@@ -3600,5 +3618,34 @@
       "clubEmpty": "Aucune heatmap déposée dans le club.",
       "nPlayers": "{{count}} joueur(s)"
     }
+  },
+  "share": {
+    "manage": "Partager (lien)",
+    "title": "Lien de consultation Wellness",
+    "intro": "Génère un lien ponctuel à envoyer toi-même (WhatsApp/SMS). Le destinataire voit l'écran Wellness en lecture seule, sans compte. Révocable à tout moment.",
+    "expiry": "Expiration",
+    "label": "Libellé (optionnel)",
+    "labelPlaceholder": "ex. Head coach U20",
+    "generate": "Générer le lien",
+    "generating": "Génération…",
+    "ready": "Lien prêt — expire le {{date}}",
+    "copy": "Copier",
+    "copied": "Copié ✓",
+    "send": "Partager",
+    "shareText": "Consulte le wellness de l'équipe (lecture seule) :",
+    "activeTitle": "Liens actifs ({{count}})",
+    "none": "Aucun lien actif.",
+    "untitled": "Lien sans libellé",
+    "expiresAt": "expire le {{date}}",
+    "views": "{{count}} vue(s)",
+    "revoke": "Révoquer",
+    "revokeConfirm": "Révoquer ce lien ? Il cessera immédiatement de fonctionner.",
+    "note": "Lien pseudonymisé (totems + initiales), expiration courte, révocable ; chaque consultation est journalisée.",
+    "errAuth": "Action non autorisée.",
+    "errGeneric": "Échec de la génération du lien.",
+    "readOnly": "Lecture seule · lien de consultation",
+    "invalidTitle": "Lien invalide ou expiré",
+    "invalidBody": "Ce lien de consultation n'est plus valable (expiré ou révoqué). Demande un nouveau lien au staff.",
+    "footer": "Vue pseudonymisée (totems + initiales). Données confidentielles — ne pas rediffuser."
   }
 }

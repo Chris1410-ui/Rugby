@@ -9,8 +9,10 @@ import { useCivilNames } from "../../data/civilNames.js";
 import {
   favMarkers, recoveryIndex, wellnessScore, rpeOf, remarkOf, needsWatch, statusOf, mean,
 } from "../../lib/wellnessView.js";
-import { Clock, CheckCircle, AlertTriangle, Upload, Download } from "../../lib/icons.jsx";
+import { Clock, CheckCircle, AlertTriangle, Upload, Download, Send, ExternalLink } from "../../lib/icons.jsx";
 import CivilNamesSheet from "./CivilNamesSheet.jsx";
+import CoachInviteSheet from "./CoachInviteSheet.jsx";
+import WellnessShareSheet from "./WellnessShareSheet.jsx";
 import { buildReportModel, exportWellnessPptx } from "../../lib/wellnessReport.js";
 
 /* Écran « Wellness » (staff) — tableau de bord des réponses du matin.
@@ -23,6 +25,8 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
   const canManage = !readOnly; // prépa/médical/owner (coach exclu)
   const isOwner = profile?.role === "owner";
   const [namesOpen, setNamesOpen] = useState(false);
+  const [coachOpen, setCoachOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   // Effectif attendu = joueurs réels (hors démo).
@@ -167,6 +171,16 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
           <button onClick={onExport} disabled={exporting} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: exporting ? "rgba(255,255,255,0.08)" : `${C.coral}1c`, border: `1px solid ${C.coral}55`, borderRadius: 9, padding: "8px 11px", color: C.coral, fontSize: 12, fontWeight: 800, cursor: exporting ? "default" : "pointer", minHeight: 40 }}>
             <Download size={13} color={C.coral} /> {exporting ? t("staff.report.generating") : t("staff.report.exportBtn")}
           </button>
+          {canManage && (
+            <button onClick={() => setShareOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: 40 }}>
+              <ExternalLink size={13} color={C.amb} /> {t("share.manage")}
+            </button>
+          )}
+          {canManage && (
+            <button onClick={() => setCoachOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: 40 }}>
+              <Send size={13} color={C.teal} /> {t("staff.coachInvite.manage")}
+            </button>
+          )}
           {canManage && (
             <button onClick={() => setNamesOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.border}`, borderRadius: 9, padding: "8px 11px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: 40 }}>
               <Upload size={13} color={C.viol} /> {t("staff.names.manage")}
@@ -352,6 +366,8 @@ export default function Wellness({ teamId, players = [], profile = null, readOnl
       {namesOpen && (
         <CivilNamesSheet players={roster} teamId={teamId} isOwner={isOwner} onClose={() => setNamesOpen(false)} onImported={refreshNames} />
       )}
+      {coachOpen && <CoachInviteSheet teamId={teamId} onClose={() => setCoachOpen(false)} />}
+      {shareOpen && <WellnessShareSheet teamId={teamId} onClose={() => setShareOpen(false)} />}
     </div>
   );
 }
