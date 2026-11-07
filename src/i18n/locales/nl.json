@@ -2301,6 +2301,22 @@
       "title": "Wellness-rapport",
       "generating": "Genereren…",
       "errExport": "PowerPoint-export mislukt."
+    },
+    "coachInvite": {
+      "manage": "Head coach uitnodigen",
+      "title": "Head coach uitnodigen",
+      "intro": "Hij krijgt een aanmeldlink per e-mail (zonder wachtwoord). Bij klikken wordt zijn alleen-lezen toegang tot het Wellness-scherm automatisch aangemaakt.",
+      "firstName": "Voornaam",
+      "lastName": "Naam",
+      "email": "E-mail",
+      "submit": "Uitnodiging versturen",
+      "sending": "Versturen…",
+      "note": "Alleen-lezen toegang (coachrol). Gezondheidsgegevens beschermd door de club-RLS.",
+      "sentTitle": "Uitnodiging verzonden",
+      "sentBody": "Er is een aanmeldlink naar {{email}} verzonden.",
+      "errEmail": "Ongeldige e-mail.",
+      "errAuth": "Actie niet toegestaan.",
+      "errGeneric": "Uitnodiging versturen mislukt."
     }
   },
   "shared": {
@@ -2912,7 +2928,9 @@
       "backToSignin": "Terug naar aanmelden",
       "inviteOnlyNote": "Registratie alleen op uitnodiging. Vraag je club om een link.",
       "joinInvalid": "Deze uitnodigingslink is ongeldig of verlopen.",
-      "joinAlreadyMember": "Dit account is al aan een club gekoppeld."
+      "joinAlreadyMember": "Dit account is al aan een club gekoppeld.",
+      "magicLink": "Head coach? Ontvang een aanmeldlink",
+      "magicSent": "Aanmeldlink verzonden — controleer je e-mail."
     },
     "link": {
       "expired": "De reset-link is verlopen. Vraag hieronder een nieuwe e-mail aan.",

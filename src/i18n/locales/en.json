@@ -2301,6 +2301,22 @@
       "title": "Wellness report",
       "generating": "Generating…",
       "errExport": "PowerPoint export failed."
+    },
+    "coachInvite": {
+      "manage": "Invite a head coach",
+      "title": "Invite a head coach",
+      "intro": "They'll get a passwordless sign-in link by email. On click, their read-only access to the Wellness screen is created automatically.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "submit": "Send invitation",
+      "sending": "Sending…",
+      "note": "Read-only access (coach role). Health data protected by the club's RLS.",
+      "sentTitle": "Invitation sent",
+      "sentBody": "A sign-in link was sent to {{email}}.",
+      "errEmail": "Invalid email.",
+      "errAuth": "Action not authorized.",
+      "errGeneric": "Failed to send the invitation."
     }
   },
   "shared": {
@@ -2912,7 +2928,9 @@
       "backToSignin": "Back to sign in",
       "inviteOnlyNote": "Registration is by invitation only. Ask your club for a link.",
       "joinInvalid": "This invitation link is invalid or expired.",
-      "joinAlreadyMember": "This account is already linked to a club."
+      "joinAlreadyMember": "This account is already linked to a club.",
+      "magicLink": "Head coach? Get a sign-in link",
+      "magicSent": "Sign-in link sent — check your email."
     },
     "link": {
       "expired": "The reset link has expired. Request a new email below.",

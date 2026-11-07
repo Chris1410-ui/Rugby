@@ -2301,6 +2301,22 @@
       "title": "Rapport Wellness",
       "generating": "Génération…",
       "errExport": "Échec de l'export PowerPoint."
+    },
+    "coachInvite": {
+      "manage": "Inviter un head coach",
+      "title": "Inviter un head coach",
+      "intro": "Il recevra un lien de connexion par email (sans mot de passe). Au clic, son accès lecture seule à l'écran Wellness est créé automatiquement.",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "submit": "Envoyer l'invitation",
+      "sending": "Envoi…",
+      "note": "Accès lecture seule (rôle coach). Données de santé protégées par la RLS du club.",
+      "sentTitle": "Invitation envoyée",
+      "sentBody": "Un lien de connexion a été envoyé à {{email}}.",
+      "errEmail": "Email invalide.",
+      "errAuth": "Action non autorisée.",
+      "errGeneric": "Échec de l'envoi de l'invitation."
     }
   },
   "shared": {
@@ -2912,7 +2928,9 @@
       "backToSignin": "Retour à la connexion",
       "inviteOnlyNote": "Inscription sur invitation uniquement. Demande un lien à ton club.",
       "joinInvalid": "Ce lien d’invitation est invalide ou expiré.",
-      "joinAlreadyMember": "Ce compte est déjà rattaché à un club."
+      "joinAlreadyMember": "Ce compte est déjà rattaché à un club.",
+      "magicLink": "Head coach ? Recevoir un lien de connexion",
+      "magicSent": "Lien de connexion envoyé — consulte tes emails."
     },
     "link": {
       "expired": "Le lien de réinitialisation a expiré. Redemande un email ci-dessous.",

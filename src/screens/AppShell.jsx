@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/useAuth.jsx";
 import { acceptClubInvitation, readPendingInvite, clearPendingInvite } from "../data/clubInvitations.js";
 import { joinClubWithCode, readPendingJoin, clearPendingJoin } from "../data/clubCodes.js";
+import { claimCoachInvite } from "../data/coachInvite.js";
 import { C, FONT, ROLES, TEAMS, isStaffRole, isProfileComplete } from "../lib/tokens.js";
 import { Bell, Shield } from "../lib/icons.jsx";
 import { BuildTag, AthleteErrorToast } from "../lib/ui.jsx";
@@ -37,33 +38,33 @@ export default function AppShell() {
   const [tourDismissed, setTourDismissed] = useState(false); // masque immédiat le temps du refresh profil
   // Filet d'adhésion : true tant qu'une invitation nominative OU un code partagé
   // (?join=) reste à finaliser (évite un flash « Profil introuvable »).
-  const [inviteFinalizing, setInviteFinalizing] = useState(() => !!(readPendingInvite() || readPendingJoin()));
+  const [claimDone, setClaimDone] = useState(false);
 
-  // Compte authentifié SANS profil + adhésion en attente stockée → (re)tente
-  // l'acceptation puis recharge le profil. Rattrape les cas où le chemin
-  // signUp→session→accept/join a été rompu (email déjà inscrit, reconnexion, 1er
-  // essai raté). Aucune boucle : succès → profil présent ; échec terminal → purge.
+  // Compte authentifié SANS profil → finalisation : (1) adhésion en attente
+  // stockée (signUp→accept/join rompu : email déjà inscrit, reconnexion…), SINON
+  // (2) invitation head coach par lien magique → claim par email (serveur). Puis
+  // recharge le profil. Aucune boucle (claimDone) : succès → profil présent ;
+  // sinon → écran « profil introuvable ».
   const TERMINAL = ["INVITE_INVALID", "INVITE_EMAIL_MISMATCH", "ALREADY_CLAIMED", "CODE_INVALID", "ALREADY_MEMBER", "BIRTHDATE_REQUIRED", "GUARDIAN_REQUIRED", "CONSENT_REQUIRED", "TOTEM_TAKEN", "TOTEM_REQUIRED"];
   useEffect(() => {
-    if (!profileLoaded || profile) { setInviteFinalizing(false); return; }
+    if (!profileLoaded || profile || claimDone) return;
     const pendInvite = readPendingInvite();
     const pendJoin = pendInvite ? null : readPendingJoin();
-    if (!pendInvite && !pendJoin) { setInviteFinalizing(false); return; }
     let alive = true;
-    setInviteFinalizing(true);
     (async () => {
       try {
         if (pendInvite) { await acceptClubInvitation(pendInvite.token, pendInvite.payload || {}); clearPendingInvite(); }
-        else { await joinClubWithCode(pendJoin.code, pendJoin.payload || {}); clearPendingJoin(); }
+        else if (pendJoin) { await joinClubWithCode(pendJoin.code, pendJoin.payload || {}); clearPendingJoin(); }
+        else { await claimCoachInvite(); } // head coach via lien magique : claim par email
         if (alive) await refreshProfile();
       } catch (e) {
         if (TERMINAL.includes(e?.message)) { clearPendingInvite(); clearPendingJoin(); }
       } finally {
-        if (alive) setInviteFinalizing(false);
+        if (alive) setClaimDone(true);
       }
     })();
     return () => { alive = false; };
-  }, [profileLoaded, profile, refreshProfile]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profileLoaded, profile, claimDone, refreshProfile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Échec de chargement du profil (timeout + retries épuisés) : écran d'erreur
   // explicite avec des issues de secours — JAMAIS un spinner infini.
@@ -85,8 +86,8 @@ export default function AppShell() {
     );
   }
   if (!profile && !profileLoaded) return <Centered>{t("shell.loadingProfile")}</Centered>;
-  // Acceptation d'invitation en cours de finalisation → spinner dédié (pas « introuvable »).
-  if (!profile && inviteFinalizing) return <Centered>{t("shell.finalizingInvite")}</Centered>;
+  // Finalisation (acceptation / claim coach) en cours → spinner dédié (pas « introuvable »).
+  if (!profile && !claimDone) return <Centered>{t("shell.finalizingInvite")}</Centered>;
   if (!profile) {
     return (
       <Centered>
@@ -135,7 +136,9 @@ export default function AppShell() {
   const hasAthlete = staffRole && !!profile.player_id;
   const asAthlete = hasAthlete && viewAs === "athlete";
   const staff = staffRole && !asAthlete;
-  const homeTab = "accueil"; // page d'atterrissage commune (Accueil), déclinée par rôle
+  // Atterrissage : Accueil pour tous ; le head coach (lecture seule) arrive direct
+  // sur l'écran Wellness (son outil principal).
+  const homeTab = profile.role === "coach" ? "wellness" : "accueil";
   const tab = navTab ?? homeTab;
   const goTab = (tk) => { setNavTab(tk); notifs.markRouteRead(tk); setAvatarOpen(false); };
   const switchView = (v) => { setViewAs(v); setNavTab(null); setAvatarOpen(false); };
